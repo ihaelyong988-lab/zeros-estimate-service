@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ZEROS — "견적비용 제로를 지향하는 산업설비 예상견적 서비스"
 
-## Getting Started
+본 저장소는 공사 전에 배관·장비설치의 **범위·리스크·예산**을 먼저 검토하여 시공사의 들쑥날쑥한 견적 비용과 설계 변경 분쟁을 사전에 원천 차단하는 **ZEROS 예상견적 플랫폼 1차 MVP**입니다.
 
-First, run the development server:
+국내 1군 건설사 기준의 산업설비 도메인 표준 프로세스를 이해하는 시니어 수준의 엔지니어링 계산식과 B2B 전문 대시보드 구조가 반영되었습니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 📌 주요 특징 (Key Features)
+
+### 1. 3-Pane AppShell 레이아웃 (3-Pane 구조)
+*   **좌측 (Pane 1):** 8대 공사영역(배관공사, 장비설치 등) 및 견적규모별 카테고리, FAQ 등 빠른 메뉴 트리.
+*   **중앙 (Pane 2):** 8대 영역별 정밀 검토 매뉴얼(문제정의, 준비자료, 제공 리포트, 유의사항) 및 대시보드 홈 카드 그리드.
+*   **우측 (Pane 3):** 실측 통계 기반 **의사결정 보조 위젯**. 선택 영역 및 예산 규모에 매핑하여 유사 표본 수, 예상 리포트 소요일, 예상 밴드를 시각화하여 정보 비대칭 해소.
+
+### 2. 5단계 예상견적 의뢰 위저드 (Form UX)
+*   **1단계:** 고객 기본 연락 정보 입력 (모바일 자동 완성 대응).
+*   **2단계:** 공사 기본 사양 지정 (공사/현장 종류, 목적, 희망 금액 등 칩 기반 선택).
+*   **3단계:** 현장 물리적 설명 및 자재 사양 상세 (재질, 인입 사이즈 등 구체적 서술).
+*   **4단계:** 도면, 배치도 및 외관 사진 첨부 (파일 메타 구조화).
+*   **5단계:** 개인정보 수집/출장 실측 타당성 동의 후 완료 접수번호 생성.
+
+### 3. 관리자 관제 백오피스 (Admin Portal)
+*   **통합 대시보드:** 신규 접수, 검토 단계별 현황 및 방문 일정 실시간 관제.
+*   **영업 칸반 보드:** **HTML5 Drag and Drop**을 지원하는 13단계 파이프라인 칸반 인터페이스. 드래그앤드롭 즉시 로컬 통계 및 CRM 데이터가 리액티브하게 동기화.
+*   **현장방문 & 견적서 송부 관리:** 현장 실측 예정일, 특이사항 조율 상태 및 확정 계약 정보 매핑.
+*   **CRM 고객 데이터베이스:** 의뢰 고객별 누적 문의 수, 최종 수주 성공율, CRM 등급(신규/재문의/중요고객 등) 수정 및 특이사항 메모 영속 관리.
+*   **Recharts 분석 차트:** SSR Hydration Mismatch를 완벽 차단한 월별 접수량, 월별 계약 매출액 스택, 공사종류별 비중 차트 탑재.
+
+---
+
+## 🛠 기술 스택 (Tech Stack)
+
+*   **프론트엔드:** Next.js (App Router, Tailwind CSS, TypeScript)
+*   **백엔드/어댑터:** LocalStorage 기반 영속 Mock Database 및 API Client (Supabase 키 확보 시 즉시 SDK 스위칭 가능)
+*   **시각화 라이브러리:** Recharts
+*   **디자인 시스템:** 1px 테두리 및 딥 네이비(`--color-navy: #0F1E35`), 스틸 블루(`--color-steel: #1E4D8C`), 포인트 오랜지(`--color-accent: #E0701A`)를 융합한 McKinsey & Monday.com B2B 톤.
+
+---
+
+## 📂 폴더 구조 (Directory Structure)
+
+```
+zeros-estimate-service/
+├── agents/                   # [PHASE 0] 멀티에이전트 역할 정의서
+│   ├── 00_orchestrator.md    # PM/오케스트레이터 - 전체 계획 및 조율
+│   ├── 01_frontend_design.md # 프론트/디자인 - 3-Pane 셸, UI, 디자인 토큰
+│   ├── 02_backend_db.md      # 백엔드/DB - Supabase, RLS, 시드
+│   └── 03_qa_deploy.md       # QA/배포 - 통합 테스트 및 패키징
+├── workspace/                # [PHASE 0] 공유 메타데이터 (협업 상태 관리)
+│   ├── state.md              # 현재 진행중인 PHASE 및 다음 행동 기록
+│   ├── decisions.md          # 설계 합리적 결정 사항 로그
+│   └── gate-checks.md        # 단계별 자체 검증 통과 표
+├── app/                      # Next.js App Router 
+│   ├── globals.css           # 디자인 토큰 정의 및 Tailwind 세팅
+│   ├── page.tsx              # 전역 AppShell 및 대시보드/백오피스 중앙 라우터
+│   └── request/
+│       └── complete/         # 예상견적 신청 완료 페이지 (접수번호 표출)
+├── components/               # 재사용 UI 컴포넌트
+│   ├── admin/                # 백오피스 관제 및 시각화 (Performance, CustomerList, Kanban 등)
+│   ├── forms/                # 5단계 위저드 폼 컴포넌트
+│   └── layout/               # 3-Pane AppShell (Left/RightSidebar, Header)
+├── lib/                      # 로직 유틸리티
+│   ├── calculations.ts       # 0나눗셈 예외처리 완비된 13종 영업계산식
+│   ├── constants/            # 영역 매뉴얼 데이터
+│   └── supabase/             # localStorage 영속 래퍼 client 및 30건 시드 데이터
+└── types/                    # TypeScript 타입 인터페이스 정의
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💾 데이터베이스 스키마 및 보안 (Supabase SQL)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+만약 Supabase 클라우드로 확장 시, `/supabase/schema.sql` 및 `seed.sql`을 Supabase SQL Editor에서 실행하십시오.
 
-## Learn More
+### 1. 테이블 설계 구조
+*   `estimates`: 진단 의뢰서 원장 (접수번호, 공사종류, 등급, 금액, 상태 등)
+*   `payments`: 수동 입금 및 견적비용 결제 내역
+*   `site_visits`: 실측을 위한 현장 방문 정보 (위험 요소, 차후 단계 등)
+*   `customers`: CRM 고유 고객 테이블 (전화번호 기준 누적 통계 트리거 연동)
+*   `admin_users`: 접근 등급 제어 (owner / admin / viewer)
+*   `files`: 도면 및 배치도 업로드 메타
 
-To learn more about Next.js, take a look at the following resources:
+### 2. RLS (Row Level Security) 설정 가이드
+*   비인증 익명 고객은 **의뢰서 쓰기(INSERT)** 및 **공종별 대시보드 통계 읽기(익명성 보장)** 만 허용됩니다.
+*   고객 식별 데이터 및 관리자 메모는 인증된 관리자 계정(`admin_users`)만 조회 및 수정(UPDATE)할 수 있습니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🚀 로컬 실행 방법 (Local Run)
 
-## Deploy on Vercel
+별도의 외부 키나 백엔드 서버 없이도, **로컬 Mock 영속 시스템**이 자동으로 구동되어 30건 이상의 데이터로 채워진 대시보드를 바로 탐색하실 수 있습니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 1. 패키지 설치
+```bash
+npm install
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 2. 환경 변수 구성
+`.env.example` 파일을 복사하여 `.env.local`을 생성합니다. (키가 비어있어도 mock이 즉시 실행됨)
+```bash
+cp .env.example .env.local
+```
+
+### 3. 개발 서버 구동
+```bash
+npm run dev
+```
+브라우저를 열고 `http://localhost:3000` 으로 진입하십시오. 우측 상단 토글을 눌러 **고객 모드 ⇄ 관리자 백오피스**를 1초 만에 전환하며 기능을 조작해 볼 수 있습니다.
+
+---
+
+## 🧪 11단계 통합 시나리오 테스트 (Business Verification)
+
+본 MVP는 아래 11단계 비즈니스 흐름을 **완벽하게 영속적으로 동기화**하도록 설계되었습니다.
+
+1.  **고객 의뢰 제출:** 홍길동 고객이 `배관+장비설치` 신청 (예산: `1,000만~1억`).
+2.  **자동 분류:** 예산 기준에 따라 `medium` (출장 실측 검토 대상)으로 자동 매핑.
+3.  **관리자 관제 접수:** 백오피스 접수관리 테이블 및 영업 칸반 `접수완료` 상태에 새 카드 자동 노출.
+4.  **검토중 전환:** 상세 모달에서 상태를 `검토중`으로 변경 ➔ 대시보드 KPI 및 칸반 보드 즉시 갱신.
+5.  **정확도 등급 부여:** 도면 및 현장 설명의 완성도를 평가하여 정확도 등급 `B`로 세팅.
+6.  **방문 계획 수립:** `방문 관리` 메뉴를 통해 실측 담당자 및 방문 예정일 등록.
+7.  **실측 완료:** 실측 진행 후 상태를 `현장방문 완료`로 변경.
+8.  **견적 작성:** 엔지니어가 산출한 예상 공사 금액 `₩45,000,000` 입력.
+9.  **견적서 송부:** 상태를 `견적서 송부완료`로 변경하여 견적일자 시스템 기록.
+10. **수주 확정:** 고객사와 조율 후 상태를 최종 `수주성공`으로 드래그앤드롭.
+11. **성과 즉시 반영:** `실적분석` 및 `고객관리` 탭으로 전환하여 누적 확정 매출 ₩45,000,000 추가 및 홍길동 고객의 등급이 `수주고객`으로 자동 격상된 것을 확인.
+
+---
+
+## 📈 2차 개발 및 고도화 계획
+
+1.  **토스페이먼츠(Toss Payments) 결제 연동:** 출장견적비 실시간 PG 결제 모듈 추가.
+2.  **카카오 알림톡/이메일 SMTP 연동:** 상태 변경 시 (자료보완 요청, 방문일정 조율 등) 자동 SMS 알림.
+3.  **PDF 견적서 자동 생성 엔진:** 입력 데이터를 기반으로 1군 건설사 규격의 PDF 레포트 실시간 렌더링.
+4.  **AI 도면 제원 분석:** 업로드한 PDF 배치도 및 P&ID를 비전 모델로 분석하여 배관 사이즈/플랜지 사양을 자동 식별 보조.
