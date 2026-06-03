@@ -2,31 +2,30 @@
 
 import React, { useEffect, useState } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
-import { Estimate, Payment } from '@/types/estimate';
+import { Estimate } from '@/types/estimate';
 import { calculatePerformanceMetrics } from '@/lib/calculations';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { TrendingUp, Award, DollarSign, Calendar, Clock, Percent } from 'lucide-react';
+import { TrendingUp, Award, DollarSign, Percent } from 'lucide-react';
 
 const COLORS = ['#0F1E35', '#1E4D8C', '#E0701A', '#5B6573', '#9AA3AF', '#1F7A4D', '#C8841A', '#B23A3A'];
 
 export const PerformanceDashboard: React.FC = () => {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false); // SSR Hydration Mismatch 방지 - 핵심 기법!
 
   useEffect(() => {
-    setMounted(true);
+    const frameId = window.requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
     const load = async () => {
       try {
         const ests = await ZerosService.getEstimates();
         setEstimates(ests);
-        
-        const pays = await ZerosService.getPayments();
-        setPayments(pays);
       } catch (e) {
         console.error('Failed to load performance metrics', e);
       } finally {
@@ -34,6 +33,7 @@ export const PerformanceDashboard: React.FC = () => {
       }
     };
     load();
+    return () => window.cancelAnimationFrame(frameId);
   }, []);
 
   if (loading) {
@@ -41,7 +41,7 @@ export const PerformanceDashboard: React.FC = () => {
   }
 
   // calculations 연동
-  const metrics = calculatePerformanceMetrics(estimates, payments);
+  const metrics = calculatePerformanceMetrics(estimates);
 
   // 1. 월별 접수 및 매출 추이 동적 가공
   const getMonthlyData = () => {
@@ -215,8 +215,8 @@ export const PerformanceDashboard: React.FC = () => {
               <TrendingUp className="w-4 h-4 text-steel" />
               월별 사전진단 유입 추이 (건)
             </h4>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 min-h-64 min-w-0">
+              <ResponsiveContainer width="100%" height={256}>
                 <LineChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" tick={{ fontSize: 9 }} />
@@ -234,8 +234,8 @@ export const PerformanceDashboard: React.FC = () => {
               <DollarSign className="w-4 h-4 text-steel" />
               월별 확정 계약 매출 (원)
             </h4>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 min-h-64 min-w-0">
+              <ResponsiveContainer width="100%" height={256}>
                 <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" tick={{ fontSize: 9 }} />
@@ -256,8 +256,8 @@ export const PerformanceDashboard: React.FC = () => {
               <Award className="w-4 h-4 text-steel" />
               공사종류별 사전진단 비중 (%)
             </h4>
-            <div className="h-64 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 min-h-64 min-w-0 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height={256}>
                 <PieChart>
                   <Pie
                     data={workTypeData}
@@ -291,8 +291,8 @@ export const PerformanceDashboard: React.FC = () => {
               <Percent className="w-4 h-4 text-steel" />
               견적규모별 최종 수주 계약율 (%)
             </h4>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 min-h-64 min-w-0">
+              <ResponsiveContainer width="100%" height={256}>
                 <BarChart data={categoryData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 9 }} />

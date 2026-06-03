@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Estimate, WorkType, EstimateStatus, EstimateCategory } from '@/types/estimate';
+import React, { useState } from 'react';
+import { Estimate, WorkType, EstimateStatus, EstimateCategory, ExpectedBudgetRange } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
-import { Search, Filter, ArrowUpDown, KanbanSquare, Table, RefreshCw, FileCheck, Plus } from 'lucide-react';
+import { Search, ArrowUpDown, KanbanSquare, Table, RefreshCw, Plus } from 'lucide-react';
 
 interface EstimateListProps {
   estimates: Estimate[];
@@ -61,7 +61,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleColDragOver = (e: React.DragEvent, index: number) => {
+  const handleColDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
 
@@ -89,13 +89,13 @@ export const EstimateList: React.FC<EstimateListProps> = ({
       '서울특별시 강남구 테헤란로 412'
     ];
     const mockWorkTypes: WorkType[] = ['배관공사', '장비설치', 'Utility 배관', '공장증설', '노후배관교체', '기계실개선'];
-    const mockExpectedBudgets = ['1,000만~1억', '≥1억', '≤1,000만', '모름'];
+    const mockExpectedBudgets: ExpectedBudgetRange[] = ['1,000만~1억', '≥1억', '≤1,000만', '모름'];
 
     const randomCompany = mockCompanies[Math.floor(Math.random() * mockCompanies.length)];
     const randomCustomer = mockCustomers[Math.floor(Math.random() * mockCustomers.length)];
     const randomAddress = mockAddresses[Math.floor(Math.random() * mockAddresses.length)];
     const randomWorkType = mockWorkTypes[Math.floor(Math.random() * mockWorkTypes.length)];
-    const randomBudget = mockExpectedBudgets[Math.floor(Math.random() * mockExpectedBudgets.length)] as any;
+    const randomBudget = mockExpectedBudgets[Math.floor(Math.random() * mockExpectedBudgets.length)];
 
     try {
       await ZerosService.createEstimate({
@@ -243,6 +243,28 @@ export const EstimateList: React.FC<EstimateListProps> = ({
             <option value="unknown">규모 미정</option>
           </select>
 
+          {/* 진행 상태 필터 */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-border rounded-custom bg-bg px-2.5 py-1.5 text-xs text-navy focus:outline-none"
+          >
+            <option value="all">전체 진행상태</option>
+            <option value="접수완료">접수완료</option>
+            <option value="검토중">검토중</option>
+            <option value="추가자료요청">추가자료요청</option>
+            <option value="출장견적 결제대기">출장견적 결제대기</option>
+            <option value="방문일정 조율중">방문일정 조율중</option>
+            <option value="현장방문 예정">현장방문 예정</option>
+            <option value="현장방문 완료">현장방문 완료</option>
+            <option value="견적서 작성중">견적서 작성중</option>
+            <option value="견적서 송부완료">견적서 송부완료</option>
+            <option value="수주성공">수주성공</option>
+            <option value="수주실패">수주실패</option>
+            <option value="보류">보류</option>
+            <option value="취소">취소</option>
+          </select>
+
           {/* 정렬 버튼 */}
           <button
             onClick={() => setSortByDate(prev => prev === 'desc' ? 'asc' : 'desc')}
@@ -307,7 +329,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
                   key={col.key}
                   draggable
                   onDragStart={(e) => handleColDragStart(e, idx)}
-                  onDragOver={(e) => handleColDragOver(e, idx)}
+                  onDragOver={handleColDragOver}
                   onDrop={(e) => handleColDrop(e, idx)}
                   className={`${col.width} px-4 py-1 font-bold ${
                     col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : ''

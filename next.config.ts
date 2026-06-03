@@ -7,10 +7,7 @@ const nextConfig: NextConfig = {
     '*.trycloudflare.com',
     'localhost:3000'
   ],
-  devIndicators: {
-    appIsrStatus: false,
-    buildActivity: false,
-  } as any
+  devIndicators: false
 };
 
 export default nextConfig;

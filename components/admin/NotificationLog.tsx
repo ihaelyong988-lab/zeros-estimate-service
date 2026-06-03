@@ -3,15 +3,18 @@
 import React, { useEffect, useState } from 'react';
 import { NotificationLog as NotificationType } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
-import { FileText, Search, Mail, MessageSquare, Check, RefreshCw } from 'lucide-react';
+import { Search, Mail, MessageSquare, Check, RefreshCw } from 'lucide-react';
 
 export const NotificationLog: React.FC = () => {
   const [logs, setLogs] = useState<NotificationType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadLogs = async () => {
-    setLoading(true);
+  const loadLogs = async (showPending = true) => {
+    if (showPending) {
+      await Promise.resolve();
+      setLoading(true);
+    }
     try {
       const list = await ZerosService.getNotificationLogs();
       setLogs(list);
@@ -23,7 +26,9 @@ export const NotificationLog: React.FC = () => {
   };
 
   useEffect(() => {
-    loadLogs();
+    queueMicrotask(() => {
+      void loadLogs(false);
+    });
   }, []);
 
   const filteredLogs = logs.filter(l => 
@@ -48,7 +53,9 @@ export const NotificationLog: React.FC = () => {
             </p>
           </div>
           <button 
-            onClick={loadLogs}
+            onClick={() => {
+              void loadLogs();
+            }}
             className="p-2 border border-border rounded-custom bg-bg hover:bg-bg-subtle text-gray hover:text-navy transition-all"
             title="새로고침"
           >

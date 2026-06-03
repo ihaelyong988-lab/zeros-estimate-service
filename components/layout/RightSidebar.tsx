@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
 import { AlertCircle, Calendar, Users, BarChart3, ArrowRight, ShieldCheck } from 'lucide-react';
-import { WorkType } from '@/types/estimate';
 
 export interface DecisionMetrics {
   avgDays: number;

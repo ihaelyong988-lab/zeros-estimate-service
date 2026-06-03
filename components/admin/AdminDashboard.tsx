@@ -9,8 +9,7 @@ import {
   CalendarCheck,
   TrendingUp,
   DollarSign,
-  Briefcase,
-  AlertCircle
+  Briefcase
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -40,11 +39,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
   }
 
   // 데이터 집계
-  const totalCount = estimates.length;
   const newCount = estimates.filter(e => e.status === '접수완료').length;
   const reviewingCount = estimates.filter(e => e.status === '검토중' || e.status === '추가자료요청').length;
   const visitWaitingCount = estimates.filter(e => e.status === '현장방문 예정' || e.status === '방문일정 조율중').length;
-  const quoteWaitingCount = estimates.filter(e => e.status === '견적서 작성중').length;
   const wonCount = estimates.filter(e => e.status === '수주성공').length;
 
   // 매출 계산

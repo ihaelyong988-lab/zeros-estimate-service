@@ -9,10 +9,13 @@ export const VisitList: React.FC = () => {
   const [visits, setVisits] = useState<SiteVisit[]>([]);
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<'all' | '예정' | '완료'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | SiteVisit['visit_status']>('all');
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (showPending = true) => {
+    if (showPending) {
+      await Promise.resolve();
+      setLoading(true);
+    }
     try {
       const vList = await ZerosService.getSiteVisits();
       setVisits(vList);
@@ -27,11 +30,13 @@ export const VisitList: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
+    queueMicrotask(() => {
+      void loadData(false);
+    });
   }, []);
 
   // 방문 완료 처리 액션
-  const handleCompleteVisit = async (id: string, estimateId: string) => {
+  const handleCompleteVisit = async (id: string) => {
     try {
       // 1. 방문 상태 '완료' 로 변경
       await ZerosService.updateSiteVisit(id, {
@@ -67,16 +72,19 @@ export const VisitList: React.FC = () => {
         <div className="flex items-center gap-3">
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) => setFilterStatus(e.target.value as 'all' | SiteVisit['visit_status'])}
             className="border border-border rounded-custom bg-bg px-3 py-1.5 text-xs text-navy focus:outline-none"
           >
             <option value="all">전체 일정 상태</option>
             <option value="예정">출장 예정</option>
             <option value="완료">실측 완료</option>
+            <option value="취소">방문 취소</option>
           </select>
           
           <button
-            onClick={loadData}
+            onClick={() => {
+              void loadData();
+            }}
             className="p-1.5 border border-border rounded-custom bg-bg text-gray hover:bg-bg-subtle"
             title="목록 새로고침"
           >
@@ -167,7 +175,7 @@ export const VisitList: React.FC = () => {
                 {/* 예정 일정인 경우, 신속 완료 액션 제공 */}
                 {!isCompleted && (
                   <button
-                    onClick={() => handleCompleteVisit(v.id, v.estimate_id)}
+                    onClick={() => handleCompleteVisit(v.id)}
                     className="w-full mt-1.5 bg-steel hover:bg-navy text-bg py-2 rounded-custom text-xs font-extrabold transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />

@@ -12,7 +12,8 @@ import {
   Cpu,
   Layers,
   FolderDot,
-  Gauge
+  Gauge,
+  Boxes
 } from 'lucide-react';
 import { WorkType } from '@/types/estimate';
 
@@ -40,6 +41,13 @@ export const LeftSidebar: React.FC = () => {
     { label: '기계실개선', desc: '기계실 배관 효율 및 동선 개선' },
     { label: '생산설비 배관 연결', desc: '제조 설비 훅업(Hook-up) 연결' },
     { label: 'CAPEX 개·증설 검토', desc: '사전 도면 및 견적 한도 검토' },
+  ];
+
+  // 외주 제작 카테고리 (사전제작 / 모듈화 공급)
+  const fabricationCategories: { key: string; label: string; desc: string }[] = [
+    { key: 'spool', label: '배관 SPOOL Module', desc: 'ISO 도면 기반 스풀 사전제작' },
+    { key: 'skid', label: 'SKID 제작', desc: '단일 프레임 패키지 모듈화' },
+    { key: 'structure', label: 'Structure 제작', desc: '가대·플랫폼 철구조물 가공' },
   ];
 
   // 견적규모별 카테고리
@@ -96,6 +104,38 @@ export const LeftSidebar: React.FC = () => {
                     <div className="flex items-center justify-between w-full">
                       <span className="text-[13px] font-bold">{cat.label}</span>
                       {isActive && <ChevronRight className="w-3.5 h-3.5 text-steel" />}
+                    </div>
+                    <span className="text-[10.5px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 외주 제작 카테고리 */}
+          <div>
+            <div className="flex items-center gap-1.5 px-2 mb-2">
+              <Boxes className="w-4 h-4 text-accent" />
+              <h3 className="text-xs font-bold text-navy uppercase tracking-wider">외주 제작</h3>
+              <span className="ml-auto text-[8.5px] font-black text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full tracking-wider">FAB</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              {fabricationCategories.map((cat) => {
+                const isActive = selectedMenu === cat.key && !selectedBudget && activeTab === 'home';
+                return (
+                  <button
+                    key={cat.key}
+                    onClick={() => handleMenuClick(cat.key)}
+                    style={{ touchAction: 'manipulation' }}
+                    className={`w-full text-left px-3 py-2 rounded-custom transition-all duration-150 flex flex-col border ${
+                      isActive
+                        ? 'bg-bg border-2 border-accent shadow-custom-md text-accent scale-[1.01]'
+                        : 'border-transparent hover:bg-bg/40 text-gray hover:text-navy'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[13px] font-bold">{cat.label}</span>
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-accent" />}
                     </div>
                     <span className="text-[10.5px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
                   </button>
