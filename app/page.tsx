@@ -25,14 +25,13 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
+  ArrowLeft,
   ShieldCheck,
-  Cpu,
   Sparkles,
   Award,
   Briefcase,
   MapPin,
-  Truck,
-  FolderDot
+  Truck
 } from 'lucide-react';
 
 const tradeShowcase = [
@@ -394,7 +393,7 @@ export default function Home() {
               <text x="43" y="38" fill="currentColor" fontSize="2.5" className="font-mono">P</text>
             </svg>
           ),
-          specText: 'Darcy-Weisbach 관마찰 손실 및 Reynolds Number 흐름 유동 자동 검증 가동'
+          specText: 'Darcy-Weisbach 관마찰·Reynolds 유동 검증으로 관경 적정성 자동 진단'
         };
       } else if (matchKey === '장비설치') {
         return {
@@ -422,7 +421,7 @@ export default function Home() {
               <text x="27" y="58" fill="currentColor" fontSize="2.2" className="font-mono">FOUNDATION MESH OK</text>
             </svg>
           ),
-          specText: '장비 자중 기초 패드 하중분산 응력(Stress Tensor) 및 펌프 진동 방진 가이드 설계 자동 검토'
+          specText: '기초 패드 하중분산 응력(Stress Tensor)·펌프 진동 방진 가이드 자동 검토'
         };
       } else if (matchKey === 'Utility 배관') {
         return {
@@ -452,7 +451,7 @@ export default function Home() {
               <text x="36" y="26" fill="currentColor" fontSize="2.5" className="font-mono">STEAM TRAP ST.</text>
             </svg>
           ),
-          specText: '스팀 워터해머 방지 열팽창 드립 포켓 간격 설계 및 압축공기 응축수 트랩 적정성 수치 평가'
+          specText: '보온 두께 대비 열손실·드립포켓 간격·압축공기 응축수 트랩 적정성 수치 검증'
         };
       } else if (matchKey === '공장증설') {
         return {
@@ -474,7 +473,7 @@ export default function Home() {
               <text x="56" y="21" fill="#E0701A" fontSize="3.2" className="font-mono font-black">HOT-TAP 80A</text>
             </svg>
           ),
-          specText: '공장 무중단 셧다운 최소화 분기(Hot-Tapping) 공법 적합성 분석 및 확장부 유량 손실 압력 구배 매핑'
+          specText: '무중단 Hot-Tapping 공법 적합성·증설부 유량 손실 압력 구배 매핑'
         };
       } else if (matchKey === '노후배관교체') {
         return {
@@ -500,7 +499,7 @@ export default function Home() {
               <text x="56" y="78" fill="#10b981" fontSize="2.8" className="font-mono">NEW: SUS316L 100%</text>
             </svg>
           ),
-          specText: '배관 스케일 잔존 두께 비파괴 검사 데이터 매핑 및 유체 화학반응식에 기초한 최적 내식재(SUS316L) 치환 판단'
+          specText: '스케일 잔존 두께 비파괴 데이터·유체 화학식 기반 최적 내식재(SUS316L) 치환 판단'
         };
       } else if (matchKey === '기계실개선') {
         return {
@@ -529,7 +528,7 @@ export default function Home() {
               <text x="32" y="21" fill="currentColor" fontSize="2.8" className="font-mono">ECCENTRIC REDUCER OK</text>
             </svg>
           ),
-          specText: '흡입측 Cavitation(공동현상) 원천 차단을 위한 편심이경관 조율 및 복합 분기 매니폴드 균등 압력 수치 유체역학 검토'
+          specText: '흡입측 캐비테이션 차단 편심이경관·복합 매니폴드 균등 압력 유체 검토'
         };
       } else if (matchKey === '생산설비 배관 연결') {
         return {
@@ -550,7 +549,7 @@ export default function Home() {
               <text x="25" y="15" fill="currentColor" fontSize="2.8" className="font-mono">UHP GAS MANIFOLD</text>
             </svg>
           ),
-          specText: '초순수(DIW) 및 반도체 특수가스 크린룸 훅업 오비탈 자동용접 기준 자재(EP등급) 타당성 심사 프로세스'
+          specText: '초순수(DIW)·반도체 특수가스 크린룸 오비탈 용접 EP등급 자재 타당성 심사'
         };
       } else if (matchKey === 'CAPEX 개·증설 검토') {
         return {
@@ -577,7 +576,7 @@ export default function Home() {
               <text x="32" y="74" fill="#E0701A" fontSize="3" className="font-mono font-black">ZEROS AI AUDIT REFERENCE</text>
             </svg>
           ),
-          specText: '상세 설계 전 컨셉 단계에서의 1군 건설사 공법 적용 유사 현장 실거래 n건 DB 기반 정량적 CAPEX 버블 억제 분석'
+          specText: '유사 1군 실거래 n건 DB 기반 정량적 CAPEX 버블 억제 분석'
         };
       } else if (matchKey === 'spool') {
         return {
@@ -724,7 +723,7 @@ export default function Home() {
             accentBorder: 'border-cyan-200/80',
             badgeBg: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-700',
             bubbleWidth: 'w-[28.4%]',
-            checklist: ['ASME/KS 규격 매핑 배관 자재 마진 필터링', 'Darcy-Weisbach 관 내 유체 손실 수치 검증', '1군 건설사 공종 노무 표준 품셈 공기 산출']
+            checklist: ['ASME/KS 자재 마진 필터링', 'Darcy-Weisbach 손실 수치 검증', '1군 표준 품셈 공기 산출']
           };
         case '장비설치':
           return {
@@ -736,7 +735,7 @@ export default function Home() {
             accentBorder: 'border-amber-200/80',
             badgeBg: 'bg-amber-500/10 border-amber-500/20 text-amber-700',
             bubbleWidth: 'w-[22.1%]',
-            checklist: ['중량 양중 경로 간섭 및 하중 크레인 배치 시뮬레이션', '방진 패드 기초 구조빔 하중분산 적합성 대조', '고소 작업 안전 비계 및 진동 차단 스펙 필터링']
+            checklist: ['양중 경로·크레인 간섭 검토', '방진 패드 하중분산 적합성', '고소 안전비계·방진 스펙 필터링']
           };
         case 'Utility 배관':
           return {
@@ -748,7 +747,7 @@ export default function Home() {
             accentBorder: 'border-sky-200/80',
             badgeBg: 'bg-sky-500/10 border-sky-500/20 text-sky-700',
             bubbleWidth: 'w-[24.6%]',
-            checklist: ['보온재 두께 대비 열 손실율 정밀 열역학 계산', '압축공기 헤더 분기 및 응축수 트랩 위치 검토', '유해 유체 차단 밸브 조작 반경 동선 매핑']
+            checklist: ['보온 열손실율 열역학 계산', '응축수 트랩 위치 검토', '차단밸브 조작 동선 매핑']
           };
         case '공장증설':
           return {
@@ -760,7 +759,7 @@ export default function Home() {
             accentBorder: 'border-accent/20',
             badgeBg: 'bg-accent/10 border-accent/20 text-accent-700',
             bubbleWidth: 'w-[31.5%]',
-            checklist: ['무중단 티인 (Hot-tapping) 고가 공법 리스크 필터링', '라인 증설 전후 분배 유량 차압 정밀 시뮬레이션', '기존 배관 결합 조인트 화학 안정성 규격 검증']
+            checklist: ['무중단 Hot-tapping 리스크 필터링', '증설 전후 유량 차압 시뮬레이션', '분기 조인트 화학 안정성 검증']
           };
         case '노후배관교체':
           return {
@@ -772,7 +771,7 @@ export default function Home() {
             accentBorder: 'border-emerald-200/80',
             badgeBg: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700',
             bubbleWidth: 'w-[26.8%]',
-            checklist: ['배관 스케일 비파괴 검사 잔존 수명 정량 검증', '유체 화학식 기준 최적 내부식성 SUS 자재 규격 치환', '친환경 가스 배출 세정 노무량 공종 버블 필터링']
+            checklist: ['스케일 비파괴 잔존수명 검증', '최적 내식재(SUS) 규격 치환', '안전 세정·배출 노무 필터링']
           };
         case '기계실개선':
           return {
@@ -784,7 +783,7 @@ export default function Home() {
             accentBorder: 'border-teal-200/80',
             badgeBg: 'bg-teal-500/10 border-teal-500/20 text-teal-700',
             bubbleWidth: 'w-[29.3%]',
-            checklist: ['Cavitation 공동현상 차단 편심 이경관 규격 대조', '다매니폴드 압력 균등 분배 구조 수치 유체 분석', '메인 헤더 공간 간섭 및 루프 반입구 유효성 검토']
+            checklist: ['편심 이경관 캐비테이션 차단', '매니폴드 균등 압력 분배 분석', '루프 반입구·간섭 유효성 검토']
           };
         case '생산설비 배관 연결':
           return {
@@ -796,7 +795,7 @@ export default function Home() {
             accentBorder: 'border-indigo-200/80',
             badgeBg: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-700',
             bubbleWidth: 'w-[34.2%]',
-            checklist: ['초순수(DIW)/UHP 가스 크린룸 EP 자재 등급 검증', '오비탈 자동용접 표준 노무비 과다 청구 AI 필터링', '0.01㎛ 초미세 필터 및 감압 밸브 조립 배치 검증']
+            checklist: ['초순수/UHP EP 자재 등급 검증', '오비탈 용접 노무 과다 필터링', '0.01㎛ 필터·감압밸브 배치']
           };
         case 'CAPEX 개·증설 검토':
           return {
@@ -808,7 +807,7 @@ export default function Home() {
             accentBorder: 'border-[#0f1e35]/15',
             badgeBg: 'bg-[#0f1e35]/10 border-[#0f1e35]/20 text-navy',
             bubbleWidth: 'w-[37.6%]',
-            checklist: ['WBS 공종별 기획 단계 예산 상한선 표준화 매핑', '유사 1군 시공 사례 실거래 데이터 정량 분석 대조', '설계 오차에 따른 예산 초과(CAPEX) 리스크 조기 감지']
+            checklist: ['WBS 공종별 예산 상한 매핑', '유사 1군 실거래 정량 대조', 'CAPEX 초과 리스크 조기 감지']
           };
         case 'spool':
           return {
@@ -903,83 +902,81 @@ export default function Home() {
     const metrics = getDynamicMetrics(key);
 
     return (
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto py-2">
+      <div key={key} className="flex flex-col gap-6 max-w-4xl mx-auto py-2 animate-in fade-in duration-300">
+
+        {/* 뒤로가기 — 견적 검토 홈(랜딩)으로 복귀 */}
+        <button
+          onClick={() => { setSelectedMenu(''); setSelectedBudget(''); setActiveTab('home'); }}
+          style={{ touchAction: 'manipulation' }}
+          className="self-start inline-flex items-center gap-1.5 text-[12px] font-bold text-gray hover:text-navy bg-bg border border-border hover:bg-bg-subtle px-3 py-1.5 rounded-custom transition-all duration-150 active:scale-95 cursor-pointer shadow-sm -mb-1"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          견적 검토 홈으로
+        </button>
 
         {/* ============================================================
             상단 (TOP) — 주제 + 데이터분석 + AI툴 신뢰 작업 FLOW
             ============================================================ */}
-        <div className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-5 relative overflow-hidden">
+        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-4 relative overflow-hidden">
 
           {/* 섹션 식별 라벨 */}
           <div className="flex items-center justify-between gap-2 select-none">
             <div className="flex items-center gap-2">
               <span className="w-1 h-4 bg-accent rounded-full" />
-              <span className="text-[10px] font-black text-navy uppercase tracking-widest">신뢰 작업 FLOW</span>
+              <span className="text-xs font-bold text-navy uppercase tracking-wider">견적 작업 FLOW</span>
             </div>
-            <span className="text-[9px] font-mono font-bold text-gray-light tracking-wider">TOPIC · DATA · AI · RESULT</span>
+            <span className="text-[9px] font-mono font-bold text-gray-light tracking-wider">REQUEST · DATA · AI · SUBMIT</span>
           </div>
 
-          {/* 4단계 신뢰 작업 플로우 (애니메이션) */}
-          <div className="grid grid-cols-2 md:grid-cols-7 gap-2 items-center bg-bg-subtle/70 border border-border/70 rounded-custom p-3.5 select-none">
-            {[
-              { icon: <FolderDot className="w-4 h-4" />, label: '주제 인식', sub: '공종 진단' },
-              { icon: <Cpu className="w-4 h-4" />, label: '데이터 분석', sub: '실거래 표본' },
-              { icon: <Sparkles className="w-4 h-4" />, label: 'AI 툴 검증', sub: '단가 교정' },
-              { icon: <ShieldCheck className="w-4 h-4" />, label: '신뢰 결과', sub: '범위 고정' },
-            ].map((node, i, arr) => (
-              <React.Fragment key={node.label}>
-                <div className="flex flex-col items-center gap-1.5 text-center px-1 py-1 col-span-1 md:col-auto">
-                  <div className={`w-9 h-9 rounded-custom flex items-center justify-center shadow-sm border ${
-                    i === 3 ? 'bg-success/10 border-success/25 text-success' : 'bg-bg border-border text-steel'
-                  } animate-[pulse_3s_infinite]`} style={{ animationDelay: `${i * 0.4}s` }}>
-                    {node.icon}
+          {/* 7단계 견적 작업 시계열 타임라인 (애니메이션) */}
+          <div className="bg-bg-subtle/70 border border-border/70 rounded-custom px-3 py-2.5 select-none overflow-x-auto no-scrollbar">
+            <div className="flex items-start justify-between gap-1 min-w-[560px] md:min-w-0">
+              {['견적 요청', '데이터 수집', '데이터 가공', '데이터 정제', 'AI툴 검증', '적합성 검토', '고객 제출'].map((label, i, arr) => (
+                <React.Fragment key={label}>
+                  <div className="flex flex-col items-center gap-1.5 shrink-0">
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shadow-sm border-2 animate-[pulse_3s_infinite] ${
+                        i === arr.length - 1 ? 'bg-success text-bg border-success' : 'bg-bg text-steel border-steel/40'
+                      }`}
+                      style={{ animationDelay: `${i * 0.3}s` }}
+                    >
+                      {i + 1}
+                    </div>
+                    <span className="text-[9.5px] font-bold text-navy leading-none whitespace-nowrap">{label}</span>
                   </div>
-                  <span className="text-[11px] font-black text-navy leading-none">{node.label}</span>
-                  <span className="text-[8.5px] text-gray-light font-bold leading-none">{node.sub}</span>
-                </div>
-                {i < arr.length - 1 && (
-                  <div className="hidden md:flex items-center justify-center">
-                    <ArrowRight className="w-4 h-4 text-accent/60 animate-pulse" style={{ animationDelay: `${i * 0.4}s` }} />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
+                  {i < arr.length - 1 && (
+                    <ArrowRight className="w-3.5 h-3.5 text-accent/50 shrink-0 mt-[5px] animate-pulse" style={{ animationDelay: `${i * 0.3}s` }} />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             
             {/* Box 1: Engineering Target & Information Box */}
-            <div className={`relative overflow-hidden bg-bg text-navy p-6.5 rounded-custom border ${metrics.accentBorder} flex flex-col justify-between gap-5 transition-all shadow-sm`}>
+            <div className={`relative overflow-hidden bg-bg text-navy p-5 rounded-custom border ${metrics.accentBorder} flex flex-col justify-between gap-4 transition-all shadow-sm`}>
               {/* 하이 테크 백그라운드 그리드 레이아웃 (라이트 버전) */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
               <div className={`absolute inset-0 ${metrics.accentBg} opacity-20 pointer-events-none`} />
               
-              <div className="flex flex-col gap-4.5 z-10 relative">
-                {/* 상단 메타 라벨 바 */}
-                <div className="flex flex-wrap items-center justify-between gap-2 select-none">
-                  <span className={`text-[9.5px] tracking-widest uppercase font-black px-2.5 py-1 rounded-custom shadow-inner ${metrics.badgeBg}`}>
-                    {visuals.badgeText}
-                  </span>
-                  
-                  {/* 정직·신뢰 데이터 배지 */}
-                  <div className="flex items-center gap-1.5 bg-bg border border-border/85 px-2 py-0.5 rounded-custom shadow-sm text-[8.5px] font-mono font-bold text-steel">
-                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                    표본 대조 n={metrics.sampleCount}건
-                  </div>
-                </div>
-
-                {/* 타이틀 및 핵심 엔지니어링 문제 정의 */}
+              <div className="flex flex-col gap-4 z-10 relative">
+                {/* 타이틀 및 핵심 엔지니어링 문제 정의 (상단) */}
                 <div className="flex flex-col gap-2">
-                  <h2 className="text-xl md:text-[21px] font-black tracking-tight leading-none text-navy select-none">
+                  <h2 className="text-lg md:text-[19px] font-black tracking-tight leading-tight text-navy select-none">
                     {manual.title}
                   </h2>
-                  <p className="text-[12px] text-gray leading-relaxed font-semibold font-sans mt-1">
+                  <p className="text-[11.5px] text-gray leading-snug font-semibold font-sans mt-0.5">
                     {manual.problemDefinition}
                   </p>
                 </div>
 
-                {/* 데이터 AI 정직 검증 수치 대시보드 */}
-                <div className="grid grid-cols-3 gap-3 bg-bg-subtle/80 border border-border/70 p-3 rounded-custom shadow-inner my-1 select-none">
+                {/* 공종 배지 + 데이터 AI 정직 검증 수치 대시보드 */}
+                <div className="flex flex-col gap-2">
+                  <span className={`self-start text-[9.5px] tracking-widest uppercase font-black px-2.5 py-1 rounded-custom shadow-inner ${metrics.badgeBg}`}>
+                    {visuals.badgeText}
+                  </span>
+                  <div className="grid grid-cols-3 gap-2.5 bg-bg-subtle/80 border border-border/70 p-2.5 rounded-custom shadow-inner select-none">
                   <div className="text-center flex flex-col justify-center">
                     <span className="text-[8.5px] text-gray-light font-bold block uppercase tracking-wider mb-0.5">AI 분석 신뢰도</span>
                     <span className="text-sm font-black text-navy tracking-tight tabular-nums">{metrics.confidence}%</span>
@@ -994,28 +991,12 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-
-              {/* 하단 액션 버튼 */}
-              <div className="flex items-center gap-2.5 z-10 mt-2 select-none">
-                <button
-                  onClick={() => setActiveTab('request')}
-                  style={{ touchAction: 'manipulation' }}
-                  className="flex-1 bg-bg-subtle hover:bg-border/30 text-navy border border-border px-3.5 py-2.5 rounded-custom text-[10px] font-black uppercase tracking-wider active:scale-95 transition-all cursor-pointer shadow-sm text-center"
-                >
-                  {manual.onlineReviewAvailable ? '온라인 즉시 검토 가능' : '현장방문 실측 전담'}
-                </button>
-                <button
-                  onClick={() => setActiveTab('request')}
-                  style={{ touchAction: 'manipulation' }}
-                  className="flex-1 bg-accent text-bg px-3.5 py-2.5 rounded-custom text-[10px] font-black uppercase tracking-wider hover:bg-accent/85 active:scale-95 transition-all cursor-pointer shadow-md shadow-accent/20 text-center"
-                >
-                  {manual.visitRequired ? '실측 출장 신청' : '예상견적 신청 (무료)'}
-                </button>
               </div>
+
             </div>
 
             {/* Box 2: Agent AI Technical Simulation & Honest pricing */}
-            <div className="relative overflow-hidden bg-bg text-navy p-6.5 rounded-custom border border-border flex flex-col justify-between gap-5 transition-all shadow-sm">
+            <div className="relative overflow-hidden bg-bg text-navy p-5 rounded-custom border border-border flex flex-col justify-between gap-4 transition-all shadow-sm">
               {/* 하이 테크 백그라운드 그리드 레이아웃 */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
               
@@ -1025,26 +1006,32 @@ export default function Home() {
               </div>
 
               {/* Agent AI 정직 견적 신뢰 코어 패널 */}
-              <div className="flex flex-col gap-3.5 z-10 select-none">
-                <div className="flex items-start gap-2.5">
-                  <div className="bg-cyan-500/10 p-2.5 rounded-custom border border-cyan-500/25 flex items-center justify-center shrink-0 shadow-inner animate-[pulse_3s_infinite]">
-                    <Cpu className="w-3.5 h-3.5 text-cyan-600 animate-pulse" />
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <span className="text-[12px] font-black text-navy flex items-center gap-1.5 leading-none">
-                      ZEROS Agent AI 정직 단가 교정 모니터
-                      <span className="bg-[#10b981]/10 border border-[#10b981]/20 text-success text-[8.5px] px-1.5 py-0.5 rounded-full font-black">
-                        버블 제로 필터링
-                      </span>
-                    </span>
-                    <span className="text-[10px] text-gray/80 font-bold mt-1.5 leading-relaxed">
-                      {visuals.specText}
-                    </span>
-                  </div>
+              <div className="flex flex-col gap-3 z-10 select-none">
+                {/* 타이틀 (아이콘 제거, 폰트 좌측 제목과 동일) + 스펙 */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-lg md:text-[19px] font-black text-navy tracking-tight leading-tight">
+                    ZEROS Agent AI 정직 단가 교정 모니터
+                  </span>
+                  <span className="text-[10px] text-gray/80 font-bold mt-0.5 leading-relaxed">
+                    {visuals.specText}
+                  </span>
                 </div>
 
-                {/* 정직·신뢰 실시간 교정 비교 바 */}
-                <div className="flex flex-col gap-2 bg-bg-subtle/80 border border-border/60 p-3 rounded-custom shadow-inner my-0.5">
+                {/* 정밀 공종별 체크사항 목록 */}
+                <ul className="flex flex-col gap-1 mt-0">
+                  {metrics.checklist.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-[10px] text-gray font-semibold leading-tight">
+                      <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* 정직·신뢰 실시간 교정 비교 바 (하단) + 버블 제로 필터링 배지 우상단 */}
+                <div className="relative flex flex-col gap-2 bg-bg-subtle/80 border border-border/60 p-2.5 rounded-custom shadow-inner mt-1">
+                  <span className="absolute -top-2 right-2 bg-[#10b981]/10 border border-[#10b981]/20 text-success text-[8.5px] px-1.5 py-0.5 rounded-full font-black shadow-sm">
+                    버블 제로 필터링
+                  </span>
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between text-[9px] font-bold text-gray">
                       <span>시공사 평균 거품 청구 (Average Inflated Bid)</span>
@@ -1067,33 +1054,8 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-
-                {/* 정밀 공종별 체크사항 목록 */}
-                <ul className="flex flex-col gap-1.5 mt-0.5">
-                  {metrics.checklist.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-[10.5px] text-gray font-semibold leading-normal">
-                      <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
 
-              {/* 하단 보증 실 */}
-              <div className="flex items-center justify-between gap-2 bg-[#10b981]/5 border border-[#10b981]/15 px-3.5 py-2.5 rounded-custom shadow-inner z-10 hover:bg-[#10b981]/10 transition-all select-none">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-success animate-pulse" />
-                  <div className="flex flex-col text-left">
-                    <span className="text-[10px] font-black text-success tracking-wider uppercase leading-none">
-                      정직한 견적 보증
-                    </span>
-                    <span className="text-[8.5px] text-success/80 font-bold mt-0.5">1군 품셈 노무비 및 마진 과다청구 차단 완료</span>
-                  </div>
-                </div>
-                <span className="text-[8.5px] font-black text-success bg-[#10b981]/10 border border-[#10b981]/20 px-2 py-0.5 rounded-full">
-                  AI AUDIT PASS
-                </span>
-              </div>
             </div>
 
           </div>
