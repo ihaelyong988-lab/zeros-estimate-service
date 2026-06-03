@@ -171,7 +171,7 @@ export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estima
 
           <div className="flex items-center justify-between text-[10px] text-gray-light font-bold mt-2 tabular-nums">
             <span>주식회사 제러스 사전엔지니어링 검토사업실</span>
-            <span>https://zeros-estimate.vercel.app</span>
+            <span>https://zeros-estimate-service.vercel.app</span>
           </div>
         </div>
 
