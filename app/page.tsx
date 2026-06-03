@@ -1051,24 +1051,17 @@ export default function Home() {
         <div className="absolute left-0 bottom-0 h-1 w-full bg-gradient-to-r from-steel via-accent to-transparent opacity-70 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col gap-3.5">
-          {/* 무료 출장 신뢰 배지 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 items-stretch">
+          {/* 주요 CTA(하나) + 보조 버튼 — 시선 집중 */}
+          <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
             <button
               onClick={() => setActiveTab('request')}
               style={{
                 touchAction: 'manipulation',
                 fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
               }}
-              className="inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-bg text-[17px] md:text-[18px] font-bold px-3 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all active:scale-95 cursor-pointer"
+              className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-bg text-[17px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
             >
-              <Truck className="w-7 h-7 shrink-0" /> 무료 출장 견적
-            </button>
-            <button
-              onClick={() => setActiveTab('request')}
-              style={{ touchAction: 'manipulation' }}
-              className="inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F8FAFC] border border-[#B8C7DA] hover:bg-bg-subtle text-[#123A63] text-[17px] md:text-[18px] font-black px-3 py-2.5 rounded-custom tracking-tight shadow-sm whitespace-nowrap transition-all active:scale-95 cursor-pointer"
-            >
-              <MapPin className="w-7 h-7 shrink-0" /> 전국 현장 방문
+              <Truck className="w-6 h-6 shrink-0" /> 무료 출장 견적 신청
             </button>
             <button
               onClick={() => setActiveTab('about')}
@@ -1076,10 +1069,23 @@ export default function Home() {
                 touchAction: 'manipulation',
                 fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
               }}
-              className="inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-bg border border-[#9FB3CC] hover:bg-bg-subtle text-[#0B2F5B] text-[17px] md:text-[18px] font-black px-3 py-2.5 rounded-custom tracking-tight shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+              className="sm:w-auto inline-flex min-h-[54px] items-center justify-center gap-2 bg-bg border border-[#9FB3CC] hover:bg-bg-subtle text-[#0B2F5B] text-[15px] md:text-[16px] font-black px-4 py-2.5 rounded-custom tracking-tight shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
             >
-              <FileCheck className="w-7 h-7 shrink-0" /> 컨설팅 절차 보기
+              <FileCheck className="w-5 h-5 shrink-0" /> 컨설팅 절차 보기
             </button>
+          </div>
+
+          {/* 전국 무료 방문 신뢰 칩 (정보 — 클릭 액션 아님) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] border border-[#B8C7DA] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
+              <MapPin className="w-3.5 h-3.5 text-steel" /> 전국 현장 무료 방문
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] border border-[#B8C7DA] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
+              <Truck className="w-3.5 h-3.5 text-accent" /> 출장비 0원
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] border border-[#B8C7DA] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
+              <ShieldCheck className="w-3.5 h-3.5 text-success" /> 사전 진단 리포트 제공
+            </span>
           </div>
 
           {/* 핵심 카피 */}
