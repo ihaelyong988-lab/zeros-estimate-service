@@ -35,37 +35,20 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // 서비스 워커는 더 이상 사용하지 않는다.
+              // 과거에 설치된 워커와 캐시를 모든 환경에서 정리해 stale 화면을 방지한다.
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                      for (let registration of registrations) {
-                        registration.unregister().then(function(boolean) {
-                          if (boolean) {
-                            console.log('ZEROS local dev SW unregistered successfully.');
-                            window.location.reload();
-                          }
-                        });
-                      }
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    registrations.forEach(function(registration) {
+                      registration.unregister();
                     });
-                  } else {
-                    var refreshed = false;
-                    navigator.serviceWorker.addEventListener('controllerchange', function() {
-                      if (refreshed) return;
-                      refreshed = true;
-                      window.location.reload();
-                    });
-
-                    navigator.serviceWorker.register('/sw.js?v=20260603-live-refresh').then(function(reg) {
-                      console.log('ZEROS Service Worker registered with scope:', reg.scope);
-                      reg.update();
-                      if (reg.waiting) {
-                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-                      }
-                    }).catch(function(err) {
-                      console.error('Service Worker registration failed:', err);
-                    });
-                  }
+                  });
+                });
+              }
+              if ('caches' in window && caches.keys) {
+                caches.keys().then(function(keys) {
+                  keys.forEach(function(key) { caches.delete(key); });
                 });
               }
             `
