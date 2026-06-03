@@ -26,7 +26,7 @@ export interface ManualContent {
 export const manualData: Record<string, ManualContent> = {
   '배관공사': {
     title: '일반 / 용수 / 가스 배관공사',
-    problemDefinition: '공장 용수, 가스, 스팀 라인의 노후화 및 부적절한 관경 설계로 인한 압력 강하와 누수 문제를 선제적으로 진단하고 최적의 유량 흐름을 확보합니다.',
+    problemDefinition: '공장 용수·가스·스팀 라인의 관경·압력 강하·누수를 진단해 최적 유량 흐름을 확보합니다.',
     preparationDocs: [
       '기존 배관 계통도 (P&ID) 또는 단선도',
       '기계실 및 주요 분기점 현장 실측 사진',
@@ -54,7 +54,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   '장비설치': {
     title: '산업 장비 및 설비 설치공사',
-    problemDefinition: '대형 펌프, 탱크, 콤프레셔 등 신규 장비의 반입 경로 확보, 기초 패드 응력 분산, 그리고 배관 인입부의 열팽창 신축 흡수 설계를 검토합니다.',
+    problemDefinition: '대형 펌프·탱크·콤프레셔의 반입 동선·기초 하중 분산·배관 인입부 열팽창 흡수를 검토합니다.',
     preparationDocs: [
       '도입 장비 승인도면 및 제원표 (무게, 규격, 진동 정보)',
       '반입구 및 기계실 진입 동선 평면도',
@@ -82,7 +82,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   'Utility 배관': {
     title: '유틸리티 (스팀 / 에어 / 냉각수) 배관공사',
-    problemDefinition: '생산 라인에 에너지를 공급하는 유틸리티 배관의 열손실 차단, 압축공기 응축수 고임 배출 구조(Trap), 급격한 부하 변동에 대응하는 루프 배관 구성을 진단합니다.',
+    problemDefinition: '스팀·에어·냉각수 라인의 열손실·응축수 트랩·루프 구성을 진단해 에너지 손실과 워터해머를 차단합니다.',
     preparationDocs: [
       '보일러, 칠러, 공기압축기 용량 제원표',
       '공장 유틸리티 인입 메인 밸브 규격 및 압력',
@@ -110,7 +110,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   '공장증설': {
     title: '생산라인 증설 및 분기 배관공사',
-    problemDefinition: '공장 가동 중단(Shut-down) 시간을 최소화하면서 기존 메인 배관에서 안정적으로 유체를 분기(Tie-in)하고, 증설 후 기존 설비의 유량 부족 현상이 발생하지 않도록 시뮬레이션합니다.',
+    problemDefinition: '가동 중단을 최소화하는 무중단 분기(Tie-in)와 증설 후 기존 설비의 유량 부족 여부를 시뮬레이션합니다.',
     preparationDocs: [
       '전체 공장 평면 배치도 (기존 vs 증설 예정)',
       '기존 메인 배관 재질 및 관경 정보',
@@ -138,7 +138,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   '노후배관교체': {
     title: '노후 배관 철거 및 신설공사',
-    problemDefinition: '장기 사용으로 인한 내부 스케일 축적, 고온 부식, 누수가 진행된 배관을 가동 가혹도에 적합한 최신 내부식성 재질로 교체 설계하고 친환경 철거 절차를 검토합니다.',
+    problemDefinition: '스케일·부식·누수가 진행된 노후 배관을 최적 내부식재로 교체 설계하고 안전 철거 절차를 검토합니다.',
     preparationDocs: [
       '배관 설치 연도 및 누수 이력 대장',
       '유체 화학 성분 분석표 (부식 인자 확인용)',
@@ -166,7 +166,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   '기계실개선': {
     title: '기계실 및 펌프실 배관 개선공사',
-    problemDefinition: '밀집된 복잡 구조 기계실 내의 펌프 흡입측 공동현상(Cavitation) 방지 편심 이경관 설계, 공동 배관 매니폴드 균등 분배 구조, 유지보수 밸브 접근 동선 한계를 전면 개선합니다.',
+    problemDefinition: '밀집 기계실의 펌프 공동현상(Cavitation)·매니폴드 균등 분배·유지보수 동선 한계를 개선합니다.',
     preparationDocs: [
       '기계실 장비 배치 및 기존 배관 상세 평면도',
       '펌프 성능 곡선도 (Q-H Curve)',
@@ -194,7 +194,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   '생산설비 배관 연결': {
     title: '생산설비 훅업 (Hook-up) 연결공사',
-    problemDefinition: '정밀 제조 장비 또는 믹서, 충진기 노즐 전단의 초순수(DIW), 에어, 스팀 연결 시 이물질 유입을 차단하는 크린 배관 공법 및 레귤레이터 안정 압력 제어 시스템을 설계합니다.',
+    problemDefinition: '정밀 장비 전단의 초순수·에어·스팀 크린 훅업과 레귤레이터 안정 압력 제어를 설계합니다.',
     preparationDocs: [
       '장비 공급사 제공 연결부 인터페이스 치수 사양서',
       '유체 순도 요구 사양 (Cleanliness Class)',
@@ -222,7 +222,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   'CAPEX 개·증설 검토': {
     title: 'CAPEX 개·증설 사업비 사전검토',
-    problemDefinition: '기획 단계에서 상세 설계 도면이 없어 예산 수립이 곤란한 예비 CAPEX 계획에 대하여 유사 표본 및 단가 분석을 활용해 견적 상한선(Budget Cap)을 수립하고 설계 리스크를 조기 식별합니다.',
+    problemDefinition: '도면 없는 기획 단계 CAPEX의 예산 상한선(Budget Cap)을 표본·단가로 수립하고 설계 리스크를 조기 식별합니다.',
     preparationDocs: [
       '사업 타당성 보고서 초안 또는 컨셉 플로우 시트',
       '예산 범위 제한 및 투자 회수기 한계 목표치',
@@ -254,7 +254,7 @@ export const manualData: Record<string, ManualContent> = {
   // ==========================================================
   'spool': {
     title: '배관 SPOOL Module 사전제작 (Pipe Spool Prefabrication)',
-    problemDefinition: '현장 용접에 의존하면 공기 지연·품질 편차·안전 리스크가 누적됩니다. ISO 도면 기반으로 배관 스풀을 공장에서 사전 제작·검사하여 현장에서는 조립만 수행하도록 모듈화합니다.',
+    problemDefinition: 'ISO 도면 기반으로 배관 스풀을 팹샵에서 사전 제작·검사하여 현장은 조립만 수행하도록 모듈화합니다.',
     preparationDocs: [
       '배관 ISO 도면 또는 P&ID (스풀 분할 기준 포함)',
       '자재 사양 (재질·스케줄·등급, SUS/Carbon 등)',
@@ -283,7 +283,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   'skid': {
     title: 'SKID Package 모듈 제작 (Skid-Mounted Module)',
-    problemDefinition: '펌프·밸브·계장·제어를 현장에서 개별 설치하면 공기와 품질이 분산됩니다. 단일 프레임 위에 시스템을 패키지화하여 공장에서 조립·시운전 후 반입, 현장 설치를 표준화합니다.',
+    problemDefinition: '펌프·밸브·계장·제어를 단일 프레임에 패키지화해 공장 시운전(FAT) 후 반입, 현장 설치를 표준화합니다.',
     preparationDocs: [
       'P&ID 및 기계·계장 사양서 (펌프/밸브/계기 리스트)',
       '프레임 설치 공간·반입구 치수 및 하중 조건',
@@ -312,7 +312,7 @@ export const manualData: Record<string, ManualContent> = {
   },
   'structure': {
     title: 'Structure 철구조물 제작 (Steel Structure Fabrication)',
-    problemDefinition: '배관·장비를 지지하는 가대(Pipe Rack), 플랫폼, 서포트 구조물을 현장 가공하면 정밀도와 안전성이 저하됩니다. 도면 기반으로 절단·천공·용접을 공장 가공하여 현장 볼팅 조립을 표준화합니다.',
+    problemDefinition: '가대(Pipe Rack)·플랫폼·서포트 철구조물을 도면 기반 공장 가공하여 현장 볼팅 조립을 표준화합니다.',
     preparationDocs: [
       '구조 도면 또는 가대/플랫폼 배치도 (하중 조건 포함)',
       '강재 사양 (재질·규격, H-Beam/Channel/Plate)',
