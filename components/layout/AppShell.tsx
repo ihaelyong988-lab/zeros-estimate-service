@@ -69,7 +69,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   // 모바일 레이아웃(PWA, Simulator, ScreenWidth) 감지 상태
   const [isMobileLayout, setIsMobileLayout] = useState(false);
-  
+
+  // 뷰포트 폭이 확정되기 전(SSR/첫 페인트)에는 레이아웃을 그리지 않는다.
+  // 기본값(데스크톱)을 먼저 그렸다가 모바일로 다시 그리는 깜빡임(깨진 화면)을 차단.
+  const [layoutReady, setLayoutReady] = useState(false);
+
   // 모바일 하단 전용 액티브 탭 상태 ('home' | 'request' | 'decision' | 'admin')
   const [mobileActiveTab, setMobileActiveTab] = useState<'home' | 'request' | 'decision' | 'admin'>('home');
 
@@ -78,9 +82,24 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       setIsMobileLayout(window.innerWidth < 1024 || window.location.search.includes('mobile=true'));
     };
     handleResize();
+    setLayoutReady(true);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // 레이아웃 확정 전: 브랜드 스플래시 (깨진 헤더 대신 깔끔한 첫 화면)
+  if (!layoutReady) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-navy text-bg select-none">
+        <div className="flex items-center gap-3 animate-pulse">
+          <div className="w-10 h-10 bg-accent rounded-custom flex items-center justify-center shadow-md shadow-accent/20">
+            <Building2 className="w-5 h-5 text-bg" />
+          </div>
+          <span className="font-black text-lg tracking-widest uppercase">ZEROS</span>
+        </div>
+      </div>
+    );
+  }
 
   // 모바일 하단 탭 변경 시, 상위 context 상태와 정교하게 매핑하여 화면 전환 동기화
   const handleMobileTabChange = (tab: 'home' | 'request' | 'decision' | 'admin') => {
