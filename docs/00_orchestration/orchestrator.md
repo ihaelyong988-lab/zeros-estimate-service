@@ -8,8 +8,8 @@
 ## 2. 담당 PHASE 및 섹션
 - **전 구간 조율:** PHASE 0 (부트스트랩) 및 PHASE J (최종 보고)를 주도하고, A부터 I까지 각 단계의 시작과 끝을 관리한다.
 - **핵심 관리 파일:**
-  - `/workspace/state.md` (공유 상태 메타)
-  - `/workspace/gate-checks.md` (자체검증 누적 로그)
+  - `docs/00_orchestration/state.md` (공유 상태 메타)
+  - `docs/03_qa_deploy/gate-checks.md` (자체검증 누적 로그)
 
 ## 3. 입력 및 출력
 - **입력:** 사용자의 요구사항(마스터 프롬프트), 이전 역할들의 구현 피드백 및 빌드 결과.
@@ -18,4 +18,4 @@
 ## 4. 완료 및 게이트 승인 기준 (Acceptance Criteria)
 - **절대 원칙:** 이전 PHASE의 게이트 통과를 검증하기 전에는 절대 다음 단계로 역할을 전환하거나 작업을 넘기지 않는다.
 - **리스크 방지:** 4대 실패원인이 감지될 시 즉시 해당 역할(프론트/백엔드)로 반려하여 재수정하도록 통제한다.
-- **결정 사항:** 의사결정의 지연을 막기 위해 합리적 기본값(Rational Defaults)을 제시하고 `/workspace/decisions.md`에 실시간으로 로그를 남겨 아카이빙한다.
+- **결정 사항:** 의사결정의 지연을 막기 위해 합리적 기본값(Rational Defaults)을 제시하고 `docs/00_orchestration/decisions.md`에 실시간으로 로그를 남겨 아카이빙한다.
