@@ -85,7 +85,7 @@ export const LeftSidebar: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
               <FolderDot className="w-4 h-4 text-steel" />
-              <h3 className="text-xs font-bold text-navy uppercase tracking-wider">견적공사 카테고리</h3>
+              <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적공사 카테고리</h3>
             </div>
             <div className="flex flex-col gap-1">
               {workCategories.map((cat) => {
@@ -102,10 +102,10 @@ export const LeftSidebar: React.FC = () => {
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-[13px] font-bold">{cat.label}</span>
+                      <span className="text-[13.5px] font-bold">{cat.label}</span>
                       {isActive && <ChevronRight className="w-3.5 h-3.5 text-steel" />}
                     </div>
-                    <span className="text-[10.5px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
+                    <span className="text-[12px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
                   </button>
                 );
               })}
@@ -116,8 +116,8 @@ export const LeftSidebar: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
               <Boxes className="w-4 h-4 text-accent" />
-              <h3 className="text-xs font-bold text-navy uppercase tracking-wider">외주제작 견적 컨설팅</h3>
-              <span className="ml-auto text-[8.5px] font-black text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full tracking-wider">FAB</span>
+              <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">외주제작 견적 컨설팅</h3>
+              <span className="ml-auto text-[12px] font-black text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full tracking-wider">FAB</span>
             </div>
             <div className="flex flex-col gap-1">
               {fabricationCategories.map((cat) => {
@@ -134,10 +134,10 @@ export const LeftSidebar: React.FC = () => {
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-[13px] font-bold">{cat.label}</span>
+                      <span className="text-[13.5px] font-bold">{cat.label}</span>
                       {isActive && <ChevronRight className="w-3.5 h-3.5 text-accent" />}
                     </div>
-                    <span className="text-[10.5px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
+                    <span className="text-[12px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
                   </button>
                 );
               })}
@@ -148,7 +148,7 @@ export const LeftSidebar: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
               <TrendingUp className="w-4 h-4 text-steel" />
-              <h3 className="text-xs font-bold text-navy uppercase tracking-wider">견적규모별 분류</h3>
+              <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적규모별 분류</h3>
             </div>
             <div className="flex flex-col gap-1">
               {budgetCategories.map((cat) => {
@@ -165,8 +165,8 @@ export const LeftSidebar: React.FC = () => {
                     }`}
                   >
                     <div className="flex flex-col">
-                      <span className="text-[13px] font-bold">{cat.label}</span>
-                      <span className="text-[10px] text-gray-light font-semibold mt-0.5">{cat.range}</span>
+                      <span className="text-[13.5px] font-bold">{cat.label}</span>
+                      <span className="text-[12px] text-gray-light font-semibold mt-0.5">{cat.range}</span>
                     </div>
                     {isActive && <ChevronRight className="w-3.5 h-3.5 text-steel" />}
                   </button>
@@ -179,7 +179,7 @@ export const LeftSidebar: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
               <Layers className="w-4 h-4 text-steel" />
-              <h3 className="text-xs font-bold text-navy uppercase tracking-wider">빠른 메뉴</h3>
+              <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">빠른 메뉴</h3>
             </div>
             <div className="flex flex-col gap-1">
               <button
@@ -188,7 +188,7 @@ export const LeftSidebar: React.FC = () => {
                   setMobileMenuOpen(false);
                 }}
                 style={{ touchAction: 'manipulation' }}
-                className={`w-full text-center px-4 py-3 rounded-custom transition-all duration-150 text-[14.5px] font-black tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-98 ${
+                className={`w-full text-center px-4 py-3 rounded-custom transition-all duration-150 text-[15px] font-black tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-98 ${
                   activeTab === 'request'
                     ? 'bg-accent text-bg shadow-custom-md'
                     : 'bg-navy text-bg hover:bg-steel'
@@ -202,7 +202,7 @@ export const LeftSidebar: React.FC = () => {
                   setMobileMenuOpen(false);
                 }}
                 style={{ touchAction: 'manipulation' }}
-                className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 text-[13px] font-bold ${
+                className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 text-[13.5px] font-bold ${
                   activeTab === 'about'
                     ? 'bg-navy text-bg shadow-sm'
                     : 'hover:bg-bg/40 text-gray hover:text-navy'
@@ -219,7 +219,7 @@ export const LeftSidebar: React.FC = () => {
           <div className="flex flex-col gap-1.5">
             <div className="px-2 mb-2 flex items-center gap-1.5 text-navy">
               <Gauge className="w-4 h-4 text-navy" />
-              <h3 className="text-xs font-black uppercase tracking-wider">사전진단 관리</h3>
+              <h3 className="text-[12px] font-black uppercase tracking-wider">사전진단 관리</h3>
             </div>
 
             <button
@@ -228,7 +228,7 @@ export const LeftSidebar: React.FC = () => {
                 setMobileMenuOpen(false);
               }}
               style={{ touchAction: 'manipulation' }}
-              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13px] font-bold ${
+              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13.5px] font-bold ${
                 adminView === 'dashboard'
                   ? 'bg-navy text-bg shadow-md'
                   : 'hover:bg-bg/40 text-gray hover:text-navy'
@@ -244,7 +244,7 @@ export const LeftSidebar: React.FC = () => {
                 setMobileMenuOpen(false);
               }}
               style={{ touchAction: 'manipulation' }}
-              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13px] font-bold ${
+              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13.5px] font-bold ${
                 adminView === 'estimates'
                   ? 'bg-navy text-bg shadow-md'
                   : 'hover:bg-bg/40 text-gray hover:text-navy'
@@ -260,7 +260,7 @@ export const LeftSidebar: React.FC = () => {
                 setMobileMenuOpen(false);
               }}
               style={{ touchAction: 'manipulation' }}
-              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13px] font-bold ${
+              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13.5px] font-bold ${
                 adminView === 'visits'
                   ? 'bg-navy text-bg shadow-md'
                   : 'hover:bg-bg/40 text-gray hover:text-navy'
@@ -276,7 +276,7 @@ export const LeftSidebar: React.FC = () => {
                 setMobileMenuOpen(false);
               }}
               style={{ touchAction: 'manipulation' }}
-              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13px] font-bold ${
+              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13.5px] font-bold ${
                 adminView === 'customers'
                   ? 'bg-navy text-bg shadow-md'
                   : 'hover:bg-bg/40 text-gray hover:text-navy'
@@ -292,7 +292,7 @@ export const LeftSidebar: React.FC = () => {
                 setMobileMenuOpen(false);
               }}
               style={{ touchAction: 'manipulation' }}
-              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13px] font-bold ${
+              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13.5px] font-bold ${
                 adminView === 'performance'
                   ? 'bg-navy text-bg shadow-md'
                   : 'hover:bg-bg/40 text-gray hover:text-navy'
@@ -308,7 +308,7 @@ export const LeftSidebar: React.FC = () => {
                 setMobileMenuOpen(false);
               }}
               style={{ touchAction: 'manipulation' }}
-              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13px] font-bold ${
+              className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 flex items-center gap-2.5 text-[13.5px] font-bold ${
                 adminView === 'notifications'
                   ? 'bg-navy text-bg shadow-md'
                   : 'hover:bg-bg/40 text-gray hover:text-navy'

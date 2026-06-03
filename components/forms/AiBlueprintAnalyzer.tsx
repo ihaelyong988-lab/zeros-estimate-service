@@ -100,15 +100,15 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
       <div className="flex items-center justify-between border-b border-border pb-2.5">
         <div className="flex items-center gap-2">
           <Cpu className="w-4 h-4 text-steel animate-pulse" />
-          <span className="text-xs font-black text-navy">ZEROS AI 도면 제원 분석 보조 (OCR)</span>
+          <span className="text-[12px] font-black text-navy">ZEROS AI 도면 제원 분석 보조 (OCR)</span>
         </div>
-        <span className="bg-steel/10 text-steel border border-steel/20 px-2 py-0.5 rounded-custom text-[9px] font-black uppercase">
+        <span className="bg-steel/10 text-steel border border-steel/20 px-2 py-0.5 rounded-custom text-[12px] font-black uppercase">
           AI Vision v2.1
         </span>
       </div>
 
       {/* 안내 설명 */}
-      <p className="text-[11px] text-gray leading-normal">
+      <p className="text-[12px] text-gray leading-normal">
         업로드하신 평면 배치도 또는 P&ID 도면 PDF 파일을 인공지능 비전 모델로 분석하여 배관 사이즈, 게이트 밸브 수량 및 리스크 부위를 자동으로 감지 및 검출합니다.
       </p>
 
@@ -118,7 +118,7 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
           type="button"
           onClick={handleAiAnalysis}
           style={{ touchAction: 'manipulation' }}
-          className="w-full py-2.5 bg-steel hover:bg-navy text-bg text-xs font-black rounded-custom transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer"
+          className="w-full py-2.5 bg-steel hover:bg-navy text-bg text-[12px] font-black rounded-custom transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <Cpu className="w-3.5 h-3.5" />
           업로드된 도면 AI 분석 개시
@@ -146,13 +146,13 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
               className="absolute left-0 right-0 h-[2px] bg-cyan-400 shadow-[0_0_10px_#22d3ee,_0_0_20px_#0891b2] z-10" 
             />
             
-            <span className="absolute bottom-2 right-3 text-[9px] font-black text-cyan-400 tracking-wider animate-pulse">
+            <span className="absolute bottom-2 right-3 text-[12px] font-black text-cyan-400 tracking-wider animate-pulse">
               ANALYZING P&ID LAYERS...
             </span>
           </div>
 
           <div className="w-full flex flex-col gap-1 px-1">
-            <div className="flex items-center justify-between text-[10px]">
+            <div className="flex items-center justify-between text-[12px]">
               <span className="text-gray-light font-bold">진행 상황</span>
               <span className="text-steel font-black animate-pulse">{Math.min(100, Math.round(((scanStep + 1) / scanLogs.length) * 100))}%</span>
             </div>
@@ -166,7 +166,7 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
             </div>
             
             {/* 실시간 감지 단계 로그 출력 */}
-            <span className="text-[10.5px] text-steel font-extrabold text-left leading-normal mt-1 flex items-center gap-1.5 justify-center">
+            <span className="text-[12px] text-steel font-extrabold text-left leading-normal mt-1 flex items-center gap-1.5 justify-center">
               <RefreshCw className="w-3 h-3 animate-spin text-accent shrink-0" />
               {scanLogs[scanStep]}
             </span>
@@ -177,10 +177,10 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
       {completed && detectedData && (
         <div className="flex flex-col gap-3 animate-in slide-in-from-top-1 duration-200">
           
-          <div className="bg-[#1E4D8C]/5 border border-[#1E4D8C]/15 p-3.5 rounded-custom flex flex-col gap-2.5 text-[11px] leading-relaxed shadow-inner">
+          <div className="bg-[#1E4D8C]/5 border border-[#1E4D8C]/15 p-3.5 rounded-custom flex flex-col gap-2.5 text-[12px] leading-relaxed shadow-inner">
             
             <div className="flex flex-col gap-0.5">
-              <span className="font-extrabold text-navy text-[11.5px] flex items-center gap-1">
+              <span className="font-extrabold text-navy text-[12px] flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
                 배관 제원 자동 검출
               </span>
@@ -188,7 +188,7 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
             </div>
 
             <div className="flex flex-col gap-0.5 border-t border-border/40 pt-2">
-              <span className="font-extrabold text-navy text-[11.5px] flex items-center gap-1">
+              <span className="font-extrabold text-navy text-[12px] flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
                 피팅 및 밸브 수량 식별
               </span>
@@ -196,7 +196,7 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
             </div>
 
             <div className="flex flex-col gap-0.5 border-t border-border/40 pt-2">
-              <span className="font-extrabold text-navy text-[11.5px] flex items-center gap-1">
+              <span className="font-extrabold text-navy text-[12px] flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
                 자재 매핑 (Schedules)
               </span>
@@ -204,7 +204,7 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
             </div>
 
             <div className="flex flex-col gap-0.5 border-t border-[#B23A3A]/20 pt-2 text-danger">
-              <span className="font-black text-[11.5px] flex items-center gap-1">
+              <span className="font-black text-[12px] flex items-center gap-1">
                 <ShieldAlert className="w-3.5 h-3.5 text-danger shrink-0" />
                 현장 간섭 및 시공 리스크 경고
               </span>
@@ -218,7 +218,7 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
               type="button"
               onClick={handleApplyToForm}
               style={{ touchAction: 'manipulation' }}
-              className="flex-1 py-2.5 bg-success text-bg text-xs font-black rounded-custom hover:bg-success/90 transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer animate-pulse"
+              className="flex-1 py-2.5 bg-success text-bg text-[12px] font-black rounded-custom hover:bg-success/90 transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer animate-pulse"
             >
               <CheckSquare className="w-3.5 h-3.5" />
               예상견적서 양식에 자동 주입
@@ -227,7 +227,7 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
               type="button"
               onClick={handleAiAnalysis}
               style={{ touchAction: 'manipulation' }}
-              className="py-2.5 px-3 border border-border bg-bg text-gray hover:text-navy rounded-custom text-xs font-black hover:bg-bg-subtle transition-all cursor-pointer"
+              className="py-2.5 px-3 border border-border bg-bg text-gray hover:text-navy rounded-custom text-[12px] font-black hover:bg-bg-subtle transition-all cursor-pointer"
               title="재분석"
             >
               재분석

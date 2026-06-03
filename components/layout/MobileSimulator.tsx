@@ -24,8 +24,8 @@ export const MobileSimulator: React.FC = () => {
               <Sparkles className="w-4 h-4 text-accent" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-black text-navy leading-none">ZEROS Mobile Simulator</span>
-              <span className="text-[9.5px] text-gray-light font-bold uppercase tracking-wide mt-0.5">
+              <span className="text-[12px] font-black text-navy leading-none">ZEROS Mobile Simulator</span>
+              <span className="text-[12px] text-gray-light font-bold uppercase tracking-wide mt-0.5">
                 모바일 앱 라이브 테스트
               </span>
             </div>
@@ -52,7 +52,7 @@ export const MobileSimulator: React.FC = () => {
         </div>
 
         {/* 설명 가이드 */}
-        <p className="text-[11.5px] text-gray text-center leading-normal max-w-sm font-sans select-none">
+        <p className="text-[12px] text-gray text-center leading-normal max-w-sm font-sans select-none">
           💡 모바일 앱 화면에서 사전진단을 신청하시면, 실시간으로 데스크톱 대시보드(CRM, 칸반보드)에 데이터가 동기화되는 모습을 확인할 수 있습니다!
         </p>
 

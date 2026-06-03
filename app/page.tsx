@@ -110,7 +110,7 @@ export default function Home() {
         <h2 className="text-2xl font-black text-navy tracking-tight border-b border-border pb-4">
           ZEROS 사전진단 컨설팅 철학
         </h2>
-        <div className="flex flex-col gap-4 text-[14.5px] text-gray leading-relaxed font-sans">
+        <div className="flex flex-col gap-4 text-[15px] text-gray leading-relaxed font-sans">
           <p>
             중소형 산업 설비 시장은 고도의 기술적 다양성에도 불구하고 공사 범위가 불분명한 채 계약이 맺어져 <strong className="text-navy font-extrabold">공기 지연, 잦은 설계 변경, 예상치 못한 추가 원가 지불</strong> 등의 고질적인 리스크를 안고 있습니다.
           </p>
@@ -121,19 +121,19 @@ export default function Home() {
             <span className="font-extrabold text-navy text-[13.5px] tracking-wide">ZEROS 3대 핵심 검토 가치</span>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-1">
               <div className="flex flex-col gap-1 bg-bg p-3.5 rounded-custom border border-border">
-                <span className="font-black text-steel text-xs uppercase">01. 범위 고정</span>
+                <span className="font-black text-steel text-[12px] uppercase">01. 범위 고정</span>
                 <span className="text-[12px] text-gray leading-normal mt-1">
                   체계적인 체크리스트를 기반으로 시공사마다 다른 견적 항목을 동일 선상에서 평가할 수 있도록 범위를 고정합니다.
                 </span>
               </div>
               <div className="flex flex-col gap-1 bg-bg p-3.5 rounded-custom border border-border">
-                <span className="font-black text-steel text-xs uppercase">02. 리스크 선제 감지</span>
+                <span className="font-black text-steel text-[12px] uppercase">02. 리스크 선제 감지</span>
                 <span className="text-[12px] text-gray leading-normal mt-1">
                   고소 작업, 협소 동선, 기존 배관 무중단 분기(Tie-in) 가능 여부 등 시공 리스크를 사전에 파악하여 안내합니다.
                 </span>
               </div>
               <div className="flex flex-col gap-1 bg-bg p-3.5 rounded-custom border border-border">
-                <span className="font-black text-steel text-xs uppercase">03. 타당한 원가 설정</span>
+                <span className="font-black text-steel text-[12px] uppercase">03. 타당한 원가 설정</span>
                 <span className="text-[12px] text-gray leading-normal mt-1">
                   유사한 n건의 실제 공사 데이터를 매핑하여 시장 적정가 기준을 수립하고 무조건적인 저가 투찰의 품질 저하를 예방합니다.
                 </span>
@@ -154,39 +154,39 @@ export default function Home() {
         <h2 className="text-2xl font-black text-navy tracking-tight border-b border-border pb-4">
           ZEROS 사전검토 트랙 레코드
         </h2>
-        <p className="text-[14px] text-gray leading-relaxed">
+        <p className="text-[15px] text-gray leading-relaxed">
           과장된 홍보 실적을 지양하고, 투명한 검토 기준과 누적된 익명 설비 분석 데이터 포트폴리오를 숫자로만 신뢰성 있게 보고합니다.
         </p>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-4">
           <div className="bg-bg-subtle border border-border p-4.5 rounded-custom text-center shadow-sm">
-            <span className="text-[10px] text-gray-light font-bold block uppercase tracking-wider mb-1">총 의뢰 건수</span>
+            <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wider mb-1">총 의뢰 건수</span>
             <span className="text-2xl font-black text-navy tracking-tight tabular-nums">246건</span>
           </div>
           <div className="bg-bg-subtle border border-border p-4.5 rounded-custom text-center shadow-sm">
-            <span className="text-[10px] text-gray-light font-bold block uppercase tracking-wider mb-1">1차 검토 준수율</span>
+            <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wider mb-1">1차 검토 준수율</span>
             <span className="text-2xl font-black text-navy tracking-tight tabular-nums">98.4%</span>
           </div>
           <div className="bg-bg-subtle border border-border p-4.5 rounded-custom text-center shadow-sm">
-            <span className="text-[10px] text-gray-light font-bold block uppercase tracking-wider mb-1">출장 실측 만족도</span>
+            <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wider mb-1">출장 실측 만족도</span>
             <span className="text-2xl font-black text-navy tracking-tight tabular-nums">96.8%</span>
           </div>
           <div className="bg-bg-subtle border border-border p-4.5 rounded-custom text-center shadow-sm">
-            <span className="text-[10px] text-gray-light font-bold block uppercase tracking-wider mb-1">설계변경 감소율</span>
+            <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wider mb-1">설계변경 감소율</span>
             <span className="text-2xl font-black text-navy tracking-tight tabular-nums">34.2%</span>
           </div>
         </div>
 
-        <h3 className="text-base font-extrabold text-navy mt-4 mb-2">대표적인 유틸리티 진단 영역</h3>
+        <h3 className="text-[18px] font-extrabold text-navy mt-4 mb-2">대표적인 유틸리티 진단 영역</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="border border-border p-4 rounded-custom flex flex-col gap-2">
-            <span className="font-bold text-steel text-sm">A. 정밀 제조 배관 시스템 (Semi-conductor / Sanitary)</span>
+            <span className="font-bold text-steel text-[15px]">A. 정밀 제조 배관 시스템 (Semi-conductor / Sanitary)</span>
             <p className="text-[12px] text-gray leading-normal">
               초순수 배관 내 박테리아 고임 구조 철저 제거 설계 진단 및 반도체 훅업 EP 자재 적합성 검토 48건 완료.
             </p>
           </div>
           <div className="border border-border p-4 rounded-custom flex flex-col gap-2">
-            <span className="font-bold text-steel text-sm">B. 중대형 보일러 / 스팀 라인 에너지 진단</span>
+            <span className="font-bold text-steel text-[15px]">B. 중대형 보일러 / 스팀 라인 에너지 진단</span>
             <p className="text-[12px] text-gray leading-normal">
               스팀 배관 워터해머 및 고온 응축수 열 회수 설계 타당성 평가, 에너지 손실 비용 최소화 62건 분석 완료.
             </p>
@@ -772,9 +772,9 @@ export default function Home() {
           <div className="flex items-center justify-between gap-2 select-none">
             <div className="flex items-center gap-2">
               <span className="w-1 h-4 bg-accent rounded-full" />
-              <span className="text-xs font-bold text-navy uppercase tracking-wider">견적 작업 FLOW</span>
+              <span className="text-[12px] font-bold text-navy uppercase tracking-wider">견적 작업 FLOW</span>
             </div>
-            <span className="text-[9px] font-mono font-bold text-gray-light tracking-wider">REQUEST · DATA · AI · SUBMIT</span>
+            <span className="text-[12px] font-mono font-bold text-gray-light tracking-wider">REQUEST · DATA · AI · SUBMIT</span>
           </div>
 
           {/* 7단계 견적 작업 시계열 타임라인 (애니메이션) */}
@@ -784,14 +784,14 @@ export default function Home() {
                 <React.Fragment key={label}>
                   <div className="flex flex-col items-center gap-1.5 shrink-0">
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shadow-sm border-2 animate-[pulse_3s_infinite] ${
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-black shadow-sm border-2 animate-[pulse_3s_infinite] ${
                         i === arr.length - 1 ? 'bg-success text-bg border-success' : 'bg-bg text-steel border-steel/40'
                       }`}
                       style={{ animationDelay: `${i * 0.3}s` }}
                     >
                       {i + 1}
                     </div>
-                    <span className="text-[9.5px] font-bold text-navy leading-none whitespace-nowrap">{label}</span>
+                    <span className="text-[12px] font-bold text-navy leading-none whitespace-nowrap">{label}</span>
                   </div>
                   {i < arr.length - 1 && (
                     <ArrowRight className="w-3.5 h-3.5 text-accent/50 shrink-0 mt-[5px] animate-pulse" style={{ animationDelay: `${i * 0.3}s` }} />
@@ -812,31 +812,31 @@ export default function Home() {
               <div className="flex flex-col gap-4 z-10 relative">
                 {/* 타이틀 및 핵심 엔지니어링 문제 정의 (상단) */}
                 <div className="flex flex-col gap-2">
-                  <h2 className="text-lg md:text-[19px] font-black tracking-tight leading-tight text-navy select-none">
+                  <h2 className="text-[18px] md:text-[18px] font-black tracking-tight leading-tight text-navy select-none">
                     {manual.title}
                   </h2>
-                  <p className="text-[11.5px] text-gray leading-snug font-semibold font-sans mt-0.5">
+                  <p className="text-[12px] text-gray leading-snug font-semibold font-sans mt-0.5">
                     {manual.problemDefinition}
                   </p>
                 </div>
 
                 {/* 공종 배지 + 데이터 AI 정직 검증 수치 대시보드 */}
                 <div className="flex flex-col gap-2">
-                  <span className={`self-start text-[9.5px] tracking-widest uppercase font-black px-2.5 py-1 rounded-custom shadow-inner ${metrics.badgeBg}`}>
+                  <span className={`self-start text-[12px] tracking-widest uppercase font-black px-2.5 py-1 rounded-custom shadow-inner ${metrics.badgeBg}`}>
                     {visuals.badgeText}
                   </span>
                   <div className="grid grid-cols-3 gap-2.5 bg-bg-subtle/80 border border-border/70 p-2.5 rounded-custom shadow-inner select-none">
                   <div className="text-center flex flex-col justify-center">
-                    <span className="text-[8.5px] text-gray-light font-bold block uppercase tracking-wider mb-0.5">AI 분석 신뢰도</span>
-                    <span className="text-sm font-black text-navy tracking-tight tabular-nums">{metrics.confidence}%</span>
+                    <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">AI 분석 신뢰도</span>
+                    <span className="text-[15px] font-black text-navy tracking-tight tabular-nums">{metrics.confidence}%</span>
                   </div>
                   <div className="text-center flex flex-col justify-center border-l border-border/60">
-                    <span className="text-[8.5px] text-gray-light font-bold block uppercase tracking-wider mb-0.5">실거래 표준 품셈</span>
-                    <span className="text-sm font-black text-success tracking-tight">100% 매핑</span>
+                    <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">실거래 표준 품셈</span>
+                    <span className="text-[15px] font-black text-success tracking-tight">100% 매핑</span>
                   </div>
                   <div className="text-center flex flex-col justify-center border-l border-border/60">
-                    <span className="text-[8.5px] text-gray-light font-bold block uppercase tracking-wider mb-0.5">평균 거품 절감</span>
-                    <span className="text-sm font-black text-accent tracking-tight tabular-nums">-{metrics.bubbleRate}%</span>
+                    <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">평균 거품 절감</span>
+                    <span className="text-[15px] font-black text-accent tracking-tight tabular-nums">-{metrics.bubbleRate}%</span>
                   </div>
                 </div>
               </div>
@@ -858,10 +858,10 @@ export default function Home() {
               <div className="flex flex-col gap-3 z-10 select-none">
                 {/* 타이틀 (아이콘 제거, 폰트 좌측 제목과 동일) + 스펙 */}
                 <div className="flex flex-col gap-1">
-                  <span className="text-lg md:text-[19px] font-black text-navy tracking-tight leading-tight">
+                  <span className="text-[18px] md:text-[18px] font-black text-navy tracking-tight leading-tight">
                     ZEROS Agent AI 정직 단가 교정 모니터
                   </span>
-                  <span className="text-[10px] text-gray/80 font-bold mt-0.5 leading-relaxed">
+                  <span className="text-[12px] text-gray/80 font-bold mt-0.5 leading-relaxed">
                     {visuals.specText}
                   </span>
                 </div>
@@ -869,7 +869,7 @@ export default function Home() {
                 {/* 정밀 공종별 체크사항 목록 */}
                 <ul className="flex flex-col gap-1 mt-0">
                   {metrics.checklist.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-[10px] text-gray font-semibold leading-tight">
+                    <li key={idx} className="flex items-start gap-2 text-[12px] text-gray font-semibold leading-tight">
                       <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
                       <span>{item}</span>
                     </li>
@@ -878,11 +878,11 @@ export default function Home() {
 
                 {/* 정직·신뢰 실시간 교정 비교 바 (하단) + 버블 제로 필터링 배지 우상단 */}
                 <div className="relative flex flex-col gap-2 bg-bg-subtle/80 border border-border/60 p-2.5 rounded-custom shadow-inner mt-1">
-                  <span className="absolute -top-2 right-2 bg-[#10b981]/10 border border-[#10b981]/20 text-success text-[8.5px] px-1.5 py-0.5 rounded-full font-black shadow-sm">
+                  <span className="absolute -top-2 right-2 bg-[#10b981]/10 border border-[#10b981]/20 text-success text-[12px] px-1.5 py-0.5 rounded-full font-black shadow-sm">
                     버블 제로 필터링
                   </span>
                   <div className="flex flex-col gap-1">
-                    <div className="flex justify-between text-[9px] font-bold text-gray">
+                    <div className="flex justify-between text-[12px] font-bold text-gray">
                       <span>시공사 평균 거품 청구 (Average Inflated Bid)</span>
                       <span className="text-danger font-mono font-bold tabular-nums">135%</span>
                     </div>
@@ -891,7 +891,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 border-t border-border/50 pt-2">
-                    <div className="flex justify-between text-[9px] font-black text-navy">
+                    <div className="flex justify-between text-[12px] font-black text-navy">
                       <span className="flex items-center gap-1">
                         <Sparkles className="w-3 h-3 text-success animate-pulse" />
                         ZEROS AI 교정 단가 (Honest Calibrated Cost)
@@ -920,14 +920,14 @@ export default function Home() {
             <div className="flex items-center justify-between gap-2 border-b border-border pb-3 select-none">
               <div className="flex items-center gap-2 text-navy">
                 <BookOpen className="w-4 h-4 text-steel" />
-                <span className="font-extrabold text-[14px]">작업 준비사항</span>
+                <span className="font-extrabold text-[15px]">작업 준비사항</span>
               </div>
-              <span className="text-[8.5px] font-black text-steel bg-steel/10 border border-steel/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Prepare</span>
+              <span className="text-[12px] font-black text-steel bg-steel/10 border border-steel/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Prepare</span>
             </div>
-            <p className="text-[11px] text-gray-light font-semibold leading-normal -mt-1">정확한 진단을 위해 아래 자료를 사전에 준비해 주세요.</p>
+            <p className="text-[12px] text-gray-light font-semibold leading-normal -mt-1">정확한 진단을 위해 아래 자료를 사전에 준비해 주세요.</p>
             <ul className="flex flex-col gap-3">
               {manual.preparationDocs.map((doc, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs text-gray font-medium">
+                <li key={idx} className="flex items-start gap-2.5 text-[12px] text-gray font-medium">
                   <CheckCircle2 className="w-4 h-4 text-steel shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{doc}</span>
                 </li>
@@ -940,16 +940,16 @@ export default function Home() {
             <div className="flex items-center justify-between gap-2 border-b border-border pb-3 select-none">
               <div className="flex items-center gap-2 text-navy">
                 <FileCheck className="w-4 h-4 text-accent" />
-                <span className="font-extrabold text-[14px]">작업 SOP</span>
+                <span className="font-extrabold text-[15px]">작업 SOP</span>
               </div>
-              <span className="text-[8.5px] font-black text-accent bg-accent/10 border border-accent/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Procedure</span>
+              <span className="text-[12px] font-black text-accent bg-accent/10 border border-accent/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Procedure</span>
             </div>
             <ol className="flex flex-col gap-0 relative">
               {manual.sop.map((step, idx) => (
                 <li key={idx} className="flex items-stretch gap-3 group">
                   {/* 타임라인 인디케이터 */}
                   <div className="flex flex-col items-center shrink-0">
-                    <span className="w-6 h-6 rounded-full bg-navy text-bg text-[10px] font-black flex items-center justify-center shadow-sm shrink-0 z-10">
+                    <span className="w-6 h-6 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shadow-sm shrink-0 z-10">
                       {idx + 1}
                     </span>
                     {idx < manual.sop.length - 1 && (
@@ -957,9 +957,9 @@ export default function Home() {
                     )}
                   </div>
                   <div className="flex flex-col gap-0.5 pb-4">
-                    <span className="text-[9px] font-black text-accent uppercase tracking-widest leading-none">{step.phase}</span>
-                    <span className="text-[12.5px] font-bold text-navy leading-tight mt-0.5">{step.title}</span>
-                    <span className="text-[11px] text-gray font-medium leading-normal mt-0.5">{step.action}</span>
+                    <span className="text-[12px] font-black text-accent uppercase tracking-widest leading-none">{step.phase}</span>
+                    <span className="text-[13.5px] font-bold text-navy leading-tight mt-0.5">{step.title}</span>
+                    <span className="text-[12px] text-gray font-medium leading-normal mt-0.5">{step.action}</span>
                   </div>
                 </li>
               ))}
@@ -974,9 +974,9 @@ export default function Home() {
           <div className="flex items-center justify-between gap-2 border-b border-border pb-3.5 select-none">
             <div className="flex items-center gap-2">
               <span className="w-1 h-4 bg-success rounded-full" />
-              <h3 className="text-[14px] font-extrabold text-navy">결과 지표 &amp; Benefit 효과 증빙</h3>
+              <h3 className="text-[15px] font-extrabold text-navy">결과 지표 &amp; Benefit 효과 증빙</h3>
             </div>
-            <span className="text-[8.5px] font-black text-success bg-success/10 border border-success/20 px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+            <span className="text-[12px] font-black text-success bg-success/10 border border-success/20 px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
               <ShieldCheck className="w-3 h-3" /> Proven
             </span>
           </div>
@@ -988,7 +988,7 @@ export default function Home() {
                 <div className="absolute right-0 top-0 w-16 h-16 bg-[radial-gradient(circle_at_top_right,rgba(31,122,77,0.06),transparent_70%)] pointer-events-none" />
                 <span className="text-2xl font-black text-navy tracking-tight tabular-nums leading-none">{b.metric}</span>
                 <span className="text-[12px] font-extrabold text-steel leading-none mt-1">{b.label}</span>
-                <span className="text-[10.5px] text-gray font-medium leading-normal mt-1">{b.desc}</span>
+                <span className="text-[12px] text-gray font-medium leading-normal mt-1">{b.desc}</span>
               </div>
             ))}
           </div>
@@ -997,13 +997,13 @@ export default function Home() {
           <div className="bg-bg-subtle/50 border border-border/80 rounded-custom p-4.5 flex flex-col gap-3">
             <div className="flex items-center gap-2 select-none">
               <FileCheck className="w-3.5 h-3.5 text-steel" />
-              <span className="text-[11.5px] font-extrabold text-navy uppercase tracking-wide">최종 제공 리포트</span>
+              <span className="text-[12px] font-extrabold text-navy uppercase tracking-wide">최종 제공 리포트</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
               {manual.deliverables.map((del, idx) => (
                 <div key={idx} className="flex items-start gap-2 bg-bg border border-border/70 rounded-custom px-3 py-2.5">
-                  <span className="w-4 h-4 rounded-full bg-navy text-bg text-[9px] font-black flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
-                  <span className="text-[11px] text-gray font-medium leading-snug">{del}</span>
+                  <span className="w-4 h-4 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
+                  <span className="text-[12px] text-gray font-medium leading-snug">{del}</span>
                 </div>
               ))}
             </div>
@@ -1011,9 +1011,9 @@ export default function Home() {
 
           {/* 상세 유의점 */}
           <div className="border-t border-border pt-4 flex flex-col gap-2">
-            <span className="text-[11px] font-black text-navy uppercase tracking-wide">진단 프로세스 상세 유의점</span>
+            <span className="text-[12px] font-black text-navy uppercase tracking-wide">진단 프로세스 상세 유의점</span>
             <p className="text-[12px] text-gray leading-relaxed font-medium">{manual.details}</p>
-            <span className="text-[11px] text-gray-light font-medium block mt-1">
+            <span className="text-[12px] text-gray-light font-medium block mt-1">
               * 제공해주신 자료가 불충분할 경우 담당 엔지니어가 추가 자료를 요청(전화/이메일)할 수 있습니다.
             </span>
           </div>
@@ -1059,7 +1059,7 @@ export default function Home() {
                 touchAction: 'manipulation',
                 fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
               }}
-              className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-bg text-[17px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
+              className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-bg text-[18px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
             >
               <Truck className="w-6 h-6 shrink-0" /> 무료 출장 견적 신청
             </button>
@@ -1069,7 +1069,7 @@ export default function Home() {
                 touchAction: 'manipulation',
                 fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
               }}
-              className="sm:w-auto inline-flex min-h-[54px] items-center justify-center gap-2 bg-bg border border-[#9FB3CC] hover:bg-bg-subtle text-[#0B2F5B] text-[15px] md:text-[16px] font-black px-4 py-2.5 rounded-custom tracking-tight shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+              className="sm:w-auto inline-flex min-h-[54px] items-center justify-center gap-2 bg-bg border border-[#9FB3CC] hover:bg-bg-subtle text-[#0B2F5B] text-[15px] md:text-[18px] font-black px-4 py-2.5 rounded-custom tracking-tight shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
             >
               <FileCheck className="w-5 h-5 shrink-0" /> 컨설팅 절차 보기
             </button>
@@ -1096,7 +1096,7 @@ export default function Home() {
             >
               무료 출장 견적 <span className="text-[#143E6D]">컨설팅 서비스</span>
             </h1>
-            <p className="text-[13.5px] md:text-sm text-gray leading-relaxed font-semibold max-w-2xl">
+            <p className="text-[13.5px] md:text-[15px] text-gray leading-relaxed font-semibold max-w-2xl">
               공사를 시작하기 전, <strong className="text-navy font-extrabold">35년 현장통 국가자격증 PM</strong>이 직접 출장하여
               공사 범위(Scope)·비용(Budget)·리스크(Risk)를 정직하게 사전 진단합니다.
             </p>
@@ -1109,8 +1109,8 @@ export default function Home() {
                 <Briefcase className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[17px] md:text-[18px] font-bold text-navy tracking-normal">35년</span>
-                <span className="text-[11px] text-gray font-bold mt-1.5">현장통 실무 경력</span>
+                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">35년</span>
+                <span className="text-[12px] text-gray font-bold mt-1.5">현장통 실무 경력</span>
               </div>
             </div>
             <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
@@ -1118,8 +1118,8 @@ export default function Home() {
                 <Award className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[17px] md:text-[18px] font-bold text-navy tracking-normal">국가자격증</span>
-                <span className="text-[11px] text-gray font-bold mt-1.5">보유 기술 전문가</span>
+                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">국가자격증</span>
+                <span className="text-[12px] text-gray font-bold mt-1.5">보유 기술 전문가</span>
               </div>
             </div>
             <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
@@ -1127,8 +1127,8 @@ export default function Home() {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[17px] md:text-[18px] font-bold text-navy tracking-normal">PM 역량</span>
-                <span className="text-[11px] text-gray font-bold mt-1.5">프로젝트 총괄 관리</span>
+                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">PM 역량</span>
+                <span className="text-[12px] text-gray font-bold mt-1.5">프로젝트 총괄 관리</span>
               </div>
             </div>
           </div>
@@ -1143,15 +1143,15 @@ export default function Home() {
               <BookOpen className="w-5 h-5" />
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-black text-navy leading-none">처음 방문자를 위한 ZEROS 3단계 활용 가이드</span>
-              <span className="text-[11.5px] text-gray leading-relaxed mt-0.5">
+              <span className="text-[12px] font-black text-navy leading-none">처음 방문자를 위한 ZEROS 3단계 활용 가이드</span>
+              <span className="text-[12px] text-gray leading-relaxed mt-0.5">
                 ① 좌측 영역 메뉴 탐색 ➔ ② 우측 의사결정 위젯으로 평균 소요기간/견적범위 확인 ➔ ③ 상담문의 사전진단서 접수.
               </span>
             </div>
           </div>
           <button
             onClick={() => setGuideClosed(true)}
-            className="text-xs font-black text-gray hover:text-navy hover:underline bg-bg-subtle px-3 py-1.5 rounded-custom border border-border"
+            className="text-[12px] font-black text-gray hover:text-navy hover:underline bg-bg-subtle px-3 py-1.5 rounded-custom border border-border"
           >
             안내 닫기
           </button>
@@ -1170,7 +1170,7 @@ export default function Home() {
               <button
                 key={tradeName}
                 onClick={() => setActiveTradeIdx(idx)}
-                className={`px-3 py-1.5 rounded-custom text-[11px] font-black transition-all whitespace-nowrap active:scale-95 cursor-pointer border ${
+                className={`px-3 py-1.5 rounded-custom text-[12px] font-black transition-all whitespace-nowrap active:scale-95 cursor-pointer border ${
                   isActive
                     ? `${tradeMetrics.badgeBg} border-current scale-[1.02] shadow-sm`
                     : 'bg-bg-subtle text-gray hover:text-navy border-transparent'
@@ -1193,21 +1193,21 @@ export default function Home() {
             <div className="flex flex-col gap-3.5 z-10 relative">
               {/* AI 신뢰성 배지 & 실시간 데이터 매핑 */}
               <div className="flex items-center justify-between gap-2 select-none">
-                <span className={`text-[9px] tracking-widest uppercase font-black px-2 py-0.5 rounded-custom shadow-inner ${activeMetrics.badgeBg}`}>
+                <span className={`text-[12px] tracking-widest uppercase font-black px-2 py-0.5 rounded-custom shadow-inner ${activeMetrics.badgeBg}`}>
                   {activeVisuals.badgeText}
                 </span>
-                <div className="flex items-center gap-1.5 bg-bg border border-border/85 px-2 py-0.5 rounded-custom shadow-sm text-[8px] font-mono font-bold text-steel">
+                <div className="flex items-center gap-1.5 bg-bg border border-border/85 px-2 py-0.5 rounded-custom shadow-sm text-[12px] font-mono font-bold text-steel">
                   <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                   n={activeMetrics.sampleCount} 표본 대조
                 </div>
               </div>
               
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9.5px] text-gray-light font-black tracking-wider block uppercase">현재 탐색 공종</span>
+                <span className="text-[12px] text-gray-light font-black tracking-wider block uppercase">현재 탐색 공종</span>
                 <h1 className="text-xl font-black leading-tight tracking-tight text-navy font-sans">
                   {activeManual.title}
                 </h1>
-                <p className="text-[11.5px] text-gray leading-relaxed font-semibold font-sans mt-0.5">
+                <p className="text-[12px] text-gray leading-relaxed font-semibold font-sans mt-0.5">
                   {activeManual.problemDefinition}
                 </p>
               </div>
@@ -1215,16 +1215,16 @@ export default function Home() {
               {/* 데이터 AI 정직 검증 수치 대시보드 */}
               <div className="grid grid-cols-3 gap-3 bg-bg-subtle/80 border border-border/70 p-3 rounded-custom shadow-inner my-0.5 select-none">
                 <div className="text-center flex flex-col justify-center">
-                  <span className="text-[8px] text-gray-light font-bold block uppercase tracking-wider mb-0.5">AI 분석 신뢰도</span>
-                  <span className="text-xs font-black text-navy tracking-tight tabular-nums">{activeMetrics.confidence}%</span>
+                  <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">AI 분석 신뢰도</span>
+                  <span className="text-[12px] font-black text-navy tracking-tight tabular-nums">{activeMetrics.confidence}%</span>
                 </div>
                 <div className="text-center flex flex-col justify-center border-l border-border/60">
-                  <span className="text-[8px] text-gray-light font-bold block uppercase tracking-wider mb-0.5">실거래 표준 품셈</span>
-                  <span className="text-xs font-black text-success tracking-tight">100% 매핑</span>
+                  <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">실거래 표준 품셈</span>
+                  <span className="text-[12px] font-black text-success tracking-tight">100% 매핑</span>
                 </div>
                 <div className="text-center flex flex-col justify-center border-l border-border/60">
-                  <span className="text-[8px] text-gray-light font-bold block uppercase tracking-wider mb-0.5">평균 거품 절감</span>
-                  <span className="text-xs font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}%</span>
+                  <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">평균 거품 절감</span>
+                  <span className="text-[12px] font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}%</span>
                 </div>
               </div>
             </div>
@@ -1232,13 +1232,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-1 select-none">
               <button
                 onClick={() => setActiveTab('request')}
-                className="flex-1 min-h-10 bg-accent hover:bg-accent/90 text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[11px] font-black tracking-wide shadow-md shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
+                className="flex-1 min-h-10 bg-accent hover:bg-accent/90 text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide shadow-md shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
                 예상견적 의뢰하기
               </button>
               <button
                 onClick={() => setActiveTab('about')}
-                className="flex-1 min-h-10 bg-bg-subtle hover:bg-border/30 text-navy px-4 py-2.5 rounded-custom text-[12px] sm:text-[11px] font-black tracking-wide border border-border active:scale-95 transition-all duration-150 cursor-pointer text-center"
+                className="flex-1 min-h-10 bg-bg-subtle hover:bg-border/30 text-navy px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide border border-border active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
                 ZEROS 진단 절차
               </button>
@@ -1251,27 +1251,27 @@ export default function Home() {
       {/* 4대 공통 리스크 경고 */}
       <section className="bg-bg border border-border p-4.5 rounded-custom shadow-custom-sm text-center grid grid-cols-2 md:grid-cols-4 gap-4 select-none">
         <div className="p-1">
-          <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider block mb-1">1차 검토 목표시간</span>
+          <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider block mb-1">1차 검토 목표시간</span>
           <span className="text-xl font-black text-navy tracking-tight">24h 이내</span>
         </div>
         <div className="p-1 border-l border-border/80">
-          <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider block mb-1">검토 핵심 공종</span>
+          <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider block mb-1">검토 핵심 공종</span>
           <span className="text-xl font-black text-navy tracking-tight">8대 핵심 영역</span>
         </div>
         <div className="p-1 border-l border-border/80">
-          <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider block mb-1">주요 집중 견적규모</span>
+          <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider block mb-1">주요 집중 견적규모</span>
           <span className="text-xl font-black text-navy tracking-tight">1,000만 ~ 1억</span>
         </div>
         <div className="p-1 border-l border-border/80">
-          <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider block mb-1">의사결정 프로세스</span>
+          <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider block mb-1">의사결정 프로세스</span>
           <span className="text-xl font-black text-navy tracking-tight">3-Step 진행</span>
         </div>
       </section>
 
       <section className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-5">
         <div className="flex flex-col gap-1 border-b border-border pb-3.5 select-none">
-          <span className="text-[10px] text-accent font-black uppercase tracking-wider">Common Risks</span>
-          <h2 className="text-lg font-black text-navy">
+          <span className="text-[12px] text-accent font-black uppercase tracking-wider">Common Risks</span>
+          <h2 className="text-[18px] font-black text-navy">
             공사비보다 먼저 확인해야 할 것은 공사 범위입니다.
           </h2>
         </div>
@@ -1281,8 +1281,8 @@ export default function Home() {
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-bold text-navy">공사 범위 불명확</span>
-              <span className="text-[11.5px] text-gray leading-normal">
+              <span className="text-[12px] font-bold text-navy">공사 범위 불명확</span>
+              <span className="text-[12px] text-gray leading-normal">
                 공사가 시작된 후 범위 조율 실패로 공사비 상승 및 잦은 분쟁이 유발됩니다.
               </span>
             </div>
@@ -1292,8 +1292,8 @@ export default function Home() {
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-bold text-navy">현장 조건 누락</span>
-              <span className="text-[11.5px] text-gray leading-normal">
+              <span className="text-[12px] font-bold text-navy">현장 조건 누락</span>
+              <span className="text-[12px] text-gray leading-normal">
                 기계실 협소 반입구, 천장 보 지지 한계 등 현장 제약이 견적 시 누락되어 단가가 급증합니다.
               </span>
             </div>
@@ -1303,8 +1303,8 @@ export default function Home() {
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-bold text-navy">예산 범위 오판</span>
-              <span className="text-[11.5px] text-gray leading-normal">
+              <span className="text-[12px] font-bold text-navy">예산 범위 오판</span>
+              <span className="text-[12px] text-gray leading-normal">
                 원가 구조에 대한 이해 부족으로 과한 마진이 포함되거나 불합리한 예산 초과가 초래됩니다.
               </span>
             </div>
@@ -1314,8 +1314,8 @@ export default function Home() {
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-bold text-navy">업체 비교 곤란</span>
-              <span className="text-[11.5px] text-gray leading-normal">
+              <span className="text-[12px] font-bold text-navy">업체 비교 곤란</span>
+              <span className="text-[12px] text-gray leading-normal">
                 규격과 자재 사양서(Schedules)가 달라 복수의 견적서 항목을 1:1로 비교 분석하기 어렵습니다.
               </span>
             </div>
@@ -1326,32 +1326,32 @@ export default function Home() {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-2 relative">
           <span className="text-3xl font-black text-navy/10 absolute right-4 top-4 select-none">01</span>
-          <span className="text-[10px] text-steel font-black uppercase tracking-wider">Step 1</span>
-          <h3 className="text-sm font-bold text-navy mt-1">자료 정밀 검토</h3>
-          <p className="text-[11.5px] text-gray leading-relaxed">
+          <span className="text-[12px] text-steel font-black uppercase tracking-wider">Step 1</span>
+          <h3 className="text-[15px] font-bold text-navy mt-1">자료 정밀 검토</h3>
+          <p className="text-[12px] text-gray leading-relaxed">
             P&ID, Layout 도면 및 현장 근접 사진 등 고객이 업로드한 원천 정보의 치수 오류와 연결 규격을 확인합니다.
           </p>
         </div>
         <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-2 relative">
           <span className="text-3xl font-black text-navy/10 absolute right-4 top-4 select-none">02</span>
-          <span className="text-[10px] text-steel font-black uppercase tracking-wider">Step 2</span>
-          <h3 className="text-sm font-bold text-navy mt-1">현장 제약 확인</h3>
-          <p className="text-[11.5px] text-gray leading-relaxed">
+          <span className="text-[12px] text-steel font-black uppercase tracking-wider">Step 2</span>
+          <h3 className="text-[15px] font-bold text-navy mt-1">현장 제약 확인</h3>
+          <p className="text-[12px] text-gray leading-relaxed">
             협소 공간 밸브 조작 반경, 크레인 접근로 등 물리적 걸림돌과 가동 중단(Shut-down) 일정 등 특수 리스크를 체크합니다.
           </p>
         </div>
         <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-2 relative">
           <span className="text-3xl font-black text-navy/10 absolute right-4 top-4 select-none">03</span>
-          <span className="text-[10px] text-steel font-black uppercase tracking-wider">Step 3</span>
-          <h3 className="text-sm font-bold text-navy mt-1">공사 범위 정리</h3>
-          <p className="text-[11.5px] text-gray leading-relaxed">
+          <span className="text-[12px] text-steel font-black uppercase tracking-wider">Step 3</span>
+          <h3 className="text-[15px] font-bold text-navy mt-1">공사 범위 정리</h3>
+          <p className="text-[12px] text-gray leading-relaxed">
             도출된 설계 인자들을 단일 양식에 고정하여 동일한 자재 스펙 하에서 여러 업체가 견적할 수 있는 척도를 제공합니다.
           </p>
         </div>
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-base font-extrabold text-navy px-1">
+        <h2 className="text-[18px] font-extrabold text-navy px-1">
           공사 규모에 따라 검토 방식이 달라집니다.
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -1360,18 +1360,18 @@ export default function Home() {
               <button
                 onClick={() => setActiveTab('request')}
                 style={{ touchAction: 'manipulation' }}
-                className="bg-bg-subtle text-gray border border-border px-2 py-1 rounded-custom text-[10px] font-bold w-fit hover:bg-border/30 active:scale-95 transition-all cursor-pointer text-left"
+                className="bg-bg-subtle text-gray border border-border px-2 py-1 rounded-custom text-[12px] font-bold w-fit hover:bg-border/30 active:scale-95 transition-all cursor-pointer text-left"
               >
                 금액 1,000만 이하
               </button>
-              <h3 className="text-sm font-bold text-navy">온라인 간편검토</h3>
-              <p className="text-[11.5px] text-gray leading-relaxed">
+              <h3 className="text-[15px] font-bold text-navy">온라인 간편검토</h3>
+              <p className="text-[12px] text-gray leading-relaxed">
                 제출해주신 사진과 요구 제원서를 바탕으로 자재 소요 및 기본 파이프라인 마찰 손실을 간이 계산하여 24시간 내 권장 스코프를 제시합니다.
               </p>
             </div>
             <button
               onClick={() => handleBudgetClick('small')}
-              className="text-xs font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
+              className="text-[12px] font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
             >
               온라인 검토 상세 보기
               <ArrowRight className="w-3.5 h-3.5" />
@@ -1382,18 +1382,18 @@ export default function Home() {
               <button
                 onClick={() => setActiveTab('request')}
                 style={{ touchAction: 'manipulation' }}
-                className="bg-steel/15 text-steel border border-steel/20 px-2 py-1 rounded-custom text-[10px] font-bold w-fit hover:bg-steel/25 active:scale-95 transition-all cursor-pointer text-left"
+                className="bg-steel/15 text-steel border border-steel/20 px-2 py-1 rounded-custom text-[12px] font-bold w-fit hover:bg-steel/25 active:scale-95 transition-all cursor-pointer text-left"
               >
                 금액 1,000만 ~ 1억
               </button>
-              <h3 className="text-sm font-bold text-navy">출장 실측견적 검토</h3>
-              <p className="text-[11.5px] text-gray leading-relaxed">
+              <h3 className="text-[15px] font-bold text-navy">출장 실측견적 검토</h3>
+              <p className="text-[12px] text-gray leading-relaxed">
                 베테랑 엔지니어가 직접 출장하여 기계실 배치, 유틸리티 우회 관로, 빔 하중 상태를 레이저 실측하고 1차 오차를 예방하는 정밀 리포트를 제공합니다.
               </p>
             </div>
             <button
               onClick={() => handleBudgetClick('medium')}
-              className="text-xs font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
+              className="text-[12px] font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
             >
               출장 실측 상세 보기
               <ArrowRight className="w-3.5 h-3.5" />
@@ -1404,18 +1404,18 @@ export default function Home() {
               <button
                 onClick={() => setActiveTab('request')}
                 style={{ touchAction: 'manipulation' }}
-                className="bg-navy text-bg px-2 py-1 rounded-custom text-[10px] font-bold w-fit hover:bg-navy/90 active:scale-95 transition-all cursor-pointer text-left"
+                className="bg-navy text-bg px-2 py-1 rounded-custom text-[12px] font-bold w-fit hover:bg-navy/90 active:scale-95 transition-all cursor-pointer text-left"
               >
                 금액 1억 초과
               </button>
-              <h3 className="text-sm font-bold text-navy">프로젝트 사전진단</h3>
-              <p className="text-[11.5px] text-gray leading-relaxed">
+              <h3 className="text-[15px] font-bold text-navy">프로젝트 사전진단</h3>
+              <p className="text-[12px] text-gray leading-relaxed">
                 공장 전체 신·증설 컨셉 기획 단계부터 개입하여 전체 라인 공법 믹스, Schedules 매핑, CAPEX 리스크 구조를 종합 관리하는 PM 서비스를 탑재합니다.
               </p>
             </div>
             <button
               onClick={() => handleBudgetClick('large')}
-              className="text-xs font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
+              className="text-[12px] font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
             >
               프로젝트 진단 상세 보기
               <ArrowRight className="w-3.5 h-3.5" />
@@ -1425,27 +1425,27 @@ export default function Home() {
       </section>
 
       <section className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-4">
-        <h2 className="text-base font-extrabold text-navy">
+        <h2 className="text-[18px] font-extrabold text-navy">
           중소형 사업장의 설비투자 의사결정을 지원합니다.
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center select-none">
           <div className="bg-bg-subtle p-4 rounded-custom border border-border">
-            <span className="font-bold text-navy text-xs block">바이오 / 제약 공장</span>
+            <span className="font-bold text-navy text-[12px] block">바이오 / 제약 공장</span>
           </div>
           <div className="bg-bg-subtle p-4 rounded-custom border border-border">
-            <span className="font-bold text-navy text-xs block">식품 가공 사업장</span>
+            <span className="font-bold text-navy text-[12px] block">식품 가공 사업장</span>
           </div>
           <div className="bg-bg-subtle p-4 rounded-custom border border-border">
-            <span className="font-bold text-navy text-xs block">빌딩 기계실 배관</span>
+            <span className="font-bold text-navy text-[12px] block">빌딩 기계실 배관</span>
           </div>
           <div className="bg-bg-subtle p-4 rounded-custom border border-border">
-            <span className="font-bold text-navy text-xs block">제조 공장 개·증설</span>
+            <span className="font-bold text-navy text-[12px] block">제조 공장 개·증설</span>
           </div>
         </div>
       </section>
 
       <section className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-5">
-        <h2 className="text-base font-extrabold text-navy">
+        <h2 className="text-[18px] font-extrabold text-navy">
           접수부터 견적서 송부까지 명확하게 진행합니다.
         </h2>
         <div className="flex flex-col md:flex-row items-stretch justify-between gap-4 pt-2">
@@ -1456,9 +1456,9 @@ export default function Home() {
             { step: '04', title: '범위 고정', desc: '상세 스코프 리포트 송부' },
           ].map((item, idx) => (
             <div key={idx} className="flex-1 bg-bg-subtle border border-border/80 p-4 rounded-custom flex flex-col gap-1 relative">
-              <span className="text-xs font-black text-steel block">Step {item.step}</span>
-              <span className="text-sm font-bold text-navy mt-1 block">{item.title}</span>
-              <span className="text-[11px] text-gray-light font-medium leading-normal mt-0.5 block">{item.desc}</span>
+              <span className="text-[12px] font-black text-steel block">Step {item.step}</span>
+              <span className="text-[15px] font-bold text-navy mt-1 block">{item.title}</span>
+              <span className="text-[12px] text-gray-light font-medium leading-normal mt-0.5 block">{item.desc}</span>
             </div>
           ))}
         </div>
@@ -1469,7 +1469,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(224,112,26,0.15),transparent_50%)] pointer-events-none"></div>
         
-        <div className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[9.5px] px-2.5 py-1 rounded-custom font-black tracking-widest uppercase mb-1 z-10 animate-pulse">
+        <div className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[12px] px-2.5 py-1 rounded-custom font-black tracking-widest uppercase mb-1 z-10 animate-pulse">
           PROVEN INDUSTRIAL ENGINEERING REVIEW
         </div>
         
@@ -1483,7 +1483,7 @@ export default function Home() {
         
         <button
           onClick={() => setActiveTab('request')}
-          className="mt-3 bg-accent hover:bg-accent/90 text-bg px-9 py-4 rounded-custom text-xs font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 z-10 cursor-pointer"
+          className="mt-3 bg-accent hover:bg-accent/90 text-bg px-9 py-4 rounded-custom text-[12px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 z-10 cursor-pointer"
         >
           예상견적 무료 상담 신청
         </button>
@@ -1512,12 +1512,12 @@ export default function Home() {
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between bg-bg border border-border p-4 rounded-custom shadow-sm select-none">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-steel font-bold uppercase">영업 파이프라인 관제</span>
-                    <span className="text-sm font-black text-navy">드래그 앤 드롭 영업 칸반 보드</span>
+                    <span className="text-[12px] text-steel font-bold uppercase">영업 파이프라인 관제</span>
+                    <span className="text-[15px] font-black text-navy">드래그 앤 드롭 영업 칸반 보드</span>
                   </div>
                   <button
                     onClick={() => setAdminSubView('table')}
-                    className="flex items-center gap-1.5 border border-border rounded-custom bg-bg px-3 py-1.5 text-xs text-navy hover:bg-bg-subtle"
+                    className="flex items-center gap-1.5 border border-border rounded-custom bg-bg px-3 py-1.5 text-[12px] text-navy hover:bg-bg-subtle"
                   >
                     리스트 테이블로 전환
                   </button>

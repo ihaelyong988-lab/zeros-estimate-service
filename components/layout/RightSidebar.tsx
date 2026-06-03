@@ -191,22 +191,22 @@ export const RightSidebar: React.FC = () => {
         <div>
           <div className="flex items-center gap-1.5 px-1 mb-3 text-navy">
             <AlertCircle className="w-4 h-4 text-steel animate-bounce" />
-            <h3 className="text-xs font-black uppercase tracking-wider">업무 진행 가이드</h3>
+            <h3 className="text-[12px] font-black uppercase tracking-wider">업무 진행 가이드</h3>
           </div>
           <div className="bg-bg border border-border p-4 rounded-custom flex flex-col gap-3 shadow-custom-sm">
             <p className="text-[12px] text-gray leading-relaxed font-medium">
               새로 접수된 사전진단 요청은 <span className="font-extrabold text-navy border-b border-steel/30 pb-0.5">24시간 이내</span>에 1차 엔지니어링 계산 자료 검토를 완료해야 합니다.
             </p>
             <div className="border-t border-border/60 pt-3 flex flex-col gap-2.5">
-              <div className="flex items-center gap-2 text-xs font-bold text-gray">
+              <div className="flex items-center gap-2 text-[12px] font-bold text-gray">
                 <span className="w-2 h-2 rounded-full bg-warning"></span>
                 출장 결제대기 건 확인
               </div>
-              <div className="flex items-center gap-2 text-xs font-bold text-gray">
+              <div className="flex items-center gap-2 text-[12px] font-bold text-gray">
                 <span className="w-2 h-2 rounded-full bg-info"></span>
                 금주 레이저 실측일정 수립
               </div>
-              <div className="flex items-center gap-2 text-xs font-bold text-gray">
+              <div className="flex items-center gap-2 text-[12px] font-bold text-gray">
                 <span className="w-2 h-2 rounded-full bg-success"></span>
                 수주 완료 견적 실적 업데이트
               </div>
@@ -232,13 +232,13 @@ export const RightSidebar: React.FC = () => {
       <div>
         <div className="flex items-center gap-1.5 px-1 mb-4">
           <BarChart3 className="w-4 h-4 text-steel animate-pulse" />
-          <h3 className="text-xs font-black text-navy uppercase tracking-wider">데이터 기반 사전판단</h3>
+          <h3 className="text-[12px] font-black text-navy uppercase tracking-wider">데이터 기반 사전판단</h3>
         </div>
 
         <div className="flex flex-col gap-5">
           {/* 타겟 도메인 표시 */}
           <div className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-1.5 shadow-sm">
-            <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider">선택 공사 범위</span>
+            <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">선택 공사 범위</span>
             <span className="text-[13.5px] text-navy font-black">
               {selectedBudget ? `예산규모: ${metricsMap[selectedBudget]?.recommendation || ''}` : selectedMenu}
             </span>
@@ -248,13 +248,13 @@ export const RightSidebar: React.FC = () => {
           <div className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-2.5 shadow-sm">
             <div className="flex items-center gap-2 text-gray">
               <Calendar className="w-4 h-4 text-gray-light" />
-              <span className="text-xs font-bold">평균 1차 검토 소요일</span>
+              <span className="text-[12px] font-bold">평균 1차 검토 소요일</span>
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-black text-navy tracking-tight tabular-nums">{metrics.avgDays}</span>
-              <span className="text-xs font-bold text-gray">일 이내</span>
+              <span className="text-[12px] font-bold text-gray">일 이내</span>
             </div>
-            <p className="text-[10.5px] text-gray-light font-bold leading-normal">
+            <p className="text-[12px] text-gray-light font-bold leading-normal">
               *접수 후 전담 엔지니어가 기초 도면/사진을 분석하는 실 소요 시간입니다.
             </p>
           </div>
@@ -263,7 +263,7 @@ export const RightSidebar: React.FC = () => {
           <div className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-3.5 shadow-sm">
             <div className="flex items-center gap-2 text-gray">
               <BarChart3 className="w-4 h-4 text-gray-light" />
-              <span className="text-xs font-bold font-sans">예상 견적범위 밴드</span>
+              <span className="text-[12px] font-bold font-sans">예상 견적범위 밴드</span>
             </div>
             
             {/* 좌우 드래그 스크롤바 (input range) */}
@@ -276,24 +276,24 @@ export const RightSidebar: React.FC = () => {
                 onChange={(e) => setSliderVal(Number(e.target.value))}
                 className="touch-none w-full h-1.5 bg-bg-subtle rounded-lg appearance-none cursor-pointer accent-steel border border-border focus:outline-none"
               />
-              <div className="flex items-center justify-between text-[10px] text-gray-light font-black mt-1.5 tabular-nums">
+              <div className="flex items-center justify-between text-[12px] text-gray-light font-black mt-1.5 tabular-nums">
                 <span>{metrics.minAmount} (최소)</span>
                 <span>{metrics.maxAmount} (최대)</span>
               </div>
             </div>
 
             {/* 견적 예상가 출력 (중앙 예상가 ➔ 견적 예상가로 변경) */}
-            <div className="flex items-center justify-between bg-bg-subtle border border-border/60 rounded-custom p-2.5 text-xs">
-              <span className="font-extrabold text-navy text-[11px]">견적 예상가</span>
-              <span className="font-black text-steel text-[13px] tabular-nums">
+            <div className="flex items-center justify-between bg-bg-subtle border border-border/60 rounded-custom p-2.5 text-[12px]">
+              <span className="font-extrabold text-navy text-[12px]">견적 예상가</span>
+              <span className="font-black text-steel text-[13.5px] tabular-nums">
                 ₩{currentAmount.toLocaleString()}
               </span>
             </div>
 
             {/* 견적 수수료 출력 (견적 예상가의 2% 실시간 동적 계산) */}
-            <div className="flex items-center justify-between bg-[#E0701A]/5 border border-[#E0701A]/20 rounded-custom p-2.5 text-xs">
-              <span className="font-black text-accent text-[11px]">견적 수수료 (2%)</span>
-              <span className="font-black text-accent text-[13px] tabular-nums">
+            <div className="flex items-center justify-between bg-[#E0701A]/5 border border-[#E0701A]/20 rounded-custom p-2.5 text-[12px]">
+              <span className="font-black text-accent text-[12px]">견적 수수료 (2%)</span>
+              <span className="font-black text-accent text-[13.5px] tabular-nums">
                 ₩{feeAmount.toLocaleString()}
               </span>
             </div>
@@ -303,13 +303,13 @@ export const RightSidebar: React.FC = () => {
           <div className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-2 shadow-sm">
             <div className="flex items-center gap-2 text-gray">
               <Users className="w-4 h-4 text-gray-light" />
-              <span className="text-xs font-bold font-sans">유사 현장 데이터 수</span>
+              <span className="text-[12px] font-bold font-sans">유사 현장 데이터 수</span>
             </div>
             <div className="flex items-baseline gap-1 whitespace-nowrap overflow-hidden">
               <span className="text-[15px] font-black text-steel tracking-tight tabular-nums">
                 n = {currentSampleCount}
               </span>
-              <span className="text-[10px] font-bold text-gray-light">
+              <span className="text-[12px] font-bold text-gray-light">
                 건 실시간 매핑 (최대 {metrics.sampleCount}건)
               </span>
             </div>
@@ -323,18 +323,18 @@ export const RightSidebar: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-1 z-10">
-              <span className="text-[10px] text-steel font-black uppercase tracking-wider">추천 검토 경로</span>
+              <span className="text-[12px] text-steel font-black uppercase tracking-wider">추천 검토 경로</span>
               <h4 className="text-[13.5px] font-black text-navy tracking-tight">{metrics.recommendation}</h4>
             </div>
 
-            <p className="text-[11px] text-gray leading-relaxed font-medium z-10">
+            <p className="text-[12px] text-gray leading-relaxed font-medium z-10">
               {metrics.recommendationDesc}
             </p>
 
             <button
               onClick={() => setActiveTab('request')}
               style={{ touchAction: 'manipulation' }}
-              className="mt-1 flex items-center justify-center gap-1.5 w-full bg-steel hover:bg-navy text-bg py-2.5 rounded-custom text-xs font-black transition-all duration-150 active:scale-[0.98] z-10 shadow-sm cursor-pointer"
+              className="mt-1 flex items-center justify-center gap-1.5 w-full bg-steel hover:bg-navy text-bg py-2.5 rounded-custom text-[12px] font-black transition-all duration-150 active:scale-[0.98] z-10 shadow-sm cursor-pointer"
             >
               출장견적 바로 신청
               <ArrowRight className="w-3.5 h-3.5" />

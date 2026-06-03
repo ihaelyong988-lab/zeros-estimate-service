@@ -39,8 +39,8 @@ export const TopHeader: React.FC = () => {
           <Building2 className="w-4.5 h-4.5 text-bg" />
         </div>
         <div className="flex flex-col justify-center">
-          <span className="font-black text-[17px] tracking-wider text-navy leading-none uppercase font-sans">ZEROS</span>
-          <span className="text-[8.5px] text-gray-light font-black tracking-widest leading-none mt-1">무료 출장 견적 컨설팅</span>
+          <span className="font-black text-[18px] tracking-wider text-navy leading-none uppercase font-sans">ZEROS</span>
+          <span className="text-[12px] text-gray-light font-black tracking-widest leading-none mt-1">무료 출장 견적 컨설팅</span>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export const TopHeader: React.FC = () => {
         <button
           onClick={() => handleTabClick('home')}
           style={{ touchAction: 'manipulation' }}
-          className={`px-4 py-2 text-[12.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
+          className={`px-4 py-2 text-[13.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
             isUserMode && activeTab === 'home'
               ? 'text-navy bg-transparent shadow-none'
               : 'text-gray hover:bg-bg-subtle hover:text-navy'
@@ -60,7 +60,7 @@ export const TopHeader: React.FC = () => {
         <button
           onClick={() => handleTabClick('about')}
           style={{ touchAction: 'manipulation' }}
-          className={`px-4 py-2 text-[12.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
+          className={`px-4 py-2 text-[13.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
             isUserMode && activeTab === 'about'
               ? 'text-navy bg-transparent shadow-none'
               : 'text-gray hover:bg-bg-subtle hover:text-navy'
@@ -71,7 +71,7 @@ export const TopHeader: React.FC = () => {
         <button
           onClick={() => handleTabClick('performance')}
           style={{ touchAction: 'manipulation' }}
-          className={`px-4 py-2 text-[12.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
+          className={`px-4 py-2 text-[13.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
             isUserMode && activeTab === 'performance'
               ? 'text-navy bg-transparent shadow-none'
               : 'text-gray hover:bg-bg-subtle hover:text-navy'
@@ -82,7 +82,7 @@ export const TopHeader: React.FC = () => {
         <button
           onClick={() => handleTabClick('request')}
           style={{ touchAction: 'manipulation' }}
-          className={`px-5 py-2 text-[12.5px] font-black rounded-custom transition-all duration-200 tracking-tight flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer uppercase ${
+          className={`px-5 py-2 text-[13.5px] font-black rounded-custom transition-all duration-200 tracking-tight flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer uppercase ${
             isUserMode && activeTab === 'request'
               ? 'bg-accent text-bg shadow-custom-md scale-[1.01]'
               : 'bg-steel text-bg hover:bg-navy'
@@ -98,7 +98,7 @@ export const TopHeader: React.FC = () => {
         <button
           onClick={() => setShowSimulator(true)}
           style={{ touchAction: 'manipulation' }}
-          className="h-9 flex items-center gap-1.5 border border-[#E0701A]/30 hover:border-[#E0701A]/60 rounded-custom bg-[#E0701A]/5 text-accent hover:bg-[#E0701A]/10 px-4 py-2 text-[11.5px] font-black transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
+          className="h-9 flex items-center gap-1.5 border border-[#E0701A]/30 hover:border-[#E0701A]/60 rounded-custom bg-[#E0701A]/5 text-accent hover:bg-[#E0701A]/10 px-4 py-2 text-[12px] font-black transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
         >
           <Smartphone className="w-3.5 h-3.5" />
           모바일 앱 시뮬레이터
@@ -112,7 +112,7 @@ export const TopHeader: React.FC = () => {
               setActiveTab('home');
             }}
             style={{ touchAction: 'manipulation' }}
-            className={`h-full flex items-center gap-1.5 px-3.5 py-1 text-[11.5px] font-black rounded-custom transition-all duration-150 cursor-pointer ${
+            className={`h-full flex items-center gap-1.5 px-3.5 py-1 text-[12px] font-black rounded-custom transition-all duration-150 cursor-pointer ${
               isUserMode
                 ? 'bg-bg text-steel shadow-sm border border-border/40'
                 : 'text-gray hover:text-navy'
@@ -127,7 +127,7 @@ export const TopHeader: React.FC = () => {
               setAdminView('dashboard');
             }}
             style={{ touchAction: 'manipulation' }}
-            className={`h-full flex items-center gap-1.5 px-3.5 py-1 text-[11.5px] font-black rounded-custom transition-all duration-150 cursor-pointer ${
+            className={`h-full flex items-center gap-1.5 px-3.5 py-1 text-[12px] font-black rounded-custom transition-all duration-150 cursor-pointer ${
               !isUserMode
                 ? 'bg-navy text-bg shadow-sm'
                 : 'text-gray hover:text-navy'

@@ -95,7 +95,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           <div className="w-10 h-10 bg-accent rounded-custom flex items-center justify-center shadow-md shadow-accent/20">
             <Building2 className="w-5 h-5 text-bg" />
           </div>
-          <span className="font-black text-lg tracking-widest uppercase">ZEROS</span>
+          <span className="font-black text-[18px] tracking-widest uppercase">ZEROS</span>
         </div>
       </div>
     );
@@ -148,12 +148,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               <Building2 className="w-4 h-4 text-bg" />
             </div>
             <div className="flex flex-col">
-              <span className="font-black text-sm tracking-wider text-bg leading-none uppercase">ZEROS</span>
-              <span className="text-[8.5px] text-bg/70 font-semibold tracking-tight mt-0.5">예상견적 스마트 앱</span>
+              <span className="font-black text-[15px] tracking-wider text-bg leading-none uppercase">ZEROS</span>
+              <span className="text-[12px] text-bg/70 font-semibold tracking-tight mt-0.5">예상견적 스마트 앱</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[9.5px] px-2 py-0.5 rounded-full font-black tracking-wide">
+            <span className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[12px] px-2 py-0.5 rounded-full font-black tracking-wide">
               PROTOTYPE
             </span>
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" title="온라인 상태" />
@@ -174,7 +174,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   <button
                     key={item.value}
                     onClick={() => handleMobileQuickMenuClick(item)}
-                    className={`px-3 py-1.5 rounded-custom text-[11.5px] font-bold border transition-all duration-150 shrink-0 select-none ${
+                    className={`px-3 py-1.5 rounded-custom text-[12px] font-bold border transition-all duration-150 shrink-0 select-none ${
                       isActive
                         ? 'bg-steel border-steel text-bg shadow-sm scale-102 font-extrabold'
                         : 'bg-bg-subtle border-border/80 text-gray hover:text-navy'
@@ -199,7 +199,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   <button
                     key={item.value}
                     onClick={() => setAdminView(item.value)}
-                    className={`px-3 py-1.5 rounded-custom text-[11.5px] font-bold border transition-all duration-150 shrink-0 select-none ${
+                    className={`px-3 py-1.5 rounded-custom text-[12px] font-bold border transition-all duration-150 shrink-0 select-none ${
                       isActive
                         ? 'bg-navy border-navy text-bg shadow-sm scale-102 font-extrabold'
                         : 'bg-bg-subtle border-border/80 text-gray hover:text-navy'
@@ -233,7 +233,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             }`}
           >
             <Home className="w-5.5 h-5.5" />
-            <span className="text-[9.5px]">홈</span>
+            <span className="text-[12px]">홈</span>
           </button>
 
           <button
@@ -243,7 +243,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             }`}
           >
             <FileText className="w-5.5 h-5.5" />
-            <span className="text-[9.5px]">의뢰하기</span>
+            <span className="text-[12px]">의뢰하기</span>
           </button>
 
           <button
@@ -253,7 +253,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             }`}
           >
             <TrendingUp className="w-5.5 h-5.5" />
-            <span className="text-[9.5px]">예산조율</span>
+            <span className="text-[12px]">예산조율</span>
           </button>
 
           <button
@@ -263,7 +263,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             }`}
           >
             <ShieldCheck className="w-5.5 h-5.5" />
-            <span className="text-[9.5px]">관리자관제</span>
+            <span className="text-[12px]">관리자관제</span>
           </button>
         </div>
       </div>

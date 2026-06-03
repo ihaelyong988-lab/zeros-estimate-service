@@ -229,10 +229,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
       {/* 5단계 헤더 바 */}
       <div className="bg-bg-subtle border-b border-border px-5 py-4 flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-steel font-extrabold uppercase tracking-wider">예상견적 요청 폼</span>
-          <h3 className="text-sm font-black text-navy leading-none">Step {step} / 5 단계</h3>
+          <span className="text-[12px] text-steel font-extrabold uppercase tracking-wider">예상견적 요청 폼</span>
+          <h3 className="text-[15px] font-black text-navy leading-none">Step {step} / 5 단계</h3>
         </div>
-        <span className="text-xs font-bold text-gray-light">{Math.round(progressPercent)}% 완료</span>
+        <span className="text-[12px] font-bold text-gray-light">{Math.round(progressPercent)}% 완료</span>
       </div>
 
       {/* 실시간 진행 표시줄 */}
@@ -248,7 +248,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         
         {/* 에러 피드백 */}
         {errorMsg && (
-          <div className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-xs font-bold flex items-start gap-2 animate-in fade-in duration-200">
+          <div className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[12px] font-bold flex items-start gap-2 animate-in fade-in duration-200">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
@@ -258,7 +258,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         {step === 1 && (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-3 duration-200">
             <div className="flex flex-col gap-1">
-              <label htmlFor="customer_name" className="text-xs font-bold text-navy flex items-center gap-1">
+              <label htmlFor="customer_name" className="text-[12px] font-bold text-navy flex items-center gap-1">
                 <User className="w-3.5 h-3.5 text-steel" />
                 의뢰 주체 성함 (필수)
               </label>
@@ -270,12 +270,12 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 onChange={handleChange}
                 style={{ touchAction: 'manipulation' }}
                 placeholder="홍길동"
-                className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="company_name" className="text-xs font-bold text-navy flex items-center gap-1">
+              <label htmlFor="company_name" className="text-[12px] font-bold text-navy flex items-center gap-1">
                 <Building className="w-3.5 h-3.5 text-steel" />
                 회사명 / 소속 기관 (선택)
               </label>
@@ -287,13 +287,13 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 onChange={handleChange}
                 style={{ touchAction: 'manipulation' }}
                 placeholder="ABC식품 (주)"
-                className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label htmlFor="phone" className="text-xs font-bold text-navy flex items-center gap-1">
+                <label htmlFor="phone" className="text-[12px] font-bold text-navy flex items-center gap-1">
                   <Phone className="w-3.5 h-3.5 text-steel" />
                   연락처 (필수)
                 </label>
@@ -305,11 +305,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                   onChange={handleChange}
                   style={{ touchAction: 'manipulation' }}
                   placeholder="010-0000-0000"
-                  className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                  className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label htmlFor="email" className="text-xs font-bold text-navy flex items-center gap-1">
+                <label htmlFor="email" className="text-[12px] font-bold text-navy flex items-center gap-1">
                   <Mail className="w-3.5 h-3.5 text-steel" />
                   이메일 (필수)
                 </label>
@@ -321,13 +321,13 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                   onChange={handleChange}
                   style={{ touchAction: 'manipulation' }}
                   placeholder="name@example.com"
-                  className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                  className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="site_address" className="text-xs font-bold text-navy flex items-center gap-1">
+              <label htmlFor="site_address" className="text-[12px] font-bold text-navy flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5 text-steel" />
                 공사 현장 주소 (필수)
               </label>
@@ -339,7 +339,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 onChange={handleChange}
                 style={{ touchAction: 'manipulation' }}
                 placeholder="경기도 화성시 향남읍 식품공단로 42"
-                className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
               />
             </div>
           </div>
@@ -350,13 +350,13 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-3 duration-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-navy">공사 종류</label>
+                <label className="text-[12px] font-bold text-navy">공사 종류</label>
                 <select
                   name="work_type"
                   value={formData.work_type}
                   onChange={handleChange}
                   style={{ touchAction: 'manipulation' }}
-                  className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                  className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
                 >
                   <option value="배관공사">배관공사 (일반/용수)</option>
                   <option value="장비설치">장비설치 (펌프/탱크)</option>
@@ -371,13 +371,13 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-navy">현장 용도 종류</label>
+                <label className="text-[12px] font-bold text-navy">현장 용도 종류</label>
                 <select
                   name="site_type"
                   value={formData.site_type}
                   onChange={handleChange}
                   style={{ touchAction: 'manipulation' }}
-                  className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                  className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
                 >
                   <option value="공장">일반 산업공장</option>
                   <option value="식품">식품공장 (HACCP)</option>
@@ -393,13 +393,13 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-navy">예상 공사금액 대역</label>
+                <label className="text-[12px] font-bold text-navy">예상 공사금액 대역</label>
                 <select
                   name="expected_budget_range"
                   value={formData.expected_budget_range}
                   onChange={handleChange}
                   style={{ touchAction: 'manipulation' }}
-                  className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                  className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
                 >
                   <option value="≤1,000만">1,000만 원 이하 (온라인 간편)</option>
                   <option value="1,000만~1억">1,000만 ~ 1억 원 (출장 실측)</option>
@@ -409,7 +409,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label htmlFor="desired_schedule" className="text-xs font-bold text-navy">희망 공사시기</label>
+                <label htmlFor="desired_schedule" className="text-[12px] font-bold text-navy">희망 공사시기</label>
                 <input
                   id="desired_schedule"
                   name="desired_schedule"
@@ -418,15 +418,15 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                   onChange={handleChange}
                   style={{ touchAction: 'manipulation' }}
                   placeholder="예: 1개월 이내, 2026년 7월 중"
-                  className="w-full border border-border p-2.5 rounded-custom text-sm focus:outline-none focus:border-steel transition-all"
+                  className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
                 />
               </div>
             </div>
 
             <div className="flex items-center justify-between border border-border/80 p-3 rounded-custom bg-bg-subtle/40">
               <div className="flex flex-col gap-0.5" style={{ touchAction: 'manipulation' }}>
-                <span className="text-xs font-bold text-navy">긴급 검토 여부</span>
-                <span className="text-[10px] text-gray-light leading-none">영업일 기준 24시간 이내 긴급 피드백 필요 여부</span>
+                <span className="text-[12px] font-bold text-navy">긴급 검토 여부</span>
+                <span className="text-[12px] text-gray-light leading-none">영업일 기준 24시간 이내 긴급 피드백 필요 여부</span>
               </div>
               <input
                 name="urgency"
@@ -444,7 +444,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         {step === 3 && (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-3 duration-200">
             <div className="flex flex-col gap-1">
-              <label htmlFor="description" className="text-xs font-bold text-navy">
+              <label htmlFor="description" className="text-[12px] font-bold text-navy">
                 현재 문제점 및 원하는 시공 내역 (필수)
               </label>
               <textarea
@@ -455,12 +455,12 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 onChange={handleChange}
                 style={{ touchAction: 'manipulation' }}
                 placeholder="예: 기계실 메인 칠러 입구 밸브 플랜지 미세 누수와 노후 스팀 배관 30m 가량 철거 후 신설 검토가 필요합니다. 공장은 주말에만 가동이 정지되어 shut-down 기한이 짧습니다."
-                className="w-full border border-border p-2.5 rounded-custom text-xs focus:outline-none focus:border-steel leading-relaxed resize-none"
+                className="w-full border border-border p-2.5 rounded-custom text-[12px] focus:outline-none focus:border-steel leading-relaxed resize-none"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="request_detail" className="text-xs font-bold text-navy">
+              <label htmlFor="request_detail" className="text-[12px] font-bold text-navy">
                 추가 기술 조건 / 현장 제약 사항 (선택)
               </label>
               <textarea
@@ -471,7 +471,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 onChange={handleChange}
                 style={{ touchAction: 'manipulation' }}
                 placeholder="예: 배관 규격은 SUS304 80A 스케줄 10 플랜지 이음 기준입니다. 기계실 문 높이가 2m 미만이라서 장비 반입 시 해체 필요 여부를 봐주세요."
-                className="w-full border border-border p-2.5 rounded-custom text-xs focus:outline-none focus:border-steel leading-relaxed resize-none"
+                className="w-full border border-border p-2.5 rounded-custom text-[12px] focus:outline-none focus:border-steel leading-relaxed resize-none"
               />
             </div>
           </div>
@@ -481,8 +481,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         {step === 4 && (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-3 duration-200">
             <div className="bg-bg-subtle p-4 rounded-custom border border-border/80 flex flex-col gap-1.5">
-              <span className="text-xs font-bold text-navy leading-none">현장 증빙자료 첨부 가이드</span>
-              <span className="text-[10.5px] text-gray leading-relaxed mt-0.5">
+              <span className="text-[12px] font-bold text-navy leading-none">현장 증빙자료 첨부 가이드</span>
+              <span className="text-[12px] text-gray leading-relaxed mt-0.5">
                 도면(P&ID, ISO 스케치, 배치도) 및 현장 사진(연결 헤더, 반입 경로, 협소 동선)을 한 개 이상 첨부하시면, 출장 실측 전 엔지니어가 1차 원가 밴드를 오차율 5% 이내로 고정해 진단 리포트를 송부할 수 있습니다.
               </span>
             </div>
@@ -496,7 +496,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all"
               >
                 <Upload className="w-4 h-4 text-steel" />
-                <span className="text-[11px] font-bold text-navy">도면 업로드</span>
+                <span className="text-[12px] font-bold text-navy">도면 업로드</span>
               </button>
               <button
                 type="button"
@@ -505,7 +505,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all"
               >
                 <Upload className="w-4 h-4 text-steel" />
-                <span className="text-[11px] font-bold text-navy">사진 업로드</span>
+                <span className="text-[12px] font-bold text-navy">사진 업로드</span>
               </button>
               <button
                 type="button"
@@ -514,19 +514,19 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all"
               >
                 <Upload className="w-4 h-4 text-steel" />
-                <span className="text-[11px] font-bold text-navy">기타 첨부</span>
+                <span className="text-[12px] font-bold text-navy">기타 첨부</span>
               </button>
             </div>
 
             {/* 첨부된 파일 목록 */}
             {formData.files.length > 0 ? (
               <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto border border-border rounded-custom p-3 bg-bg-subtle/30">
-                <span className="text-[10px] text-gray-light font-bold">첨부된 자료 ({formData.files.length}건)</span>
+                <span className="text-[12px] text-gray-light font-bold">첨부된 자료 ({formData.files.length}건)</span>
                 {formData.files.map((file, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-bg border border-border p-2 rounded-custom shadow-sm text-xs font-medium">
+                  <div key={idx} className="flex items-center justify-between bg-bg border border-border p-2 rounded-custom shadow-sm text-[12px] font-medium">
                     <div className="flex items-center gap-2 text-gray min-w-0">
-                      <span className="bg-steel/15 text-steel px-1.5 py-0.5 rounded-custom text-[9px] font-bold shrink-0">{file.category}</span>
-                      <span className="truncate text-navy font-bold text-[11px]">{file.name}</span>
+                      <span className="bg-steel/15 text-steel px-1.5 py-0.5 rounded-custom text-[12px] font-bold shrink-0">{file.category}</span>
+                      <span className="truncate text-navy font-bold text-[12px]">{file.name}</span>
                     </div>
                     <button
                       type="button"
@@ -540,7 +540,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 ))}
               </div>
             ) : (
-              <div className="border border-border border-dashed p-6 text-center rounded-custom text-[11px] text-gray-light font-bold bg-bg-subtle/10">
+              <div className="border border-border border-dashed p-6 text-center rounded-custom text-[12px] text-gray-light font-bold bg-bg-subtle/10">
                 *아직 첨부된 파일이 없습니다. (위 버튼을 눌러 모의 첨부해볼 수 있습니다)
               </div>
             )}
@@ -561,8 +561,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 className="w-4 h-4 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
               />
               <label htmlFor="agreePrivacy" style={{ touchAction: 'manipulation' }} className="flex flex-col gap-0.5 cursor-pointer">
-                <span className="text-xs font-bold text-navy">개인정보 수집 및 이용 동의 (필수)</span>
-                <span className="text-[10px] text-gray leading-normal">
+                <span className="text-[12px] font-bold text-navy">개인정보 수집 및 이용 동의 (필수)</span>
+                <span className="text-[12px] text-gray leading-normal">
                   ZEROS 예상견적 서비스 제공 및 연락을 위한 담당자 성함, 연락처, 이메일 저장을 승인합니다.
                 </span>
               </label>
@@ -579,8 +579,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 className="w-4 h-4 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
               />
               <label htmlFor="agreeEstimate" style={{ touchAction: 'manipulation' }} className="flex flex-col gap-0.5 cursor-pointer">
-                <span className="text-xs font-bold text-navy">엔지니어 사전검토 약관 동의 (필수)</span>
-                <span className="text-[10px] text-gray leading-normal">
+                <span className="text-[12px] font-bold text-navy">엔지니어 사전검토 약관 동의 (필수)</span>
+                <span className="text-[12px] text-gray leading-normal">
                   본 리포트는 확정된 견적서가 아니며, 고객이 제공한 사진 및 도면을 근거로 한 1차 타당성 검토 리포트임을 확인합니다.
                 </span>
               </label>
@@ -598,8 +598,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                   className="w-4 h-4 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
                 />
                 <label htmlFor="agreeVisitFee" style={{ touchAction: 'manipulation' }} className="flex flex-col gap-0.5 cursor-pointer">
-                  <span className="text-xs font-bold text-navy">출장견적 및 레이저 실측비용 인지 동의 (필수)</span>
-                  <span className="text-[10px] text-gray leading-normal">
+                  <span className="text-[12px] font-bold text-navy">출장견적 및 레이저 실측비용 인지 동의 (필수)</span>
+                  <span className="text-[12px] text-gray leading-normal">
                     선택하신 규모(1,000만~1억)는 출장실측 진단 대상으로, 1차 도면 검토 완료 후 실측 방문 시 출장 여비가 청구됨을 확인합니다.
                   </span>
                 </label>
@@ -617,14 +617,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 className="w-4 h-4 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
               />
               <label htmlFor="agreeAdditionalDoc" style={{ touchAction: 'manipulation' }} className="flex flex-col gap-0.5 cursor-pointer">
-                <span className="text-xs font-bold text-navy">추가 자료 제출 협조 동의 (필수)</span>
-                <span className="text-[10px] text-gray leading-normal">
+                <span className="text-[12px] font-bold text-navy">추가 자료 제출 협조 동의 (필수)</span>
+                <span className="text-[12px] text-gray leading-normal">
                   도면의 스펙 미비 또는 현장 분기점 사진 부재 시, 전담 엔지니어가 개별 유선/메일로 보완을 요구할 수 있음에 동의합니다.
                 </span>
               </label>
             </div>
 
-            <div className="bg-navy p-3.5 rounded-custom flex items-center gap-2 text-bg text-[10.5px] leading-relaxed font-medium">
+            <div className="bg-navy p-3.5 rounded-custom flex items-center gap-2 text-bg text-[12px] leading-relaxed font-medium">
               <Lock className="w-4 h-4 text-steel shrink-0" />
               <span>제출하신 자료는 보안 RLS 정책에 의해 철저하게 기밀 유지되며 관리자 외 절대 유출되지 않습니다.</span>
             </div>
@@ -639,7 +639,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               onClick={handlePrev}
               disabled={loading}
               style={{ touchAction: 'manipulation' }}
-              className="flex items-center justify-center gap-1.5 bg-bg-subtle hover:bg-border/30 text-navy px-4 py-3 rounded-custom text-xs font-extrabold border border-border transition-all select-none w-24 active:scale-95 disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 bg-bg-subtle hover:bg-border/30 text-navy px-4 py-3 rounded-custom text-[12px] font-extrabold border border-border transition-all select-none w-24 active:scale-95 disabled:opacity-50"
             >
               <ChevronLeft className="w-4 h-4" />
               이전
@@ -651,7 +651,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               type="button"
               onClick={handleNext}
               style={{ touchAction: 'manipulation' }}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-steel hover:bg-navy text-bg py-3 rounded-custom text-xs font-extrabold shadow-sm transition-all select-none active:scale-[0.99]"
+              className="flex-1 flex items-center justify-center gap-1.5 bg-steel hover:bg-navy text-bg py-3 rounded-custom text-[12px] font-extrabold shadow-sm transition-all select-none active:scale-[0.99]"
             >
               다음 단계
               <ChevronRight className="w-4 h-4" />
@@ -661,7 +661,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               type="submit"
               disabled={loading}
               style={{ touchAction: 'manipulation' }}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-accent hover:bg-accent/90 text-bg py-3 rounded-custom text-xs font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-1.5 bg-accent hover:bg-accent/90 text-bg py-3 rounded-custom text-[12px] font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
             >
               {loading ? (
                 <span>의뢰서 접수 중...</span>

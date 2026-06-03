@@ -45,7 +45,7 @@ const CompleteContent: React.FC = () => {
 
         {/* 메인 완료 텍스트 */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] text-gray-light font-bold uppercase tracking-widest">예상견적 신청 완료</span>
+          <span className="text-[12px] text-gray-light font-bold uppercase tracking-widest">예상견적 신청 완료</span>
           <h2 className="text-xl md:text-2xl font-black text-navy tracking-tight">
             의뢰서가 성공적으로 접수되었습니다
           </h2>
@@ -54,17 +54,17 @@ const CompleteContent: React.FC = () => {
         {/* 접수 정보 박스 */}
         <div className="bg-bg-subtle border border-border rounded-custom p-4.5 text-left flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-border/80 pb-2.5">
-            <span className="text-xs font-bold text-gray-light">접수 번호</span>
-            <span className="text-[13px] font-black text-navy tracking-wide tabular-nums">{estimateNo}</span>
+            <span className="text-[12px] font-bold text-gray-light">접수 번호</span>
+            <span className="text-[13.5px] font-black text-navy tracking-wide tabular-nums">{estimateNo}</span>
           </div>
 
           <div className="flex items-center justify-between border-b border-border/80 pb-2.5">
-            <span className="text-xs font-bold text-gray-light">의뢰 고객</span>
-            <span className="text-[13px] font-bold text-navy">{customerName} 님</span>
+            <span className="text-[12px] font-bold text-gray-light">의뢰 고객</span>
+            <span className="text-[13.5px] font-bold text-navy">{customerName} 님</span>
           </div>
 
           <div className="flex flex-col gap-1.5 pt-0.5">
-            <span className="text-[10px] text-steel font-black uppercase tracking-wider">{msg.title}</span>
+            <span className="text-[12px] text-steel font-black uppercase tracking-wider">{msg.title}</span>
             <p className="text-[12px] text-navy font-bold leading-relaxed">
               {msg.body}
             </p>
@@ -73,18 +73,18 @@ const CompleteContent: React.FC = () => {
 
         {/* 향후 절차 안내 */}
         <div className="text-left flex flex-col gap-3 border-t border-border pt-5">
-          <h3 className="text-xs font-black text-navy tracking-wide uppercase">다음에 일어나는 일 (Next Steps)</h3>
-          <div className="flex flex-col gap-3 text-[11.5px] text-gray font-medium leading-relaxed">
+          <h3 className="text-[12px] font-black text-navy tracking-wide uppercase">다음에 일어나는 일 (Next Steps)</h3>
+          <div className="flex flex-col gap-3 text-[12px] text-gray font-medium leading-relaxed">
             <div className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-navy text-bg text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">1</span>
+              <span className="w-5 h-5 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shrink-0 mt-0.5">1</span>
               <p>배정된 전담 엔지니어가 제출해주신 도면과 현장 사진의 화질 및 누설 상태를 확인합니다. (최대 24시간 소요)</p>
             </div>
             <div className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-navy text-bg text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">2</span>
+              <span className="w-5 h-5 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shrink-0 mt-0.5">2</span>
               <p>기초 자료가 불충분할 경우 기입하신 이메일({searchParams.get('email') || '이메일'}) 또는 연락처로 엔지니어가 직접 연락을 드립니다.</p>
             </div>
             <div className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-navy text-bg text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">3</span>
+              <span className="w-5 h-5 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shrink-0 mt-0.5">3</span>
               <p>검토 완료 즉시 ZEROS 공사범위 WBS 리포트와 권장 예상 원가 가이드 라인이 제공됩니다.</p>
             </div>
           </div>
@@ -94,7 +94,7 @@ const CompleteContent: React.FC = () => {
         <div className="flex items-center gap-3 border-t border-border pt-5">
           <button
             onClick={() => router.push('/')}
-            className="flex-1 bg-steel hover:bg-navy text-bg py-3.5 rounded-custom text-xs font-black shadow-sm transition-all active:scale-[0.99]"
+            className="flex-1 bg-steel hover:bg-navy text-bg py-3.5 rounded-custom text-[12px] font-black shadow-sm transition-all active:scale-[0.99]"
           >
             ZEROS 홈으로 돌아가기
           </button>
@@ -108,7 +108,7 @@ const CompleteContent: React.FC = () => {
 export default function RequestCompletePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-bg-subtle text-xs text-gray-light font-bold">
+      <div className="min-h-screen flex items-center justify-center bg-bg-subtle text-[12px] text-gray-light font-bold">
         접수 결과 로딩 중...
       </div>
     }>
