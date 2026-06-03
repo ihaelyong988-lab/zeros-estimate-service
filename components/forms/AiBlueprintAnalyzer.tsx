@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Eye, ShieldAlert, CheckSquare, RefreshCw, Cpu, Sparkles } from 'lucide-react';
+import { ShieldAlert, CheckSquare, RefreshCw, Cpu, Sparkles } from 'lucide-react';
 
 interface AiBlueprintAnalyzerProps {
   onAnalysisComplete: (result: {
@@ -13,6 +13,14 @@ interface AiBlueprintAnalyzerProps {
   }) => void;
 }
 
+const scanLogs = [
+  'P&ID 도면 레이어 로딩 및 벡터 그리드 분할 중...',
+  '메인 배관(80A/50A) 유동 치수 및 곡관 곡률 감지...',
+  '주요 밸브 피팅류(게이트 밸브, 센서 포트) OCR 인식 중...',
+  '기계실 협소 반입 공간 간섭 리스크 시뮬레이션 중...',
+  '진단 기준 데이터베이스(n=246건) 대조 검토 중...'
+];
+
 export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnalysisComplete }) => {
   const [analyzing, setAnalyzing] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -23,14 +31,6 @@ export const AiBlueprintAnalyzer: React.FC<AiBlueprintAnalyzerProps> = ({ onAnal
     material: string;
     risk: string;
   } | null>(null);
-
-  const scanLogs = [
-    'P&ID 도면 레이어 로딩 및 벡터 그리드 분할 중...',
-    '메인 배관(80A/50A) 유동 치수 및 곡관 곡률 감지...',
-    '주요 밸브 피팅류(게이트 밸브, 센서 포트) OCR 인식 중...',
-    '기계실 협소 반입 공간 간섭 리스크 시뮬레이션 중...',
-    '진단 기준 데이터베이스(n=246건) 대조 검토 중...'
-  ];
 
   useEffect(() => {
     if (!analyzing) return;

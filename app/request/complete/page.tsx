@@ -2,7 +2,7 @@
 
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle2, ChevronRight, FileText, PhoneCall, Mail, Building } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 // 자동 분류별 안내 메시지 맵 (원문 그대로 - §6.2)
 const categoryMessages: Record<string, { title: string; body: string }> = {
@@ -66,7 +66,7 @@ const CompleteContent: React.FC = () => {
           <div className="flex flex-col gap-1.5 pt-0.5">
             <span className="text-[10px] text-steel font-black uppercase tracking-wider">{msg.title}</span>
             <p className="text-[12px] text-navy font-bold leading-relaxed">
-              "{msg.body}"
+              {msg.body}
             </p>
           </div>
         </div>

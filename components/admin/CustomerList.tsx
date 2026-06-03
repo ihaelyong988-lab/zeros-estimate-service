@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Customer } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
-import { Users2, Search, Edit2, Check, X, ShieldAlert, Award, FileText, TrendingUp } from 'lucide-react';
+import { Users2, Search, Edit2, Check, X, Award, FileText, TrendingUp } from 'lucide-react';
 
 export const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -19,8 +19,11 @@ export const CustomerList: React.FC = () => {
   // 고객 상세 모달 상태
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  const loadCustomers = async () => {
-    setLoading(true);
+  const loadCustomers = async (showPending = true) => {
+    if (showPending) {
+      await Promise.resolve();
+      setLoading(true);
+    }
     try {
       const list = await ZerosService.getCustomers();
       setCustomers(list);
@@ -32,7 +35,9 @@ export const CustomerList: React.FC = () => {
   };
 
   useEffect(() => {
-    loadCustomers();
+    queueMicrotask(() => {
+      void loadCustomers(false);
+    });
   }, []);
 
   const handleEditClick = (cust: Customer) => {

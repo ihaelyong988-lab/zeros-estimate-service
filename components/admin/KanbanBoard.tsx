@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Estimate, EstimateStatus, EstimateCategory } from '@/types/estimate';
-import { Calendar, User, Wrench, ShieldAlert } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 interface KanbanBoardProps {
   estimates: Estimate[];
@@ -75,6 +75,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   return (
     <div className="w-full flex-1 overflow-x-auto select-none font-sans py-2">
+      <div className="sticky left-0 z-10 mb-3 flex items-center justify-between gap-3 rounded-custom border border-steel/20 bg-steel/5 px-3 py-2 text-[11px] font-bold text-steel shadow-sm">
+        <span>13단계 영업 파이프라인입니다. 좌우로 이동해 결제대기, 방문예정, 견적송부, 수주성공까지 확인할 수 있습니다.</span>
+        <span className="shrink-0 rounded-custom bg-bg px-2 py-0.5 text-[10px] font-black text-navy border border-border">가로 스크롤</span>
+      </div>
       <div className="flex gap-4 items-stretch h-[calc(100vh-210px)] min-h-[500px]">
         {allStatuses.map((status) => {
           const columnEstimates = estimates.filter(e => e.status === status);

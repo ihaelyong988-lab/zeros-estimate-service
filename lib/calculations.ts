@@ -1,4 +1,4 @@
-import { Estimate, Payment } from '@/types/estimate';
+import { Estimate } from '@/types/estimate';
 
 export interface PerformanceMetrics {
   totalCount: number;
@@ -30,8 +30,7 @@ export interface PerformanceMetrics {
  * ZEROS 사전진단 데이터셋 기반 실시간 KPI 통계 지표 연산
  */
 export function calculatePerformanceMetrics(
-  estimates: Estimate[],
-  payments: Payment[]
+  estimates: Estimate[]
 ): PerformanceMetrics {
   const totalCount = estimates.length;
   

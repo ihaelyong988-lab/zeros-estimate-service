@@ -1,6 +1,6 @@
 'use client';
 
-import { Estimate, Customer, SiteVisit, Payment, AdminUser, FileMeta, NotificationLog } from '@/types/estimate';
+import { Estimate, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
 import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits } from './mock-data';
 
 // ==========================================
@@ -407,12 +407,6 @@ class MockZerosService implements ZerosDataService {
     return this.getData<AdminUser>('zeros_admin_users');
   }
 }
-
-// ==========================================
-// 3. 실제 Supabase 연동 서비스 (미구현 시 Mock으로 자동 안전 전환)
-// ==========================================
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // 기본적으로 Mock 서비스를 우선 주입하고, 환경 변수가 확보되면 Supabase SDK로 연결을 수립할 수 있습니다.
 export const ZerosService: ZerosDataService = new MockZerosService();

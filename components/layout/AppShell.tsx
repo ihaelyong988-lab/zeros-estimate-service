@@ -1,25 +1,17 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useShell, ActiveTab } from '@/lib/context/ShellContext';
+import React, { useState, useEffect } from 'react';
+import { useShell } from '@/lib/context/ShellContext';
 import { TopHeader } from './TopHeader';
 import { LeftSidebar } from './LeftSidebar';
-import { RightSidebar, metricsMap } from './RightSidebar';
+import { RightSidebar } from './RightSidebar';
 import { MobileSimulator } from './MobileSimulator';
 import { 
-  Menu, 
-  X, 
-  ShieldAlert, 
   Home, 
   FileText, 
   TrendingUp, 
   ShieldCheck, 
-  Smartphone, 
-  Building2,
-  Calendar,
-  Users,
-  BarChart3,
-  AlertCircle
+  Building2
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -73,11 +65,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     setSelectedBudget,
     adminView,
     setAdminView,
-    sliderVal,
-    setSliderVal,
-    mobileMenuOpen,
-    setMobileMenuOpen,
-    showSimulator,
   } = useShell();
 
   // 모바일 레이아웃(PWA, Simulator, ScreenWidth) 감지 상태

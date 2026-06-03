@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useShell, ActiveTab } from '@/lib/context/ShellContext';
-import { Building2, ShieldCheck, User, Settings, BarChart3, HelpCircle, Smartphone } from 'lucide-react';
+import { Building2, ShieldCheck, User, Smartphone } from 'lucide-react';
 
 export const TopHeader: React.FC = () => {
   const {
@@ -12,9 +12,7 @@ export const TopHeader: React.FC = () => {
     setActiveTab,
     setSelectedMenu,
     setSelectedBudget,
-    adminView,
     setAdminView,
-    showSimulator,
     setShowSimulator,
   } = useShell();
 
@@ -42,7 +40,7 @@ export const TopHeader: React.FC = () => {
         </div>
         <div className="flex flex-col justify-center">
           <span className="font-black text-[17px] tracking-wider text-navy leading-none uppercase font-sans">ZEROS</span>
-          <span className="text-[8.5px] text-gray-light font-black tracking-widest leading-none mt-1">ESTIMATE SERVICE</span>
+          <span className="text-[8.5px] text-gray-light font-black tracking-widest leading-none mt-1">무료 출장 견적 컨설팅</span>
         </div>
       </div>
 

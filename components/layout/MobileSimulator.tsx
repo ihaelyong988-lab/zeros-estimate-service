@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Smartphone, RotateCw, Sparkles } from 'lucide-react';
+import { X, RotateCw, Sparkles } from 'lucide-react';
 import { useShell } from '@/lib/context/ShellContext';
 
 export const MobileSimulator: React.FC = () => {

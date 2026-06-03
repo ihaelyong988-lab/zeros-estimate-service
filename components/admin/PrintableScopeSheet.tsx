@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Estimate } from '@/types/estimate';
-import { FileBadge, Wrench, ShieldCheck, Printer, Calendar } from 'lucide-react';
+import { ShieldCheck, Printer } from 'lucide-react';
 
 interface PrintableScopeSheetProps {
   estimate: Estimate;

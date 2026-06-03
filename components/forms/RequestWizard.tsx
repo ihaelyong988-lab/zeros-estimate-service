@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
-import { Estimate, WorkType, SiteType, ExpectedBudgetRange } from '@/types/estimate';
+import { Estimate, WorkType, SiteType, ExpectedBudgetRange, EstimateCategory } from '@/types/estimate';
 import {
   User,
   Building,
@@ -12,8 +12,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Send,
-  FileCheck,
-  ClipboardList,
   AlertCircle,
   Upload,
   Trash2,
@@ -24,49 +22,54 @@ interface RequestWizardProps {
   onComplete: (estimate: Estimate) => void;
 }
 
+const defaultFormData = {
+  customer_name: '',
+  company_name: '',
+  phone: '',
+  email: '',
+  site_address: '',
+  customer_type: '일반',
+  work_type: '배관공사' as WorkType,
+  site_type: '공장' as SiteType,
+  work_purpose: '신규설치',
+  expected_budget_range: '1,000만~1억' as ExpectedBudgetRange,
+  desired_schedule: '1개월 이내',
+  urgency: false,
+  description: '',
+  request_detail: '',
+  files: [] as { name: string; type: string; category: string }[],
+  agreePrivacy: false,
+  agreeEstimate: false,
+  agreeVisitFee: false,
+  agreeAdditionalDoc: false
+};
+
+type RequestFormData = typeof defaultFormData;
+
 export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // 폼 입력 데이터 상태 관리
-  const [formData, setFormData] = useState({
-    customer_name: '',
-    company_name: '',
-    phone: '',
-    email: '',
-    site_address: '',
-    customer_type: '일반',
-    work_type: '배관공사' as WorkType,
-    site_type: '공장' as SiteType,
-    work_purpose: '신규설치',
-    expected_budget_range: '1,000만~1억' as ExpectedBudgetRange,
-    desired_schedule: '1개월 이내',
-    urgency: false,
-    description: '',
-    request_detail: '',
-    // 파일 첨부 목록 모의 관리
-    files: [] as { name: string; type: string; category: string }[],
-    agreePrivacy: false,
-    agreeEstimate: false,
-    agreeVisitFee: false,
-    agreeAdditionalDoc: false
-  });
-
-  // 1. 임시저장(localStorage) 복구 로직 (생명주기 1회 - §3.6)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const draft = localStorage.getItem('zeros_draft_request');
-      if (draft) {
-        try {
-          const parsed = JSON.parse(draft);
-          setFormData(prev => ({ ...prev, ...parsed }));
-        } catch (e) {
-          console.error('Failed to parse draft request', e);
-        }
-      }
+  // 폼 입력 데이터 상태 관리 및 임시저장 복구
+  const [formData, setFormData] = useState<RequestFormData>(() => {
+    if (typeof window === 'undefined') {
+      return defaultFormData;
     }
-  }, []);
+
+    const draft = localStorage.getItem('zeros_draft_request');
+    if (!draft) {
+      return defaultFormData;
+    }
+
+    try {
+      const parsed = JSON.parse(draft) as Partial<RequestFormData>;
+      return { ...defaultFormData, ...parsed };
+    } catch (e) {
+      console.error('Failed to parse draft request', e);
+      return defaultFormData;
+    }
+  });
 
   // 폼 입력값 변경 시 자동 임시저장
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -77,13 +80,6 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
     setFormData(updated);
     
     // 임시저장
-    localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
-  };
-
-  // 공통 선택 박스 핸들러
-  const handleSelectChange = (name: string, value: string | boolean) => {
-    const updated = { ...formData, [name]: value };
-    setFormData(updated);
     localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
   };
 
@@ -174,7 +170,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
     setLoading(true);
     try {
       // 1. 예상금액에 따라 estimate_category 자동 결정 로직 - §6.2
-      let category = 'unknown';
+      let category: EstimateCategory = 'unknown';
       if (formData.expected_budget_range === '≤1,000만') category = 'small';
       else if (formData.expected_budget_range === '1,000만~1억') category = 'medium';
       else if (formData.expected_budget_range === '≥1억') category = 'large';
@@ -206,7 +202,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         urgency: formData.urgency,
         description: formData.description,
         request_detail: formData.request_detail,
-        estimate_category: category as any,
+        estimate_category: category,
         payment_required: category === 'medium' || category === 'large',
         submitted_files: mappedFiles
       });
@@ -216,7 +212,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
       
       // 완료 액션 기동
       onComplete(newEst);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorMsg('의뢰 신청 도중 오류가 발생했습니다. 다시 시도해 주세요.');
     } finally {

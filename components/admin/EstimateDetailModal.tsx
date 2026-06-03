@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Estimate, EstimateStatus, AccuracyGrade, Payment } from '@/types/estimate';
+import { Estimate, EstimateStatus, AccuracyGrade, Payment, SiteVisit } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
 import { TossPaymentModal } from './TossPaymentModal';
 import { PrintableScopeSheet } from './PrintableScopeSheet';
@@ -9,19 +9,14 @@ import { AiBlueprintAnalyzer } from '../forms/AiBlueprintAnalyzer';
 import {
   X,
   User,
-  Phone,
-  Mail,
-  MapPin,
   ClipboardList,
   CalendarCheck,
   FileCheck,
   CreditCard,
   Plus,
-  AlertTriangle,
   FolderOpen,
   Printer,
-  Cpu,
-  ShieldCheck
+  Cpu
 } from 'lucide-react';
 
 interface EstimateDetailModalProps {
@@ -29,6 +24,8 @@ interface EstimateDetailModalProps {
   onClose: () => void;
   onSaved: () => void;
 }
+
+type AdminPaymentStatus = '결제대기' | '결제완료' | '환불';
 
 export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   estimateId,
@@ -50,12 +47,12 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   const [visitDate, setVisitDate] = useState('');
   const [visitorName, setVisitorName] = useState('');
   const [visitPurpose, setVisitPurpose] = useState('현장 실측 및 경로 검수');
-  const [visitStatus, setVisitStatus] = useState<'예정' | '완료' | '취소'>('예정');
+  const [visitStatus, setVisitStatus] = useState<SiteVisit['visit_status']>('예정');
   
   // 결제 관련 수동 연동
   const [payAmount, setPayAmount] = useState<number | ''>('');
   const [payType, setPayType] = useState<'온라인검토비' | '출장견적비' | '프로젝트 사전진단비'>('출장견적비');
-  const [payStatus, setPayStatus] = useState<'결제대기' | '결제완료' | '환불'>('결제대기');
+  const [payStatus, setPayStatus] = useState<AdminPaymentStatus>('결제대기');
 
   // 2차 고도화 모달 상태
   const [showTossModal, setShowTossModal] = useState(false);
@@ -613,7 +610,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                   <label className="text-[9.5px] text-gray-light font-bold">진행 상태</label>
                   <select
                     value={visitStatus}
-                    onChange={(e) => setVisitStatus(e.target.value as any)}
+                    onChange={(e) => setVisitStatus(e.target.value as SiteVisit['visit_status'])}
                     className="border border-border p-2 rounded-custom text-xs bg-bg"
                   >
                     <option value="예정">예정</option>
@@ -657,7 +654,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                   <label className="text-[9.5px] text-gray-light font-bold">청구 비용 종류</label>
                   <select
                     value={payType}
-                    onChange={(e) => setPayType(e.target.value as any)}
+                    onChange={(e) => setPayType(e.target.value as Payment['payment_type'])}
                     className="border border-border p-2 rounded-custom text-xs bg-bg"
                   >
                     <option value="온라인검토비">온라인검토비 (소액)</option>
@@ -679,7 +676,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                   <label className="text-[9.5px] text-gray-light font-bold">입금 수동 확인</label>
                   <select
                     value={payStatus}
-                    onChange={(e) => setPayStatus(e.target.value as any)}
+                    onChange={(e) => setPayStatus(e.target.value as AdminPaymentStatus)}
                     className="border border-border p-2 rounded-custom text-xs bg-bg"
                   >
                     <option value="결제대기">결제대기 (입금미완)</option>
