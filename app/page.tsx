@@ -34,157 +34,6 @@ import {
   Truck
 } from 'lucide-react';
 
-const tradeShowcase = [
-  {
-    title: '01. 일반/용수/가스 배관공사 (Piping Dynamics)',
-    desc: '유체 마찰 저감 최적 관경 매핑 및 Darcy-Weisbach 손실 자동 수치 시뮬레이션 진단',
-    svg: (
-      <svg className="w-full h-full text-steel/30 stroke-[1.2]" fill="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid-l1" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid-l1)" />
-        <path d="M15,35 L65,35 Q75,35 75,45 L75,90" stroke="currentColor" strokeWidth="1.2" />
-        <path d="M15,35 L65,35 Q75,35 75,45 L75,90" stroke="#0284c7" strokeWidth="1" className="b2b-flow-line" />
-        <circle cx="75" cy="35" r="2" fill="#0284c7" />
-        <circle cx="45" cy="35" r="5" fill="#f8fafc" stroke="currentColor" strokeWidth="0.8" />
-        <line x1="45" y1="35" x2="48" y2="32" stroke="#0284c7" strokeWidth="1" />
-        <text x="43" y="42" fill="currentColor" fontSize="2.5" className="font-mono">P</text>
-      </svg>
-    )
-  },
-  {
-    title: '02. 산업 장비 및 설비 설치공사 (Equipment Layouts)',
-    desc: '대형 기계 반입 동선, 구조 빔 하중 분산 설계 및 펌프 진동 방진 타당성 검토',
-    svg: (
-      <svg className="w-full h-full text-steel/30 stroke-[1.2]" fill="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid-l2" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid-l2)" />
-        <rect x="25" y="40" width="45" height="25" rx="1.5" stroke="currentColor" strokeWidth="1" />
-        <line x1="25" y1="40" x2="10" y2="25" stroke="currentColor" strokeDasharray="2 2" />
-        <line x1="70" y1="40" x2="55" y2="25" stroke="currentColor" strokeDasharray="2 2" />
-        <circle cx="47" cy="52" r="6" stroke="#d97706" strokeWidth="0.75" strokeDasharray="2 1" className="animate-pulse" />
-        <path d="M47,25 L47,38 M47,38 L44,35 M47,38 L50,35" stroke="#d97706" strokeWidth="1" />
-        <text x="42" y="21" fill="#d97706" fontSize="2.8" className="font-mono font-bold">5.2T</text>
-      </svg>
-    )
-  },
-  {
-    title: '03. 유틸리티 스팀/에어 배관 (Utility Loop)',
-    desc: '보온재 열손실 차단 및 응축수 배출 트랩 스테이션 최적화 배치 설계 분석',
-    svg: (
-      <svg className="w-full h-full text-steel/30 stroke-[1.2]" fill="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid-l3" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid-l3)" />
-        <path d="M15,65 C25,30 75,30 85,65" stroke="currentColor" strokeWidth="1" />
-        <rect x="42" y="32" width="16" height="8" rx="0.5" fill="#f8fafc" stroke="#0284c7" strokeWidth="0.8" />
-        <circle cx="50" cy="36" r="2" fill="#ef4444" />
-        <path d="M50,40 L50,48" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="1.5 1" />
-      </svg>
-    )
-  },
-  {
-    title: '04. 생산라인 증설 및 분기 배관 (Tie-in / Hot-tap)',
-    desc: '가동 조업 정지 없는 메인 배관의 안전 무중단 티인 (Hot-Tapping) 분기 설계 가이드',
-    svg: (
-      <svg className="w-full h-full text-steel/30 stroke-[1.2]" fill="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid-l4" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid-l4)" />
-        <line x1="10" y1="30" x2="90" y2="30" stroke="#94a3b8" strokeWidth="1.5" strokeOpacity="0.5" />
-        <path d="M50,30 L50,80 L80,80" stroke="#E0701A" strokeWidth="1.2" />
-        <circle cx="50" cy="30" r="3.5" fill="#f8fafc" stroke="#E0701A" strokeWidth="1" className="animate-pulse" />
-        <circle cx="50" cy="30" r="1.5" fill="#E0701A" />
-      </svg>
-    )
-  },
-  {
-    title: '05. 노후 배관 철거 및 신설공사 (Replacement)',
-    desc: '내부 스케일 침착 및 부식 누수 수명 진단, 친환경 안전 배출 공법 제안',
-    svg: (
-      <svg className="w-full h-full text-steel/30 stroke-[1.2]" fill="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid-l5" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid-l5)" />
-        <rect x="15" y="35" width="70" height="30" rx="1.5" stroke="currentColor" strokeWidth="1" />
-        <line x1="35" y1="35" x2="35" y2="65" stroke="#ef4444" strokeWidth="0.8" strokeDasharray="2 2" />
-        <line x1="65" y1="35" x2="65" y2="65" stroke="#10b981" strokeWidth="0.8" strokeDasharray="2 2" />
-        <path d="M16,50 Q23,45 30,50 T44,50 Q51,55 58,50 T72,50 T84,50" stroke="#ef4444" strokeWidth="0.6" strokeDasharray="1.5 1.5" />
-        <text x="18" y="29" fill="#ef4444" fontSize="2.5" className="font-mono">CORROSION</text>
-        <text x="56" y="73" fill="#10b981" fontSize="2.5" className="font-mono">SUS316L OK</text>
-      </svg>
-    )
-  },
-  {
-    title: '06. 기계실 및 펌프실 배관 개선 (Pump Room)',
-    desc: '흡입측 Cavitation(공동현상) 예방 편심 이경관 설계 및 압력 불평형 방지 매니폴드 배치',
-    svg: (
-      <svg className="w-full h-full text-steel/30 stroke-[1.2]" fill="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid-l6" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid-l6)" />
-        <circle cx="50" cy="50" r="20" stroke="currentColor" strokeWidth="1" />
-        <circle cx="50" cy="50" r="8" stroke="currentColor" strokeWidth="0.8" />
-        <line x1="50" y1="50" x2="50" y2="30" stroke="#0d9488" strokeWidth="0.8" className="animate-[spin_4s_linear_infinite]" style={{ transformOrigin: '50px 50px' }} />
-        <text x="32" y="24" fill="currentColor" fontSize="2.5" className="font-mono">REDUCER OK</text>
-      </svg>
-    )
-  },
-  {
-    title: '07. 생산설비 훅업 연결공사 (Cleanroom)',
-    desc: '반도체/바이오 UHP 가스 캐비닛 인터페이스 세정 자재(EP) 및 초미세 필터링 타당성 진단',
-    svg: (
-      <svg className="w-full h-full text-steel/30 stroke-[1.2]" fill="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid-l7" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid-l7)" />
-        <rect x="20" y="20" width="60" height="60" rx="2" stroke="currentColor" strokeWidth="1" />
-        <rect x="42" y="42" width="16" height="16" fill="#f8fafc" stroke="#10b981" strokeWidth="0.8" />
-        <text x="45" y="52" fill="#10b981" fontSize="2.8" className="font-mono font-black">0.01㎛</text>
-      </svg>
-    )
-  },
-  {
-    title: '08. CAPEX 개·증설 사업비 사전검토 (Cost Audit)',
-    desc: '기획 컨셉 단계 표본 데이터 매핑으로 시공사 견적 버블 사전 감지 및 예산 상한선 통제',
-    svg: (
-      <svg className="w-full h-full text-steel/30 stroke-[1.2]" fill="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid-l8" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid-l8)" />
-        <line x1="15" y1="80" x2="85" y2="80" stroke="currentColor" strokeWidth="1" />
-        <path d="M15,50 L35,20 L55,45 L75,15 L85,25" stroke="#ef4444" strokeWidth="0.8" strokeDasharray="2 2" />
-        <path d="M15,70 L35,55 L55,60 L75,45 L85,47" stroke="#E0701A" strokeWidth="1.5" />
-      </svg>
-    )
-  }
-];
-
 export default function Home() {
   const {
     isUserMode,
@@ -1190,32 +1039,56 @@ export default function Home() {
     const activeVisuals = getCategoryVisuals(activeTradeName);
 
     return (
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+      <div className="flex flex-col gap-4 max-w-4xl mx-auto">
 
       {/* ============================================================
           핵심 주제 히어로 — 무료 출장 견적 컨설팅 + 35년 PM 신뢰
           ============================================================ */}
-      <section className="relative overflow-hidden bg-bg border border-border rounded-custom shadow-custom-sm p-7 md:p-9 flex flex-col gap-5 select-none">
+      <section className="relative overflow-hidden bg-bg border border-border rounded-custom shadow-custom-sm p-5 md:p-7 flex flex-col gap-4 select-none">
         {/* 밝고 신뢰감 있는 맥킨지 톤 배경 */}
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(245,247,250,0.9),rgba(255,255,255,0)_55%)] pointer-events-none" />
         <div className="absolute right-0 top-0 w-64 h-64 bg-[radial-gradient(circle_at_top_right,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
         <div className="absolute left-0 bottom-0 h-1 w-full bg-gradient-to-r from-steel via-accent to-transparent opacity-70 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col gap-4">
-          {/* 무료 출장 배지 */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 bg-accent text-bg text-[10px] font-black px-2.5 py-1 rounded-full tracking-wider shadow-sm shadow-accent/20">
-              <Truck className="w-3.5 h-3.5" /> 무료 출장 견적
-            </span>
-            <span className="inline-flex items-center gap-1.5 bg-bg border border-border text-steel text-[10px] font-black px-2.5 py-1 rounded-full tracking-wider">
-              <MapPin className="w-3.5 h-3.5" /> 전국 현장 방문
-            </span>
+        <div className="relative z-10 flex flex-col gap-3.5">
+          {/* 무료 출장 신뢰 배지 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 items-stretch">
+            <button
+              onClick={() => setActiveTab('request')}
+              style={{
+                touchAction: 'manipulation',
+                fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
+              }}
+              className="inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-bg text-[17px] md:text-[18px] font-bold px-3 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all active:scale-95 cursor-pointer"
+            >
+              <Truck className="w-7 h-7 shrink-0" /> 무료 출장 견적
+            </button>
+            <button
+              onClick={() => setActiveTab('request')}
+              style={{ touchAction: 'manipulation' }}
+              className="inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F8FAFC] border border-[#B8C7DA] hover:bg-bg-subtle text-[#123A63] text-[17px] md:text-[18px] font-black px-3 py-2.5 rounded-custom tracking-tight shadow-sm whitespace-nowrap transition-all active:scale-95 cursor-pointer"
+            >
+              <MapPin className="w-7 h-7 shrink-0" /> 전국 현장 방문
+            </button>
+            <button
+              onClick={() => setActiveTab('about')}
+              style={{
+                touchAction: 'manipulation',
+                fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
+              }}
+              className="inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-bg border border-[#9FB3CC] hover:bg-bg-subtle text-[#0B2F5B] text-[17px] md:text-[18px] font-black px-3 py-2.5 rounded-custom tracking-tight shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+            >
+              <FileCheck className="w-7 h-7 shrink-0" /> 컨설팅 절차 보기
+            </button>
           </div>
 
           {/* 핵심 카피 */}
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl md:text-[28px] font-black text-navy tracking-tight leading-tight">
-              무료 출장 견적 <span className="text-steel">컨설팅 서비스</span>
+            <h1
+              style={{ fontFamily: '"Noto Sans KR", "Pretendard", "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif' }}
+              className="text-2xl md:text-[28px] font-semibold text-[#0B2F5B] tracking-normal leading-tight antialiased"
+            >
+              무료 출장 견적 <span className="text-[#143E6D]">컨설팅 서비스</span>
             </h1>
             <p className="text-[13.5px] md:text-sm text-gray leading-relaxed font-semibold max-w-2xl">
               공사를 시작하기 전, <strong className="text-navy font-extrabold">35년 현장통 국가자격증 PM</strong>이 직접 출장하여
@@ -1224,53 +1097,36 @@ export default function Home() {
           </div>
 
           {/* 35년 PM 신뢰 증빙 배지 3종 */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-1">
-            <div className="flex items-center gap-3 bg-bg-subtle/70 border border-border rounded-custom px-4 py-3 shadow-sm">
-              <div className="w-9 h-9 rounded-custom bg-navy/5 border border-navy/10 flex items-center justify-center shrink-0 text-navy">
-                <Briefcase className="w-4.5 h-4.5" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mt-1 items-stretch">
+            <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
+              <div className="w-8 h-8 rounded-custom bg-navy/5 border border-navy/10 flex items-center justify-center shrink-0 text-navy">
+                <Briefcase className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[15px] font-black text-navy tracking-tight">35년</span>
-                <span className="text-[10px] text-gray font-bold mt-1">현장통 실무 경력</span>
+                <span className="text-[17px] md:text-[18px] font-bold text-navy tracking-normal">35년</span>
+                <span className="text-[11px] text-gray font-bold mt-1.5">현장통 실무 경력</span>
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-bg-subtle/70 border border-border rounded-custom px-4 py-3 shadow-sm">
-              <div className="w-9 h-9 rounded-custom bg-steel/5 border border-steel/15 flex items-center justify-center shrink-0 text-steel">
-                <Award className="w-4.5 h-4.5" />
+            <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
+              <div className="w-8 h-8 rounded-custom bg-steel/5 border border-steel/15 flex items-center justify-center shrink-0 text-steel">
+                <Award className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[15px] font-black text-navy tracking-tight">국가자격증</span>
-                <span className="text-[10px] text-gray font-bold mt-1">보유 기술 전문가</span>
+                <span className="text-[17px] md:text-[18px] font-bold text-navy tracking-normal">국가자격증</span>
+                <span className="text-[11px] text-gray font-bold mt-1.5">보유 기술 전문가</span>
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-bg-subtle/70 border border-border rounded-custom px-4 py-3 shadow-sm">
-              <div className="w-9 h-9 rounded-custom bg-accent/5 border border-accent/15 flex items-center justify-center shrink-0 text-accent">
-                <ShieldCheck className="w-4.5 h-4.5" />
+            <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
+              <div className="w-8 h-8 rounded-custom bg-accent/5 border border-accent/15 flex items-center justify-center shrink-0 text-accent">
+                <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[15px] font-black text-navy tracking-tight">PM 역량</span>
-                <span className="text-[10px] text-gray font-bold mt-1">프로젝트 총괄 관리</span>
+                <span className="text-[17px] md:text-[18px] font-bold text-navy tracking-normal">PM 역량</span>
+                <span className="text-[11px] text-gray font-bold mt-1.5">프로젝트 총괄 관리</span>
               </div>
             </div>
           </div>
 
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-2">
-            <button
-              onClick={() => setActiveTab('request')}
-              style={{ touchAction: 'manipulation' }}
-              className="bg-accent hover:bg-accent/90 text-bg px-6 py-3 rounded-custom text-[13px] font-black tracking-tight shadow-md shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all cursor-pointer text-center"
-            >
-              무료 출장 견적 신청하기
-            </button>
-            <button
-              onClick={() => setActiveTab('about')}
-              style={{ touchAction: 'manipulation' }}
-              className="bg-bg border border-border hover:bg-bg-subtle text-navy px-6 py-3 rounded-custom text-[13px] font-black tracking-tight active:scale-95 transition-all cursor-pointer text-center"
-            >
-              컨설팅 절차 보기
-            </button>
-          </div>
         </div>
       </section>
 
@@ -1297,7 +1153,7 @@ export default function Home() {
       )}
 
       {/* Symmetrical Single Full-Width Box matching the very bottom card's specifications */}
-      <div className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-5 relative overflow-hidden animate-in fade-in duration-300">
+      <div className="bg-bg border border-border p-4.5 rounded-custom shadow-custom-sm flex flex-col gap-4 relative overflow-hidden animate-in fade-in duration-300">
         
         {/* 공종 선택 대화식 탭 바 (전체 메뉴 8종) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border/70 select-none no-scrollbar z-10 relative">
@@ -1320,15 +1176,15 @@ export default function Home() {
           })}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch z-10 relative">
+        <div className="grid grid-cols-1 gap-4 items-stretch z-10 relative">
           
           {/* Box 1: ZEROS B2B Engineering Core copywriting & Active Menu Data */}
-          <div className={`relative overflow-hidden bg-bg text-navy p-6.5 rounded-custom border ${activeMetrics.accentBorder} flex flex-col justify-between gap-5 transition-all shadow-sm`}>
+          <div className={`relative overflow-hidden bg-bg text-navy p-4.5 rounded-custom border ${activeMetrics.accentBorder} flex flex-col justify-between gap-4 transition-all shadow-sm`}>
             {/* 하이 테크 백그라운드 그리드 레이아웃 (라이트 버전) */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
             <div className={`absolute inset-0 ${activeMetrics.accentBg} opacity-20 pointer-events-none`} />
 
-            <div className="flex flex-col gap-4.5 z-10 relative">
+            <div className="flex flex-col gap-3.5 z-10 relative">
               {/* AI 신뢰성 배지 & 실시간 데이터 매핑 */}
               <div className="flex items-center justify-between gap-2 select-none">
                 <span className={`text-[9px] tracking-widest uppercase font-black px-2 py-0.5 rounded-custom shadow-inner ${activeMetrics.badgeBg}`}>
@@ -1370,115 +1226,16 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-1 select-none">
               <button
                 onClick={() => setActiveTab('request')}
-                className="flex-1 min-h-12 bg-accent hover:bg-accent/90 text-bg px-4 py-3 rounded-custom text-[12px] sm:text-[11px] font-black tracking-wide shadow-md shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
+                className="flex-1 min-h-10 bg-accent hover:bg-accent/90 text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[11px] font-black tracking-wide shadow-md shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
                 예상견적 의뢰하기
               </button>
               <button
                 onClick={() => setActiveTab('about')}
-                className="flex-1 min-h-12 bg-bg-subtle hover:bg-border/30 text-navy px-4 py-3 rounded-custom text-[12px] sm:text-[11px] font-black tracking-wide border border-border active:scale-95 transition-all duration-150 cursor-pointer text-center"
+                className="flex-1 min-h-10 bg-bg-subtle hover:bg-border/30 text-navy px-4 py-2.5 rounded-custom text-[12px] sm:text-[11px] font-black tracking-wide border border-border active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
                 ZEROS 진단 절차
               </button>
-            </div>
-          </div>
-
-          {/* Box 2: ZEROS 8대 공종(Trades) 실시간 CAD 도면 쇼케이스 스캐너 애니메이션 & AI Calibrator */}
-          <div className="relative overflow-hidden bg-bg text-navy p-6.5 rounded-custom border border-border flex flex-col justify-between gap-5 transition-all shadow-sm">
-            {/* 하이테크 격자 그리드 */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
-            
-            {/* 가상 콘솔 헤더 */}
-            <div className="flex items-center justify-between border-b border-border pb-2.5 select-none">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping shrink-0" />
-                <span className="text-[10px] font-black text-steel tracking-wider uppercase">Active CAD Design Scanner</span>
-              </div>
-              <span className="text-[10px] font-mono font-black text-accent">
-                공종 {activeTradeIdx + 1} / 08
-              </span>
-            </div>
-
-            {/* 정직·신뢰 실시간 교정 비교 바 */}
-            <div className="flex flex-col gap-2 bg-bg-subtle/80 border border-border/60 p-3 rounded-custom shadow-inner my-0.5 z-10 relative">
-              <div className="flex flex-col gap-1">
-                <div className="flex justify-between text-[9px] font-bold text-gray">
-                  <span>시공사 평균 거품 청구 (Average Inflated Bid)</span>
-                  <span className="text-danger font-mono font-bold tabular-nums">135%</span>
-                </div>
-                <div className="w-full bg-border/40 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-danger/80 h-full w-[80%] rounded-full" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1 border-t border-border/50 pt-2">
-                <div className="flex justify-between text-[9px] font-black text-navy">
-                  <span className="flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-success animate-pulse" />
-                    ZEROS AI 교정 단가 (Honest Calibrated Cost)
-                  </span>
-                  <span className="text-success font-mono font-bold tabular-nums">100% (버블 0%)</span>
-                </div>
-                <div className="w-full bg-border/40 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-success h-full w-[55%] rounded-full animate-pulse" />
-                </div>
-              </div>
-            </div>
-
-            {/* 8대 공종 애니메이션 슬라이더 영역 */}
-            <div className="flex-grow flex flex-col gap-3 min-w-0">
-              {/* 정밀 공학 도면 뷰어 캔버스 */}
-              <div className="relative w-full h-32 bg-[#f8fafc] rounded-custom border border-border overflow-hidden flex items-center justify-center shadow-inner">
-                
-                {/* 위아래로 움직이는 네온 스캔 레이저 라인 */}
-                <div className="absolute left-0 right-0 h-[1.5px] bg-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.4)] scanner-line z-10" />
-                
-                {/* 컴포넌트 고유 키프레임 및 애니메이션 주입 */}
-                <style dangerouslySetInnerHTML={{
-                  __html: `
-                    @keyframes scannerSlide {
-                      0% { top: 0%; }
-                      50% { top: 100%; }
-                      100% { top: 0%; }
-                    }
-                    .scanner-line {
-                      animation: scannerSlide 3.5s ease-in-out infinite;
-                    }
-                    @keyframes b2bFlow {
-                      0% { stroke-dashoffset: 20; }
-                      100% { stroke-dashoffset: 0; }
-                    }
-                    .b2b-flow-line {
-                      stroke-dasharray: 4 6;
-                      animation: b2bFlow 1.2s linear infinite;
-                    }
-                  `
-                }} />
-
-                {/* 실시간 8대 공종 설계 도면 SVG */}
-                <div className="w-full h-full animate-in fade-in duration-300" key={`svg-${activeTradeIdx}`}>
-                  {tradeShowcase[activeTradeIdx].svg}
-                </div>
-
-                <span className="absolute bottom-2 right-2 text-[8px] font-mono font-black text-steel/70 tracking-wider bg-white/70 border border-border/60 px-1 py-0.5 rounded-custom select-none">
-                  CAD LAYER AUDIT ACTIVE
-                </span>
-              </div>
-            </div>
-
-            {/* 하단 보증 세부 정보 */}
-            <div className="bg-[#10b981]/5 border border-[#10b981]/15 px-3.5 py-2.5 rounded-custom flex items-center justify-between z-10 select-none hover:bg-[#10b981]/10 transition-all">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-success animate-pulse" />
-                <div className="flex flex-col text-left">
-                  <span className="text-[10px] font-black text-success tracking-wider uppercase leading-none">
-                    정직한 견적 보증
-                  </span>
-                  <span className="text-[8px] text-success/80 font-bold mt-0.5">품셈 및 자재 스케줄 마진 차단 완료</span>
-                </div>
-              </div>
-              <span className="text-[8.5px] font-black text-success bg-[#10b981]/10 border border-[#10b981]/20 px-2 py-0.5 rounded-full">
-                AI AUDIT PASS
-              </span>
             </div>
           </div>
 
