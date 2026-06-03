@@ -44,15 +44,13 @@
 
 ```
 zeros-estimate-service/
-├── agents/                   # [PHASE 0] 멀티에이전트 역할 정의서
-│   ├── 00_orchestrator.md    # PM/오케스트레이터 - 전체 계획 및 조율
-│   ├── 01_frontend_design.md # 프론트/디자인 - 3-Pane 셸, UI, 디자인 토큰
-│   ├── 02_backend_db.md      # 백엔드/DB - Supabase, RLS, 시드
-│   └── 03_qa_deploy.md       # QA/배포 - 통합 테스트 및 패키징
-├── workspace/                # [PHASE 0] 공유 메타데이터 (협업 상태 관리)
-│   ├── state.md              # 현재 진행중인 PHASE 및 다음 행동 기록
-│   ├── decisions.md          # 설계 합리적 결정 사항 로그
-│   └── gate-checks.md        # 단계별 자체 검증 통과 표
+├── docs/                     # 문서/프로세스 자료 (Agent 작업형 카테고리 분류)
+│   ├── README.md             # 협업 가이드 및 카테고리 인덱스
+│   ├── 00_orchestration/     # PM·조율 (orchestrator, state, handoff, decisions)
+│   ├── 01_frontend_design/   # 프론트/디자인 역할 정의서
+│   ├── 02_backend_db/        # 백엔드/DB 역할 정의서
+│   ├── 03_qa_deploy/         # QA/배포 역할 정의서 + 게이트 검증 로그
+│   └── 99_scripts/           # 보조 스크립트 (open_chrome.ps1 등)
 ├── app/                      # Next.js App Router 
 │   ├── globals.css           # 디자인 토큰 정의 및 Tailwind 세팅
 │   ├── page.tsx              # 전역 AppShell 및 대시보드/백오피스 중앙 라우터
