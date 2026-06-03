@@ -49,8 +49,19 @@ export default function RootLayout({
                       }
                     });
                   } else {
-                    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    var refreshed = false;
+                    navigator.serviceWorker.addEventListener('controllerchange', function() {
+                      if (refreshed) return;
+                      refreshed = true;
+                      window.location.reload();
+                    });
+
+                    navigator.serviceWorker.register('/sw.js?v=20260603-live-refresh').then(function(reg) {
                       console.log('ZEROS Service Worker registered with scope:', reg.scope);
+                      reg.update();
+                      if (reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                      }
                     }).catch(function(err) {
                       console.error('Service Worker registration failed:', err);
                     });
@@ -69,4 +80,3 @@ export default function RootLayout({
     </html>
   );
 }
-
