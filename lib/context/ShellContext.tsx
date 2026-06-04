@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type ActiveTab = 'about' | 'performance' | 'request' | 'home';
+export type ActiveTab = 'about' | 'performance' | 'request' | 'home' | 'sop';
 
 export interface ShellContextType {
   isUserMode: boolean;

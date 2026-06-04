@@ -28,15 +28,18 @@ export const manualData: Record<string, ManualContent> = {
     title: '일반 / 용수 / 가스 배관공사',
     problemDefinition: '공장 용수·가스·스팀 라인의 관경·압력 강하·누수를 진단해 최적 유량 흐름을 확보합니다.',
     preparationDocs: [
-      '기존 배관 계통도 (P&ID) 또는 단선도',
-      '기계실 및 주요 분기점 현장 실측 사진',
-      '공급원 압력 및 유량 설계 제원표'
+      '배관 계통도(P&ID)·단선도 — 없으면 손도면 또는 약도도 가능',
+      '기계실·주요 분기점 현장 사진 (전경과 접속부를 구분해 촬영)',
+      '유체 종류와 운전 조건 (용수·가스·스팀 / 압력·온도)',
+      '공급원 용량 제원 — 보일러·펌프 명판 사진으로 대체 가능',
+      '확인 가능한 배관 관경·재질·대략 길이'
     ],
     sop: [
-      { phase: 'STEP 1', title: '자료 정밀 검토', action: 'P&ID·현장 사진의 치수 오류와 연결 규격을 대조하여 기준 데이터를 확정합니다.' },
-      { phase: 'STEP 2', title: '유동 해석 진단', action: 'Darcy-Weisbach 관마찰·Reynolds 유동을 수치 시뮬레이션해 관경 적정성을 판정합니다.' },
-      { phase: 'STEP 3', title: '자재·품셈 매핑', action: 'ASME/KS 규격 자재와 1군 표준 품셈을 매핑해 단가 거품을 필터링합니다.' },
-      { phase: 'STEP 4', title: '스코프 리포트', action: '동일 기준으로 복수 업체 비교가 가능한 범위 고정 리포트를 송부합니다.' }
+      { phase: 'STEP 1', title: '자료 정밀 검토', action: 'P&ID·현장 사진 치수/규격 대조' },
+      { phase: 'STEP 2', title: '유동 해석 진단', action: '관마찰·유속 계산으로 관경 적정성 판정' },
+      { phase: 'STEP 3', title: '시공성·간섭 검토', action: '반입 동선·기존 설비 간섭·지지 간격 확인' },
+      { phase: 'STEP 4', title: '자재·품셈 매핑', action: 'ASME/KS 자재·표준 품셈으로 단가 거품 제거' },
+      { phase: 'STEP 5', title: '스코프 리포트', action: '복수 업체 비교용 범위 고정 리포트 송부' }
     ],
     deliverables: [
       '관경 압력손실 계산 검토서',
@@ -56,15 +59,18 @@ export const manualData: Record<string, ManualContent> = {
     title: '산업 장비 및 설비 설치공사',
     problemDefinition: '대형 펌프·탱크·콤프레셔의 반입 동선·기초 하중 분산·배관 인입부 열팽창 흡수를 검토합니다.',
     preparationDocs: [
-      '도입 장비 승인도면 및 제원표 (무게, 규격, 진동 정보)',
-      '반입구 및 기계실 진입 동선 평면도',
-      '기초 콘크리트 패드 두께 및 배근 도면'
+      '장비 승인도면·제원표 (무게·치수·진동 정보)',
+      '반입구·기계실 진입 동선 평면도 (폭·높이 표기)',
+      '기초 콘크리트 패드 두께·배근 도면 — 없으면 현장 사진',
+      '전원·유틸리티 인입 위치와 용량',
+      '설치 후 유지보수 여유 공간 희망 치수'
     ],
     sop: [
-      { phase: 'STEP 1', title: '반입 동선 분석', action: '장비 제원과 진입로 폭·높이를 대조해 양중·반입 가능성을 검증합니다.' },
-      { phase: 'STEP 2', title: '하중 분산 검토', action: '기초 패드 응력과 방진 패드 적합성을 구조 하중 기준으로 평가합니다.' },
-      { phase: 'STEP 3', title: '인입부 설계', action: '노즐 연결부 열팽창 흡수 플렉시블 조인트 규격을 산정합니다.' },
-      { phase: 'STEP 4', title: '양중 계획 확정', action: '크레인 배치·안전 비계를 포함한 반입 양중 계획서를 확정합니다.' }
+      { phase: 'STEP 1', title: '반입 동선 분석', action: '진입로 폭·높이 vs 장비 치수 대조' },
+      { phase: 'STEP 2', title: '하중 분산 검토', action: '기초 패드 응력·방진 패드 적합성 평가' },
+      { phase: 'STEP 3', title: '인입부 설계', action: '노즐 열팽창 흡수 플렉시블 조인트 산정' },
+      { phase: 'STEP 4', title: '유지보수 동선 확보', action: '점검·교체 여유 공간 간섭 검토' },
+      { phase: 'STEP 5', title: '양중 계획 확정', action: '크레인 배치·안전 비계 반입 계획 송부' }
     ],
     deliverables: [
       '장비 반입 및 양중 계획 제안서',
@@ -84,15 +90,18 @@ export const manualData: Record<string, ManualContent> = {
     title: '유틸리티 (스팀 / 에어 / 냉각수) 배관공사',
     problemDefinition: '스팀·에어·냉각수 라인의 열손실·응축수 트랩·루프 구성을 진단해 에너지 손실과 워터해머를 차단합니다.',
     preparationDocs: [
-      '보일러, 칠러, 공기압축기 용량 제원표',
-      '공장 유틸리티 인입 메인 밸브 규격 및 압력',
-      '공장 천장 트러스 구조 및 배관 지지 상태 사진'
+      '보일러·칠러·공기압축기 용량 제원표 (명판 사진 가능)',
+      '유틸리티 인입 메인 밸브 규격·공급 압력',
+      '천장 트러스 구조·배관 지지 상태 사진',
+      '유체 종류와 사용 온도·압력 (스팀·냉각수·압축공기)',
+      '기존 보온 두께·노후 상태 (확인 가능 시)'
     ],
     sop: [
-      { phase: 'STEP 1', title: '열손실 진단', action: '보온재 두께 대비 열손실율을 열역학 계산으로 정량 진단합니다.' },
-      { phase: 'STEP 2', title: '트랩 배치 검토', action: '응축수 고임 구조를 분석해 트랩 스테이션 최적 위치를 산정합니다.' },
-      { phase: 'STEP 3', title: '루프 구성 설계', action: '부하 변동 대응 버퍼 탱크 용량과 루프 배관 구성을 제안합니다.' },
-      { phase: 'STEP 4', title: '에너지 리포트', action: '열손실 저감 보온 사양과 에너지 절감 효과를 리포트로 정리합니다.' }
+      { phase: 'STEP 1', title: '열손실 진단', action: '보온 두께 대비 열손실 정량 계산' },
+      { phase: 'STEP 2', title: '트랩 배치 검토', action: '응축수 고임 분석·트랩 위치 산정' },
+      { phase: 'STEP 3', title: '루프 구성 설계', action: '부하 변동 대응 버퍼·루프 배관 제안' },
+      { phase: 'STEP 4', title: '워터해머 점검', action: '드립 포켓 간격·구배 안전성 확인' },
+      { phase: 'STEP 5', title: '에너지 리포트', action: '보온 사양·에너지 절감 효과 정리' }
     ],
     deliverables: [
       '에너지 열손실 저감 보온재 사양 제안서',
@@ -112,15 +121,18 @@ export const manualData: Record<string, ManualContent> = {
     title: '생산라인 증설 및 분기 배관공사',
     problemDefinition: '가동 중단을 최소화하는 무중단 분기(Tie-in)와 증설 후 기존 설비의 유량 부족 여부를 시뮬레이션합니다.',
     preparationDocs: [
-      '전체 공장 평면 배치도 (기존 vs 증설 예정)',
-      '기존 메인 배관 재질 및 관경 정보',
-      '증설 장비의 분기별 필요 유량 및 압력 요구서'
+      '공장 평면 배치도 (기존 vs 증설 예정)',
+      '기존 메인 배관 재질·관경 정보',
+      '증설 장비 분기별 필요 유량·압력',
+      '현재 가동 일정과 셧다운 가능 시간대',
+      '기존 차단 밸브 위치·상태 (확인 가능 시)'
     ],
     sop: [
-      { phase: 'STEP 1', title: '분기점 진단', action: '기존 메인 배관 재질·관경을 확인해 안전 분기 위치를 선정합니다.' },
-      { phase: 'STEP 2', title: '무중단 공법 검토', action: '무중단 티인(Hot-tapping) 공법 적용성과 리스크를 평가합니다.' },
-      { phase: 'STEP 3', title: '유량 분배 해석', action: '증설 전후 유량 차압을 시뮬레이션해 기존 설비 영향을 확인합니다.' },
-      { phase: 'STEP 4', title: '셧다운 스케줄', action: '단계별 셧다운·연결 공정 스케줄을 최소 중단 기준으로 제안합니다.' }
+      { phase: 'STEP 1', title: '분기점 진단', action: '기존 배관 재질·관경 확인, 안전 분기 위치 선정' },
+      { phase: 'STEP 2', title: '무중단 공법 검토', action: 'Hot-tapping 적용성·리스크 평가' },
+      { phase: 'STEP 3', title: '유량 분배 해석', action: '증설 전후 차압 시뮬레이션' },
+      { phase: 'STEP 4', title: '기존 설비 영향 검토', action: '유량 부족·압력 저하 여부 확인' },
+      { phase: 'STEP 5', title: '셧다운 스케줄', action: '단계별 최소 중단 연결 공정 제안' }
     ],
     deliverables: [
       '무중단 티인 (Hot-tapping) 공법 적용성 검토서',
@@ -140,15 +152,18 @@ export const manualData: Record<string, ManualContent> = {
     title: '노후 배관 철거 및 신설공사',
     problemDefinition: '스케일·부식·누수가 진행된 노후 배관을 최적 내부식재로 교체 설계하고 안전 철거 절차를 검토합니다.',
     preparationDocs: [
-      '배관 설치 연도 및 누수 이력 대장',
-      '유체 화학 성분 분석표 (부식 인자 확인용)',
-      '노후 구간 외관 및 지지대 열화 상태 근접 사진'
+      '배관 설치 연도·누수 이력 (기억나는 범위로도 가능)',
+      '유체 화학 성분 (부식 인자 확인용)',
+      '노후 구간 외관·지지대 열화 근접 사진',
+      '운전 압력·온도와 가동 중단 가능 여부',
+      '누수·위험 우선 교체 희망 구간'
     ],
     sop: [
-      { phase: 'STEP 1', title: '잔존수명 진단', action: '스케일 잔존 두께를 비파괴 데이터로 매핑해 잔존 수명을 정량화합니다.' },
-      { phase: 'STEP 2', title: '내식재 선정', action: '유체 화학식 기준 최적 내부식성 재질(SUS316L 등)을 선정합니다.' },
-      { phase: 'STEP 3', title: '교체 우선순위', action: '위험도 기반 교체 우선순위와 단계별 시공 순서를 수립합니다.' },
-      { phase: 'STEP 4', title: '안전 철거 계획', action: '잔류 유체 세정·환경 배출을 포함한 안전 철거 가이드를 제공합니다.' }
+      { phase: 'STEP 1', title: '잔존수명 진단', action: '스케일 잔존 두께 비파괴 매핑' },
+      { phase: 'STEP 2', title: '내식재 선정', action: '유체 화학식 기준 SUS316L 등 선정' },
+      { phase: 'STEP 3', title: '교체 우선순위', action: '위험도 기반 단계별 시공 순서 수립' },
+      { phase: 'STEP 4', title: '안전 철거 계획', action: '잔류 유체 세정·환경 배출 가이드' },
+      { phase: 'STEP 5', title: '신설 연결 검증', action: '신·구 배관 접속부 규격 정합성 확인' }
     ],
     deliverables: [
       '재질 내구성 비교 검토서 (SUS, Carbon Steel, 비금속 등)',
@@ -168,15 +183,18 @@ export const manualData: Record<string, ManualContent> = {
     title: '기계실 및 펌프실 배관 개선공사',
     problemDefinition: '밀집 기계실의 펌프 공동현상(Cavitation)·매니폴드 균등 분배·유지보수 동선 한계를 개선합니다.',
     preparationDocs: [
-      '기계실 장비 배치 및 기존 배관 상세 평면도',
-      '펌프 성능 곡선도 (Q-H Curve)',
-      '밸브 및 여과기(Strainer) 막힘 압력 차이 정보'
+      '기계실 장비 배치·기존 배관 평면도',
+      '펌프 성능 곡선도 (Q-H Curve, 명판 사진 가능)',
+      '밸브·여과기(Strainer) 막힘 압력차 정보',
+      '기계실 천장고·반입 해치 위치',
+      '예비기(스탠바이) 운용 여부'
     ],
     sop: [
-      { phase: 'STEP 1', title: '공동현상 진단', action: '펌프 흡입측 NPSH와 압력 조건을 분석해 캐비테이션 위험을 진단합니다.' },
-      { phase: 'STEP 2', title: '편심 이경관 설계', action: '공동현상 차단을 위한 편심 리듀서 배치를 설계합니다.' },
-      { phase: 'STEP 3', title: '동선 간섭 검토', action: '밸브 조작 반경과 유지보수 동선을 3D 간섭 검토로 확보합니다.' },
-      { phase: 'STEP 4', title: '예비기 분기 설계', action: '장비 고장 대비 예비기 분기 매니폴드 구조를 제안합니다.' }
+      { phase: 'STEP 1', title: '공동현상 진단', action: '펌프 흡입측 NPSH·압력 조건 분석' },
+      { phase: 'STEP 2', title: '편심 이경관 설계', action: '공동현상 차단 편심 리듀서 배치' },
+      { phase: 'STEP 3', title: '동선 간섭 검토', action: '밸브 조작 반경·유지보수 동선 3D 확인' },
+      { phase: 'STEP 4', title: '매니폴드 균등 분배', action: '헤더 압력 균등 배관 구성' },
+      { phase: 'STEP 5', title: '예비기 분기 설계', action: '고장 대비 예비기 분기 구조 제안' }
     ],
     deliverables: [
       '편심 리듀서 도입을 통한 캐비테이션 방지 배관 배치안',
@@ -196,15 +214,18 @@ export const manualData: Record<string, ManualContent> = {
     title: '생산설비 훅업 (Hook-up) 연결공사',
     problemDefinition: '정밀 장비 전단의 초순수·에어·스팀 크린 훅업과 레귤레이터 안정 압력 제어를 설계합니다.',
     preparationDocs: [
-      '장비 공급사 제공 연결부 인터페이스 치수 사양서',
+      '장비 공급사 연결부 인터페이스 치수 사양서',
       '유체 순도 요구 사양 (Cleanliness Class)',
-      '장비 전단 필터 및 감압 밸브 조립 배치도'
+      '장비 전단 필터·감압 밸브 배치도',
+      '공급 유체 종류·압력·온도 (가스·초순수·스팀)',
+      '클린룸 등급과 시공 가능 시간대'
     ],
     sop: [
-      { phase: 'STEP 1', title: '인터페이스 검증', action: '장비 공급사 연결부 치수와 청정 등급 요구 사양을 검증합니다.' },
-      { phase: 'STEP 2', title: '크린 자재 선정', action: 'EP 배관·피팅 등 크린 클래스 부합 자재 리스트를 확정합니다.' },
-      { phase: 'STEP 3', title: '압력 제어 설계', action: '복합 레귤레이터로 설비 유입 안정 압력 제어 시스템을 설계합니다.' },
-      { phase: 'STEP 4', title: '퍼지 검증', action: '내부 퍼지·파티클 검증 시나리오로 청정도를 보증합니다.' }
+      { phase: 'STEP 1', title: '인터페이스 검증', action: '연결부 치수·청정 등급 요구 사양 확인' },
+      { phase: 'STEP 2', title: '크린 자재 선정', action: 'EP 배관·피팅 등 클린 클래스 자재 확정' },
+      { phase: 'STEP 3', title: '압력 제어 설계', action: '복합 레귤레이터 안정 압력 설계' },
+      { phase: 'STEP 4', title: '오비탈 용접 검토', action: '용접 사양·노무 적정성 산정' },
+      { phase: 'STEP 5', title: '퍼지 검증', action: '내부 퍼지·파티클 청정도 검증 시나리오' }
     ],
     deliverables: [
       '크린 클래스 부합 훅업 자재 리스트 (EP 배관, 피팅 사양)',
@@ -225,14 +246,17 @@ export const manualData: Record<string, ManualContent> = {
     problemDefinition: '도면 없는 기획 단계 CAPEX의 예산 상한선(Budget Cap)을 표본·단가로 수립하고 설계 리스크를 조기 식별합니다.',
     preparationDocs: [
       '사업 타당성 보고서 초안 또는 컨셉 플로우 시트',
-      '예산 범위 제한 및 투자 회수기 한계 목표치',
-      '도입 희망 공법 설명서 또는 제조 장비 카탈로그'
+      '목표 예산 범위·투자 회수기 한계',
+      '도입 희망 공법 설명서·장비 카탈로그',
+      '증설·신설 규모와 목표 가동 시점',
+      '확보 부지·유틸리티 인프라 현황 (확인 가능 시)'
     ],
     sop: [
-      { phase: 'STEP 1', title: '컨셉 진단', action: '컨셉 플로우 시트와 투자 목표를 분석해 검토 범위를 정의합니다.' },
-      { phase: 'STEP 2', title: '표본 단가 분석', action: '유사 1군 실거래 데이터로 공종별 예산 상한선을 산정합니다.' },
-      { phase: 'STEP 3', title: 'WBS 예산 수립', action: 'WBS 구조로 공종별 실행 예산 한도를 표준화합니다.' },
-      { phase: 'STEP 4', title: '리스크 매트릭스', action: '설계·조달 리스크를 조기 감지 매트릭스로 정리합니다.' }
+      { phase: 'STEP 1', title: '컨셉 진단', action: '플로우 시트·투자 목표로 검토 범위 정의' },
+      { phase: 'STEP 2', title: '표본 단가 분석', action: '유사 1군 실거래로 공종별 상한 산정' },
+      { phase: 'STEP 3', title: 'WBS 예산 수립', action: '공종별 실행 예산 한도 표준화' },
+      { phase: 'STEP 4', title: '공법 타당성 검토', action: '대안 공법 비교·VE 적용성 평가' },
+      { phase: 'STEP 5', title: '리스크 매트릭스', action: '설계·조달 리스크 조기 감지 정리' }
     ],
     deliverables: [
       'CAPEX 공종별 예산 한도 보고서 (WBS 구조)',
@@ -258,13 +282,16 @@ export const manualData: Record<string, ManualContent> = {
     preparationDocs: [
       '배관 ISO 도면 또는 P&ID (스풀 분할 기준 포함)',
       '자재 사양 (재질·스케줄·등급, SUS/Carbon 등)',
-      '용접·검사 기준 (WPS, NDT 요구 등급) 및 납기 요구일'
+      '용접·검사 기준 (WPS·NDT 요구 등급)',
+      '납기 요구일과 현장 반입 조건',
+      '현장 연결부(Tie-in) 위치·치수 (확인 가능 시)'
     ],
     sop: [
-      { phase: 'STEP 1', title: 'ISO 스풀 분할', action: '아이소메트릭 도면을 운반·조립 단위로 분할해 스풀 리스트를 작성합니다.' },
-      { phase: 'STEP 2', title: '팹샵 사전제작', action: '기후 통제 팹샵에서 절단·맞춤·용접을 수행해 품질 편차를 제거합니다.' },
-      { phase: 'STEP 3', title: '비파괴 검사', action: 'RT·PMI·MPI 등 비파괴 검사를 통제된 환경에서 수행·기록합니다.' },
-      { phase: 'STEP 4', title: '식별·출하', action: '스풀별 마킹·출하 관리로 현장 무오류 조립을 지원합니다.' }
+      { phase: 'STEP 1', title: 'ISO 스풀 분할', action: '운반·조립 단위 분할, 스풀 리스트 작성' },
+      { phase: 'STEP 2', title: '팹샵 사전제작', action: '통제 환경에서 절단·맞춤·용접 수행' },
+      { phase: 'STEP 3', title: '비파괴 검사', action: 'RT·PMI·MPI 검사 수행·기록' },
+      { phase: 'STEP 4', title: '치수 검사', action: '스풀 실측·도면 정합성 대조' },
+      { phase: 'STEP 5', title: '식별·출하', action: '스풀 마킹·출하 관리로 무오류 조립 지원' }
     ],
     deliverables: [
       '스풀 분할 도면 및 스풀 제작 리스트 (Cut/Weld Map)',
@@ -285,15 +312,18 @@ export const manualData: Record<string, ManualContent> = {
     title: 'SKID Package 모듈 제작 (Skid-Mounted Module)',
     problemDefinition: '펌프·밸브·계장·제어를 단일 프레임에 패키지화해 공장 시운전(FAT) 후 반입, 현장 설치를 표준화합니다.',
     preparationDocs: [
-      'P&ID 및 기계·계장 사양서 (펌프/밸브/계기 리스트)',
-      '프레임 설치 공간·반입구 치수 및 하중 조건',
-      '전기·제어(PLC/HMI) 인터페이스 및 유틸리티 조건'
+      'P&ID·기계/계장 사양서 (펌프·밸브·계기 리스트)',
+      '프레임 설치 공간·반입구 치수·하중 조건',
+      '전기·제어(PLC/HMI) 인터페이스·유틸리티 조건',
+      '운전 조건 (유량·압력·온도)',
+      '현장 반입 경로·양중 가능 여부'
     ],
     sop: [
-      { phase: 'STEP 1', title: '패키지 설계', action: '프레임 위 장비·배관·계장 배치를 3D로 설계해 모듈을 구성합니다.' },
-      { phase: 'STEP 2', title: '공장 조립', action: '펌프·밸브·필터·센서를 단일 스키드 프레임에 통합 조립합니다.' },
-      { phase: 'STEP 3', title: '사전 시운전', action: '공장에서 기밀·계장·제어 로직을 사전 시운전(FAT)으로 검증합니다.' },
-      { phase: 'STEP 4', title: '반입·연결', action: '완성 모듈을 운반·반입하여 현장에서는 유틸리티 연결만 수행합니다.' }
+      { phase: 'STEP 1', title: '패키지 설계', action: '프레임 위 장비·배관·계장 3D 배치' },
+      { phase: 'STEP 2', title: '공장 조립', action: '펌프·밸브·필터·센서 단일 스키드 통합' },
+      { phase: 'STEP 3', title: '사전 시운전', action: '기밀·계장·제어 로직 FAT 검증' },
+      { phase: 'STEP 4', title: '인터페이스 점검', action: '반입구·하중·유틸리티 정합성 대조' },
+      { phase: 'STEP 5', title: '반입·연결', action: '현장은 유틸리티 연결만 수행' }
     ],
     deliverables: [
       '스키드 3D 배치도 및 프레임 구조 계산서',
@@ -314,15 +344,18 @@ export const manualData: Record<string, ManualContent> = {
     title: 'Structure 철구조물 제작 (Steel Structure Fabrication)',
     problemDefinition: '가대(Pipe Rack)·플랫폼·서포트 철구조물을 도면 기반 공장 가공하여 현장 볼팅 조립을 표준화합니다.',
     preparationDocs: [
-      '구조 도면 또는 가대/플랫폼 배치도 (하중 조건 포함)',
+      '구조 도면·가대/플랫폼 배치도 (하중 조건 포함)',
       '강재 사양 (재질·규격, H-Beam/Channel/Plate)',
-      '도장·아연도금 사양 및 설치 위치·앵커 조건'
+      '도장·아연도금 사양',
+      '설치 위치·앵커 조건과 바닥 상태',
+      '현장 조립 가능 시간대·반입 경로'
     ],
     sop: [
-      { phase: 'STEP 1', title: '강재 준비·검사', action: '강재 규격·품질을 검사하고 가공 도면(Shop Drawing)을 확정합니다.' },
-      { phase: 'STEP 2', title: '절단·천공', action: '자동 가공으로 절단·천공·볼트홀을 정밀 가공합니다.' },
-      { phase: 'STEP 3', title: '조립·용접', action: '가조립 후 본 용접으로 구조 부재를 일체화합니다.' },
-      { phase: 'STEP 4', title: '표면처리·출하', action: '도장·아연도금 표면처리 후 현장 볼팅 조립용으로 출하합니다.' }
+      { phase: 'STEP 1', title: '강재 준비·검사', action: '강재 규격·품질 검사, Shop Drawing 확정' },
+      { phase: 'STEP 2', title: '절단·천공', action: '자동 가공으로 절단·천공·볼트홀 정밀 가공' },
+      { phase: 'STEP 3', title: '조립·용접', action: '가조립 후 본 용접으로 부재 일체화' },
+      { phase: 'STEP 4', title: '치수·용접 검사', action: '하중 기준 치수·용접 품질 검사' },
+      { phase: 'STEP 5', title: '표면처리·출하', action: '도장·아연도금 후 현장 볼팅용 출하' }
     ],
     deliverables: [
       '제작용 상세도 (Shop Drawing) 및 부재 리스트',

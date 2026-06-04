@@ -105,54 +105,48 @@ export default function Home() {
   // 1. 고객 모드 탭 렌더러
   // ==========================================
   const renderAboutTab = () => {
-    const smartPlan = [
-      { code: 'S', title: '범위 고정', desc: '공사 목적, 대상 설비, 배관 구간, 제외 범위를 한 문장으로 고정합니다.' },
-      { code: 'M', title: '수치화', desc: '관경, 길이, 층고, 수량, 예산 상한, 희망 일정을 숫자로 입력합니다.' },
-      { code: 'A', title: '실행 가능성', desc: '반입 동선, 셧다운 가능 시간, 작업 높이, 안전 제약을 확인합니다.' },
-      { code: 'R', title: '사업 연관성', desc: '증설, 보수, 긴급 복구, CAPEX 승인 등 의사결정 목적과 연결합니다.' },
-      { code: 'T', title: '기한 설정', desc: '24시간 1차 검토, 현장 실측 필요 여부, 견적 요청 기한을 구분합니다.' },
-    ];
-
-    const requiredDocs = [
-      { level: '필수', item: '현장 사진 3장 이상', check: '전체 전경, 접속부, 장애물/반입 동선을 분리 촬영' },
-      { level: '필수', item: '작업 목적', check: '누수 보수, 라인 증설, 장비 연결, 노후 교체 중 하나로 명시' },
-      { level: '필수', item: '기본 치수', check: '배관 관경, 대략 길이, 층고, 장비 설치 면적을 숫자로 입력' },
-      { level: '권장', item: '도면/P&ID/Layout', check: 'PDF, 이미지, CAD 캡처 중 가능한 자료를 첨부' },
-      { level: '권장', item: '운전 조건', check: '유체, 압력, 온도, 셧다운 가능 시간, 청정도 요구조건 입력' },
-      { level: '권장', item: '예산/일정 한도', check: '승인 가능한 금액 범위와 착공 희망일을 함께 제시' },
-    ];
-
     const workflow = [
       { step: '01', title: '자료 접수', desc: '도면·사진·제원서 누락 여부를 확인하고 검토 가능/보완 필요를 분류합니다.' },
-      { step: '02', title: 'AI 1차 검증', desc: '사진·도면에서 관경, 연결부, 접근성, 위험 요소 후보를 추출합니다.' },
-      { step: '03', title: 'PM 판정', desc: '35년 현장 PM 기준으로 공사 범위, 예산 밴드, 출장 필요성을 판단합니다.' },
-      { step: '04', title: '액션 확정', desc: '온라인 검토, 추가자료 요청, 출장 실측, 프로젝트 진단 중 다음 단계를 지정합니다.' },
+      { step: '02', title: 'AI 1차 검증', desc: '사진·도면에서 관경·연결부·접근성·위험 요소 후보를 추출합니다.' },
+      { step: '03', title: 'PM 판정', desc: '35년 현장 PM 기준으로 공사 범위·예산 밴드·출장 필요성을 판단합니다.' },
+      { step: '04', title: '액션 확정', desc: '온라인 검토·추가자료 요청·출장 실측·프로젝트 진단 중 다음 단계를 지정합니다.' },
     ];
 
     const decisionOutputs = [
-      { title: '온라인 검토 가능', desc: '사진과 치수만으로 1차 범위와 예상 예산 밴드를 제시할 수 있는 건' },
-      { title: '추가자료 요청', desc: '도면, 치수, 운전 조건, 현장 사진이 부족해 오판 가능성이 높은 건' },
-      { title: '출장 실측 권장', desc: '고소 작업, 협소 반입, 가동 중 연결, 안전 리스크가 있는 건' },
-      { title: '프로젝트 진단 전환', desc: '1억 초과 CAPEX, 복수 공종, 입찰 비교 기준 수립이 필요한 건' },
+      { title: '온라인 검토 가능', desc: '사진과 치수만으로 1차 범위·예산 밴드 제시가 가능한 건' },
+      { title: '추가자료 요청', desc: '도면·치수·운전 조건이 부족해 오판 가능성이 높은 건' },
+      { title: '출장 실측 권장', desc: '고소 작업·협소 반입·가동 중 연결 등 리스크가 있는 건' },
+      { title: '프로젝트 진단 전환', desc: '1억 초과 CAPEX·복수 공종·입찰 비교가 필요한 건' },
     ];
 
     return (
       <div className="flex flex-col gap-5 max-w-4xl mx-auto py-4">
-        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-5">
+        {/* 뒤로가기 */}
+        <button
+          onClick={() => { setSelectedMenu(''); setSelectedBudget(''); setActiveTab('home'); }}
+          style={{ touchAction: 'manipulation' }}
+          className="self-start inline-flex items-center gap-1.5 text-[12px] font-bold text-gray hover:text-navy bg-bg border border-border hover:bg-bg-subtle px-3 py-1.5 rounded-custom transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          견적 검토 홈으로
+        </button>
+
+        {/* 하나의 정돈된 진단 절차 카드 */}
+        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-6">
+          {/* 헤더 */}
           <div className="flex flex-col gap-2 border-b border-border pb-4">
-            <span className="text-[12px] text-steel font-black uppercase tracking-wider">SMART Action Template</span>
-            <h2 className="text-2xl font-black text-navy tracking-tight">
-              AI Native 검증 제출 SMART 플랜
-            </h2>
+            <span className="text-[12px] text-steel font-black uppercase tracking-wider">ZEROS Diagnosis Protocol</span>
+            <h2 className="text-2xl font-black text-navy tracking-tight">ZEROS 진단 절차</h2>
             <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
-              자료를 많이 받는 화면이 아니라, 공사 범위·예산·리스크·다음 행동을 빠르게 확정하기 위한 검증 제출 템플릿입니다.
+              자료 접수부터 액션 확정까지 4단계로, 공사 범위·예산·리스크와 다음 행동을 한 장의 검토 시트로 정직하게 확정합니다.
             </p>
           </div>
 
+          {/* 핵심 지표 4종 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 select-none">
             {[
-              { label: '1차 검토 목표', value: '24h' },
-              { label: '필수 입력 묶음', value: '3종' },
+              { label: '1차 검토 목표', value: '24h 이내' },
+              { label: '진행 단계', value: '4-Step' },
               { label: '판정 결과', value: '4가지' },
               { label: '최종 산출물', value: 'Scope Sheet' },
             ].map((metric) => (
@@ -163,113 +157,228 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-            {smartPlan.map((item) => (
-              <div key={item.code} className="bg-bg-subtle border border-border rounded-custom p-3.5 flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-custom bg-steel text-bg flex items-center justify-center text-[13px] font-black">
-                    {item.code}
-                  </span>
-                  <span className="text-[13.5px] font-black text-navy">{item.title}</span>
+          {/* 4단계 프로세스 — 가로 흐름 */}
+          <div className="flex flex-col gap-3">
+            <span className="text-[12px] font-black text-navy uppercase tracking-wide">진단 워크플로우</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {workflow.map((item, idx) => (
+                <div key={item.step} className="relative bg-bg-subtle border border-border rounded-custom p-3.5 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-custom bg-steel text-bg flex items-center justify-center text-[12px] font-black shrink-0">
+                      {item.step}
+                    </span>
+                    <span className="text-[13.5px] font-black text-navy leading-tight">{item.title}</span>
+                  </div>
+                  <p className="text-[12px] text-gray leading-normal font-semibold">{item.desc}</p>
+                  {idx < workflow.length - 1 && (
+                    <ArrowRight className="hidden lg:block absolute -right-[11px] top-1/2 -translate-y-1/2 w-4 h-4 text-border z-10" />
+                  )}
                 </div>
-                <p className="text-[12px] text-gray leading-normal font-semibold">{item.desc}</p>
+              ))}
+            </div>
+          </div>
+
+          {/* 4가지 판정 */}
+          <div className="flex flex-col gap-3">
+            <span className="text-[12px] font-black text-navy uppercase tracking-wide">검증 후 4가지 판정</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {decisionOutputs.map((item, index) => (
+                <div key={item.title} className="border border-border rounded-custom p-3.5 bg-bg flex flex-col gap-1.5">
+                  <span className="text-[12px] font-black text-steel">판정 {index + 1}</span>
+                  <span className="text-[13px] font-black text-navy leading-tight">{item.title}</span>
+                  <p className="text-[12px] text-gray leading-normal">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 최종 산출물 + CTA */}
+          <div className="bg-navy text-bg rounded-custom p-4.5 flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-[12px] text-bg/70 font-black uppercase tracking-wider">Final Scope Sheet</span>
+                <span className="text-[15px] font-black tracking-tight">한 장의 검토 시트로 정리됩니다</span>
+              </div>
+              <div className="flex flex-wrap gap-2 text-[12px]">
+                {['공사 범위', '예산 밴드', '리스크 등급', '다음 조치'].map((item) => (
+                  <span key={item} className="bg-bg/10 border border-bg/15 rounded-custom px-3 py-1.5 font-black">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setActiveTab('request')}
+                className="flex-1 bg-steel hover:bg-bg hover:text-navy text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95"
+              >
+                무료 출장 견적 컨설팅 요청
+              </button>
+              <button
+                onClick={() => setActiveTab('sop')}
+                className="flex-1 bg-bg/10 hover:bg-bg/15 border border-bg/20 text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95"
+              >
+                AI 활용 SOP 보기
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  };
+
+  // AI Native 검증 — 데이터 사이언스 표준 작업 절차(SOP)
+  const renderSopTab = () => {
+    const pipeline = [
+      {
+        no: '01',
+        phase: 'Data Ingestion',
+        title: '데이터 수집 · 정합',
+        desc: '도면·현장 사진·제원서를 파싱해 관경, 길이, 유체, 압력, 층고 등 원천 변수를 단일 스키마로 정규화합니다.',
+        output: '정규화된 입력 데이터셋',
+      },
+      {
+        no: '02',
+        phase: 'Exploratory Analysis',
+        title: '탐색적 데이터 분석(EDA)',
+        desc: '결측·이상치를 탐지하고 분포를 점검합니다. 누락 자료는 보완 요청으로 분기해 오판 리스크를 사전에 차단합니다.',
+        output: '데이터 품질 리포트',
+      },
+      {
+        no: '03',
+        phase: 'Feature Engineering',
+        title: '피처 엔지니어링',
+        desc: '공종별 스펙을 벡터화하고 ASME/KS 자재·표준 품셈 기준에 매핑하여 비교 가능한 정량 피처로 변환합니다.',
+        output: '표준 매핑 피처셋',
+      },
+      {
+        no: '04',
+        phase: 'Modeling & Inference',
+        title: '모델 추론 · 정량 검증',
+        desc: '유사 1군 실거래 n건과 대조하고 Darcy-Weisbach 손실·하중·리스크를 계산해 적정 범위와 예산 밴드를 추정합니다.',
+        output: 'Scope·Budget 추정치',
+      },
+      {
+        no: '05',
+        phase: 'Validation',
+        title: '교차검증 · 신뢰도 산출',
+        desc: '35년 PM 도메인 룰로 모델 결과를 교차검증하고 보수적 신뢰구간을 적용해 과대·과소 추정을 보정합니다.',
+        output: '신뢰도·리스크 등급',
+      },
+      {
+        no: '06',
+        phase: 'Result & Decision',
+        title: '결과 도출 · 의사결정',
+        desc: '근거가 추적 가능한 단일 검토 시트로 정리하고, 온라인 검토·추가자료·출장 실측 중 다음 액션을 확정합니다.',
+        output: 'Scope Sheet + 다음 액션',
+      },
+    ];
+
+    const principles = [
+      { title: '같은 자료, 같은 결론', desc: '검토자가 누구든 동일한 기준으로 판단합니다.' },
+      { title: '근거를 남깁니다', desc: '모든 금액은 실거래 자료와 계산 근거로 설명합니다.' },
+      { title: '보수적으로 봅니다', desc: '불확실한 부분은 넉넉히 잡아 현장에서 흔들리지 않습니다.' },
+    ];
+
+    return (
+      <div className="flex flex-col gap-5 max-w-4xl mx-auto py-4">
+        {/* 뒤로가기 */}
+        <button
+          onClick={() => { setSelectedMenu(''); setSelectedBudget(''); setActiveTab('home'); }}
+          style={{ touchAction: 'manipulation' }}
+          className="self-start inline-flex items-center gap-1.5 text-[12px] font-bold text-gray hover:text-navy bg-bg border border-border hover:bg-bg-subtle px-3 py-1.5 rounded-custom transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          견적 검토 홈으로
+        </button>
+
+        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-6">
+          {/* 헤더 */}
+          <div className="flex flex-col gap-2 border-b border-border pb-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <span className="text-[12px] text-accent font-black uppercase tracking-wider">Data Science Pipeline · SOP</span>
+            </div>
+            <h2 className="text-2xl font-black text-navy tracking-tight">AI Native 검증 표준 작업 절차</h2>
+            <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
+              최고의 데이터 사이언티스트가 일하는 방식 그대로 — <strong className="text-navy font-extrabold">데이터 탐색부터 결과 도출까지</strong> 6단계
+              재현 가능한 파이프라인으로 공사 범위·비용·리스크를 정량 검증합니다.
+            </p>
+          </div>
+
+          {/* 신뢰 지표 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 select-none">
+            {[
+              { label: '파이프라인 단계', value: '6-Stage' },
+              { label: '실거래 대조 표본', value: 'n건 DB' },
+              { label: '근거 추적', value: '100%' },
+              { label: '결과물', value: 'Scope Sheet' },
+            ].map((metric) => (
+              <div key={metric.label} className="bg-bg-subtle border border-border rounded-custom p-3.5">
+                <span className="text-[12px] text-gray-light font-bold block">{metric.label}</span>
+                <span className="text-[18px] text-navy font-black tracking-tight mt-1 block tabular-nums">{metric.value}</span>
               </div>
             ))}
           </div>
-        </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div className="bg-bg border border-border rounded-custom p-5 shadow-custom-sm flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-border pb-3">
-              <FileCheck className="w-4 h-4 text-steel" />
-              <h3 className="text-[16px] font-black text-navy">제출자료 체크리스트</h3>
-            </div>
-            <div className="flex flex-col gap-2">
-              {requiredDocs.map((doc) => (
-                <div key={doc.item} className="grid grid-cols-[52px_1fr] gap-3 border border-border rounded-custom p-3 bg-bg-subtle/70">
-                  <span className={`text-[12px] font-black ${doc.level === '필수' ? 'text-accent' : 'text-steel'}`}>
-                    {doc.level}
-                  </span>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[12.5px] font-black text-navy">{doc.item}</span>
-                    <span className="text-[12px] text-gray leading-normal">{doc.check}</span>
+          {/* 6단계 파이프라인 */}
+          <div className="flex flex-col gap-3">
+            <span className="text-[12px] font-black text-navy uppercase tracking-wide">분석 파이프라인 (탐색 → 결과 도출)</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {pipeline.map((stage) => (
+                <div key={stage.no} className="bg-bg-subtle border border-border rounded-custom p-4 flex flex-col gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-custom bg-navy text-bg flex items-center justify-center text-[13px] font-black shrink-0">
+                      {stage.no}
+                    </span>
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-[12px] text-steel font-black uppercase tracking-wide">{stage.phase}</span>
+                      <span className="text-[13.5px] font-black text-navy">{stage.title}</span>
+                    </div>
+                  </div>
+                  <p className="text-[12px] text-gray leading-relaxed font-medium">{stage.desc}</p>
+                  <div className="flex items-center gap-1.5 mt-auto pt-1 border-t border-border/70">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
+                    <span className="text-[12px] font-black text-navy">{stage.output}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-bg border border-border rounded-custom p-5 shadow-custom-sm flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-border pb-3">
-              <ShieldCheck className="w-4 h-4 text-steel" />
-              <h3 className="text-[16px] font-black text-navy">검증 워크플로우</h3>
-            </div>
-            <div className="flex flex-col gap-3">
-              {workflow.map((item) => (
-                <div key={item.step} className="flex gap-3 items-start">
-                  <span className="w-8 h-8 shrink-0 rounded-custom bg-steel text-bg flex items-center justify-center text-[12px] font-black">
-                    {item.step}
-                  </span>
-                  <div className="flex flex-col gap-1 border-b border-border pb-3 w-full">
-                    <span className="text-[13px] font-black text-navy">{item.title}</span>
-                    <span className="text-[12px] text-gray leading-normal">{item.desc}</span>
-                  </div>
+          {/* 검토 원칙 */}
+          <div className="flex flex-col gap-3">
+            <span className="text-[12px] font-black text-navy uppercase tracking-wide">검토 원칙</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {principles.map((p) => (
+                <div key={p.title} className="border border-border rounded-custom p-3.5 bg-bg flex flex-col gap-1.5">
+                  <span className="text-[13.5px] font-black text-navy">{p.title}</span>
+                  <p className="text-[12px] text-gray leading-normal">{p.desc}</p>
                 </div>
               ))}
             </div>
           </div>
-        </section>
 
-        <section className="bg-bg border border-border rounded-custom p-5 shadow-custom-sm flex flex-col gap-4">
-          <div className="flex flex-col gap-1 border-b border-border pb-3">
-            <span className="text-[12px] text-steel font-black uppercase tracking-wider">Decision Output</span>
-            <h3 className="text-[18px] font-black text-navy">검증 후 바로 내려야 하는 4가지 판정</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {decisionOutputs.map((item, index) => (
-              <div key={item.title} className="border border-border rounded-custom p-4 bg-bg-subtle flex flex-col gap-2">
-                <span className="text-[12px] font-black text-steel">판정 {index + 1}</span>
-                <span className="text-[13.5px] font-black text-navy">{item.title}</span>
-                <p className="text-[12px] text-gray leading-normal">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="bg-navy text-bg rounded-custom p-5 md:p-6 shadow-custom-md flex flex-col gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-5 items-start">
-            <div className="flex flex-col gap-2">
-              <span className="text-[12px] text-bg/70 font-black uppercase tracking-wider">Final Scope Sheet</span>
-              <h3 className="text-xl font-black tracking-tight">최종 화면 하단 산출물</h3>
-              <p className="text-[13px] text-bg/75 leading-relaxed font-semibold">
-                제출이 끝나면 범위 고정표, 리스크 레지스터, 예산 밴드, 다음 액션을 한 장의 검토 시트로 정리합니다.
-              </p>
+          {/* CTA */}
+          <div className="bg-navy text-bg rounded-custom p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-[12px] text-bg/70 font-black uppercase tracking-wider">Ready to verify</span>
+              <span className="text-[15px] font-black tracking-tight">자료를 제출하면 이 절차가 즉시 가동됩니다.</span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-[12px]">
-              {['공사 범위', '예산 밴드', '리스크 등급', '다음 조치'].map((item) => (
-                <div key={item} className="bg-bg/10 border border-bg/15 rounded-custom p-3 font-black">
-                  {item}
-                </div>
-              ))}
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <button
+                onClick={() => setActiveTab('request')}
+                className="bg-steel hover:bg-bg hover:text-navy text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95 whitespace-nowrap"
+              >
+                무료 출장 견적 컨설팅 요청
+              </button>
+              <button
+                onClick={() => setActiveTab('about')}
+                className="bg-bg/10 hover:bg-bg/15 border border-bg/20 text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95 whitespace-nowrap"
+              >
+                ZEROS 진단 절차 보기
+              </button>
             </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <button
-              onClick={() => setActiveTab('request')}
-              className="flex-1 bg-steel hover:bg-bg hover:text-navy text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95"
-            >
-              AI Native 검증 제출 시작
-            </button>
-            <button
-              onClick={() => {
-                setSelectedMenu('');
-                setSelectedBudget('');
-                setActiveTab('home');
-              }}
-              className="flex-1 bg-bg/10 hover:bg-bg/15 border border-bg/20 text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95"
-            >
-              견적 검토 홈으로 돌아가기
-            </button>
           </div>
         </section>
       </div>
@@ -700,7 +809,7 @@ export default function Home() {
             accentBorder: 'border-cyan-200/80',
             badgeBg: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-700',
             bubbleWidth: 'w-[28.4%]',
-            checklist: ['ASME/KS 자재 마진 필터링', 'Darcy-Weisbach 손실 수치 검증', '1군 표준 품셈 공기 산출']
+            checklist: ['ASME/KS 자재 마진 필터링', '관경·압력손실 수치 검증', '1군 표준 품셈 공기 산출']
           };
         case '장비설치':
           return {
@@ -908,7 +1017,7 @@ export default function Home() {
           {/* 7단계 견적 작업 시계열 타임라인 (애니메이션) */}
           <div className="bg-bg-subtle/70 border border-border/70 rounded-custom px-3 py-2.5 select-none overflow-x-auto no-scrollbar">
             <div className="flex items-start justify-between gap-1 min-w-[560px] md:min-w-0">
-              {['견적 요청', '데이터 수집', '데이터 가공', '데이터 정제', 'AI툴 검증', '적합성 검토', '고객 제출'].map((label, i, arr) => (
+              {['고객 요청', '데이터 수집', '데이터 가공', '데이터 정제', 'AI툴 검증', '적합성 검토', '고객 제출'].map((label, i, arr) => (
                 <React.Fragment key={label}>
                   <div className="flex flex-col items-center gap-1.5 shrink-0">
                     <div
@@ -937,7 +1046,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
               <div className={`absolute inset-0 ${metrics.accentBg} opacity-20 pointer-events-none`} />
               
-              <div className="flex flex-col gap-4 z-10 relative">
+              <div className="flex flex-col justify-between gap-4 z-10 relative flex-1">
                 {/* 타이틀 및 핵심 엔지니어링 문제 정의 (상단) */}
                 <div className="flex flex-col gap-2">
                   <h2 className="text-[18px] md:text-[18px] font-black tracking-tight leading-tight text-navy select-none">
@@ -976,26 +1085,21 @@ export default function Home() {
             <div className="relative overflow-hidden bg-bg text-navy p-5 rounded-custom border border-border flex flex-col justify-between gap-4 transition-all shadow-sm">
               {/* 하이 테크 백그라운드 그리드 레이아웃 */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
-              
-              {/* 동적 카테고리 매핑 초정밀 애니메이션 SVG 백드롭 */}
-              <div className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.16] pointer-events-none select-none">
-                {visuals.svgBackdrop}
-              </div>
 
               {/* Agent AI 정직 견적 신뢰 코어 패널 */}
-              <div className="flex flex-col gap-3 z-10 select-none">
-                {/* 타이틀 (아이콘 제거, 폰트 좌측 제목과 동일) + 스펙 */}
+              <div className="flex flex-col justify-between gap-4 z-10 relative flex-1 select-none">
+                {/* 타이틀 + 한 줄 설명 (공종 공통, 평이한 문장) */}
                 <div className="flex flex-col gap-1">
                   <span className="text-[18px] md:text-[18px] font-black text-navy tracking-tight leading-tight">
                     ZEROS Agent AI 정직 단가 교정 모니터
                   </span>
                   <span className="text-[12px] text-gray/80 font-bold mt-0.5 leading-relaxed">
-                    {visuals.specText}
+                    실거래 표본과 표준 품셈으로 과도하게 부풀려진 단가를 실시간으로 걸러냅니다.
                   </span>
                 </div>
 
                 {/* 정밀 공종별 체크사항 목록 */}
-                <ul className="flex flex-col gap-1 mt-0">
+                <ul className="flex flex-col gap-1.5">
                   {metrics.checklist.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-[12px] text-gray font-semibold leading-tight">
                       <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
@@ -1004,29 +1108,26 @@ export default function Home() {
                   ))}
                 </ul>
 
-                {/* 정직·신뢰 실시간 교정 비교 바 (하단) + 버블 제로 필터링 배지 우상단 */}
-                <div className="relative flex flex-col gap-2 bg-bg-subtle/80 border border-border/60 p-2.5 rounded-custom shadow-inner mt-1">
-                  <span className="absolute -top-2 right-2 bg-[#10b981]/10 border border-[#10b981]/20 text-success text-[12px] px-1.5 py-0.5 rounded-full font-black shadow-sm">
-                    버블 제로 필터링
-                  </span>
+                {/* 정직·신뢰 실시간 교정 비교 바 (공종 난이도·복잡성 연동) */}
+                <div className="flex flex-col gap-1.5 bg-bg-subtle/80 border border-border/60 p-2.5 rounded-custom shadow-inner">
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between text-[12px] font-bold text-gray">
-                      <span>시공사 평균 거품 청구 (Average Inflated Bid)</span>
-                      <span className="text-danger font-mono font-bold tabular-nums">135%</span>
+                      <span>시공사 평균 거품 청구</span>
+                      <span className="text-danger font-mono font-bold tabular-nums">{(100 + metrics.bubbleRate).toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-border/40 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-danger/80 h-full w-[80%] rounded-full" />
+                    <div className="w-full bg-border/40 h-1 rounded-full overflow-hidden">
+                      <div className="bg-danger/80 h-full rounded-full" style={{ width: `${Math.min(92, 55 * (100 + metrics.bubbleRate) / 100).toFixed(1)}%` }} />
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1 border-t border-border/50 pt-2">
+                  <div className="flex flex-col gap-1 border-t border-border/50 pt-1.5">
                     <div className="flex justify-between text-[12px] font-black text-navy">
                       <span className="flex items-center gap-1">
                         <Sparkles className="w-3 h-3 text-success animate-pulse" />
-                        ZEROS AI 교정 단가 (Honest Calibrated Cost)
+                        ZEROS AI 교정 단가
                       </span>
                       <span className="text-success font-mono font-bold tabular-nums">100% (버블 0%)</span>
                     </div>
-                    <div className="w-full bg-border/40 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-border/40 h-1 rounded-full overflow-hidden">
                       <div className="bg-success h-full w-[55%] rounded-full animate-pulse" />
                     </div>
                   </div>
@@ -1072,23 +1173,16 @@ export default function Home() {
               </div>
               <span className="text-[12px] font-black text-accent bg-accent/10 border border-accent/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Procedure</span>
             </div>
-            <ol className="flex flex-col gap-0 relative">
+            <ol className="flex flex-col gap-2.5">
               {manual.sop.map((step, idx) => (
-                <li key={idx} className="flex items-stretch gap-3 group">
-                  {/* 타임라인 인디케이터 */}
-                  <div className="flex flex-col items-center shrink-0">
-                    <span className="w-6 h-6 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shadow-sm shrink-0 z-10">
-                      {idx + 1}
-                    </span>
-                    {idx < manual.sop.length - 1 && (
-                      <span className="w-[1.5px] flex-1 bg-border my-0.5" />
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-0.5 pb-4">
-                    <span className="text-[12px] font-black text-accent uppercase tracking-widest leading-none">{step.phase}</span>
-                    <span className="text-[13.5px] font-bold text-navy leading-tight mt-0.5">{step.title}</span>
-                    <span className="text-[12px] text-gray font-medium leading-normal mt-0.5">{step.action}</span>
-                  </div>
+                <li key={idx} className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shadow-sm shrink-0 mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <p className="text-[12px] leading-snug">
+                    <span className="font-bold text-navy">{step.title}</span>
+                    <span className="text-gray font-medium"> : {step.action}</span>
+                  </p>
                 </li>
               ))}
             </ol>
@@ -1172,13 +1266,13 @@ export default function Home() {
       {/* ============================================================
           핵심 주제 히어로 — 무료 출장 견적 컨설팅 + 35년 PM 신뢰
           ============================================================ */}
-      <section className="relative overflow-hidden bg-bg border border-border rounded-custom shadow-custom-sm p-5 md:p-7 flex flex-col gap-4 select-none">
+      <section className="relative overflow-hidden bg-bg border border-border rounded-custom shadow-custom-sm p-5 md:p-6 flex flex-col gap-4 select-none">
         {/* 밝고 신뢰감 있는 맥킨지 톤 배경 */}
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(245,247,250,0.9),rgba(255,255,255,0)_55%)] pointer-events-none" />
         <div className="absolute right-0 top-0 w-64 h-64 bg-[radial-gradient(circle_at_top_right,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
         <div className="absolute left-0 bottom-0 h-1 w-full bg-gradient-to-r from-steel via-accent to-transparent opacity-70 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col gap-3.5">
+        <div className="relative z-10 flex flex-col gap-4">
           {/* 주요 CTA(하나) + 보조 버튼 — 시선 집중 */}
           <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
             <button
@@ -1190,8 +1284,8 @@ export default function Home() {
               className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-bg text-[18px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
             >
               <FileCheck className="w-6 h-6 shrink-0" />
-              <span className="hidden sm:inline">AI Native 검증 제출하기</span>
-              <span className="sm:hidden">AI Native 검증 제출</span>
+              <span className="hidden sm:inline">무료 출장 견적 컨설팅 요청</span>
+              <span className="sm:hidden">무료 견적 컨설팅 요청</span>
             </button>
             <button
               onClick={() => setActiveTab('about')}
@@ -1219,18 +1313,11 @@ export default function Home() {
           </div>
 
           {/* 핵심 카피 */}
-          <div className="flex flex-col gap-2">
-            <h1
-              style={{ fontFamily: '"Noto Sans KR", "Pretendard", "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif' }}
-              className="text-2xl md:text-[28px] font-semibold text-[#0B2F5B] tracking-normal leading-tight antialiased"
-            >
-              무료 출장 견적 <span className="text-[#143E6D]">컨설팅 서비스</span>
-            </h1>
-            <p className="text-[13.5px] md:text-[15px] text-gray leading-relaxed font-semibold max-w-2xl">
-              도면·사진·제원서를 제출하면 AI 1차 검증 후 <strong className="text-navy font-extrabold">35년 현장통 국가자격증 PM</strong>이
-              공사 범위(Scope)·비용(Budget)·리스크(Risk)를 정직하게 확인합니다.
-            </p>
-          </div>
+          <p className="text-[14px] md:text-[16px] text-gray leading-relaxed font-semibold max-w-2xl">
+            도면·사진·제원서를 제출하면 AI 1차 검증 후,<br />
+            <strong className="text-navy font-extrabold">현장실무 35년 경력과 국가 기술자격증 PM역량</strong>으로<br />
+            공사 범위(Scope)·비용(Budget)·리스크(Risk)를 정직하게 검토합니다.
+          </p>
 
           {/* 35년 PM 신뢰 증빙 배지 3종 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mt-1 items-stretch">
@@ -1239,8 +1326,8 @@ export default function Home() {
                 <Briefcase className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">35년</span>
-                <span className="text-[12px] text-gray font-bold mt-1.5">현장통 실무 경력</span>
+                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">현장 35년</span>
+                <span className="text-[12px] text-gray font-bold mt-1.5">현장통 경력</span>
               </div>
             </div>
             <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
@@ -1248,8 +1335,8 @@ export default function Home() {
                 <Award className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">국가자격증</span>
-                <span className="text-[12px] text-gray font-bold mt-1.5">보유 기술 전문가</span>
+                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">국가 기술자격증</span>
+                <span className="text-[12px] text-gray font-bold mt-1.5">관련 자격증 다수</span>
               </div>
             </div>
             <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
@@ -1257,8 +1344,8 @@ export default function Home() {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">PM 역량</span>
-                <span className="text-[12px] text-gray font-bold mt-1.5">프로젝트 총괄 관리</span>
+                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">PM 총괄관리</span>
+                <span className="text-[12px] text-gray font-bold mt-1.5">프로젝트 경력 다수</span>
               </div>
             </div>
           </div>
@@ -1361,7 +1448,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-1 select-none">
               <button
-                onClick={() => setActiveTab('request')}
+                onClick={() => setActiveTab('sop')}
                 className="flex-1 min-h-10 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide shadow-sm hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
                 AI Native 검증 제출
@@ -1683,6 +1770,8 @@ export default function Home() {
     switch (activeTab) {
       case 'about':
         return renderAboutTab();
+      case 'sop':
+        return renderSopTab();
       case 'performance':
         return renderPerformanceTab();
       case 'request':

@@ -79,11 +79,20 @@ body {
 }
 
 /* 폼 인풋 및 탭 버튼들에 더 명확하고 뚜렷한 포커싱 처리 */
-button:focus-visible, 
-input:focus-visible, 
-select:focus-visible, 
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--color-steel) !important;
   outline-offset: 1px !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   텍스트 복사 허용: 화면 곳곳의 select-none(텍스트 선택 차단)을 무력화하여
+   고객이 모든 텍스트를 자유롭게 드래그·복사할 수 있도록 한다.
+   ───────────────────────────────────────────────────────────────────────────── */
+.select-none {
+  -webkit-user-select: text !important;
+  user-select: text !important;
 }
 
