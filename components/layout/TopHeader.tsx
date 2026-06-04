@@ -26,7 +26,7 @@ export const TopHeader: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full h-16 border-b border-border bg-bg/95 backdrop-blur-md px-6 flex items-center justify-between shadow-sm select-none">
+    <header className="sticky top-0 z-40 w-full h-16 border-b border-border bg-bg/95 backdrop-blur-md px-8 flex items-center justify-between select-none">
       
       {/* 1. 좌측 로고 영역 - 완벽한 기하학적 대칭 정렬 */}
       <div 
@@ -45,14 +45,14 @@ export const TopHeader: React.FC = () => {
       </div>
 
       {/* 2. 중앙 탭 네비게이션 - 데스크탑 전용 */}
-      <nav className="hidden md:flex items-center gap-2">
+      <nav className="hidden md:flex items-center gap-1">
         <button
           onClick={() => handleTabClick('home')}
           style={{ touchAction: 'manipulation' }}
-          className={`px-4 py-2 text-[13.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
+          className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
             isUserMode && activeTab === 'home'
-              ? 'text-navy bg-transparent shadow-none'
-              : 'text-gray hover:bg-bg-subtle hover:text-navy'
+              ? 'text-navy after:opacity-100'
+              : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
           }`}
         >
           견적 검토 홈
@@ -60,10 +60,10 @@ export const TopHeader: React.FC = () => {
         <button
           onClick={() => handleTabClick('about')}
           style={{ touchAction: 'manipulation' }}
-          className={`px-4 py-2 text-[13.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
+          className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
             isUserMode && activeTab === 'about'
-              ? 'text-navy bg-transparent shadow-none'
-              : 'text-gray hover:bg-bg-subtle hover:text-navy'
+              ? 'text-navy after:opacity-100'
+              : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
           }`}
         >
           진단 절차
@@ -71,21 +71,21 @@ export const TopHeader: React.FC = () => {
         <button
           onClick={() => handleTabClick('performance')}
           style={{ touchAction: 'manipulation' }}
-          className={`px-4 py-2 text-[13.5px] font-black transition-all duration-200 uppercase tracking-wide cursor-pointer rounded-custom ${
+          className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
             isUserMode && activeTab === 'performance'
-              ? 'text-navy bg-transparent shadow-none'
-              : 'text-gray hover:bg-bg-subtle hover:text-navy'
+              ? 'text-navy after:opacity-100'
+              : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
           }`}
         >
-          실적
+          실적 집계
         </button>
         <button
           onClick={() => handleTabClick('request')}
           style={{ touchAction: 'manipulation' }}
-          className={`px-5 py-2 text-[13.5px] font-black rounded-custom transition-all duration-200 tracking-tight flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer uppercase ${
+          className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
             isUserMode && activeTab === 'request'
-              ? 'bg-accent text-bg shadow-custom-md scale-[1.01]'
-              : 'bg-steel text-bg hover:bg-navy'
+              ? 'text-navy after:opacity-100'
+              : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
           }`}
         >
           예상견적 의뢰하기

@@ -96,3 +96,14 @@ textarea:focus-visible {
   user-select: text !important;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   클릭 가능한 요소: 일관된 손 모양 커서.
+   낮은 특이성(요소 선택자)으로 두어 Tailwind cursor-* 유틸리티가 우선하도록 함.
+   ───────────────────────────────────────────────────────────────────────────── */
+button, summary, select, [role="button"], a[href], label[for] {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+

@@ -16,6 +16,8 @@ import { KanbanBoard } from "@/components/admin/KanbanBoard";
 import { EstimateDetailModal } from "@/components/admin/EstimateDetailModal";
 import { VisitList } from "@/components/admin/VisitList";
 import { PerformanceDashboard } from "@/components/admin/PerformanceDashboard";
+import { PerformanceInsights } from "@/components/PerformanceInsights";
+import { EstimateFlow } from "@/components/EstimateFlow";
 import { CustomerList } from "@/components/admin/CustomerList";
 import { NotificationLog } from "@/components/admin/NotificationLog";
 
@@ -25,7 +27,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
-  ArrowLeft,
   ShieldCheck,
   Sparkles,
   Award,
@@ -121,16 +122,6 @@ export default function Home() {
 
     return (
       <div className="flex flex-col gap-5 max-w-4xl mx-auto py-4">
-        {/* 뒤로가기 */}
-        <button
-          onClick={() => { setSelectedMenu(''); setSelectedBudget(''); setActiveTab('home'); }}
-          style={{ touchAction: 'manipulation' }}
-          className="self-start inline-flex items-center gap-1.5 text-[12px] font-bold text-gray hover:text-navy bg-bg border border-border hover:bg-bg-subtle px-3 py-1.5 rounded-custom transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          견적 검토 홈으로
-        </button>
-
         {/* 하나의 정돈된 진단 절차 카드 */}
         <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-6">
           {/* 헤더 */}
@@ -282,16 +273,6 @@ export default function Home() {
 
     return (
       <div className="flex flex-col gap-5 max-w-4xl mx-auto py-4">
-        {/* 뒤로가기 */}
-        <button
-          onClick={() => { setSelectedMenu(''); setSelectedBudget(''); setActiveTab('home'); }}
-          style={{ touchAction: 'manipulation' }}
-          className="self-start inline-flex items-center gap-1.5 text-[12px] font-bold text-gray hover:text-navy bg-bg border border-border hover:bg-bg-subtle px-3 py-1.5 rounded-custom transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          견적 검토 홈으로
-        </button>
-
         <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-6">
           {/* 헤더 */}
           <div className="flex flex-col gap-2 border-b border-border pb-4">
@@ -385,53 +366,7 @@ export default function Home() {
     );
   };
 
-  const renderPerformanceTab = () => (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto py-4">
-      <div className="bg-bg border border-border rounded-custom p-8 shadow-custom-sm flex flex-col gap-6">
-        <h2 className="text-2xl font-black text-navy tracking-tight border-b border-border pb-4">
-          ZEROS 사전검토 트랙 레코드
-        </h2>
-        <p className="text-[15px] text-gray leading-relaxed">
-          과장된 홍보 실적을 지양하고, 투명한 검토 기준과 누적된 익명 설비 분석 데이터 포트폴리오를 숫자로만 신뢰성 있게 보고합니다.
-        </p>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-4">
-          <div className="bg-bg-subtle border border-border p-4.5 rounded-custom text-center shadow-sm">
-            <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wider mb-1">총 의뢰 건수</span>
-            <span className="text-2xl font-black text-navy tracking-tight tabular-nums">246건</span>
-          </div>
-          <div className="bg-bg-subtle border border-border p-4.5 rounded-custom text-center shadow-sm">
-            <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wider mb-1">1차 검토 준수율</span>
-            <span className="text-2xl font-black text-navy tracking-tight tabular-nums">98.4%</span>
-          </div>
-          <div className="bg-bg-subtle border border-border p-4.5 rounded-custom text-center shadow-sm">
-            <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wider mb-1">출장 실측 만족도</span>
-            <span className="text-2xl font-black text-navy tracking-tight tabular-nums">96.8%</span>
-          </div>
-          <div className="bg-bg-subtle border border-border p-4.5 rounded-custom text-center shadow-sm">
-            <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wider mb-1">설계변경 감소율</span>
-            <span className="text-2xl font-black text-navy tracking-tight tabular-nums">34.2%</span>
-          </div>
-        </div>
-
-        <h3 className="text-[18px] font-extrabold text-navy mt-4 mb-2">대표적인 유틸리티 진단 영역</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="border border-border p-4 rounded-custom flex flex-col gap-2">
-            <span className="font-bold text-steel text-[15px]">A. 정밀 제조 배관 시스템 (Semi-conductor / Sanitary)</span>
-            <p className="text-[12px] text-gray leading-normal">
-              초순수 배관 내 박테리아 고임 구조 철저 제거 설계 진단 및 반도체 훅업 EP 자재 적합성 검토 48건 완료.
-            </p>
-          </div>
-          <div className="border border-border p-4 rounded-custom flex flex-col gap-2">
-            <span className="font-bold text-steel text-[15px]">B. 중대형 보일러 / 스팀 라인 에너지 진단</span>
-            <p className="text-[12px] text-gray leading-normal">
-              스팀 배관 워터해머 및 고온 응축수 열 회수 설계 타당성 평가, 에너지 손실 비용 최소화 62건 분석 완료.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const renderPerformanceTab = () => <PerformanceInsights />;
 
   const renderRequestTab = () => (
     <div className="py-4">
@@ -990,16 +925,6 @@ export default function Home() {
     return (
       <div key={key} className="flex flex-col gap-6 max-w-4xl mx-auto py-2 animate-in fade-in duration-300">
 
-        {/* 뒤로가기 — 견적 검토 홈(랜딩)으로 복귀 */}
-        <button
-          onClick={() => { setSelectedMenu(''); setSelectedBudget(''); setActiveTab('home'); }}
-          style={{ touchAction: 'manipulation' }}
-          className="self-start inline-flex items-center gap-1.5 text-[12px] font-bold text-gray hover:text-navy bg-bg border border-border hover:bg-bg-subtle px-3 py-1.5 rounded-custom transition-all duration-150 active:scale-95 cursor-pointer shadow-sm -mb-1"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          견적 검토 홈으로
-        </button>
-
         {/* ============================================================
             상단 (TOP) — 주제 + 데이터분석 + AI툴 신뢰 작업 FLOW
             ============================================================ */}
@@ -1014,29 +939,8 @@ export default function Home() {
             <span className="text-[12px] font-mono font-bold text-gray-light tracking-wider">REQUEST · DATA · AI · SUBMIT</span>
           </div>
 
-          {/* 7단계 견적 작업 시계열 타임라인 (애니메이션) */}
-          <div className="bg-bg-subtle/70 border border-border/70 rounded-custom px-3 py-2.5 select-none overflow-x-auto no-scrollbar">
-            <div className="flex items-start justify-between gap-1 min-w-[560px] md:min-w-0">
-              {['고객 요청', '데이터 수집', '데이터 가공', '데이터 정제', 'AI툴 검증', '적합성 검토', '고객 제출'].map((label, i, arr) => (
-                <React.Fragment key={label}>
-                  <div className="flex flex-col items-center gap-1.5 shrink-0">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-black shadow-sm border-2 animate-[pulse_3s_infinite] ${
-                        i === arr.length - 1 ? 'bg-success text-bg border-success' : 'bg-bg text-steel border-steel/40'
-                      }`}
-                      style={{ animationDelay: `${i * 0.3}s` }}
-                    >
-                      {i + 1}
-                    </div>
-                    <span className="text-[12px] font-bold text-navy leading-none whitespace-nowrap">{label}</span>
-                  </div>
-                  {i < arr.length - 1 && (
-                    <ArrowRight className="w-3.5 h-3.5 text-accent/50 shrink-0 mt-[5px] animate-pulse" style={{ animationDelay: `${i * 0.3}s` }} />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
+          {/* 7단계 견적 작업 — 클릭형 시계열 스텝 (좌→우 흐름 + 인플레이스 상세) */}
+          <EstimateFlow />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             
@@ -1281,7 +1185,7 @@ export default function Home() {
                 touchAction: 'manipulation',
                 fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
               }}
-              className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-bg text-[18px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
+              className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-[#0B2F5B] text-[18px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
             >
               <FileCheck className="w-6 h-6 shrink-0" />
               <span className="hidden sm:inline">무료 출장 견적 컨설팅 요청</span>
@@ -1314,9 +1218,8 @@ export default function Home() {
 
           {/* 핵심 카피 */}
           <p className="text-[14px] md:text-[16px] text-gray leading-relaxed font-semibold max-w-2xl">
-            도면·사진·제원서를 제출하면 AI 1차 검증 후,<br />
-            <strong className="text-navy font-extrabold">현장실무 35년 경력과 국가 기술자격증 PM역량</strong>으로<br />
-            공사 범위(Scope)·비용(Budget)·리스크(Risk)를 정직하게 검토합니다.
+            견적은 감이 아니라, <strong className="text-navy font-extrabold">DATA</strong>입니다.<br />
+            현장 경험과 <strong className="text-navy font-extrabold">AI Native 분석</strong>으로 비용과 리스크를 <strong className="text-navy font-extrabold">ZEROS</strong> 합니다.
           </p>
 
           {/* 35년 PM 신뢰 증빙 배지 3종 */}

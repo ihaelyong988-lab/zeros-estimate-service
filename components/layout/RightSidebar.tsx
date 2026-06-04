@@ -273,7 +273,7 @@ export const RightSidebar: React.FC = () => {
       <div>
         <div className="flex items-center gap-1.5 px-1 mb-4">
           <BarChart3 className="w-4 h-4 text-steel animate-pulse" />
-          <h3 className="text-[12px] font-black text-navy uppercase tracking-wider">데이터 기반 사전판단</h3>
+          <h3 className="text-[13.5px] font-black text-navy uppercase tracking-wider">데이터 기반 사전 검토</h3>
         </div>
 
         <div className="flex flex-col gap-5">
