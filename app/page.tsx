@@ -31,8 +31,7 @@ import {
   Sparkles,
   Award,
   Briefcase,
-  MapPin,
-  Truck
+  MapPin
 } from 'lucide-react';
 
 export default function Home() {
@@ -1209,16 +1208,14 @@ export default function Home() {
               <MapPin className="w-3.5 h-3.5 text-steel" /> 전국 현장 무료 방문
             </span>
             <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] border border-[#B8C7DA] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
-              <Truck className="w-3.5 h-3.5 text-accent" /> 출장비 0원
-            </span>
-            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] border border-[#B8C7DA] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
               <ShieldCheck className="w-3.5 h-3.5 text-success" /> AI Native 1차 검증
             </span>
           </div>
 
           {/* 핵심 카피 */}
-          <p className="text-[14px] md:text-[16px] text-gray leading-relaxed font-semibold max-w-2xl">
-            견적은 감이 아니라, <strong className="text-navy font-extrabold">DATA</strong>입니다.<br />
+          <p className="text-[14px] md:text-[16px] text-gray leading-relaxed font-semibold max-w-2xl text-balance">
+            견적은 감이 아니라, <strong className="text-navy font-extrabold">DATA</strong>입니다.{' '}
+            <br className="hidden md:block" />
             현장 경험과 <strong className="text-navy font-extrabold">AI Native 분석</strong>으로 비용과 리스크를 <strong className="text-navy font-extrabold">ZEROS</strong> 합니다.
           </p>
 
