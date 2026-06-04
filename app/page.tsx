@@ -104,49 +104,177 @@ export default function Home() {
   // ==========================================
   // 1. 고객 모드 탭 렌더러
   // ==========================================
-  const renderAboutTab = () => (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto py-4">
-      <div className="bg-bg border border-border rounded-custom p-8 shadow-custom-sm flex flex-col gap-6">
-        <h2 className="text-2xl font-black text-navy tracking-tight border-b border-border pb-4">
-          ZEROS 사전진단 컨설팅 철학
-        </h2>
-        <div className="flex flex-col gap-4 text-[15px] text-gray leading-relaxed font-sans">
-          <p>
-            중소형 산업 설비 시장은 고도의 기술적 다양성에도 불구하고 공사 범위가 불분명한 채 계약이 맺어져 <strong className="text-navy font-extrabold">공기 지연, 잦은 설계 변경, 예상치 못한 추가 원가 지불</strong> 등의 고질적인 리스크를 안고 있습니다.
-          </p>
-          <p>
-            ZEROS는 시공업체 선정 전, 엔지니어링 도면과 외관 사진, 유체 유전 인자 등 현장 실측 자료를 기반으로 <strong className="text-navy font-extrabold">범위(Scope)와 비용(Budget), 리스크(Risk)</strong>를 객관적으로 먼저 진단합니다.
-          </p>
-          <div className="bg-bg-subtle p-5 rounded-custom border border-border/80 my-2 flex flex-col gap-3">
-            <span className="font-extrabold text-navy text-[13.5px] tracking-wide">ZEROS 3대 핵심 검토 가치</span>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-1">
-              <div className="flex flex-col gap-1 bg-bg p-3.5 rounded-custom border border-border">
-                <span className="font-black text-steel text-[12px] uppercase">01. 범위 고정</span>
-                <span className="text-[12px] text-gray leading-normal mt-1">
-                  체계적인 체크리스트를 기반으로 시공사마다 다른 견적 항목을 동일 선상에서 평가할 수 있도록 범위를 고정합니다.
-                </span>
+  const renderAboutTab = () => {
+    const smartPlan = [
+      { code: 'S', title: '범위 고정', desc: '공사 목적, 대상 설비, 배관 구간, 제외 범위를 한 문장으로 고정합니다.' },
+      { code: 'M', title: '수치화', desc: '관경, 길이, 층고, 수량, 예산 상한, 희망 일정을 숫자로 입력합니다.' },
+      { code: 'A', title: '실행 가능성', desc: '반입 동선, 셧다운 가능 시간, 작업 높이, 안전 제약을 확인합니다.' },
+      { code: 'R', title: '사업 연관성', desc: '증설, 보수, 긴급 복구, CAPEX 승인 등 의사결정 목적과 연결합니다.' },
+      { code: 'T', title: '기한 설정', desc: '24시간 1차 검토, 현장 실측 필요 여부, 견적 요청 기한을 구분합니다.' },
+    ];
+
+    const requiredDocs = [
+      { level: '필수', item: '현장 사진 3장 이상', check: '전체 전경, 접속부, 장애물/반입 동선을 분리 촬영' },
+      { level: '필수', item: '작업 목적', check: '누수 보수, 라인 증설, 장비 연결, 노후 교체 중 하나로 명시' },
+      { level: '필수', item: '기본 치수', check: '배관 관경, 대략 길이, 층고, 장비 설치 면적을 숫자로 입력' },
+      { level: '권장', item: '도면/P&ID/Layout', check: 'PDF, 이미지, CAD 캡처 중 가능한 자료를 첨부' },
+      { level: '권장', item: '운전 조건', check: '유체, 압력, 온도, 셧다운 가능 시간, 청정도 요구조건 입력' },
+      { level: '권장', item: '예산/일정 한도', check: '승인 가능한 금액 범위와 착공 희망일을 함께 제시' },
+    ];
+
+    const workflow = [
+      { step: '01', title: '자료 접수', desc: '도면·사진·제원서 누락 여부를 확인하고 검토 가능/보완 필요를 분류합니다.' },
+      { step: '02', title: 'AI 1차 검증', desc: '사진·도면에서 관경, 연결부, 접근성, 위험 요소 후보를 추출합니다.' },
+      { step: '03', title: 'PM 판정', desc: '35년 현장 PM 기준으로 공사 범위, 예산 밴드, 출장 필요성을 판단합니다.' },
+      { step: '04', title: '액션 확정', desc: '온라인 검토, 추가자료 요청, 출장 실측, 프로젝트 진단 중 다음 단계를 지정합니다.' },
+    ];
+
+    const decisionOutputs = [
+      { title: '온라인 검토 가능', desc: '사진과 치수만으로 1차 범위와 예상 예산 밴드를 제시할 수 있는 건' },
+      { title: '추가자료 요청', desc: '도면, 치수, 운전 조건, 현장 사진이 부족해 오판 가능성이 높은 건' },
+      { title: '출장 실측 권장', desc: '고소 작업, 협소 반입, 가동 중 연결, 안전 리스크가 있는 건' },
+      { title: '프로젝트 진단 전환', desc: '1억 초과 CAPEX, 복수 공종, 입찰 비교 기준 수립이 필요한 건' },
+    ];
+
+    return (
+      <div className="flex flex-col gap-5 max-w-4xl mx-auto py-4">
+        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-5">
+          <div className="flex flex-col gap-2 border-b border-border pb-4">
+            <span className="text-[12px] text-steel font-black uppercase tracking-wider">SMART Action Template</span>
+            <h2 className="text-2xl font-black text-navy tracking-tight">
+              AI Native 검증 제출 SMART 플랜
+            </h2>
+            <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
+              자료를 많이 받는 화면이 아니라, 공사 범위·예산·리스크·다음 행동을 빠르게 확정하기 위한 검증 제출 템플릿입니다.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 select-none">
+            {[
+              { label: '1차 검토 목표', value: '24h' },
+              { label: '필수 입력 묶음', value: '3종' },
+              { label: '판정 결과', value: '4가지' },
+              { label: '최종 산출물', value: 'Scope Sheet' },
+            ].map((metric) => (
+              <div key={metric.label} className="bg-bg-subtle border border-border rounded-custom p-3.5">
+                <span className="text-[12px] text-gray-light font-bold block">{metric.label}</span>
+                <span className="text-[18px] text-navy font-black tracking-tight mt-1 block">{metric.value}</span>
               </div>
-              <div className="flex flex-col gap-1 bg-bg p-3.5 rounded-custom border border-border">
-                <span className="font-black text-steel text-[12px] uppercase">02. 리스크 선제 감지</span>
-                <span className="text-[12px] text-gray leading-normal mt-1">
-                  고소 작업, 협소 동선, 기존 배관 무중단 분기(Tie-in) 가능 여부 등 시공 리스크를 사전에 파악하여 안내합니다.
-                </span>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            {smartPlan.map((item) => (
+              <div key={item.code} className="bg-bg-subtle border border-border rounded-custom p-3.5 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-custom bg-steel text-bg flex items-center justify-center text-[13px] font-black">
+                    {item.code}
+                  </span>
+                  <span className="text-[13.5px] font-black text-navy">{item.title}</span>
+                </div>
+                <p className="text-[12px] text-gray leading-normal font-semibold">{item.desc}</p>
               </div>
-              <div className="flex flex-col gap-1 bg-bg p-3.5 rounded-custom border border-border">
-                <span className="font-black text-steel text-[12px] uppercase">03. 타당한 원가 설정</span>
-                <span className="text-[12px] text-gray leading-normal mt-1">
-                  유사한 n건의 실제 공사 데이터를 매핑하여 시장 적정가 기준을 수립하고 무조건적인 저가 투찰의 품질 저하를 예방합니다.
-                </span>
-              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="bg-bg border border-border rounded-custom p-5 shadow-custom-sm flex flex-col gap-4">
+            <div className="flex items-center gap-2 border-b border-border pb-3">
+              <FileCheck className="w-4 h-4 text-steel" />
+              <h3 className="text-[16px] font-black text-navy">제출자료 체크리스트</h3>
+            </div>
+            <div className="flex flex-col gap-2">
+              {requiredDocs.map((doc) => (
+                <div key={doc.item} className="grid grid-cols-[52px_1fr] gap-3 border border-border rounded-custom p-3 bg-bg-subtle/70">
+                  <span className={`text-[12px] font-black ${doc.level === '필수' ? 'text-accent' : 'text-steel'}`}>
+                    {doc.level}
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[12.5px] font-black text-navy">{doc.item}</span>
+                    <span className="text-[12px] text-gray leading-normal">{doc.check}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <p>
-            ZEROS는 건설 현장의 안전 기준과 제조사 공정의 엄격한 유틸리티 조건(압력, 청정도)을 모두 충족하도록 진단 리포트를 작성합니다.
-          </p>
-        </div>
+
+          <div className="bg-bg border border-border rounded-custom p-5 shadow-custom-sm flex flex-col gap-4">
+            <div className="flex items-center gap-2 border-b border-border pb-3">
+              <ShieldCheck className="w-4 h-4 text-steel" />
+              <h3 className="text-[16px] font-black text-navy">검증 워크플로우</h3>
+            </div>
+            <div className="flex flex-col gap-3">
+              {workflow.map((item) => (
+                <div key={item.step} className="flex gap-3 items-start">
+                  <span className="w-8 h-8 shrink-0 rounded-custom bg-steel text-bg flex items-center justify-center text-[12px] font-black">
+                    {item.step}
+                  </span>
+                  <div className="flex flex-col gap-1 border-b border-border pb-3 w-full">
+                    <span className="text-[13px] font-black text-navy">{item.title}</span>
+                    <span className="text-[12px] text-gray leading-normal">{item.desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-bg border border-border rounded-custom p-5 shadow-custom-sm flex flex-col gap-4">
+          <div className="flex flex-col gap-1 border-b border-border pb-3">
+            <span className="text-[12px] text-steel font-black uppercase tracking-wider">Decision Output</span>
+            <h3 className="text-[18px] font-black text-navy">검증 후 바로 내려야 하는 4가지 판정</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            {decisionOutputs.map((item, index) => (
+              <div key={item.title} className="border border-border rounded-custom p-4 bg-bg-subtle flex flex-col gap-2">
+                <span className="text-[12px] font-black text-steel">판정 {index + 1}</span>
+                <span className="text-[13.5px] font-black text-navy">{item.title}</span>
+                <p className="text-[12px] text-gray leading-normal">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-navy text-bg rounded-custom p-5 md:p-6 shadow-custom-md flex flex-col gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-5 items-start">
+            <div className="flex flex-col gap-2">
+              <span className="text-[12px] text-bg/70 font-black uppercase tracking-wider">Final Scope Sheet</span>
+              <h3 className="text-xl font-black tracking-tight">최종 화면 하단 산출물</h3>
+              <p className="text-[13px] text-bg/75 leading-relaxed font-semibold">
+                제출이 끝나면 범위 고정표, 리스크 레지스터, 예산 밴드, 다음 액션을 한 장의 검토 시트로 정리합니다.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[12px]">
+              {['공사 범위', '예산 밴드', '리스크 등급', '다음 조치'].map((item) => (
+                <div key={item} className="bg-bg/10 border border-bg/15 rounded-custom p-3 font-black">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              onClick={() => setActiveTab('request')}
+              className="flex-1 bg-steel hover:bg-bg hover:text-navy text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95"
+            >
+              AI Native 검증 제출 시작
+            </button>
+            <button
+              onClick={() => {
+                setSelectedMenu('');
+                setSelectedBudget('');
+                setActiveTab('home');
+              }}
+              className="flex-1 bg-bg/10 hover:bg-bg/15 border border-bg/20 text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95"
+            >
+              견적 검토 홈으로 돌아가기
+            </button>
+          </div>
+        </section>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderPerformanceTab = () => (
     <div className="flex flex-col gap-6 max-w-4xl mx-auto py-4">
@@ -1061,7 +1189,9 @@ export default function Home() {
               }}
               className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-bg text-[18px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
             >
-              <Truck className="w-6 h-6 shrink-0" /> 무료 출장 견적 신청
+              <FileCheck className="w-6 h-6 shrink-0" />
+              <span className="hidden sm:inline">AI Native 검증 제출하기</span>
+              <span className="sm:hidden">AI Native 검증 제출</span>
             </button>
             <button
               onClick={() => setActiveTab('about')}
@@ -1084,7 +1214,7 @@ export default function Home() {
               <Truck className="w-3.5 h-3.5 text-accent" /> 출장비 0원
             </span>
             <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] border border-[#B8C7DA] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
-              <ShieldCheck className="w-3.5 h-3.5 text-success" /> 사전 진단 리포트 제공
+              <ShieldCheck className="w-3.5 h-3.5 text-success" /> AI Native 1차 검증
             </span>
           </div>
 
@@ -1097,8 +1227,8 @@ export default function Home() {
               무료 출장 견적 <span className="text-[#143E6D]">컨설팅 서비스</span>
             </h1>
             <p className="text-[13.5px] md:text-[15px] text-gray leading-relaxed font-semibold max-w-2xl">
-              공사를 시작하기 전, <strong className="text-navy font-extrabold">35년 현장통 국가자격증 PM</strong>이 직접 출장하여
-              공사 범위(Scope)·비용(Budget)·리스크(Risk)를 정직하게 사전 진단합니다.
+              도면·사진·제원서를 제출하면 AI 1차 검증 후 <strong className="text-navy font-extrabold">35년 현장통 국가자격증 PM</strong>이
+              공사 범위(Scope)·비용(Budget)·리스크(Risk)를 정직하게 확인합니다.
             </p>
           </div>
 
@@ -1232,13 +1362,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-1 select-none">
               <button
                 onClick={() => setActiveTab('request')}
-                className="flex-1 min-h-10 bg-accent hover:bg-accent/90 text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide shadow-md shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
+                className="flex-1 min-h-10 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide shadow-sm hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
-                예상견적 의뢰하기
+                AI Native 검증 제출
               </button>
               <button
                 onClick={() => setActiveTab('about')}
-                className="flex-1 min-h-10 bg-bg-subtle hover:bg-border/30 text-navy px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide border border-border active:scale-95 transition-all duration-150 cursor-pointer text-center"
+                className="flex-1 min-h-10 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide shadow-sm hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
                 ZEROS 진단 절차
               </button>
@@ -1485,7 +1615,7 @@ export default function Home() {
           onClick={() => setActiveTab('request')}
           className="mt-3 bg-accent hover:bg-accent/90 text-bg px-9 py-4 rounded-custom text-[12px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 z-10 cursor-pointer"
         >
-          예상견적 무료 상담 신청
+          AI Native 검증 제출하기
         </button>
       </section>
     </div>

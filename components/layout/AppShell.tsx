@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useShell } from '@/lib/context/ShellContext';
+import React, { useState, useEffect, useRef } from 'react';
+import { useShell, ActiveTab } from '@/lib/context/ShellContext';
 import { TopHeader } from './TopHeader';
 import { LeftSidebar } from './LeftSidebar';
 import { RightSidebar } from './RightSidebar';
@@ -28,6 +28,12 @@ interface MobileAdminMenuItem {
   label: string;
   value: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications';
 }
+
+type MobileActiveTab = 'home' | 'request' | 'decision' | 'admin';
+type AdminView = MobileAdminMenuItem['value'];
+
+const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request'];
+const adminViewValues: AdminView[] = ['dashboard', 'estimates', 'visits', 'customers', 'performance', 'notifications'];
 
 const mobileMenuItems: MobileMenuItem[] = [
   { type: 'menu', label: '배관공사', value: '배관공사' },
@@ -75,17 +81,119 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [layoutReady, setLayoutReady] = useState(false);
 
   // 모바일 하단 전용 액티브 탭 상태 ('home' | 'request' | 'decision' | 'admin')
-  const [mobileActiveTab, setMobileActiveTab] = useState<'home' | 'request' | 'decision' | 'admin'>('home');
+  const [mobileActiveTab, setMobileActiveTab] = useState<MobileActiveTab>('home');
+  const isSyncingFromHistoryRef = useRef(false);
+  const lastShellUrlRef = useRef('');
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobileLayout(window.innerWidth < 1024 || window.location.search.includes('mobile=true'));
     };
     handleResize();
-    setLayoutReady(true);
+    const readyFrame = window.requestAnimationFrame(() => setLayoutReady(true));
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.cancelAnimationFrame(readyFrame);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
+
+  useEffect(() => {
+    const applyUrlState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get('mode');
+      const tab = params.get('tab');
+      const menu = params.get('menu') || '';
+      const budget = params.get('budget') || '';
+      const adminViewParam = params.get('view') as AdminView | null;
+
+      isSyncingFromHistoryRef.current = true;
+      setSelectedMenu('');
+      setSelectedBudget('');
+
+      if (mode === 'admin') {
+        setIsUserMode(false);
+        setActiveTab('home');
+        setMobileActiveTab('admin');
+        setAdminView(adminViewParam && adminViewValues.includes(adminViewParam) ? adminViewParam : 'dashboard');
+        return;
+      }
+
+      setIsUserMode(true);
+
+      if (tab === 'decision') {
+        setActiveTab('home');
+        setMobileActiveTab('decision');
+        return;
+      }
+
+      if (tab && activeTabValues.includes(tab as ActiveTab) && tab !== 'home') {
+        setActiveTab(tab as ActiveTab);
+        setMobileActiveTab(tab === 'request' ? 'request' : 'home');
+        return;
+      }
+
+      setActiveTab('home');
+      setMobileActiveTab('home');
+      setSelectedMenu(menu);
+      setSelectedBudget(menu ? '' : budget);
+    };
+
+    applyUrlState();
+    window.addEventListener('popstate', applyUrlState);
+    return () => window.removeEventListener('popstate', applyUrlState);
+  }, [setActiveTab, setAdminView, setIsUserMode, setSelectedBudget, setSelectedMenu]);
+
+  useEffect(() => {
+    if (!layoutReady) return;
+
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+    if (isSyncingFromHistoryRef.current) {
+      isSyncingFromHistoryRef.current = false;
+      lastShellUrlRef.current = currentUrl;
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (window.location.search.includes('mobile=true')) {
+      params.set('mobile', 'true');
+    }
+
+    if (!isUserMode) {
+      params.set('mode', 'admin');
+      if (adminView !== 'dashboard') {
+        params.set('view', adminView);
+      }
+    } else if (isMobileLayout && mobileActiveTab === 'decision') {
+      params.set('tab', 'decision');
+    } else if (activeTab !== 'home') {
+      params.set('tab', activeTab);
+    } else if (selectedMenu) {
+      params.set('menu', selectedMenu);
+    } else if (selectedBudget) {
+      params.set('budget', selectedBudget);
+    }
+
+    const query = params.toString();
+    const nextUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+
+    if (nextUrl !== currentUrl && nextUrl !== lastShellUrlRef.current) {
+      window.history.pushState({ zerosShell: true }, '', nextUrl);
+      lastShellUrlRef.current = nextUrl;
+    } else {
+      lastShellUrlRef.current = currentUrl;
+    }
+  }, [
+    activeTab,
+    adminView,
+    isMobileLayout,
+    isUserMode,
+    layoutReady,
+    mobileActiveTab,
+    selectedBudget,
+    selectedMenu,
+  ]);
 
   // 레이아웃 확정 전: 브랜드 스플래시 (깨진 헤더 대신 깔끔한 첫 화면)
   if (!layoutReady) {
@@ -102,7 +210,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   // 모바일 하단 탭 변경 시, 상위 context 상태와 정교하게 매핑하여 화면 전환 동기화
-  const handleMobileTabChange = (tab: 'home' | 'request' | 'decision' | 'admin') => {
+  const handleMobileTabChange = (tab: MobileActiveTab) => {
     setMobileActiveTab(tab);
     if (tab === 'home') {
       setIsUserMode(true);
@@ -149,12 +257,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </div>
             <div className="flex flex-col">
               <span className="font-black text-[15px] tracking-wider text-bg leading-none uppercase">ZEROS</span>
-              <span className="text-[12px] text-bg/70 font-semibold tracking-tight mt-0.5">예상견적 스마트 앱</span>
+              <span className="text-[12px] text-bg/70 font-semibold tracking-tight mt-0.5">AI Native 검증 앱</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[12px] px-2 py-0.5 rounded-full font-black tracking-wide">
-              PROTOTYPE
+              AI NATIVE
             </span>
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" title="온라인 상태" />
           </div>

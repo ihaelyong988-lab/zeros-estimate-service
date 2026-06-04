@@ -66,7 +66,7 @@ export const TopHeader: React.FC = () => {
               : 'text-gray hover:bg-bg-subtle hover:text-navy'
           }`}
         >
-          회사소개
+          진단 절차
         </button>
         <button
           onClick={() => handleTabClick('performance')}
