@@ -1184,7 +1184,7 @@ export default function Home() {
                 touchAction: 'manipulation',
                 fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
               }}
-              className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-[#0B2F5B] text-[18px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
+              className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-white text-[18px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
             >
               <FileCheck className="w-6 h-6 shrink-0" />
               <span className="hidden sm:inline">무료 출장 견적 컨설팅 요청</span>
