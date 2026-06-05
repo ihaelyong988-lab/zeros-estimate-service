@@ -2,17 +2,17 @@
 
 import React from 'react';
 import { useShell, ActiveTab } from '@/lib/context/ShellContext';
-import { Building2, ShieldCheck, User, Smartphone } from 'lucide-react';
+import { Building2, LogOut, Smartphone } from 'lucide-react';
 
 export const TopHeader: React.FC = () => {
   const {
     isUserMode,
     setIsUserMode,
+    logoutAdmin,
     activeTab,
     setActiveTab,
     setSelectedMenu,
     setSelectedBudget,
-    setAdminView,
     setShowSimulator,
   } = useShell();
 
@@ -104,39 +104,17 @@ export const TopHeader: React.FC = () => {
           모바일 앱 시뮬레이터
         </button>
 
-        {/* 고객/관리자 모드 토글러 - 높이 h-9로 시뮬레이터와 통일 */}
-        <div className="h-9 flex items-center bg-bg-subtle border border-border p-0.5 rounded-custom select-none">
+        {/* 관리자 모드일 때만 로그아웃 버튼 노출 (고객 화면에는 관리자 흔적 없음) */}
+        {!isUserMode && (
           <button
-            onClick={() => {
-              setIsUserMode(true);
-              setActiveTab('home');
-            }}
+            onClick={() => logoutAdmin()}
             style={{ touchAction: 'manipulation' }}
-            className={`h-full flex items-center gap-1.5 px-3.5 py-1 text-[12px] font-black rounded-custom transition-all duration-150 cursor-pointer ${
-              isUserMode
-                ? 'bg-bg text-steel shadow-sm border border-border/40'
-                : 'text-gray hover:text-navy'
-            }`}
+            className="h-9 flex items-center gap-1.5 border border-danger/30 hover:border-danger/60 rounded-custom bg-danger/5 text-danger hover:bg-danger/10 px-4 py-2 text-[12px] font-black transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
           >
-            <User className="w-3.5 h-3.5" />
-            고객 모드
+            <LogOut className="w-3.5 h-3.5" />
+            관리자 로그아웃
           </button>
-          <button
-            onClick={() => {
-              setIsUserMode(false);
-              setAdminView('dashboard');
-            }}
-            style={{ touchAction: 'manipulation' }}
-            className={`h-full flex items-center gap-1.5 px-3.5 py-1 text-[12px] font-black rounded-custom transition-all duration-150 cursor-pointer ${
-              !isUserMode
-                ? 'bg-navy text-bg shadow-sm'
-                : 'text-gray hover:text-navy'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            관리자 모드
-          </button>
-        </div>
+        )}
       </div>
     </header>
   );

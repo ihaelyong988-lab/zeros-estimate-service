@@ -6,11 +6,11 @@ import { TopHeader } from './TopHeader';
 import { LeftSidebar } from './LeftSidebar';
 import { RightSidebar } from './RightSidebar';
 import { MobileSimulator } from './MobileSimulator';
-import { 
-  Home, 
-  FileText, 
-  TrendingUp, 
-  ShieldCheck, 
+import { AdminLogin } from '../admin/AdminLogin';
+import {
+  Home,
+  FileText,
+  TrendingUp,
   Building2
 } from 'lucide-react';
 
@@ -63,6 +63,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const {
     isUserMode,
     setIsUserMode,
+    isAdminAuthed,
+    logoutAdmin,
     activeTab,
     setActiveTab,
     selectedMenu,
@@ -209,6 +211,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     );
   }
 
+  // 관리자 진입 시 비밀번호 인증이 안 되어 있으면 잠금 화면으로 가로챈다.
+  // (고객 화면에는 관리자 흔적이 전혀 노출되지 않음)
+  if (!isUserMode && !isAdminAuthed) {
+    return <AdminLogin />;
+  }
+
   // 모바일 하단 탭 변경 시, 상위 context 상태와 정교하게 매핑하여 화면 전환 동기화
   const handleMobileTabChange = (tab: MobileActiveTab) => {
     setMobileActiveTab(tab);
@@ -317,6 +325,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   </button>
                 );
               })}
+              {/* 관리자 로그아웃 */}
+              <button
+                onClick={() => { logoutAdmin(); handleMobileTabChange('home'); }}
+                className="px-3 py-1.5 rounded-custom text-[12px] font-bold border border-danger/30 bg-danger/5 text-danger hover:bg-danger/10 transition-all duration-150 shrink-0 select-none ml-auto"
+              >
+                로그아웃
+              </button>
             </div>
           </div>
         )}
@@ -333,7 +348,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </div>
 
         {/* 모바일 고유의 네이티브형 하단 네비게이션 바 (iOS/Android 스타일) */}
-        <div className="shrink-0 bg-bg/95 backdrop-blur-md border-t border-border shadow-custom-lg grid grid-cols-4 items-center justify-around py-2.5 pb-safe z-40 text-center select-none">
+        <div className="shrink-0 bg-bg/95 backdrop-blur-md border-t border-border shadow-custom-lg grid grid-cols-3 items-center justify-around py-2.5 pb-safe z-40 text-center select-none">
           <button
             onClick={() => handleMobileTabChange('home')}
             className={`flex flex-col items-center gap-1 transition-all ${
@@ -362,16 +377,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           >
             <TrendingUp className="w-5.5 h-5.5" />
             <span className="text-[12px]">예산조율</span>
-          </button>
-
-          <button
-            onClick={() => handleMobileTabChange('admin')}
-            className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'admin' ? 'text-navy font-black scale-105' : 'text-gray hover:text-navy'
-            }`}
-          >
-            <ShieldCheck className="w-5.5 h-5.5" />
-            <span className="text-[12px]">관리자관제</span>
           </button>
         </div>
       </div>

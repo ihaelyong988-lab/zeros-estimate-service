@@ -7,6 +7,9 @@ export type ActiveTab = 'about' | 'performance' | 'request' | 'home' | 'sop';
 export interface ShellContextType {
   isUserMode: boolean;
   setIsUserMode: (mode: boolean) => void;
+  isAdminAuthed: boolean;
+  setAdminAuthed: (authed: boolean) => void;
+  logoutAdmin: () => void;
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   selectedMenu: string;
@@ -29,8 +32,32 @@ export interface ShellContextType {
 
 const ShellContext = createContext<ShellContextType | undefined>(undefined);
 
+// 관리자 인증 상태 저장 키 (브라우저별로 1회 로그인 유지)
+const ADMIN_AUTH_KEY = 'zeros_admin_authed';
+
 export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isUserMode, setIsUserMode] = useState<boolean>(true);
+
+  // 관리자 인증 여부 — localStorage에서 복원 (기기당 한 번 로그인하면 유지)
+  const [isAdminAuthed, setIsAdminAuthedState] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setIsAdminAuthedState(localStorage.getItem(ADMIN_AUTH_KEY) === 'true');
+  }, []);
+
+  const setAdminAuthed = (authed: boolean) => {
+    setIsAdminAuthedState(authed);
+    if (typeof window !== 'undefined') {
+      if (authed) localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+      else localStorage.removeItem(ADMIN_AUTH_KEY);
+    }
+  };
+
+  const logoutAdmin = () => {
+    setAdminAuthed(false);
+    setIsUserMode(true);
+  };
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [selectedMenu, setSelectedMenu] = useState<string>('');
   const [selectedBudget, setSelectedBudget] = useState<string>('');
@@ -46,6 +73,9 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       value={{
         isUserMode,
         setIsUserMode,
+        isAdminAuthed,
+        setAdminAuthed,
+        logoutAdmin,
         activeTab,
         setActiveTab,
         selectedMenu,
