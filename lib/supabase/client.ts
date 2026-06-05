@@ -2,6 +2,7 @@
 
 import { Estimate, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
 import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits } from './mock-data';
+import { getSupabase, isSupabaseEnabled } from './supabaseBrowser';
 
 // ==========================================
 // 1. ZEROS 사전진단 데이터 서비스 표준 인터페이스
@@ -12,21 +13,21 @@ export interface ZerosDataService {
   getEstimateById: (id: string) => Promise<Estimate | null>;
   createEstimate: (estimate: Partial<Estimate>) => Promise<Estimate>;
   updateEstimate: (id: string, updates: Partial<Estimate>) => Promise<Estimate>;
-  
+
   // 결제 관련
   getPayments: () => Promise<Payment[]>;
   createPayment: (payment: Partial<Payment>) => Promise<Payment>;
   updatePayment: (id: string, updates: Partial<Payment>) => Promise<Payment>;
-  
+
   // 현장방문 관련
   getSiteVisits: () => Promise<SiteVisit[]>;
   createSiteVisit: (visit: Partial<SiteVisit>) => Promise<SiteVisit>;
   updateSiteVisit: (id: string, updates: Partial<SiteVisit>) => Promise<SiteVisit>;
-  
+
   // 고객 관련
   getCustomers: () => Promise<Customer[]>;
   updateCustomer: (id: string, updates: Partial<Customer>) => Promise<Customer>;
-  
+
   // 관리자 관련
   getAdminUsers: () => Promise<AdminUser[]>;
 
@@ -35,52 +36,29 @@ export interface ZerosDataService {
   createNotificationLog: (log: Partial<NotificationLog>) => Promise<NotificationLog>;
 }
 
+// 테이블 키 (localStorage 키 = Supabase 테이블명 으로 공통 사용)
+const TABLES = {
+  estimates: 'zeros_estimates',
+  customers: 'zeros_customers',
+  payments: 'zeros_payments',
+  siteVisits: 'zeros_site_visits',
+  adminUsers: 'zeros_admin_users',
+  notificationLogs: 'zeros_notification_logs',
+} as const;
+
 // ==========================================
-// 2. LocalStorage 기반 영속 Mock 서비스 구현 (폴백 어댑터)
+// 2. 공통 비즈니스 로직 베이스 (저장소 비의존)
 // ==========================================
-class MockZerosService implements ZerosDataService {
-  private isInitialized = false;
+// 모든 견적/고객/결제/방문/알림 처리 로직을 이곳에 둔다.
+// 실제 데이터 입출력은 loadTable / persistTable 추상 메서드로 위임하여
+// localStorage(Mock) 또는 Supabase 백엔드가 갈아끼워질 수 있게 한다.
+abstract class BaseZerosService implements ZerosDataService {
+  protected abstract loadTable<T>(key: string): Promise<T[]>;
+  protected abstract persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void>;
 
-  private init() {
-    if (this.isInitialized) return;
-    if (typeof window === 'undefined') return;
-
-    // localStorage 내에 기존 데이터가 없을 경우 시드데이터로 로딩
-    if (!localStorage.getItem('zeros_estimates')) {
-      localStorage.setItem('zeros_estimates', JSON.stringify(mockEstimates));
-    }
-    if (!localStorage.getItem('zeros_customers')) {
-      localStorage.setItem('zeros_customers', JSON.stringify(mockCustomers));
-    }
-    if (!localStorage.getItem('zeros_payments')) {
-      localStorage.setItem('zeros_payments', JSON.stringify(mockPayments));
-    }
-    if (!localStorage.getItem('zeros_site_visits')) {
-      localStorage.setItem('zeros_site_visits', JSON.stringify(mockSiteVisits));
-    }
-    if (!localStorage.getItem('zeros_admin_users')) {
-      localStorage.setItem('zeros_admin_users', JSON.stringify(mockAdminUsers));
-    }
-    if (!localStorage.getItem('zeros_notification_logs')) {
-      localStorage.setItem('zeros_notification_logs', JSON.stringify([]));
-    }
-    this.isInitialized = true;
-  }
-
-  private getData<T>(key: string): T[] {
-    this.init();
-    if (typeof window === 'undefined') return [];
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : [];
-  }
-
-  private saveData<T>(key: string, data: T[]): void {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(key, JSON.stringify(data));
-  }
-
+  // ---------- 견적 ----------
   async getEstimates(): Promise<Estimate[]> {
-    return this.getData<Estimate>('zeros_estimates');
+    return this.loadTable<Estimate>(TABLES.estimates);
   }
 
   async getEstimateById(id: string): Promise<Estimate | null> {
@@ -90,7 +68,7 @@ class MockZerosService implements ZerosDataService {
 
   async createEstimate(estimate: Partial<Estimate>): Promise<Estimate> {
     const list = await this.getEstimates();
-    
+
     // 접수번호 생성 로직 (ZR-YYYYMMDD-XXX)
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const count = list.filter(e => e.estimate_no.startsWith(`ZR-${todayStr}`)).length + 1;
@@ -124,7 +102,7 @@ class MockZerosService implements ZerosDataService {
     };
 
     list.unshift(newEstimate);
-    this.saveData('zeros_estimates', list);
+    await this.persistTable(TABLES.estimates, list);
 
     // 고객 정보 연계 자동 누적 처리
     await this.syncCustomerForEstimate(newEstimate);
@@ -136,7 +114,7 @@ class MockZerosService implements ZerosDataService {
   }
 
   private async syncCustomerForEstimate(est: Estimate) {
-    const customers = this.getData<Customer>('zeros_customers');
+    const customers = await this.loadTable<Customer>(TABLES.customers);
     const existing = customers.find(c => c.phone === est.phone);
 
     if (existing) {
@@ -167,7 +145,7 @@ class MockZerosService implements ZerosDataService {
       };
       customers.unshift(newCustomer);
     }
-    this.saveData('zeros_customers', customers);
+    await this.persistTable(TABLES.customers, customers);
   }
 
   async updateEstimate(id: string, updates: Partial<Estimate>): Promise<Estimate> {
@@ -177,7 +155,7 @@ class MockZerosService implements ZerosDataService {
 
     const original = list[idx];
     const updated: Estimate = { ...original, ...updates };
-    
+
     // 수주성공 시점에 contract_won_at 날짜가 없다면 자동 설정
     if (updated.status === '수주성공' && original.status !== '수주성공') {
       updated.contract_won_at = new Date().toISOString();
@@ -192,7 +170,7 @@ class MockZerosService implements ZerosDataService {
     }
 
     list[idx] = updated;
-    this.saveData('zeros_estimates', list);
+    await this.persistTable(TABLES.estimates, list);
 
     // 고객 통계 리액티브 동기화
     await this.syncCustomerForEstimate(updated);
@@ -258,8 +236,9 @@ class MockZerosService implements ZerosDataService {
     });
   }
 
+  // ---------- 알림 로그 ----------
   async getNotificationLogs(): Promise<NotificationLog[]> {
-    return this.getData<NotificationLog>('zeros_notification_logs');
+    return this.loadTable<NotificationLog>(TABLES.notificationLogs);
   }
 
   async createNotificationLog(log: Partial<NotificationLog>): Promise<NotificationLog> {
@@ -277,12 +256,13 @@ class MockZerosService implements ZerosDataService {
       sent_at: new Date().toISOString()
     };
     list.unshift(newLog);
-    this.saveData('zeros_notification_logs', list);
+    await this.persistTable(TABLES.notificationLogs, list);
     return newLog;
   }
 
+  // ---------- 결제 ----------
   async getPayments(): Promise<Payment[]> {
-    return this.getData<Payment>('zeros_payments');
+    return this.loadTable<Payment>(TABLES.payments);
   }
 
   async createPayment(payment: Partial<Payment>): Promise<Payment> {
@@ -301,7 +281,7 @@ class MockZerosService implements ZerosDataService {
     };
 
     list.unshift(newPayment);
-    this.saveData('zeros_payments', list);
+    await this.persistTable(TABLES.payments, list);
 
     // 견적서 테이블 결제상태 동기화
     if (newPayment.estimate_id) {
@@ -325,7 +305,7 @@ class MockZerosService implements ZerosDataService {
     }
 
     list[idx] = updated;
-    this.saveData('zeros_payments', list);
+    await this.persistTable(TABLES.payments, list);
 
     // 견적서 테이블 결제상태 동기화
     if (updated.estimate_id) {
@@ -337,8 +317,9 @@ class MockZerosService implements ZerosDataService {
     return updated;
   }
 
+  // ---------- 현장방문 ----------
   async getSiteVisits(): Promise<SiteVisit[]> {
-    return this.getData<SiteVisit>('zeros_site_visits');
+    return this.loadTable<SiteVisit>(TABLES.siteVisits);
   }
 
   async createSiteVisit(visit: Partial<SiteVisit>): Promise<SiteVisit> {
@@ -358,7 +339,7 @@ class MockZerosService implements ZerosDataService {
     };
 
     list.unshift(newVisit);
-    this.saveData('zeros_site_visits', list);
+    await this.persistTable(TABLES.siteVisits, list);
 
     // 견적서 테이블의 상태도 '현장방문 예정' 등으로 자동 동기화
     if (newVisit.estimate_id) {
@@ -377,7 +358,7 @@ class MockZerosService implements ZerosDataService {
 
     const updated: SiteVisit = { ...list[idx], ...updates };
     list[idx] = updated;
-    this.saveData('zeros_site_visits', list);
+    await this.persistTable(TABLES.siteVisits, list);
 
     if (updated.estimate_id) {
       await this.updateEstimate(updated.estimate_id, {
@@ -388,8 +369,9 @@ class MockZerosService implements ZerosDataService {
     return updated;
   }
 
+  // ---------- 고객 ----------
   async getCustomers(): Promise<Customer[]> {
-    return this.getData<Customer>('zeros_customers');
+    return this.loadTable<Customer>(TABLES.customers);
   }
 
   async updateCustomer(id: string, updates: Partial<Customer>): Promise<Customer> {
@@ -399,14 +381,113 @@ class MockZerosService implements ZerosDataService {
 
     const updated: Customer = { ...list[idx], ...updates };
     list[idx] = updated;
-    this.saveData('zeros_customers', list);
+    await this.persistTable(TABLES.customers, list);
     return updated;
   }
 
+  // ---------- 관리자 ----------
   async getAdminUsers(): Promise<AdminUser[]> {
-    return this.getData<AdminUser>('zeros_admin_users');
+    return this.loadTable<AdminUser>(TABLES.adminUsers);
   }
 }
 
-// 기본적으로 Mock 서비스를 우선 주입하고, 환경 변수가 확보되면 Supabase SDK로 연결을 수립할 수 있습니다.
-export const ZerosService: ZerosDataService = new MockZerosService();
+// ==========================================
+// 3. LocalStorage 기반 영속 Mock 서비스 (폴백 어댑터)
+// ==========================================
+class MockZerosService extends BaseZerosService {
+  private isInitialized = false;
+
+  private init() {
+    if (this.isInitialized) return;
+    if (typeof window === 'undefined') return;
+
+    if (!localStorage.getItem(TABLES.estimates)) {
+      localStorage.setItem(TABLES.estimates, JSON.stringify(mockEstimates));
+    }
+    if (!localStorage.getItem(TABLES.customers)) {
+      localStorage.setItem(TABLES.customers, JSON.stringify(mockCustomers));
+    }
+    if (!localStorage.getItem(TABLES.payments)) {
+      localStorage.setItem(TABLES.payments, JSON.stringify(mockPayments));
+    }
+    if (!localStorage.getItem(TABLES.siteVisits)) {
+      localStorage.setItem(TABLES.siteVisits, JSON.stringify(mockSiteVisits));
+    }
+    if (!localStorage.getItem(TABLES.adminUsers)) {
+      localStorage.setItem(TABLES.adminUsers, JSON.stringify(mockAdminUsers));
+    }
+    if (!localStorage.getItem(TABLES.notificationLogs)) {
+      localStorage.setItem(TABLES.notificationLogs, JSON.stringify([]));
+    }
+    this.isInitialized = true;
+  }
+
+  protected async loadTable<T>(key: string): Promise<T[]> {
+    this.init();
+    if (typeof window === 'undefined') return [];
+    const item = localStorage.getItem(key);
+    return item ? (JSON.parse(item) as T[]) : [];
+  }
+
+  protected async persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void> {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(key, JSON.stringify(rows));
+  }
+}
+
+// ==========================================
+// 4. Supabase 기반 영속 서비스 (실제 클라우드 저장)
+// ==========================================
+// 각 테이블은 { id text PK, data jsonb, created_at timestamptz } 스키마를 사용한다.
+// 전체 배열을 upsert(onConflict: id) 하여 메모리 상태를 클라우드에 반영한다.
+class SupabaseZerosService extends BaseZerosService {
+  private seededAdmins = false;
+
+  protected async loadTable<T>(key: string): Promise<T[]> {
+    const supabase = getSupabase();
+    if (!supabase) return [];
+
+    // 관리자 계정은 최초 1회 시드 (없으면 기본 계정 주입)
+    if (key === TABLES.adminUsers && !this.seededAdmins) {
+      this.seededAdmins = true;
+      const { data } = await supabase.from(key).select('id').limit(1);
+      if (!data || data.length === 0) {
+        await this.persistTable(TABLES.adminUsers, mockAdminUsers);
+      }
+    }
+
+    const { data, error } = await supabase
+      .from(key)
+      .select('data, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error(`[Supabase] ${key} 로드 실패:`, error.message);
+      return [];
+    }
+    return (data || []).map(row => row.data as T);
+  }
+
+  protected async persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void> {
+    const supabase = getSupabase();
+    if (!supabase) return;
+
+    if (rows.length === 0) return;
+
+    const payload = rows.map(r => ({ id: r.id, data: r }));
+    const { error } = await supabase.from(key).upsert(payload, { onConflict: 'id' });
+
+    if (error) {
+      console.error(`[Supabase] ${key} 저장 실패:`, error.message);
+      throw new Error(`데이터 저장 실패(${key}): ${error.message}`);
+    }
+  }
+}
+
+// ==========================================
+// 5. 환경에 따라 서비스 자동 선택
+// ==========================================
+// Supabase 키가 설정되어 있으면 클라우드 서비스, 아니면 localStorage Mock 으로 폴백한다.
+export const ZerosService: ZerosDataService = isSupabaseEnabled
+  ? new SupabaseZerosService()
+  : new MockZerosService();

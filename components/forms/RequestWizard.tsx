@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
-import { Estimate, WorkType, SiteType, ExpectedBudgetRange, EstimateCategory } from '@/types/estimate';
+import { uploadEstimateFiles } from '@/lib/supabase/storage';
+import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
+import { Estimate, FileMeta, WorkType, SiteType, ExpectedBudgetRange, EstimateCategory } from '@/types/estimate';
 import {
   User,
   Building,
@@ -37,7 +39,7 @@ const defaultFormData = {
   urgency: false,
   description: '',
   request_detail: '',
-  files: [] as { name: string; type: string; category: string }[],
+  files: [] as FileMeta[],
   agreePrivacy: false,
   agreeEstimate: false,
   agreeVisitFee: false,
@@ -83,26 +85,64 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
     localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
   };
 
-  // 모의 파일 업로드 핸들러
-  const handleMockUpload = (category: string) => {
-    const fileNames = {
-      '도면': ['Layout_Piping_v1.pdf', 'PND_BoilerRoom.dwg', 'FlowSheet_Concept.pdf'],
-      '사진': ['Equipment_Leak_01.jpg', 'Valve_Header_Status.png', 'Ceiling_Truss.jpg'],
-      '기타': ['Sizing_Report.xlsx', 'Previous_Quote.pdf']
-    }[category] || ['Attachment_File.pdf'];
+  // 파일 선택 input 참조 및 업로드 상태
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadCategory, setUploadCategory] = useState<string>('도면');
+  const [uploading, setUploading] = useState(false);
 
-    const randomName = fileNames[Math.floor(Math.random() * fileNames.length)];
-    const mockFile = {
-      name: randomName,
-      type: randomName.endsWith('.jpg') || randomName.endsWith('.png') ? 'image/jpeg' : 'application/pdf',
-      category: category
-    };
+  // 업로드 버튼 클릭 → 파일 선택창 열기
+  const openFilePicker = (category: string) => {
+    setUploadCategory(category);
+    setErrorMsg(null);
+    // ref 가 카테고리 state 반영 후 클릭되도록 한 틱 뒤에 실행
+    setTimeout(() => fileInputRef.current?.click(), 0);
+  };
 
-    setFormData(prev => {
-      const updated = { ...prev, files: [...prev.files, mockFile] };
-      localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
-      return updated;
-    });
+  // 파일이 선택되면 실제 Storage 로 업로드
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files ? Array.from(e.target.files) : [];
+    // 같은 파일 다시 선택 가능하도록 input 초기화
+    e.target.value = '';
+    if (selected.length === 0) return;
+
+    // 용량 제한 (개당 50MB)
+    const tooBig = selected.find(f => f.size > 50 * 1024 * 1024);
+    if (tooBig) {
+      setErrorMsg(`'${tooBig.name}' 파일이 50MB를 초과합니다. 더 작은 파일로 첨부해 주세요.`);
+      return;
+    }
+
+    setUploading(true);
+    setErrorMsg(null);
+    try {
+      let uploaded: FileMeta[];
+      if (isSupabaseEnabled) {
+        // 실제 클라우드 업로드
+        uploaded = await uploadEstimateFiles(selected, uploadCategory);
+      } else {
+        // Supabase 미설정 시 로컬 폴백 (메타데이터만 기록)
+        uploaded = selected.map((f, i) => ({
+          id: `file-local-${Date.now()}-${i}`,
+          estimate_id: '',
+          file_name: f.name,
+          file_type: f.type || 'application/octet-stream',
+          file_url: '',
+          file_category: uploadCategory,
+          uploaded_at: new Date().toISOString(),
+        }));
+      }
+
+      setFormData(prev => {
+        const updated = { ...prev, files: [...prev.files, ...uploaded] };
+        localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
+        return updated;
+      });
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err instanceof Error ? err.message : '파일 업로드 중 오류가 발생했습니다.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   // 파일 제거
@@ -175,16 +215,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
       else if (formData.expected_budget_range === '1,000만~1억') category = 'medium';
       else if (formData.expected_budget_range === '≥1억') category = 'large';
 
-      // 2. 제출용 파일 데이터 매핑
-      const mappedFiles = formData.files.map((f, i) => ({
-        id: `file-gen-${i}-${Math.random().toString(36).substr(2, 9)}`,
-        estimate_id: '',
-        file_name: f.name,
-        file_type: f.type,
-        file_url: `/mock-uploads/${f.name}`,
-        file_category: f.category,
-        uploaded_at: new Date().toISOString()
-      }));
+      // 2. 제출용 파일 데이터 매핑 (이미 업로드되어 실제 URL을 보유)
+      const mappedFiles = formData.files;
 
       // 3. 서비스 호출
       const newEst = await ZerosService.createEstimate({
@@ -488,45 +520,66 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
             </div>
 
             {/* 업로드 시뮬레이션 버튼 그리드 */}
+            {/* 실제 파일 선택 input (숨김) */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,application/pdf,.dwg,.dxf,.xlsx,.xls,.hwp,.zip"
+              onChange={handleFileSelected}
+              className="hidden"
+            />
+
             <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
-                onClick={() => handleMockUpload('도면')}
+                disabled={uploading}
+                onClick={() => openFilePicker('도면')}
                 style={{ touchAction: 'manipulation' }}
-                className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all"
+                className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
               >
                 <Upload className="w-4 h-4 text-steel" />
                 <span className="text-[12px] font-bold text-navy">도면 업로드</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleMockUpload('사진')}
+                disabled={uploading}
+                onClick={() => openFilePicker('사진')}
                 style={{ touchAction: 'manipulation' }}
-                className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all"
+                className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
               >
                 <Upload className="w-4 h-4 text-steel" />
                 <span className="text-[12px] font-bold text-navy">사진 업로드</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleMockUpload('기타')}
+                disabled={uploading}
+                onClick={() => openFilePicker('기타')}
                 style={{ touchAction: 'manipulation' }}
-                className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all"
+                className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
               >
                 <Upload className="w-4 h-4 text-steel" />
                 <span className="text-[12px] font-bold text-navy">기타 첨부</span>
               </button>
             </div>
 
+            {/* 업로드 진행 표시 */}
+            {uploading && (
+              <div className="flex items-center justify-center gap-2 text-[12px] font-bold text-steel py-1">
+                <Upload className="w-3.5 h-3.5 animate-pulse" />
+                파일 업로드 중입니다... 잠시만 기다려 주세요.
+              </div>
+            )}
+
             {/* 첨부된 파일 목록 */}
             {formData.files.length > 0 ? (
               <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto border border-border rounded-custom p-3 bg-bg-subtle/30">
                 <span className="text-[12px] text-gray-light font-bold">첨부된 자료 ({formData.files.length}건)</span>
                 {formData.files.map((file, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-bg border border-border p-2 rounded-custom shadow-sm text-[12px] font-medium">
+                  <div key={file.id || idx} className="flex items-center justify-between bg-bg border border-border p-2 rounded-custom shadow-sm text-[12px] font-medium">
                     <div className="flex items-center gap-2 text-gray min-w-0">
-                      <span className="bg-steel/15 text-steel px-1.5 py-0.5 rounded-custom text-[12px] font-bold shrink-0">{file.category}</span>
-                      <span className="truncate text-navy font-bold text-[12px]">{file.name}</span>
+                      <span className="bg-steel/15 text-steel px-1.5 py-0.5 rounded-custom text-[12px] font-bold shrink-0">{file.file_category}</span>
+                      <span className="truncate text-navy font-bold text-[12px]">{file.file_name}</span>
                     </div>
                     <button
                       type="button"
@@ -541,7 +594,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               </div>
             ) : (
               <div className="border border-border border-dashed p-6 text-center rounded-custom text-[12px] text-gray-light font-bold bg-bg-subtle/10">
-                *아직 첨부된 파일이 없습니다. (위 버튼을 눌러 모의 첨부해볼 수 있습니다)
+                *아직 첨부된 파일이 없습니다. (위 버튼을 눌러 도면·사진을 첨부해 주세요)
               </div>
             )}
           </div>

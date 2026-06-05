@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Estimate, EstimateStatus, AccuracyGrade, Payment, SiteVisit } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
+import { uploadEstimateFiles } from '@/lib/supabase/storage';
+import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { TossPaymentModal } from './TossPaymentModal';
 import { PrintableScopeSheet } from './PrintableScopeSheet';
 import { AiBlueprintAnalyzer } from '../forms/AiBlueprintAnalyzer';
@@ -221,38 +223,58 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     }
   };
 
-  // 관리자 모의 파일 업로드 핸들러 - §4.5
-  const handleAdminFileUpload = async (category: string) => {
+  // 관리자 파일 업로드 - 실제 파일 선택 후 Storage 업로드
+  const adminFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [adminUploadCategory, setAdminUploadCategory] = useState<string>('도면');
+  const [adminUploading, setAdminUploading] = useState(false);
+
+  const openAdminFilePicker = (category: string) => {
     if (!estimate) return;
+    setAdminUploadCategory(category);
+    setTimeout(() => adminFileInputRef.current?.click(), 0);
+  };
 
-    const fileNames = {
-      '도면': ['AsBuilt_Piping_3D_Layout.dwg', 'Revised_Boiler_Room_PID.pdf', 'TieIn_Detail_Schedules.pdf'],
-      '사진': ['LaserScan_PointCloud_01.jpg', 'TieIn_Point_Anchor.png', 'Chiller_Header_AsIs.jpg'],
-      '기타': ['Laser_Measurement_Report.pdf', 'CAPEX_Cost_Audit_v2.xlsx']
-    }[category] || ['Admin_Report.pdf'];
+  const handleAdminFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!estimate) return;
+    const selected = e.target.files ? Array.from(e.target.files) : [];
+    e.target.value = '';
+    if (selected.length === 0) return;
 
-    const randomName = fileNames[Math.floor(Math.random() * fileNames.length)];
-    const newFile = {
-      id: `file-admin-gen-${Math.random().toString(36).substr(2, 9)}`,
-      estimate_id: estimate.id,
-      file_name: randomName,
-      file_type: randomName.endsWith('.jpg') || randomName.endsWith('.png') ? 'image/jpeg' : 'application/pdf',
-      file_url: `/mock-uploads/${randomName}`,
-      file_category: category,
-      uploaded_at: new Date().toISOString()
-    };
+    const tooBig = selected.find(f => f.size > 50 * 1024 * 1024);
+    if (tooBig) {
+      alert(`'${tooBig.name}' 파일이 50MB를 초과합니다. 더 작은 파일로 첨부해 주세요.`);
+      return;
+    }
 
+    setAdminUploading(true);
     try {
-      const updatedFiles = [...(estimate.submitted_files || []), newFile];
+      let uploaded;
+      if (isSupabaseEnabled) {
+        uploaded = await uploadEstimateFiles(selected, adminUploadCategory, estimate.id);
+      } else {
+        uploaded = selected.map((f, i) => ({
+          id: `file-admin-local-${Date.now()}-${i}`,
+          estimate_id: estimate.id,
+          file_name: f.name,
+          file_type: f.type || 'application/octet-stream',
+          file_url: '',
+          file_category: adminUploadCategory,
+          uploaded_at: new Date().toISOString(),
+        }));
+      }
+
+      const updatedFiles = [...(estimate.submitted_files || []), ...uploaded];
       await ZerosService.updateEstimate(estimate.id, {
         submitted_files: updatedFiles
       });
-      alert(`[관리자 업로드 성공] '${randomName}' 자료가 견적서에 성공적으로 등록되었습니다.`);
+      alert(`[관리자 업로드 성공] ${uploaded.length}개 자료가 견적서에 등록되었습니다.`);
       await refreshDetailData();
       onSaved();
     } catch (e) {
       console.error(e);
-      alert('파일 업로드 도중 오류가 발생했습니다.');
+      alert(e instanceof Error ? e.message : '파일 업로드 도중 오류가 발생했습니다.');
+    } finally {
+      setAdminUploading(false);
     }
   };
 
@@ -409,10 +431,34 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                           }`}>
                             {file.file_category}
                           </span>
-                          <span className="truncate text-navy font-bold text-[11px]">{file.file_name}</span>
+                          {file.file_url ? (
+                            <a
+                              href={file.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="truncate text-steel font-bold text-[11px] underline decoration-steel/40 hover:decoration-steel"
+                              title="새 창에서 열기 / 다운로드"
+                            >
+                              {file.file_name}
+                            </a>
+                          ) : (
+                            <span className="truncate text-navy font-bold text-[11px]">{file.file_name}</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0 text-gray-light text-[10px] select-none">
                           <span className="mr-1">{new Date(file.uploaded_at).toLocaleDateString()}</span>
+                          {file.file_url && (
+                            <a
+                              href={file.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ touchAction: 'manipulation' }}
+                              className="p-1 hover:bg-border/35 rounded-custom text-steel hover:text-navy transition-colors cursor-pointer"
+                              title="열기 / 다운로드"
+                            >
+                              보기
+                            </a>
+                          )}
                           <button
                             type="button"
                             onClick={() => handleRemoveFile(idx)}
@@ -436,31 +482,43 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                 <div className="border-t border-border/60 pt-3 mt-1 flex flex-col gap-2">
                   <span className="text-[10px] text-gray-light font-black uppercase tracking-wider block select-none">
                     ▶ 관리자 전용 실측 도면 / 리포트 추가 업로드
+                    {adminUploading && <span className="text-steel ml-2 normal-case">업로드 중...</span>}
                   </span>
+                  <input
+                    ref={adminFileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf,.dwg,.dxf,.xlsx,.xls,.hwp,.zip"
+                    onChange={handleAdminFileSelected}
+                    className="hidden"
+                  />
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
-                      onClick={() => handleAdminFileUpload('도면')}
+                      disabled={adminUploading}
+                      onClick={() => openAdminFilePicker('도면')}
                       style={{ touchAction: 'manipulation' }}
-                      className="flex items-center justify-center gap-1 py-2 px-1 border border-dashed border-steel/40 bg-steel/5 hover:bg-steel/10 rounded-custom text-[11px] font-black text-steel transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+                      className="flex items-center justify-center gap-1 py-2 px-1 border border-dashed border-steel/40 bg-steel/5 hover:bg-steel/10 rounded-custom text-[11px] font-black text-steel transition-all cursor-pointer shadow-sm active:scale-[0.98] disabled:opacity-50"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       도면 파일
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleAdminFileUpload('사진')}
+                      disabled={adminUploading}
+                      onClick={() => openAdminFilePicker('사진')}
                       style={{ touchAction: 'manipulation' }}
-                      className="flex items-center justify-center gap-1 py-2 px-1 border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 rounded-custom text-[11px] font-black text-accent transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+                      className="flex items-center justify-center gap-1 py-2 px-1 border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 rounded-custom text-[11px] font-black text-accent transition-all cursor-pointer shadow-sm active:scale-[0.98] disabled:opacity-50"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       실측 사진
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleAdminFileUpload('기타')}
+                      disabled={adminUploading}
+                      onClick={() => openAdminFilePicker('기타')}
                       style={{ touchAction: 'manipulation' }}
-                      className="flex items-center justify-center gap-1 py-2 px-1 border border-dashed border-navy/40 bg-navy/5 hover:bg-navy/10 rounded-custom text-[11px] font-black text-navy transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+                      className="flex items-center justify-center gap-1 py-2 px-1 border border-dashed border-navy/40 bg-navy/5 hover:bg-navy/10 rounded-custom text-[11px] font-black text-navy transition-all cursor-pointer shadow-sm active:scale-[0.98] disabled:opacity-50"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       실측 리포트
