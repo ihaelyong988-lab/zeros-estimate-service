@@ -57,6 +57,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
 
   // 휴대폰 본인인증 상태 (의뢰 전 필수)
   const [verified, setVerified] = useState(false);
+  // SMS(Solapi) 설정 여부: null=확인중, true=인증 필요, false=설정 전이라 인증 생략
+  const [verifyEnabled, setVerifyEnabled] = useState<boolean | null>(null);
 
   // 새로고침 시 세션 내 인증 상태 복원
   React.useEffect(() => {
@@ -68,6 +70,16 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         if (phone) setVerified(true);
       } catch {}
     }
+  }, []);
+
+  // SMS 설정 여부 확인 — 미설정이면 인증 게이트를 건너뛴다(테스트 코드 노출 방지)
+  React.useEffect(() => {
+    let active = true;
+    fetch('/api/otp/status')
+      .then(r => r.json())
+      .then(d => { if (active) setVerifyEnabled(!!d.enabled); })
+      .catch(() => { if (active) setVerifyEnabled(false); });
+    return () => { active = false; };
   }, []);
 
   const handleVerified = ({ name, phone }: { name: string; phone: string; verifiedToken: string }) => {
@@ -287,6 +299,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   // 진행률 Bar 계산
   const progressPercent = ((step - 1) / 4) * 100;
 
+  // 인증 게이트 표시 여부
+  const checkingVerify = verifyEnabled === null;
+  const verifyRequired = verifyEnabled === true && !verified;
+  const showForm = !checkingVerify && !verifyRequired;
+
   return (
     <div className="w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-xl mx-auto overflow-hidden">
       
@@ -295,11 +312,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         <div className="flex flex-col gap-1">
           <span className="text-[12px] text-steel font-extrabold uppercase tracking-wider">예상견적 요청 폼</span>
           <h3 className="text-[15px] font-black text-navy leading-none">
-            {verified ? `Step ${step} / 5 단계` : '본인확인'}
+            {showForm ? `Step ${step} / 5 단계` : verifyRequired ? '본인확인' : '준비 중'}
           </h3>
         </div>
         <span className="text-[12px] font-bold text-gray-light">
-          {verified ? `${Math.round(progressPercent)}% 완료` : '시작 전'}
+          {showForm ? `${Math.round(progressPercent)}% 완료` : verifyRequired ? '시작 전' : ''}
         </span>
       </div>
 
@@ -307,12 +324,15 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
       <div className="w-full h-1 bg-border/40 relative">
         <div
           className="h-full bg-steel transition-all duration-300"
-          style={{ width: `${verified ? progressPercent : 0}%` }}
+          style={{ width: `${showForm ? progressPercent : 0}%` }}
         />
       </div>
 
-      {/* 본인인증 전: 휴대폰 인증 게이트 */}
-      {!verified ? (
+      {/* 인증 상태 확인 중 */}
+      {checkingVerify ? (
+        <div className="p-10 text-center text-[12px] text-gray-light font-bold">불러오는 중...</div>
+      ) : verifyRequired ? (
+        /* 본인인증 전: 휴대폰 인증 게이트 */
         <div className="p-6">
           <PhoneVerifyGate onVerified={handleVerified} />
         </div>
@@ -369,7 +389,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               <div className="flex flex-col gap-1">
                 <label htmlFor="phone" className="text-[12px] font-bold text-navy flex items-center gap-1">
                   <Phone className="w-3.5 h-3.5 text-steel" />
-                  연락처 (필수) <span className="text-[11px] text-success font-bold">· 본인인증 완료</span>
+                  연락처 (필수)
+                  {verified && <span className="text-[11px] text-success font-bold">· 본인인증 완료</span>}
                 </label>
                 <input
                   id="phone"
@@ -377,10 +398,12 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                   type="tel"
                   value={formData.phone}
                   onChange={handleChange}
-                  readOnly
+                  readOnly={verified}
                   style={{ touchAction: 'manipulation' }}
                   placeholder="010-0000-0000"
-                  className="w-full border border-border p-2.5 rounded-custom text-[15px] bg-bg-subtle text-gray focus:outline-none transition-all"
+                  className={`w-full border border-border p-2.5 rounded-custom text-[15px] transition-all ${
+                    verified ? 'bg-bg-subtle text-gray focus:outline-none' : 'focus:outline-none focus:border-steel'
+                  }`}
                 />
               </div>
               <div className="flex flex-col gap-1">
