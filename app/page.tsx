@@ -25,14 +25,36 @@ import {
   BookOpen,
   FileCheck,
   CheckCircle2,
-  AlertTriangle,
   ArrowRight,
   ShieldCheck,
   Sparkles,
-  Award,
-  Briefcase,
   MapPin
 } from 'lucide-react';
+
+// 섹션 머리표 — 박스 래퍼 없이 accent bar + eyebrow + heading 으로 섹션 경계를 표시(L1)
+function SectionHeading({
+  eyebrow,
+  title,
+  accent = 'accent',
+}: {
+  eyebrow?: string;
+  title: string;
+  accent?: 'accent' | 'steel' | 'success';
+}) {
+  const barColor = accent === 'steel' ? 'bg-steel' : accent === 'success' ? 'bg-success' : 'bg-accent';
+  const eyebrowColor = accent === 'steel' ? 'text-steel' : accent === 'success' ? 'text-success' : 'text-accent';
+  return (
+    <div className="flex flex-col gap-1.5 select-none">
+      {eyebrow && (
+        <div className="flex items-center gap-2">
+          <span className={`w-1 h-4 ${barColor} rounded-full`} />
+          <span className={`text-[12px] font-black uppercase tracking-wider ${eyebrowColor}`}>{eyebrow}</span>
+        </div>
+      )}
+      <h2 className="text-[18px] font-black text-navy tracking-tight leading-snug">{title}</h2>
+    </div>
+  );
+}
 
 export default function Home() {
   const {
@@ -40,9 +62,7 @@ export default function Home() {
     activeTab,
     setActiveTab,
     selectedMenu,
-    setSelectedMenu,
     selectedBudget,
-    setSelectedBudget,
     adminView,
     setAdminView,
     adminSubView,
@@ -51,7 +71,6 @@ export default function Home() {
     setSelectedEstimateId
   } = useShell();
 
-  const [guideClosed, setGuideClosed] = useState(false);
   const router = useRouter();
 
   // 견적 목록 상태 관리 (실시간 동기화용)
@@ -93,12 +112,6 @@ export default function Home() {
       console.error(e);
       throw e;
     }
-  };
-
-  const handleBudgetClick = (budgetVal: string) => {
-    setActiveTab('home');
-    setSelectedBudget(budgetVal);
-    setSelectedMenu(''); // 영역 필터 해제
   };
 
   // ==========================================
@@ -1164,50 +1177,44 @@ export default function Home() {
     const activeVisuals = getCategoryVisuals(activeTradeName);
 
     return (
-      <div className="flex flex-col gap-4 max-w-4xl mx-auto">
+      <div className="flex flex-col gap-7 max-w-4xl mx-auto">
 
       {/* ============================================================
           핵심 주제 히어로 — 무료 출장 견적 컨설팅 + 35년 PM 신뢰
           ============================================================ */}
-      <section className="relative overflow-hidden bg-bg border border-border rounded-custom shadow-custom-sm p-5 md:p-6 flex flex-col gap-4 select-none">
+      <section className="relative overflow-hidden bg-bg rounded-custom shadow-custom-sm p-5 md:p-6 flex flex-col gap-4 select-none">
         {/* 밝고 신뢰감 있는 맥킨지 톤 배경 */}
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(245,247,250,0.9),rgba(255,255,255,0)_55%)] pointer-events-none" />
         <div className="absolute right-0 top-0 w-64 h-64 bg-[radial-gradient(circle_at_top_right,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
         <div className="absolute left-0 bottom-0 h-1 w-full bg-gradient-to-r from-steel via-accent to-transparent opacity-70 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col gap-4">
-          {/* 주요 CTA(하나) + 보조 버튼 — 시선 집중 */}
-          <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
+          {/* 주요 CTA + 보조 — 하단 쇼케이스 버튼과 동일 크기·폭, 오렌지·청색 균형 배치 */}
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch">
             <button
               onClick={() => setActiveTab('request')}
-              style={{
-                touchAction: 'manipulation',
-                fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
-              }}
-              className="flex-1 inline-flex min-h-[54px] items-center justify-center gap-2.5 bg-[#F97316] text-white text-[18px] md:text-[18px] font-bold px-4 py-2.5 rounded-custom tracking-normal shadow-sm shadow-orange-500/20 whitespace-nowrap antialiased transition-all hover:bg-[#EA670F] active:scale-95 cursor-pointer"
+              style={{ touchAction: 'manipulation' }}
+              className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
             >
-              <FileCheck className="w-6 h-6 shrink-0" />
+              <FileCheck className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">무료 출장 견적 컨설팅 요청</span>
               <span className="sm:hidden">무료 견적 컨설팅 요청</span>
             </button>
             <button
               onClick={() => setActiveTab('about')}
-              style={{
-                touchAction: 'manipulation',
-                fontFamily: '"Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif'
-              }}
-              className="sm:w-auto inline-flex min-h-[54px] items-center justify-center gap-2 bg-bg border border-[#9FB3CC] hover:bg-bg-subtle text-[#0B2F5B] text-[15px] md:text-[18px] font-black px-4 py-2.5 rounded-custom tracking-tight shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+              style={{ touchAction: 'manipulation' }}
+              className="flex-1 min-h-10 inline-flex items-center justify-center gap-1.5 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
             >
-              <FileCheck className="w-5 h-5 shrink-0" /> 컨설팅 절차 보기
+              컨설팅 절차 보기 <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </button>
           </div>
 
-          {/* 전국 무료 방문 신뢰 칩 (정보 — 클릭 액션 아님) */}
+          {/* 전국 무료 방문 신뢰 칩 (정보 — 테두리 없이 채움만) */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] border border-[#B8C7DA] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
+            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
               <MapPin className="w-3.5 h-3.5 text-steel" /> 전국 현장 무료 방문
             </span>
-            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] border border-[#B8C7DA] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
+            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
               <ShieldCheck className="w-3.5 h-3.5 text-success" /> AI Native 1차 검증
             </span>
           </div>
@@ -1219,61 +1226,22 @@ export default function Home() {
             현장 경험과 <strong className="text-navy font-extrabold">AI Native 분석</strong>으로 비용과 리스크를 <strong className="text-navy font-extrabold">ZEROS</strong> 합니다.
           </p>
 
-          {/* 35년 PM 신뢰 증빙 배지 3종 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mt-1 items-stretch">
-            <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
-              <div className="w-8 h-8 rounded-custom bg-navy/5 border border-navy/10 flex items-center justify-center shrink-0 text-navy">
-                <Briefcase className="w-5 h-5" />
+          {/* 신뢰 증빙 — 제목/상세 2단 크리덴셜 스트립(형식 통일·세로폭 압축) */}
+          <div className="grid grid-cols-3 gap-3 mt-0.5 border-t border-border/70 pt-3 select-none">
+            {[
+              { title: '현장 실무 30년', detail: 'Manager, 엔지니어' },
+              { title: '국가 기술자격증', detail: '자격증 다수' },
+              { title: 'PM 총괄역임', detail: '프로젝트 다수' },
+            ].map((c, idx) => (
+              <div key={c.title} className={`flex flex-col gap-0.5 ${idx > 0 ? 'pl-3 border-l border-border/60' : ''}`}>
+                <span className="text-[13.5px] font-black text-navy tracking-tight leading-tight break-keep">{c.title}</span>
+                <span className="text-[12px] text-gray font-bold leading-tight break-keep">{c.detail}</span>
               </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">현장 35년</span>
-                <span className="text-[12px] text-gray font-bold mt-1.5">현장통 경력</span>
-              </div>
-            </div>
-            <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
-              <div className="w-8 h-8 rounded-custom bg-steel/5 border border-steel/15 flex items-center justify-center shrink-0 text-steel">
-                <Award className="w-5 h-5" />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">국가 기술자격증</span>
-                <span className="text-[12px] text-gray font-bold mt-1.5">관련 자격증 다수</span>
-              </div>
-            </div>
-            <div className="flex h-[54px] items-center gap-2.5 bg-bg-subtle/70 border border-border rounded-custom px-3 py-2 shadow-sm">
-              <div className="w-8 h-8 rounded-custom bg-accent/5 border border-accent/15 flex items-center justify-center shrink-0 text-accent">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-[18px] md:text-[18px] font-bold text-navy tracking-normal">PM 총괄관리</span>
-                <span className="text-[12px] text-gray font-bold mt-1.5">프로젝트 경력 다수</span>
-              </div>
-            </div>
+            ))}
           </div>
 
         </div>
       </section>
-
-      {!guideClosed && (
-        <div className="bg-bg border border-border p-4.5 rounded-custom flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in duration-300">
-          <div className="flex items-start gap-3">
-            <div className="bg-steel/10 p-2 rounded-custom text-steel mt-0.5 md:mt-0">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-black text-navy leading-none">처음 방문자를 위한 ZEROS 3단계 활용 가이드</span>
-              <span className="text-[12px] text-gray leading-relaxed mt-0.5">
-                ① 좌측 영역 메뉴 탐색 ➔ ② 우측 의사결정 위젯으로 평균 소요기간/견적범위 확인 ➔ ③ 상담문의 사전진단서 접수.
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={() => setGuideClosed(true)}
-            className="text-[12px] font-black text-gray hover:text-navy hover:underline bg-bg-subtle px-3 py-1.5 rounded-custom border border-border"
-          >
-            안내 닫기
-          </button>
-        </div>
-      )}
 
       {/* Symmetrical Single Full-Width Box matching the very bottom card's specifications */}
       <div className="bg-bg border border-border p-4.5 rounded-custom shadow-custom-sm flex flex-col gap-4 relative overflow-hidden animate-in fade-in duration-300">
@@ -1301,19 +1269,15 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-4 items-stretch z-10 relative">
           
-          {/* Box 1: ZEROS B2B Engineering Core copywriting & Active Menu Data */}
-          <div className={`relative overflow-hidden bg-bg text-navy p-4.5 rounded-custom border ${activeMetrics.accentBorder} flex flex-col justify-between gap-4 transition-all shadow-sm`}>
-            {/* 하이 테크 백그라운드 그리드 레이아웃 (라이트 버전) */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
-            <div className={`absolute inset-0 ${activeMetrics.accentBg} opacity-20 pointer-events-none`} />
-
-            <div className="flex flex-col gap-3.5 z-10 relative">
-              {/* AI 신뢰성 배지 & 실시간 데이터 매핑 */}
+          {/* 활성 공종 정보 — 중첩 박스 껍데기 제거, 쇼케이스 카드에 직접 배치 */}
+          <div className="flex flex-col justify-between gap-4">
+            <div className="flex flex-col gap-3.5">
+              {/* 공종 라벨(eyebrow) + 실시간 표본 신호 — 박스 제거 */}
               <div className="flex items-center justify-between gap-2 select-none">
-                <span className={`text-[12px] tracking-widest uppercase font-black px-2 py-0.5 rounded-custom shadow-inner ${activeMetrics.badgeBg}`}>
+                <span className={`text-[12px] tracking-widest uppercase font-black ${activeMetrics.accentText}`}>
                   {activeVisuals.badgeText}
                 </span>
-                <div className="flex items-center gap-1.5 bg-bg border border-border/85 px-2 py-0.5 rounded-custom shadow-sm text-[12px] font-mono font-bold text-steel">
+                <div className="flex items-center gap-1.5 text-[12px] font-mono font-bold text-steel">
                   <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                   n={activeMetrics.sampleCount} 표본 대조
                 </div>
@@ -1330,7 +1294,7 @@ export default function Home() {
               </div>
 
               {/* 데이터 AI 정직 검증 수치 대시보드 */}
-              <div className="grid grid-cols-3 gap-3 bg-bg-subtle/80 border border-border/70 p-3 rounded-custom shadow-inner my-0.5 select-none">
+              <div className="grid grid-cols-3 gap-3 border-t border-border/60 pt-3 my-0.5 select-none">
                 <div className="text-center flex flex-col justify-center">
                   <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">AI 분석 신뢰도</span>
                   <span className="text-[12px] font-black text-navy tracking-tight tabular-nums">{activeMetrics.confidence}%</span>
@@ -1349,13 +1313,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-1 select-none">
               <button
                 onClick={() => setActiveTab('sop')}
-                className="flex-1 min-h-10 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide shadow-sm hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
+                className="flex-1 min-h-10 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
                 AI Native 검증 제출
               </button>
               <button
                 onClick={() => setActiveTab('about')}
-                className="flex-1 min-h-10 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[12px] sm:text-[12px] font-black tracking-wide shadow-sm hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
+                className="flex-1 min-h-10 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
               >
                 ZEROS 진단 절차
               </button>
@@ -1365,242 +1329,39 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 4대 공통 리스크 경고 */}
-      <section className="bg-bg border border-border p-4.5 rounded-custom shadow-custom-sm text-center grid grid-cols-2 md:grid-cols-4 gap-4 select-none">
-        <div className="p-1">
-          <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider block mb-1">1차 검토 목표시간</span>
-          <span className="text-xl font-black text-navy tracking-tight">24h 이내</span>
-        </div>
-        <div className="p-1 border-l border-border/80">
-          <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider block mb-1">검토 핵심 공종</span>
-          <span className="text-xl font-black text-navy tracking-tight">8대 핵심 영역</span>
-        </div>
-        <div className="p-1 border-l border-border/80">
-          <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider block mb-1">주요 집중 견적규모</span>
-          <span className="text-xl font-black text-navy tracking-tight">1,000만 ~ 1억</span>
-        </div>
-        <div className="p-1 border-l border-border/80">
-          <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider block mb-1">의사결정 프로세스</span>
-          <span className="text-xl font-black text-navy tracking-tight">3-Step 진행</span>
-        </div>
-      </section>
-
-      <section className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-5">
-        <div className="flex flex-col gap-1 border-b border-border pb-3.5 select-none">
-          <span className="text-[12px] text-accent font-black uppercase tracking-wider">Common Risks</span>
-          <h2 className="text-[18px] font-black text-navy">
-            공사비보다 먼저 확인해야 할 것은 공사 범위입니다.
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex gap-3 items-start">
-            <div className="bg-danger/10 text-danger p-2 rounded-custom shrink-0 mt-0.5">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-bold text-navy">공사 범위 불명확</span>
-              <span className="text-[12px] text-gray leading-normal">
-                공사가 시작된 후 범위 조율 실패로 공사비 상승 및 잦은 분쟁이 유발됩니다.
-              </span>
-            </div>
-          </div>
-          <div className="flex gap-3 items-start">
-            <div className="bg-danger/10 text-danger p-2 rounded-custom shrink-0 mt-0.5">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-bold text-navy">현장 조건 누락</span>
-              <span className="text-[12px] text-gray leading-normal">
-                기계실 협소 반입구, 천장 보 지지 한계 등 현장 제약이 견적 시 누락되어 단가가 급증합니다.
-              </span>
-            </div>
-          </div>
-          <div className="flex gap-3 items-start">
-            <div className="bg-danger/10 text-danger p-2 rounded-custom shrink-0 mt-0.5">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-bold text-navy">예산 범위 오판</span>
-              <span className="text-[12px] text-gray leading-normal">
-                원가 구조에 대한 이해 부족으로 과한 마진이 포함되거나 불합리한 예산 초과가 초래됩니다.
-              </span>
-            </div>
-          </div>
-          <div className="flex gap-3 items-start">
-            <div className="bg-danger/10 text-danger p-2 rounded-custom shrink-0 mt-0.5">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-bold text-navy">업체 비교 곤란</span>
-              <span className="text-[12px] text-gray leading-normal">
-                규격과 자재 사양서(Schedules)가 달라 복수의 견적서 항목을 1:1로 비교 분석하기 어렵습니다.
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-2 relative">
-          <span className="text-3xl font-black text-navy/10 absolute right-4 top-4 select-none">01</span>
-          <span className="text-[12px] text-steel font-black uppercase tracking-wider">Step 1</span>
-          <h3 className="text-[15px] font-bold text-navy mt-1">자료 정밀 검토</h3>
-          <p className="text-[12px] text-gray leading-relaxed">
-            P&ID, Layout 도면 및 현장 근접 사진 등 고객이 업로드한 원천 정보의 치수 오류와 연결 규격을 확인합니다.
-          </p>
-        </div>
-        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-2 relative">
-          <span className="text-3xl font-black text-navy/10 absolute right-4 top-4 select-none">02</span>
-          <span className="text-[12px] text-steel font-black uppercase tracking-wider">Step 2</span>
-          <h3 className="text-[15px] font-bold text-navy mt-1">현장 제약 확인</h3>
-          <p className="text-[12px] text-gray leading-relaxed">
-            협소 공간 밸브 조작 반경, 크레인 접근로 등 물리적 걸림돌과 가동 중단(Shut-down) 일정 등 특수 리스크를 체크합니다.
-          </p>
-        </div>
-        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-2 relative">
-          <span className="text-3xl font-black text-navy/10 absolute right-4 top-4 select-none">03</span>
-          <span className="text-[12px] text-steel font-black uppercase tracking-wider">Step 3</span>
-          <h3 className="text-[15px] font-bold text-navy mt-1">공사 범위 정리</h3>
-          <p className="text-[12px] text-gray leading-relaxed">
-            도출된 설계 인자들을 단일 양식에 고정하여 동일한 자재 스펙 하에서 여러 업체가 견적할 수 있는 척도를 제공합니다.
-          </p>
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-[18px] font-extrabold text-navy px-1">
-          공사 규모에 따라 검토 방식이 달라집니다.
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => setActiveTab('request')}
-                style={{ touchAction: 'manipulation' }}
-                className="bg-bg-subtle text-gray border border-border px-2 py-1 rounded-custom text-[12px] font-bold w-fit hover:bg-border/30 active:scale-95 transition-all cursor-pointer text-left"
-              >
-                금액 1,000만 이하
-              </button>
-              <h3 className="text-[15px] font-bold text-navy">온라인 간편검토</h3>
-              <p className="text-[12px] text-gray leading-relaxed">
-                제출해주신 사진과 요구 제원서를 바탕으로 자재 소요 및 기본 파이프라인 마찰 손실을 간이 계산하여 24시간 내 권장 스코프를 제시합니다.
-              </p>
-            </div>
-            <button
-              onClick={() => handleBudgetClick('small')}
-              className="text-[12px] font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
-            >
-              온라인 검토 상세 보기
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => setActiveTab('request')}
-                style={{ touchAction: 'manipulation' }}
-                className="bg-steel/15 text-steel border border-steel/20 px-2 py-1 rounded-custom text-[12px] font-bold w-fit hover:bg-steel/25 active:scale-95 transition-all cursor-pointer text-left"
-              >
-                금액 1,000만 ~ 1억
-              </button>
-              <h3 className="text-[15px] font-bold text-navy">출장 실측견적 검토</h3>
-              <p className="text-[12px] text-gray leading-relaxed">
-                베테랑 엔지니어가 직접 출장하여 기계실 배치, 유틸리티 우회 관로, 빔 하중 상태를 레이저 실측하고 1차 오차를 예방하는 정밀 리포트를 제공합니다.
-              </p>
-            </div>
-            <button
-              onClick={() => handleBudgetClick('medium')}
-              className="text-[12px] font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
-            >
-              출장 실측 상세 보기
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => setActiveTab('request')}
-                style={{ touchAction: 'manipulation' }}
-                className="bg-navy text-bg px-2 py-1 rounded-custom text-[12px] font-bold w-fit hover:bg-navy/90 active:scale-95 transition-all cursor-pointer text-left"
-              >
-                금액 1억 초과
-              </button>
-              <h3 className="text-[15px] font-bold text-navy">프로젝트 사전진단</h3>
-              <p className="text-[12px] text-gray leading-relaxed">
-                공장 전체 신·증설 컨셉 기획 단계부터 개입하여 전체 라인 공법 믹스, Schedules 매핑, CAPEX 리스크 구조를 종합 관리하는 PM 서비스를 탑재합니다.
-              </p>
-            </div>
-            <button
-              onClick={() => handleBudgetClick('large')}
-              className="text-[12px] font-black text-steel hover:text-navy flex items-center gap-1 mt-2"
-            >
-              프로젝트 진단 상세 보기
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-4">
-        <h2 className="text-[18px] font-extrabold text-navy">
-          중소형 사업장의 설비투자 의사결정을 지원합니다.
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center select-none">
-          <div className="bg-bg-subtle p-4 rounded-custom border border-border">
-            <span className="font-bold text-navy text-[12px] block">바이오 / 제약 공장</span>
-          </div>
-          <div className="bg-bg-subtle p-4 rounded-custom border border-border">
-            <span className="font-bold text-navy text-[12px] block">식품 가공 사업장</span>
-          </div>
-          <div className="bg-bg-subtle p-4 rounded-custom border border-border">
-            <span className="font-bold text-navy text-[12px] block">빌딩 기계실 배관</span>
-          </div>
-          <div className="bg-bg-subtle p-4 rounded-custom border border-border">
-            <span className="font-bold text-navy text-[12px] block">제조 공장 개·증설</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-5">
-        <h2 className="text-[18px] font-extrabold text-navy">
-          접수부터 견적서 송부까지 명확하게 진행합니다.
-        </h2>
-        <div className="flex flex-col md:flex-row items-stretch justify-between gap-4 pt-2">
+      <section className="flex flex-col gap-5 px-1 pt-2">
+        <SectionHeading eyebrow="How We Review" title="공사비보다 공사 범위를 먼저 고정합니다." accent="steel" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-0">
           {[
-            { step: '01', title: '온라인 접수', desc: '도면 및 현장 정보 제출' },
-            { step: '02', title: '자료 검토', desc: '1차 규격 분석 및 손실 계산' },
-            { step: '03', title: '출장 실측', desc: '정밀 현장 장애 식별 (권장)' },
-            { step: '04', title: '범위 고정', desc: '상세 스코프 리포트 송부' },
+            { title: '자료 정밀 검토', desc: '도면·사진의 치수와 연결 규격을 확인해 범위 누락을 막습니다.' },
+            { title: '현장 제약 확인', desc: '협소 반입·고소·가동중단 등 단가 급증 리스크를 미리 잡습니다.' },
+            { title: '공사 범위 고정', desc: '동일 스펙으로 여러 업체를 1:1 비교하는 기준을 만듭니다.' },
           ].map((item, idx) => (
-            <div key={idx} className="flex-1 bg-bg-subtle border border-border/80 p-4 rounded-custom flex flex-col gap-1 relative">
-              <span className="text-[12px] font-black text-steel block">Step {item.step}</span>
-              <span className="text-[15px] font-bold text-navy mt-1 block">{item.title}</span>
-              <span className="text-[12px] text-gray-light font-medium leading-normal mt-0.5 block">{item.desc}</span>
+            <div
+              key={item.title}
+              className={`flex flex-col gap-2 px-0 md:px-5 ${idx > 0 ? 'md:border-l md:border-border/60' : ''}`}
+            >
+              <span className="text-[12px] text-steel font-black uppercase tracking-wider">Step {idx + 1}</span>
+              <h3 className="text-[15px] font-bold text-navy mt-1">{item.title}</h3>
+              <p className="text-[12px] text-gray leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* CTA 섹션 */}
-      <section className="bg-gradient-to-br from-[#0c162b] via-[#10243e] to-[#15345e] text-white p-9.5 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-4 relative overflow-hidden border border-white/10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(224,112,26,0.15),transparent_50%)] pointer-events-none"></div>
-        
-        <div className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[12px] px-2.5 py-1 rounded-custom font-black tracking-widest uppercase mb-1 z-10 animate-pulse">
-          PROVEN INDUSTRIAL ENGINEERING REVIEW
-        </div>
-        
-        <h2 className="text-2xl md:text-3xl font-black tracking-tight max-w-xl z-10 text-white font-sans">
+      {/* CTA 섹션 — 스틸블루 단색 밴드(상단 컬러와 통일), 크기 축소 */}
+      <section className="bg-steel text-white px-6 py-4 md:py-5 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-2 border border-white/10">
+        <h2 className="text-xl md:text-2xl font-black tracking-tight max-w-xl text-white font-sans">
           공사를 시작하기 전, 먼저 검토하십시오.
         </h2>
-        
-        <p className="text-[13.5px] text-[#A5C3EC] max-w-md leading-relaxed font-semibold z-10">
+
+        <p className="text-[13.5px] text-white/80 max-w-md leading-relaxed font-semibold">
           불명확한 공사 범위와 잦은 현장 설계 변경 리스크를 ZEROS만의 1차 엔지니어링 검토로 원천 차단하십시오.
         </p>
-        
+
         <button
           onClick={() => setActiveTab('request')}
-          className="mt-3 bg-accent hover:bg-accent/90 text-bg px-9 py-4 rounded-custom text-[12px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 z-10 cursor-pointer"
+          className="mt-1 bg-accent hover:bg-accent/90 text-white px-7 py-3 rounded-custom text-[15px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer"
         >
           AI Native 검증 제출하기
         </button>

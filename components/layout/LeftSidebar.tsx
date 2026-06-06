@@ -86,6 +86,7 @@ export const LeftSidebar: React.FC = () => {
             <div className="flex items-center gap-1.5 px-2 mb-2">
               <FolderDot className="w-4 h-4 text-steel" />
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적공사 카테고리</h3>
+              <span className="ml-auto text-[12px] font-black text-steel bg-steel/10 border border-steel/20 px-1.5 py-0.5 rounded-full tracking-wider">SITE</span>
             </div>
             <div className="flex flex-col gap-1">
               {workCategories.map((cat) => {
@@ -95,10 +96,10 @@ export const LeftSidebar: React.FC = () => {
                     key={cat.label}
                     onClick={() => handleMenuClick(cat.label)}
                     style={{ touchAction: 'manipulation' }}
-                    className={`w-full text-left px-3 py-2 rounded-custom transition-all duration-200 flex flex-col border-2 ${
+                    className={`w-full text-left pl-3 pr-2 py-2 rounded-r-custom transition-colors duration-150 flex flex-col border-l-2 ${
                       isActive
-                        ? 'bg-bg border-2 border-steel shadow-custom-md text-steel scale-[1.01]'
-                        : 'border-transparent hover:bg-bg/40 text-gray hover:text-navy'
+                        ? 'bg-steel/8 border-steel text-steel'
+                        : 'border-transparent hover:bg-bg/60 text-gray hover:text-navy'
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
@@ -127,10 +128,10 @@ export const LeftSidebar: React.FC = () => {
                     key={cat.key}
                     onClick={() => handleMenuClick(cat.key)}
                     style={{ touchAction: 'manipulation' }}
-                    className={`w-full text-left px-3 py-2 rounded-custom transition-all duration-200 flex flex-col border-2 ${
+                    className={`w-full text-left pl-3 pr-2 py-2 rounded-r-custom transition-colors duration-150 flex flex-col border-l-2 ${
                       isActive
-                        ? 'bg-bg border-2 border-accent shadow-custom-md text-accent scale-[1.01]'
-                        : 'border-transparent hover:bg-bg/40 text-gray hover:text-navy'
+                        ? 'bg-accent/8 border-accent text-accent'
+                        : 'border-transparent hover:bg-bg/60 text-gray hover:text-navy'
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
@@ -158,10 +159,10 @@ export const LeftSidebar: React.FC = () => {
                     key={cat.value}
                     onClick={() => handleBudgetClick(cat.value)}
                     style={{ touchAction: 'manipulation' }}
-                    className={`w-full text-left px-3 py-2 rounded-custom transition-all duration-200 flex items-center justify-between border-2 ${
+                    className={`w-full text-left pl-3 pr-2 py-2 rounded-r-custom transition-colors duration-150 flex items-center justify-between border-l-2 ${
                       isActive
-                        ? 'bg-bg border-2 border-steel shadow-custom-md text-steel scale-[1.01]'
-                        : 'border-transparent hover:bg-bg/40 text-gray hover:text-navy'
+                        ? 'bg-steel/8 border-steel text-steel'
+                        : 'border-transparent hover:bg-bg/60 text-gray hover:text-navy'
                     }`}
                   >
                     <div className="flex flex-col">

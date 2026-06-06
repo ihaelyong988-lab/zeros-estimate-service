@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
-import { AlertCircle, Calendar, BarChart3, ArrowRight, ShieldCheck, CheckCircle2, Award } from 'lucide-react';
+import { AlertCircle, ArrowRight, ChevronLeft } from 'lucide-react';
 
 export interface DecisionMetrics {
   avgDays: number;
@@ -268,164 +268,122 @@ export const RightSidebar: React.FC = () => {
   // 권장 구간 근접도 기반 분석 신뢰도 — 극단값으로 갈수록 보수적으로 하향
   const analysisConfidence = Math.max(82, 99.8 - diff * 0.32).toFixed(1);
 
+  // 좌측 선택과 색을 연결: 외주제작(FAB) 계열은 오렌지, 그 외는 스틸블루
+  const fabKeys = ['spool', 'skid', 'structure'];
+  const isFab = fabKeys.includes(activeKey);
+  const accentBarBg = isFab ? 'bg-accent' : 'bg-steel';
+  const accentTextCls = isFab ? 'text-accent' : 'text-steel';
+  const fabLabelMap: Record<string, string> = { spool: '배관 SPOOL Module', skid: 'SKID 제작', structure: 'Structure 제작' };
+  const budgetLabelMap: Record<string, string> = { small: '온라인 간편검토', medium: '출장견적', large: '프로젝트 사전진단', unknown: '금액 미정' };
+  const displayName = selectedBudget
+    ? (budgetLabelMap[selectedBudget] || metrics.recommendation)
+    : (fabLabelMap[activeKey] || selectedMenu || activeKey);
+
   return (
-    <aside className="w-full h-full p-5 flex flex-col gap-6 shrink-0 select-none overflow-y-auto bg-bg-subtle">
-      <div>
-        <div className="flex items-center gap-1.5 px-1 mb-4">
-          <BarChart3 className="w-4 h-4 text-steel animate-pulse" />
-          <h3 className="text-[13.5px] font-black text-navy uppercase tracking-wider">데이터 기반 사전 검토</h3>
+    <aside className="w-full h-full flex flex-col shrink-0 select-none overflow-y-auto bg-bg-subtle">
+      {/* 상단 액센트 바 — 좌측 선택과 색으로 연결 */}
+      <div className={`h-1 w-full ${accentBarBg} shrink-0`} />
+
+      <div className="p-5 flex flex-col gap-4">
+        {/* 헤더: 좌측에서 선택한 대상을 그대로 반향 */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">선택한 검토 대상</span>
+            <span className="inline-flex items-center gap-1 text-[12px] font-black text-success">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간 분석
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <ChevronLeft className={`w-4 h-4 ${accentTextCls} shrink-0`} />
+            <h3 className={`text-[16px] font-black ${accentTextCls} tracking-tight leading-tight`}>{displayName}</h3>
+          </div>
+          <p className="text-[12px] font-bold text-gray-light">
+            실거래 {metrics.sampleCount}건 대조 · 분석 신뢰도 {analysisConfidence}%
+          </p>
         </div>
 
-        <div className="flex flex-col gap-5">
-          {/* 타겟 도메인 표시 */}
-          <div className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-2 shadow-sm">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">선택 공사 범위</span>
-              <span className="inline-flex items-center gap-1 text-[12px] font-black text-success">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간 분석
-              </span>
-            </div>
-            <span className="text-[13.5px] text-navy font-black">
-              {selectedBudget ? `예산규모: ${metricsMap[selectedBudget]?.recommendation || ''}` : (selectedMenu || activeKey)}
+        {/* 평균 소요일 — borderless 행 */}
+        <div className="flex items-center justify-between border-t border-border/60 pt-3">
+          <span className="text-[12px] font-bold text-gray">평균 1차 검토 소요</span>
+          <span className="text-[15px] font-black text-navy tabular-nums">{metrics.avgDays}일 이내</span>
+        </div>
+
+        {/* 예상 견적범위 — 유일하게 강조하는 카드(핵심 인터랙션: 슬라이더) */}
+        <div className="bg-bg border border-border rounded-custom p-4 flex flex-col gap-3 shadow-custom-sm">
+          <span className="text-[12px] font-bold text-navy">예상 견적범위</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">견적 예상가</span>
+            <span className="text-2xl font-black text-navy tracking-tight tabular-nums leading-none">
+              ₩{currentAmount.toLocaleString()}
             </span>
-            <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-light border-t border-border/60 pt-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-steel shrink-0" />
-              실거래 {metrics.sampleCount}건 대조 · 분석 신뢰도 {analysisConfidence}%
+            <span className="text-[12px] font-bold text-gray-light tabular-nums">
+              중앙값 {metrics.medianAmount} 대비
+              <span className={`ml-1 font-black ${medianDeltaPct > 0 ? 'text-accent' : 'text-success'}`}>{medianDeltaLabel}</span>
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-2 pt-0.5">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={sliderVal}
+              onChange={(e) => setSliderVal(Number(e.target.value))}
+              className="touch-none w-full h-1.5 bg-bg-subtle rounded-lg appearance-none cursor-pointer accent-steel border border-border focus:outline-none"
+            />
+            <div className="flex items-center justify-between text-[12px] text-gray-light font-black tabular-nums">
+              <span>최소 {metrics.minAmount}</span>
+              <span>최대 {metrics.maxAmount}</span>
             </div>
           </div>
 
-          {/* 평균 검토 소요일 */}
-          <div className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-2.5 shadow-sm">
-            <div className="flex items-center gap-2 text-gray">
-              <Calendar className="w-4 h-4 text-gray-light" />
-              <span className="text-[12px] font-bold">평균 1차 검토 소요일</span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-navy tracking-tight tabular-nums">{metrics.avgDays}</span>
-              <span className="text-[12px] font-bold text-gray">일 이내</span>
-            </div>
-            <p className="text-[12px] text-gray-light font-bold leading-normal">
-              *접수 후 전담 엔지니어가 기초 도면/사진을 분석하는 실 소요 시간입니다.
-            </p>
+          <div className="flex items-center justify-between border-t border-border/60 pt-2.5 text-[12px]">
+            <span className="font-black text-accent">견적 수수료 (2%)</span>
+            <span className="font-black text-accent text-[13.5px] tabular-nums">₩{feeAmount.toLocaleString()}</span>
           </div>
+          <p className="text-[12px] text-gray-light font-medium leading-normal">
+            * 수수료는 현장 실측·1차 검토 포함, 전국 출장비 <strong className="text-navy font-black">0원</strong>.
+          </p>
+        </div>
 
-          {/* 예상 견적범위 밴드 - 슬라이더 좌우 조작 활성화 */}
-          <div className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-3.5 shadow-sm">
-            <div className="flex items-center gap-2 text-gray">
-              <BarChart3 className="w-4 h-4 text-gray-light" />
-              <span className="text-[12px] font-bold font-sans">예상 견적범위 밴드</span>
-            </div>
+        {/* 예상가 신뢰 근거 — borderless 리스트(줄마다 아이콘 제거) */}
+        <div className="flex flex-col gap-2 border-t border-border/60 pt-3">
+          <span className="text-[12px] font-black text-navy uppercase tracking-wider">예상가 신뢰 근거</span>
+          {[
+            '실제 거래가와 표준 품셈으로 계산합니다.',
+            'KS·ASME 자재 규격을 그대로 적용합니다.',
+            '35년 경력 현장 PM이 직접 확인합니다.',
+          ].map((t) => (
+            <span key={t} className="text-[12px] text-gray font-medium leading-normal pl-3 border-l-2 border-border">{t}</span>
+          ))}
+        </div>
 
-            {/* 견적 예상가 — 메인 출력 (슬라이더 실시간 연동) */}
-            <div className="flex flex-col gap-1 bg-bg-subtle border border-border/60 rounded-custom p-3">
-              <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">견적 예상가</span>
-              <span className="text-2xl font-black text-navy tracking-tight tabular-nums leading-none">
-                ₩{currentAmount.toLocaleString()}
-              </span>
-              <span className="text-[12px] font-bold text-gray-light tabular-nums">
-                중앙값 {metrics.medianAmount} 대비
-                <span className={`ml-1 font-black ${medianDeltaPct > 0 ? 'text-accent' : 'text-success'}`}>{medianDeltaLabel}</span>
-              </span>
-            </div>
-
-            {/* 좌우 드래그 스크롤바 (input range) — 단일 바 */}
-            <div className="flex flex-col gap-2 pt-0.5">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={sliderVal}
-                onChange={(e) => setSliderVal(Number(e.target.value))}
-                className="touch-none w-full h-1.5 bg-bg-subtle rounded-lg appearance-none cursor-pointer accent-steel border border-border focus:outline-none"
-              />
-              <div className="flex items-center justify-between text-[12px] text-gray-light font-black tabular-nums">
-                <span>최소 {metrics.minAmount}</span>
-                <span>최대 {metrics.maxAmount}</span>
-              </div>
-            </div>
-
-            {/* 견적 수수료 출력 (견적 예상가의 2% 실시간 동적 계산) */}
-            <div className="flex items-center justify-between bg-[#E0701A]/5 border border-[#E0701A]/20 rounded-custom p-2.5 text-[12px]">
-              <span className="font-black text-accent text-[12px]">견적 수수료 (2%)</span>
-              <span className="font-black text-accent text-[13.5px] tabular-nums">
-                ₩{feeAmount.toLocaleString()}
-              </span>
-            </div>
-
-            {/* 수수료 투명성 안내 — 신뢰 확보 */}
-            <p className="text-[12px] text-gray-light font-medium leading-normal">
-              * 수수료는 현장 실측·1차 엔지니어링 검토가 포함된 금액이며, 전국 출장비는 <strong className="text-navy font-black">0원</strong>입니다.
-            </p>
+        {/* 검증 실적 — borderless 행(클릭 시 실적 탭) */}
+        <button
+          onClick={() => setActiveTab('performance')}
+          style={{ touchAction: 'manipulation' }}
+          className="group flex items-center justify-between border-t border-border/60 pt-3 text-left cursor-pointer"
+        >
+          <div className="flex flex-col">
+            <span className="text-[12px] font-bold text-gray">ZEROS 검증 실적</span>
+            <span className="text-[12px] text-gray-light font-medium mt-0.5 tabular-nums">누적 246건 · 준수율 98.4%</span>
           </div>
+          <span className={`inline-flex items-center gap-0.5 text-[12px] font-black ${accentTextCls} shrink-0 group-hover:underline underline-offset-4 decoration-2`}>
+            상세 <ArrowRight className="w-3 h-3" />
+          </span>
+        </button>
 
-          {/* 검증 실적 — 신뢰 트랙레코드 (클릭 시 실적 탭으로) */}
+        {/* 추천 다음 단계 CTA */}
+        <div className="flex flex-col gap-2 border-t border-border/60 pt-3">
           <button
-            onClick={() => setActiveTab('performance')}
+            onClick={() => setActiveTab('request')}
             style={{ touchAction: 'manipulation' }}
-            className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-3 shadow-sm text-left hover:border-steel/40 transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-1.5 w-full bg-steel hover:bg-navy text-bg py-3 rounded-custom text-[12px] font-black transition-colors duration-150 cursor-pointer"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-gray">
-                <Award className="w-4 h-4 text-gray-light" />
-                <span className="text-[12px] font-bold">ZEROS 검증 실적</span>
-              </div>
-              <span className="inline-flex items-center gap-0.5 text-[12px] font-black text-steel">
-                상세 보기 <ArrowRight className="w-3 h-3" />
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-bg-subtle border border-border/60 rounded-custom p-2.5 flex flex-col gap-0.5">
-                <span className="text-[12px] text-gray-light font-bold">누적 검토</span>
-                <span className="text-[15px] font-black text-navy tabular-nums">246건</span>
-              </div>
-              <div className="bg-bg-subtle border border-border/60 rounded-custom p-2.5 flex flex-col gap-0.5">
-                <span className="text-[12px] text-gray-light font-bold">검토 준수율</span>
-                <span className="text-[15px] font-black text-success tabular-nums">98.4%</span>
-              </div>
-            </div>
+            {metrics.recommendation} 신청
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
-
-          {/* 예상가 신뢰 근거 */}
-          <div className="bg-bg border border-border/80 p-4 rounded-custom flex flex-col gap-2.5 shadow-sm">
-            <span className="text-[12px] font-black text-navy uppercase tracking-wider">예상가 신뢰 근거</span>
-            {[
-              '실제 거래가와 표준 품셈으로 계산합니다.',
-              'KS·ASME 자재 규격을 그대로 적용합니다.',
-              '35년 경력 현장 PM이 직접 확인합니다.',
-            ].map((t) => (
-              <div key={t} className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
-                <span className="text-[12px] text-gray font-medium leading-normal">{t}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* 추천 다음 단계 CTA */}
-          <div className="bg-bg border border-steel/25 p-5 rounded-custom flex flex-col gap-3 shadow-custom-sm relative overflow-hidden">
-            {/* 세련된 아이콘 배치 */}
-            <div className="absolute right-4 top-4 text-steel/15 select-none z-0">
-              <ShieldCheck className="w-8 h-8" />
-            </div>
-
-            <div className="flex flex-col gap-1 z-10">
-              <span className="text-[12px] text-steel font-black uppercase tracking-wider">추천 검토 경로</span>
-              <h4 className="text-[13.5px] font-black text-navy tracking-tight">{metrics.recommendation}</h4>
-            </div>
-
-            <p className="text-[12px] text-gray leading-relaxed font-medium z-10">
-              {metrics.recommendationDesc}
-            </p>
-
-            <button
-              onClick={() => setActiveTab('request')}
-              style={{ touchAction: 'manipulation' }}
-              className="mt-1 flex items-center justify-center gap-1.5 w-full bg-steel hover:bg-navy text-bg py-2.5 rounded-custom text-[12px] font-black transition-all duration-150 active:scale-[0.98] z-10 shadow-sm cursor-pointer"
-            >
-              출장견적 바로 신청
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
+          <p className="text-[12px] text-gray-light font-medium leading-normal">{metrics.recommendationDesc}</p>
         </div>
       </div>
     </aside>
