@@ -72,6 +72,7 @@ export async function uploadEstimateFile(
     file_type: file.type || 'application/octet-stream',
     file_url: pub.publicUrl,
     file_category: category,
+    file_size: file.size,
     uploaded_at: new Date().toISOString(),
   };
 }

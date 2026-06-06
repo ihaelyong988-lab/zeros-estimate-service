@@ -4,6 +4,8 @@ import React, { useState, useRef } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
 import { uploadEstimateFiles } from '@/lib/supabase/storage';
 import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
+import { validateUpload, ACCEPT_ATTR, ALLOWED_LABEL, MAX_PER_CATEGORY, MAX_TOTAL_FILES } from '@/lib/constants/uploadLimits';
+import { PhoneVerifyGate } from './PhoneVerifyGate';
 import { Estimate, FileMeta, WorkType, SiteType, ExpectedBudgetRange, EstimateCategory } from '@/types/estimate';
 import {
   User,
@@ -52,6 +54,35 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // 휴대폰 본인인증 상태 (의뢰 전 필수)
+  const [verified, setVerified] = useState(false);
+
+  // 새로고침 시 세션 내 인증 상태 복원
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = sessionStorage.getItem('zeros_phone_verified');
+    if (saved) {
+      try {
+        const { phone } = JSON.parse(saved) as { phone: string };
+        if (phone) setVerified(true);
+      } catch {}
+    }
+  }, []);
+
+  const handleVerified = ({ name, phone }: { name: string; phone: string; verifiedToken: string }) => {
+    setVerified(true);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('zeros_phone_verified', JSON.stringify({ phone }));
+    }
+    setFormData(prev => {
+      const updated = { ...prev, phone, customer_name: prev.customer_name || name };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
 
   // 폼 입력 데이터 상태 관리 및 임시저장 복구
   const [formData, setFormData] = useState<RequestFormData>(() => {
@@ -105,10 +136,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
     e.target.value = '';
     if (selected.length === 0) return;
 
-    // 용량 제한 (개당 50MB)
-    const tooBig = selected.find(f => f.size > 50 * 1024 * 1024);
-    if (tooBig) {
-      setErrorMsg(`'${tooBig.name}' 파일이 50MB를 초과합니다. 더 작은 파일로 첨부해 주세요.`);
+    // 형식·개수·용량 한도 검사 (탭별 5개 / 총 15개·100MB / 개당 50MB / 허용 형식)
+    const limitError = validateUpload(formData.files, selected, uploadCategory);
+    if (limitError) {
+      setErrorMsg(limitError);
       return;
     }
 
@@ -128,6 +159,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
           file_type: f.type || 'application/octet-stream',
           file_url: '',
           file_category: uploadCategory,
+          file_size: f.size,
           uploaded_at: new Date().toISOString(),
         }));
       }
@@ -262,20 +294,30 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
       <div className="bg-bg-subtle border-b border-border px-5 py-4 flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <span className="text-[12px] text-steel font-extrabold uppercase tracking-wider">예상견적 요청 폼</span>
-          <h3 className="text-[15px] font-black text-navy leading-none">Step {step} / 5 단계</h3>
+          <h3 className="text-[15px] font-black text-navy leading-none">
+            {verified ? `Step ${step} / 5 단계` : '본인확인'}
+          </h3>
         </div>
-        <span className="text-[12px] font-bold text-gray-light">{Math.round(progressPercent)}% 완료</span>
+        <span className="text-[12px] font-bold text-gray-light">
+          {verified ? `${Math.round(progressPercent)}% 완료` : '시작 전'}
+        </span>
       </div>
 
       {/* 실시간 진행 표시줄 */}
       <div className="w-full h-1 bg-border/40 relative">
-        <div 
+        <div
           className="h-full bg-steel transition-all duration-300"
-          style={{ width: `${progressPercent}%` }}
+          style={{ width: `${verified ? progressPercent : 0}%` }}
         />
       </div>
 
-      {/* 단계별 입력 폼 */}
+      {/* 본인인증 전: 휴대폰 인증 게이트 */}
+      {!verified ? (
+        <div className="p-6">
+          <PhoneVerifyGate onVerified={handleVerified} />
+        </div>
+      ) : (
+      /* 단계별 입력 폼 */
       <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
         
         {/* 에러 피드백 */}
@@ -327,7 +369,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               <div className="flex flex-col gap-1">
                 <label htmlFor="phone" className="text-[12px] font-bold text-navy flex items-center gap-1">
                   <Phone className="w-3.5 h-3.5 text-steel" />
-                  연락처 (필수)
+                  연락처 (필수) <span className="text-[11px] text-success font-bold">· 본인인증 완료</span>
                 </label>
                 <input
                   id="phone"
@@ -335,9 +377,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                   type="tel"
                   value={formData.phone}
                   onChange={handleChange}
+                  readOnly
                   style={{ touchAction: 'manipulation' }}
                   placeholder="010-0000-0000"
-                  className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
+                  className="w-full border border-border p-2.5 rounded-custom text-[15px] bg-bg-subtle text-gray focus:outline-none transition-all"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -517,15 +560,18 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               <span className="text-[12px] text-gray leading-relaxed mt-0.5">
                 도면(P&ID, ISO 스케치, 배치도) 및 현장 사진(연결 헤더, 반입 경로, 협소 동선)을 한 개 이상 첨부하시면, 출장 실측 전 엔지니어가 1차 원가 밴드를 오차율 5% 이내로 고정해 진단 리포트를 송부할 수 있습니다.
               </span>
+              <span className="text-[12px] text-gray-light leading-relaxed mt-1.5 pt-1.5 border-t border-border/60">
+                · 첨부 한도: 항목별 최대 {MAX_PER_CATEGORY}개, 전체 최대 {MAX_TOTAL_FILES}개(합계 100MB·개당 50MB)<br />
+                · 허용 형식: {ALLOWED_LABEL}
+              </span>
             </div>
 
-            {/* 업로드 시뮬레이션 버튼 그리드 */}
             {/* 실제 파일 선택 input (숨김) */}
             <input
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*,application/pdf,.dwg,.dxf,.xlsx,.xls,.hwp,.zip"
+              accept={ACCEPT_ATTR}
               onChange={handleFileSelected}
               className="hidden"
             />
@@ -729,6 +775,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         </div>
 
       </form>
+      )}
     </div>
   );
 };

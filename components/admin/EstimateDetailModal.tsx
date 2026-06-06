@@ -5,6 +5,7 @@ import { Estimate, EstimateStatus, AccuracyGrade, Payment, SiteVisit } from '@/t
 import { ZerosService } from '@/lib/supabase/client';
 import { uploadEstimateFiles } from '@/lib/supabase/storage';
 import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
+import { validateFileFormat, ACCEPT_ATTR } from '@/lib/constants/uploadLimits';
 import { TossPaymentModal } from './TossPaymentModal';
 import { PrintableScopeSheet } from './PrintableScopeSheet';
 import { AiBlueprintAnalyzer } from '../forms/AiBlueprintAnalyzer';
@@ -240,9 +241,9 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     e.target.value = '';
     if (selected.length === 0) return;
 
-    const tooBig = selected.find(f => f.size > 50 * 1024 * 1024);
-    if (tooBig) {
-      alert(`'${tooBig.name}' 파일이 50MB를 초과합니다. 더 작은 파일로 첨부해 주세요.`);
+    const formatError = validateFileFormat(selected);
+    if (formatError) {
+      alert(formatError);
       return;
     }
 
@@ -259,6 +260,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
           file_type: f.type || 'application/octet-stream',
           file_url: '',
           file_category: adminUploadCategory,
+          file_size: f.size,
           uploaded_at: new Date().toISOString(),
         }));
       }
@@ -488,7 +490,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                     ref={adminFileInputRef}
                     type="file"
                     multiple
-                    accept="image/*,application/pdf,.dwg,.dxf,.xlsx,.xls,.hwp,.zip"
+                    accept={ACCEPT_ATTR}
                     onChange={handleAdminFileSelected}
                     className="hidden"
                   />

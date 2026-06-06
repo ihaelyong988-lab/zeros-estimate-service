@@ -52,6 +52,7 @@ export interface FileMeta {
   file_type: string;
   file_url: string;
   file_category: string;
+  file_size?: number; // 바이트 단위 (총량 한도 계산용)
   uploaded_at: string;
 }
 
