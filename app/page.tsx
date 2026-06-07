@@ -31,6 +31,18 @@ import {
   MapPin
 } from 'lucide-react';
 
+// 랜딩 쇼케이스 자동 순회 공종 순서 — 최상단 칩바와 값으로 매칭(연동)되므로 모듈 스코프로 고정
+const LANDING_TRADES = [
+  '배관공사',
+  '장비설치',
+  'Utility 배관',
+  '공장증설',
+  '노후배관교체',
+  '기계실개선',
+  '생산설비 배관 연결',
+  'CAPEX 개·증설 검토',
+];
+
 // 섹션 머리표 — 박스 래퍼 없이 accent bar + eyebrow + heading 으로 섹션 경계를 표시(L1)
 function SectionHeading({
   eyebrow,
@@ -63,6 +75,7 @@ export default function Home() {
     setActiveTab,
     selectedMenu,
     selectedBudget,
+    setLandingTradeName,
     adminView,
     setAdminView,
     adminSubView,
@@ -81,10 +94,15 @@ export default function Home() {
   // 실시간 공종 쇼케이스 애니메이션 로테이션 타이머
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveTradeIdx(prev => (prev + 1) % 8);
+      setActiveTradeIdx(prev => (prev + 1) % LANDING_TRADES.length);
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
+  // 현재 순회 중인 공종명을 셸 컨텍스트로 끌어올려 최상단 칩바와 연동(하이라이트·자동스크롤)
+  useEffect(() => {
+    setLandingTradeName(LANDING_TRADES[activeTradeIdx]);
+  }, [activeTradeIdx, setLandingTradeName]);
 
   // 실시간 데이터 로딩
   useEffect(() => {
@@ -1176,17 +1194,7 @@ export default function Home() {
   };
 
   const renderLandingDashboard = () => {
-    const landingTrades = [
-      '배관공사',
-      '장비설치',
-      'Utility 배관',
-      '공장증설',
-      '노후배관교체',
-      '기계실개선',
-      '생산설비 배관 연결',
-      'CAPEX 개·증설 검토'
-    ];
-    const activeTradeName = landingTrades[activeTradeIdx];
+    const activeTradeName = LANDING_TRADES[activeTradeIdx];
     const activeManual = manualData[activeTradeName];
     const activeMetrics = getDynamicMetrics(activeTradeName);
     const activeVisuals = getCategoryVisuals(activeTradeName);
@@ -1260,30 +1268,6 @@ export default function Home() {
       {/* Symmetrical Single Full-Width Box matching the very bottom card's specifications */}
       <div className="bg-bg border border-border p-4.5 rounded-custom shadow-custom-sm flex flex-col gap-4 relative overflow-hidden animate-in fade-in duration-300">
         
-        {/* 공종 선택 대화식 탭 바 (전체 메뉴 8종) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border/70 select-none no-scrollbar z-10 relative">
-          {landingTrades.map((tradeName, idx) => {
-            const isActive = activeTradeIdx === idx;
-            const tradeMetrics = getDynamicMetrics(tradeName);
-            return (
-              <button
-                key={tradeName}
-                onClick={() => {
-                  setActiveTradeIdx(idx);
-                  scrollMainPanelToTop();
-                }}
-                className={`px-3 py-1.5 rounded-custom text-[12px] font-black transition-all whitespace-nowrap active:scale-95 cursor-pointer border ${
-                  isActive
-                    ? `${tradeMetrics.badgeBg} border-current scale-[1.02] shadow-sm`
-                    : 'bg-bg-subtle text-gray hover:text-navy border-transparent'
-                }`}
-              >
-                {tradeName}
-              </button>
-            );
-          })}
-        </div>
-
         <div className="grid grid-cols-1 gap-4 items-stretch z-10 relative">
           
           {/* 활성 공종 정보 — 중첩 박스 껍데기 제거, 쇼케이스 카드에 직접 배치 */}

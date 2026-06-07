@@ -16,6 +16,9 @@ export interface ShellContextType {
   setSelectedMenu: (menu: string) => void;
   selectedBudget: string;
   setSelectedBudget: (budget: string) => void;
+  // 랜딩 쇼케이스가 자동 순회 중인 공종명 — 최상단 칩바 하이라이트/자동스크롤 연동용
+  landingTradeName: string;
+  setLandingTradeName: (name: string) => void;
   adminView: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications';
   setAdminView: (view: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications') => void;
   adminSubView: 'table' | 'kanban';
@@ -61,6 +64,7 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [selectedMenu, setSelectedMenu] = useState<string>('');
   const [selectedBudget, setSelectedBudget] = useState<string>('');
+  const [landingTradeName, setLandingTradeName] = useState<string>('');
   const [adminView, setAdminView] = useState<'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications'>('dashboard');
   const [adminSubView, setAdminSubView] = useState<'table' | 'kanban'>('table');
   const [selectedEstimateId, setSelectedEstimateId] = useState<string | null>(null);
@@ -82,6 +86,8 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setSelectedMenu,
         selectedBudget,
         setSelectedBudget,
+        landingTradeName,
+        setLandingTradeName,
         adminView,
         setAdminView,
         adminSubView,

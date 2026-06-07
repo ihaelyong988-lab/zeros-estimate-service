@@ -71,6 +71,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     setSelectedMenu,
     selectedBudget,
     setSelectedBudget,
+    landingTradeName,
     adminView,
     setAdminView,
   } = useShell();
@@ -86,6 +87,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileActiveTab>('home');
   const isSyncingFromHistoryRef = useRef(false);
   const lastShellUrlRef = useRef('');
+  // 최상단 공종 칩 가로 스크롤 컨테이너 — 랜딩 쇼케이스 순회에 맞춰 활성 칩으로 자동 이동
+  const quickMenuScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -197,6 +200,21 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     selectedMenu,
   ]);
 
+  // 랜딩(홈·미선택) 상태 여부 — 이때만 쇼케이스 순회와 칩 하이라이트를 연동
+  const isLandingShowcase =
+    isUserMode && mobileActiveTab === 'home' && activeTab === 'home' && !selectedMenu && !selectedBudget;
+
+  // 쇼케이스가 순회하는 공종에 맞춰 최상단 칩바를 가로로 부드럽게 이동(활성 칩 중앙 정렬)
+  useEffect(() => {
+    if (!isLandingShowcase || !landingTradeName) return;
+    const container = quickMenuScrollRef.current;
+    if (!container) return;
+    const activeEl = container.querySelector('[data-landing-active="true"]') as HTMLElement | null;
+    if (!activeEl) return;
+    const target = activeEl.offsetLeft - (container.clientWidth - activeEl.clientWidth) / 2;
+    container.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+  }, [landingTradeName, isLandingShowcase]);
+
   // 레이아웃 확정 전: 브랜드 스플래시 (깨진 헤더 대신 깔끔한 첫 화면)
   if (!layoutReady) {
     return (
@@ -289,16 +307,22 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         {/* 모바일 퀵메뉴 칩 영역 (홈 화면일 때만 노출) */}
         {mobileActiveTab === 'home' && isUserMode && (
           <div className="sticky top-0 z-30 bg-bg border-b border-border shadow-sm flex flex-col shrink-0">
-            <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap px-4 py-2.5 scrollbar-none no-scrollbar">
+            <div ref={quickMenuScrollRef} className="flex items-center gap-2 overflow-x-auto whitespace-nowrap px-4 py-2.5 scrollbar-none no-scrollbar">
               {mobileMenuItems.map((item) => {
-                const isActive =
+                // 사용자가 직접 선택한 칩
+                const isSelected =
                   item.type === 'menu'
                     ? selectedMenu === item.value && !selectedBudget && activeTab === 'home'
                     : selectedBudget === item.value && !selectedMenu && activeTab === 'home';
+                // 랜딩 쇼케이스가 현재 순회 중인 공종(미선택 상태에서만 연동)
+                const isLandingActive =
+                  isLandingShowcase && item.type === 'menu' && item.value === landingTradeName;
+                const isActive = isSelected || isLandingActive;
 
                 return (
                   <button
                     key={item.value}
+                    data-landing-active={isLandingActive ? 'true' : undefined}
                     onClick={() => handleMobileQuickMenuClick(item)}
                     className={`px-3 py-1.5 rounded-custom text-[12px] font-bold border transition-all duration-150 shrink-0 select-none ${
                       isActive
