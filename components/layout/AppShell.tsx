@@ -32,7 +32,7 @@ interface MobileAdminMenuItem {
 type MobileActiveTab = 'home' | 'request' | 'decision' | 'admin';
 type AdminView = MobileAdminMenuItem['value'];
 
-const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request'];
+const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request', 'sop'];
 const adminViewValues: AdminView[] = ['dashboard', 'estimates', 'visits', 'customers', 'performance', 'notifications'];
 
 const mobileMenuItems: MobileMenuItem[] = [
@@ -237,6 +237,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       setAdminView('dashboard');
     }
   };
+
+  const scrollMainPanelToTop = () => {
+    window.requestAnimationFrame(() => {
+      const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
+      mainScroll?.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  };
+
   // 모바일 퀵 탭 스크롤 처리
   const handleMobileQuickMenuClick = (item: MobileMenuItem) => {
     setMobileActiveTab('home');
@@ -250,6 +259,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       setSelectedMenu('');
       setActiveTab('home');
     }
+    scrollMainPanelToTop();
   };
 
   // 1. 모바일 전용 네이티브 앱 레이아웃 렌더링
@@ -337,7 +347,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         )}
 
         {/* 모바일 전용 메인 스크롤 콘텐츠 뷰포트 */}
-        <div className="flex-1 overflow-y-auto bg-bg p-4 pb-28 min-w-0 relative">
+        <div data-main-scroll="true" className="flex-1 overflow-y-auto bg-bg p-4 pb-28 min-w-0 relative">
           {mobileActiveTab === 'decision' ? (
             <div className="max-w-md mx-auto">
               <RightSidebar />
@@ -404,7 +414,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-full">
           
           {/* Pane 2: 중앙 핵심 워크스페이스 패널 (독립 스크롤) */}
-          <div className="flex-1 p-6 overflow-y-auto min-w-0 h-full bg-bg pb-12">
+          <div data-main-scroll="true" className="flex-1 p-6 overflow-y-auto min-w-0 h-full bg-bg pb-12">
             {children}
           </div>
 

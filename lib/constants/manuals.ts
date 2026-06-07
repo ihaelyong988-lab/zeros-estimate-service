@@ -451,7 +451,7 @@ export const manualData: Record<string, ManualContent> = {
     benefits: [
       { metric: '-35%', label: 'CAPEX 리스크 절감', desc: 'VE·표준 예산으로 대규모 설계 변경 리스크를 예방합니다.' },
       { metric: '99.7%', label: 'AI 분석 신뢰도', desc: '26건 대형 표본 대조로 예산을 교정합니다.' },
-      { metric: 'PM', label: '종합 관리', desc: '기획부터 입찰까지 35년 현장 PM 역량으로 통제합니다.' }
+      { metric: 'PM', label: '종합 관리', desc: '기획부터 입찰까지 현장 실무30년 기준으로 통제합니다.' }
     ],
     onlineReviewAvailable: false,
     visitRequired: true,

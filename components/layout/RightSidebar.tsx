@@ -352,7 +352,7 @@ export const RightSidebar: React.FC = () => {
           {[
             '실제 거래가와 표준 품셈으로 계산합니다.',
             'KS·ASME 자재 규격을 그대로 적용합니다.',
-            '35년 경력 현장 PM이 직접 확인합니다.',
+            '현장 실무30년 기준으로 직접 확인합니다.',
           ].map((t) => (
             <span key={t} className="text-[12px] text-gray font-medium leading-normal pl-3 border-l-2 border-border">{t}</span>
           ))}
