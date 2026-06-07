@@ -114,6 +114,21 @@ export default function Home() {
     }
   };
 
+  const scrollMainPanelToTop = () => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
+        mainScroll?.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  };
+
+  const setActiveTabAtTop = (tab: Parameters<typeof setActiveTab>[0]) => {
+    setActiveTab(tab);
+    scrollMainPanelToTop();
+  };
+
   // ==========================================
   // 1. 고객 모드 탭 렌더러
   // ==========================================
@@ -121,7 +136,7 @@ export default function Home() {
     const workflow = [
       { step: '01', title: '자료 접수', desc: '도면·사진·제원서 누락 여부를 확인하고 검토 가능/보완 필요를 분류합니다.' },
       { step: '02', title: 'AI 1차 검증', desc: '사진·도면에서 관경·연결부·접근성·위험 요소 후보를 추출합니다.' },
-      { step: '03', title: 'PM 판정', desc: '35년 현장 PM 기준으로 공사 범위·예산 밴드·출장 필요성을 판단합니다.' },
+      { step: '03', title: 'PM 판정', desc: '현장 실무30년 기준으로 공사 범위·예산 밴드·출장 필요성을 판단합니다.' },
       { step: '04', title: '액션 확정', desc: '온라인 검토·추가자료 요청·출장 실측·프로젝트 진단 중 다음 단계를 지정합니다.' },
     ];
 
@@ -265,7 +280,7 @@ export default function Home() {
         no: '05',
         phase: 'Validation',
         title: '교차검증 · 신뢰도 산출',
-        desc: '35년 PM 도메인 룰로 모델 결과를 교차검증하고 보수적 신뢰구간을 적용해 과대·과소 추정을 보정합니다.',
+        desc: '현장 실무30년 도메인 룰로 모델 결과를 교차검증하고 보수적 신뢰구간을 적용해 과대·과소 추정을 보정합니다.',
         output: '신뢰도·리스크 등급',
       },
       {
@@ -366,7 +381,7 @@ export default function Home() {
                 무료 출장 견적 컨설팅 요청
               </button>
               <button
-                onClick={() => setActiveTab('about')}
+                onClick={() => setActiveTabAtTop('about')}
                 className="bg-bg/10 hover:bg-bg/15 border border-bg/20 text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95 whitespace-nowrap"
               >
                 ZEROS 진단 절차 보기
@@ -1180,7 +1195,7 @@ export default function Home() {
       <div className="flex flex-col gap-7 max-w-4xl mx-auto">
 
       {/* ============================================================
-          핵심 주제 히어로 — 무료 출장 견적 컨설팅 + 35년 PM 신뢰
+          핵심 주제 히어로 — 무료 출장 견적 컨설팅 + 현장 실무30년 신뢰
           ============================================================ */}
       <section className="relative overflow-hidden bg-bg rounded-custom shadow-custom-sm p-5 md:p-6 flex flex-col gap-4 select-none">
         {/* 밝고 신뢰감 있는 맥킨지 톤 배경 */}
@@ -1188,20 +1203,19 @@ export default function Home() {
         <div className="absolute right-0 top-0 w-64 h-64 bg-[radial-gradient(circle_at_top_right,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
         <div className="absolute left-0 bottom-0 h-1 w-full bg-gradient-to-r from-steel via-accent to-transparent opacity-70 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col gap-4">
+        <div className="relative z-10 flex flex-col gap-3">
           {/* 주요 CTA + 보조 — 하단 쇼케이스 버튼과 동일 크기·폭, 오렌지·청색 균형 배치 */}
           <div className="flex flex-col sm:flex-row gap-3 items-stretch">
             <button
-              onClick={() => setActiveTab('request')}
+              onClick={() => setActiveTabAtTop('request')}
               style={{ touchAction: 'manipulation' }}
               className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
             >
               <FileCheck className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">무료 출장 견적 컨설팅 요청</span>
-              <span className="sm:hidden">무료 견적 컨설팅 요청</span>
+              <span>무료 출장 견적 컨설팅 신청</span>
             </button>
             <button
-              onClick={() => setActiveTab('about')}
+              onClick={() => setActiveTabAtTop('about')}
               style={{ touchAction: 'manipulation' }}
               className="flex-1 min-h-10 inline-flex items-center justify-center gap-1.5 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
             >
@@ -1227,15 +1241,15 @@ export default function Home() {
           </p>
 
           {/* 신뢰 증빙 — 제목/상세 2단 크리덴셜 스트립(형식 통일·세로폭 압축) */}
-          <div className="grid grid-cols-3 gap-3 mt-0.5 border-t border-border/70 pt-3 select-none">
+          <div className="grid grid-cols-3 gap-2 mt-0.5 border-t border-border/70 pt-2 select-none">
             {[
-              { title: '현장 실무 30년', detail: 'Manager, 엔지니어' },
+              { title: '현장 실무30년', detail: 'Manager, 엔지니어' },
               { title: '국가 기술자격증', detail: '자격증 다수' },
               { title: 'PM 총괄역임', detail: '프로젝트 다수' },
             ].map((c, idx) => (
-              <div key={c.title} className={`flex flex-col gap-0.5 ${idx > 0 ? 'pl-3 border-l border-border/60' : ''}`}>
-                <span className="text-[13.5px] font-black text-navy tracking-tight leading-tight break-keep">{c.title}</span>
-                <span className="text-[12px] text-gray font-bold leading-tight break-keep">{c.detail}</span>
+              <div key={c.title} className={`flex flex-col gap-0.5 min-w-0 ${idx > 0 ? 'pl-2 border-l border-border/60' : ''}`}>
+                <span className="text-[12px] sm:text-[13.5px] font-black text-navy tracking-tight leading-tight whitespace-nowrap">{c.title}</span>
+                <span className="text-[11px] sm:text-[12px] text-gray font-bold leading-tight break-keep">{c.detail}</span>
               </div>
             ))}
           </div>
@@ -1254,7 +1268,10 @@ export default function Home() {
             return (
               <button
                 key={tradeName}
-                onClick={() => setActiveTradeIdx(idx)}
+                onClick={() => {
+                  setActiveTradeIdx(idx);
+                  scrollMainPanelToTop();
+                }}
                 className={`px-3 py-1.5 rounded-custom text-[12px] font-black transition-all whitespace-nowrap active:scale-95 cursor-pointer border ${
                   isActive
                     ? `${tradeMetrics.badgeBg} border-current scale-[1.02] shadow-sm`
@@ -1312,13 +1329,13 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-1 select-none">
               <button
-                onClick={() => setActiveTab('sop')}
+                onClick={() => setActiveTabAtTop('sop')}
                 className="flex-1 min-h-10 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer text-center"
               >
                 AI Native 검증 제출
               </button>
               <button
-                onClick={() => setActiveTab('about')}
+                onClick={() => setActiveTabAtTop('about')}
                 className="flex-1 min-h-10 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
               >
                 ZEROS 진단 절차
@@ -1350,20 +1367,20 @@ export default function Home() {
       </section>
 
       {/* CTA 섹션 — 스틸블루 단색 밴드(상단 컬러와 통일), 크기 축소 */}
-      <section className="bg-steel text-white px-6 py-4 md:py-5 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-2 border border-white/10">
-        <h2 className="text-xl md:text-2xl font-black tracking-tight max-w-xl text-white font-sans">
+      <section className="bg-steel text-white px-4 py-3 md:py-4 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-1.5 border border-white/10">
+        <h2 className="text-[17px] sm:text-xl md:text-2xl font-black tracking-tight max-w-xl text-white font-sans whitespace-nowrap">
           공사를 시작하기 전, 먼저 검토하십시오.
         </h2>
 
-        <p className="text-[13.5px] text-white/80 max-w-md leading-relaxed font-semibold">
+        <p className="text-[12px] sm:text-[13.5px] text-white/80 max-w-md leading-relaxed font-semibold">
           불명확한 공사 범위와 잦은 현장 설계 변경 리스크를 ZEROS만의 1차 엔지니어링 검토로 원천 차단하십시오.
         </p>
 
         <button
-          onClick={() => setActiveTab('request')}
-          className="mt-1 bg-accent hover:bg-accent/90 text-white px-7 py-3 rounded-custom text-[15px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer"
+          onClick={() => setActiveTabAtTop('request')}
+          className="mt-0.5 bg-accent hover:bg-accent/90 text-white px-6 py-2.5 rounded-custom text-[14px] sm:text-[15px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer"
         >
-          AI Native 검증 제출하기
+          무료 출장 견적 컨설팅 신청
         </button>
       </section>
     </div>

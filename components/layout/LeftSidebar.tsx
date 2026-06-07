@@ -58,6 +58,14 @@ export const LeftSidebar: React.FC = () => {
     { value: 'unknown', label: '금액 미정', range: '상담 후 판단' },
   ];
 
+  const scrollMainPanelToTop = () => {
+    window.requestAnimationFrame(() => {
+      const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
+      mainScroll?.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  };
+
   const handleMenuClick = (menu: string) => {
     if (activeTab !== 'home') {
       setActiveTab('home');
@@ -65,6 +73,7 @@ export const LeftSidebar: React.FC = () => {
     setSelectedMenu(menu);
     setSelectedBudget(''); // 규모 필터 해제
     setMobileMenuOpen(false); // 모바일 드로어 자동 닫기
+    scrollMainPanelToTop();
   };
 
   const handleBudgetClick = (budgetVal: string) => {
@@ -74,6 +83,7 @@ export const LeftSidebar: React.FC = () => {
     setSelectedBudget(budgetVal);
     setSelectedMenu(''); // 영역 필터 해제
     setMobileMenuOpen(false); // 모바일 드로어 자동 닫기
+    scrollMainPanelToTop();
   };
 
   return (
