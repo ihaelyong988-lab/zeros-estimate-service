@@ -72,6 +72,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     selectedBudget,
     setSelectedBudget,
     landingTradeName,
+    landingTradeChipClass,
     adminView,
     setAdminView,
   } = useShell();
@@ -318,6 +319,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 const isLandingActive =
                   isLandingShowcase && item.type === 'menu' && item.value === landingTradeName;
                 const isActive = isSelected || isLandingActive;
+                // 활성 색: 쇼케이스 자동순회 칩은 공종 시그니처 색(쇼케이스 텍스트 색과 일치),
+                // 사용자가 직접 선택한 칩은 기존 steel — "자동 쇼케이스 vs 내 선택" 의미 구분
+                const activeColor = isLandingActive ? landingTradeChipClass : 'bg-steel border-steel text-bg';
 
                 return (
                   <button
@@ -326,7 +330,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                     onClick={() => handleMobileQuickMenuClick(item)}
                     className={`px-3 py-1.5 rounded-custom text-[12px] font-bold border transition-all duration-150 shrink-0 select-none ${
                       isActive
-                        ? 'bg-steel border-steel text-bg shadow-sm scale-102 font-extrabold'
+                        ? `${activeColor} shadow-sm scale-102 font-extrabold`
                         : 'bg-bg-subtle border-border/80 text-gray hover:text-navy'
                     }`}
                   >

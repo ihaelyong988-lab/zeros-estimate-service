@@ -19,6 +19,9 @@ export interface ShellContextType {
   // 랜딩 쇼케이스가 자동 순회 중인 공종명 — 최상단 칩바 하이라이트/자동스크롤 연동용
   landingTradeName: string;
   setLandingTradeName: (name: string) => void;
+  // 순회 중인 공종의 시그니처 색(활성 칩 className) — 칩 바탕색을 쇼케이스 색과 일치시킴
+  landingTradeChipClass: string;
+  setLandingTradeChipClass: (cls: string) => void;
   adminView: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications';
   setAdminView: (view: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications') => void;
   adminSubView: 'table' | 'kanban';
@@ -65,6 +68,7 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [selectedMenu, setSelectedMenu] = useState<string>('');
   const [selectedBudget, setSelectedBudget] = useState<string>('');
   const [landingTradeName, setLandingTradeName] = useState<string>('');
+  const [landingTradeChipClass, setLandingTradeChipClass] = useState<string>('bg-steel border-steel text-bg');
   const [adminView, setAdminView] = useState<'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications'>('dashboard');
   const [adminSubView, setAdminSubView] = useState<'table' | 'kanban'>('table');
   const [selectedEstimateId, setSelectedEstimateId] = useState<string | null>(null);
@@ -88,6 +92,8 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setSelectedBudget,
         landingTradeName,
         setLandingTradeName,
+        landingTradeChipClass,
+        setLandingTradeChipClass,
         adminView,
         setAdminView,
         adminSubView,

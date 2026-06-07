@@ -43,6 +43,19 @@ const LANDING_TRADES = [
   'CAPEX 개·증설 검토',
 ];
 
+// 공종별 활성 칩 시그니처 색 — 쇼케이스 eyebrow 텍스트 색(-600 계열)과 동일 색상으로 묶어 시선 연결
+// (Tailwind JIT가 스캔하도록 완전한 클래스 문자열을 직접 명시)
+const LANDING_CHIP_CLASS: Record<string, string> = {
+  '배관공사': 'bg-cyan-600 border-cyan-600 text-white',
+  '장비설치': 'bg-amber-600 border-amber-600 text-white',
+  'Utility 배관': 'bg-sky-600 border-sky-600 text-white',
+  '공장증설': 'bg-accent border-accent text-white',
+  '노후배관교체': 'bg-emerald-600 border-emerald-600 text-white',
+  '기계실개선': 'bg-teal-600 border-teal-600 text-white',
+  '생산설비 배관 연결': 'bg-indigo-600 border-indigo-600 text-white',
+  'CAPEX 개·증설 검토': 'bg-navy border-navy text-white',
+};
+
 // 섹션 머리표 — 박스 래퍼 없이 accent bar + eyebrow + heading 으로 섹션 경계를 표시(L1)
 function SectionHeading({
   eyebrow,
@@ -76,6 +89,7 @@ export default function Home() {
     selectedMenu,
     selectedBudget,
     setLandingTradeName,
+    setLandingTradeChipClass,
     adminView,
     setAdminView,
     adminSubView,
@@ -99,10 +113,12 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // 현재 순회 중인 공종명을 셸 컨텍스트로 끌어올려 최상단 칩바와 연동(하이라이트·자동스크롤)
+  // 현재 순회 중인 공종명·시그니처 색을 셸 컨텍스트로 끌어올려 최상단 칩바와 연동(하이라이트·색·자동스크롤)
   useEffect(() => {
-    setLandingTradeName(LANDING_TRADES[activeTradeIdx]);
-  }, [activeTradeIdx, setLandingTradeName]);
+    const name = LANDING_TRADES[activeTradeIdx];
+    setLandingTradeName(name);
+    setLandingTradeChipClass(LANDING_CHIP_CLASS[name] || 'bg-steel border-steel text-bg');
+  }, [activeTradeIdx, setLandingTradeName, setLandingTradeChipClass]);
 
   // 실시간 데이터 로딩
   useEffect(() => {
