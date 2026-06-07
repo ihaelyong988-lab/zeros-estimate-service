@@ -1290,13 +1290,12 @@ export default function Home() {
           <div className="flex flex-col justify-between gap-4">
             <div className="flex flex-col gap-3.5">
               {/* 공종 라벨(eyebrow) + 실시간 표본 신호 — 박스 제거 */}
-              <div className="flex items-center justify-between gap-2 select-none">
-                <span className={`text-[12px] tracking-widest uppercase font-black ${activeMetrics.accentText}`}>
+              <div className="flex items-center justify-between gap-2 select-none min-w-0">
+                <span className={`min-w-0 truncate text-[12px] tracking-widest uppercase font-black ${activeMetrics.accentText}`}>
                   {activeVisuals.badgeText}
                 </span>
-                <div className="flex items-center gap-1.5 text-[12px] font-mono font-bold text-steel">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                  n={activeMetrics.sampleCount} 표본 대조
+                <div className="shrink-0 whitespace-nowrap text-right text-[12px] font-mono font-bold text-steel">
+                  표본={activeMetrics.sampleCount}
                 </div>
               </div>
               
