@@ -1214,9 +1214,131 @@ export default function Home() {
     const activeManual = manualData[activeTradeName];
     const activeMetrics = getDynamicMetrics(activeTradeName);
     const activeVisuals = getCategoryVisuals(activeTradeName);
+    const mobileTradeName = '공장증설';
+    const mobileMetrics = getDynamicMetrics(mobileTradeName);
+    const mobileEstimateAmount = 26850000;
+    const mobileFeeAmount = Math.round(mobileEstimateAmount * 0.02);
 
     return (
-      <div className="flex flex-col gap-7 max-w-4xl mx-auto">
+      <>
+      <div className="lg:hidden min-h-full bg-[#041B33] text-white pb-6">
+        <section className="px-5 pt-8 pb-7 text-center flex flex-col gap-5 bg-[linear-gradient(180deg,#0A2D56_0%,#06213F_52%,#041B33_100%)]">
+          <div className="flex flex-col gap-3">
+            <h1 className="text-[31px] leading-[1.16] font-black text-white">
+              데이터로 증명하는
+              <br />
+              완벽한 견적, ZEROS
+            </h1>
+            <p className="text-[15px] leading-relaxed text-white/70 font-semibold">
+              30년 현장 노하우와 AI 기술의 결합으로 최적의 공사비를 제안합니다.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => setActiveTabAtTop('request')}
+              className="min-h-14 rounded-lg bg-[#FF6A00] text-white text-[18px] font-black shadow-lg shadow-[#ff6a00]/20 active:scale-[0.98] transition-transform"
+            >
+              무료 컨설팅 신청하기
+            </button>
+            <button
+              onClick={() => setActiveTabAtTop('about')}
+              className="min-h-14 rounded-lg border-2 border-[#2D73C8] bg-[#0B2B50]/70 text-white text-[18px] font-black active:scale-[0.98] transition-transform"
+            >
+              서비스 프로세스 보기
+            </button>
+          </div>
+        </section>
+
+        <section className="px-5 pb-5 bg-[#041B33]">
+          <div className="rounded-lg bg-[#092B50] border border-white/10 p-5 flex flex-col gap-4 overflow-hidden">
+            <div className="flex flex-col gap-1">
+              <span className="text-[15px] text-white/55 font-semibold">공장 증설 및 지점 연계</span>
+              <span className="text-[18px] text-white font-black">현재 프로젝트 분석</span>
+            </div>
+
+            <div className="rounded-lg bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-lg bg-[#EAF2FF] border border-[#C7DBF5] flex items-center justify-center shrink-0 text-[#1E5FA7]">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <h2 className="text-[20px] leading-snug font-black break-keep">
+                  생산 라인 증설 및 지점
+                  <br />
+                  파이프라인
+                </h2>
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                {[
+                  { label: 'AI 분석 신뢰도', value: `${mobileMetrics.confidence}%`, tone: 'bg-[#1E63B6] text-white' },
+                  { label: '실제 표준 비교', value: '100% 일치', tone: 'bg-[#FF8A1F] text-white' },
+                  { label: '평균 비용 절감', value: `-${mobileMetrics.bubbleRate}%`, tone: 'bg-[#28A76F] text-white' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-2 text-[12.5px]">
+                    <span className="min-w-0 flex items-center gap-2">
+                      <span className={`w-5 h-5 rounded-full ${item.tone} flex items-center justify-center text-[10px] font-black shrink-0`}>
+                        {item.label === 'AI 분석 신뢰도' ? 'AI' : item.label === '실제 표준 비교' ? 'KS' : '%'}
+                      </span>
+                      <span className="min-w-0 whitespace-nowrap font-bold text-[#172033] mr-2">{item.label}</span>
+                    </span>
+                    <span className="whitespace-nowrap font-black text-[#101827]">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  onClick={() => setActiveTabAtTop('sop')}
+                  className="min-h-12 rounded-lg bg-[#1E73D8] text-white text-[17px] font-black"
+                >
+                  AI 기반 검증 제출
+                </button>
+                <button
+                  onClick={() => setActiveTabAtTop('about')}
+                  className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[17px] font-black"
+                >
+                  ZEROS 진단 절차
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-1">
+              <span className="text-[16px] text-white/62 font-semibold">실시간 분석 현황</span>
+              <div className="rounded-lg bg-[#173B61] border border-white/10 p-4 flex flex-col gap-4">
+                <h3 className="text-[20px] font-black text-white">배관 공사</h3>
+
+                <div className="flex flex-col gap-2">
+                  <div className="relative h-7">
+                    <div className="absolute left-0 right-0 top-3 h-1.5 rounded-full bg-[linear-gradient(90deg,#55D886_0%,#FFB134_52%,#E84F58_100%)]" />
+                    <div className="absolute top-[5px] left-[45%] w-5 h-5 rounded-full border-2 border-white bg-[#FF6A00] shadow-md" />
+                    <span className="absolute left-[40%] -top-1 text-[12px] text-white/80 font-semibold whitespace-nowrap">예상 가격</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[14px] text-white/62 font-semibold">
+                    <span>최소 12M 원</span>
+                    <span>최대 45M 원</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[14px] text-white font-semibold whitespace-nowrap shrink-0">예상 가격:</span>
+                    <span className="text-[18px] text-white font-black tabular-nums whitespace-nowrap">{mobileEstimateAmount.toLocaleString()} 원</span>
+                  </div>
+                  <span className="self-end text-[12px] text-white/60 font-semibold whitespace-nowrap">(중앙값 28M 대비 +0.0%)</span>
+                </div>
+
+                <div className="border-t border-white/12 pt-4 flex items-center justify-between gap-2">
+                  <span className="text-[14px] text-white font-semibold whitespace-nowrap shrink-0">서비스 수수료 (2%)</span>
+                  <span className="text-[16px] text-white font-black tabular-nums whitespace-nowrap">{mobileFeeAmount.toLocaleString()} 원</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div className="hidden lg:flex flex-col gap-7 max-w-4xl mx-auto">
 
       {/* ============================================================
           핵심 주제 히어로 — 무료 출장 견적 컨설팅 + 현장 실무30년 신뢰
@@ -1383,6 +1505,7 @@ export default function Home() {
         </button>
       </section>
     </div>
+    </>
     );
   };
 

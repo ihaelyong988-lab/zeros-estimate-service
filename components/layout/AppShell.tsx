@@ -8,9 +8,13 @@ import { RightSidebar } from './RightSidebar';
 import { MobileSimulator } from './MobileSimulator';
 import { AdminLogin } from '../admin/AdminLogin';
 import {
+  BookOpen,
   Home,
   FileText,
-  TrendingUp,
+  ClipboardList,
+  User,
+  Menu,
+  X,
   Building2
 } from 'lucide-react';
 
@@ -29,7 +33,7 @@ interface MobileAdminMenuItem {
   value: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications';
 }
 
-type MobileActiveTab = 'home' | 'request' | 'decision' | 'admin';
+type MobileActiveTab = 'home' | 'service' | 'request' | 'history' | 'account' | 'decision' | 'admin';
 type AdminView = MobileAdminMenuItem['value'];
 
 const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request', 'sop'];
@@ -73,6 +77,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     setSelectedBudget,
     landingTradeName,
     landingTradeChipClass,
+    mobileMenuOpen,
+    setMobileMenuOpen,
     adminView,
     setAdminView,
   } = useShell();
@@ -133,9 +139,23 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         return;
       }
 
+      if (tab === 'account') {
+        setActiveTab('home');
+        setMobileActiveTab('account');
+        return;
+      }
+
       if (tab && activeTabValues.includes(tab as ActiveTab) && tab !== 'home') {
         setActiveTab(tab as ActiveTab);
-        setMobileActiveTab(tab === 'request' ? 'request' : 'home');
+        setMobileActiveTab(
+          tab === 'request'
+            ? 'request'
+            : tab === 'about' || tab === 'sop'
+              ? 'service'
+              : tab === 'performance'
+                ? 'history'
+                : 'home'
+        );
         return;
       }
 
@@ -173,6 +193,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       }
     } else if (isMobileLayout && mobileActiveTab === 'decision') {
       params.set('tab', 'decision');
+    } else if (isMobileLayout && mobileActiveTab === 'account') {
+      params.set('tab', 'account');
     } else if (activeTab !== 'home') {
       params.set('tab', activeTab);
     } else if (selectedMenu) {
@@ -240,18 +262,42 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const handleMobileTabChange = (tab: MobileActiveTab) => {
     setMobileActiveTab(tab);
     if (tab === 'home') {
+      setMobileMenuOpen(false);
       setIsUserMode(true);
       setActiveTab('home');
       setSelectedMenu('');
       setSelectedBudget('');
+    } else if (tab === 'service') {
+      setMobileMenuOpen(false);
+      setIsUserMode(true);
+      setActiveTab('about');
+      setSelectedMenu('');
+      setSelectedBudget('');
     } else if (tab === 'request') {
+      setMobileMenuOpen(false);
       setIsUserMode(true);
       setActiveTab('request');
+      setSelectedMenu('');
+      setSelectedBudget('');
+    } else if (tab === 'history') {
+      setMobileMenuOpen(false);
+      setIsUserMode(true);
+      setActiveTab('performance');
+      setSelectedMenu('');
+      setSelectedBudget('');
+    } else if (tab === 'account') {
+      setMobileMenuOpen(false);
+      setIsUserMode(true);
+      setActiveTab('home');
+      setSelectedMenu('');
+      setSelectedBudget('');
     } else if (tab === 'decision') {
+      setMobileMenuOpen(false);
       setIsUserMode(true);
       // 의사결정 시, 홈 상태로 두고 sidebar 내용 출력
       setActiveTab('home');
     } else if (tab === 'admin') {
+      setMobileMenuOpen(false);
       setIsUserMode(false);
       setAdminView('dashboard');
     }
@@ -267,6 +313,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   // 모바일 퀵 탭 스크롤 처리
   const handleMobileQuickMenuClick = (item: MobileMenuItem) => {
+    setMobileMenuOpen(false);
     setMobileActiveTab('home');
     setIsUserMode(true);
     if (item.type === 'menu') {
@@ -283,30 +330,45 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   // 1. 모바일 전용 네이티브 앱 레이아웃 렌더링
   if (isMobileLayout) {
+    const isMobileLanding =
+      isUserMode && mobileActiveTab === 'home' && activeTab === 'home' && !selectedMenu && !selectedBudget;
+
     return (
-      <div className="h-screen overflow-hidden flex flex-col bg-bg-subtle text-text font-sans pb-safe">
+      <div className={`h-screen overflow-hidden flex flex-col text-text font-sans pb-safe ${isMobileLanding ? 'bg-[#041B33]' : 'bg-bg-subtle'}`}>
         
         {/* 모바일 상단 네이티브 로고 헤더 */}
-        <div className="shrink-0 bg-navy text-bg px-5 py-4.5 flex items-center justify-between select-none shadow-md border-b border-white/5 relative z-40">
+        <div className={`${isMobileLanding ? 'bg-[#061F3C] border-white/10 px-5 py-4' : 'bg-navy border-white/5 px-5 py-4.5'} shrink-0 text-bg flex items-center justify-between select-none shadow-md border-b relative z-40`}>
           <div className="flex items-center gap-2">
-            <div className="bg-accent p-1 rounded-custom flex items-center justify-center shadow-md shadow-accent/20">
+            <div className="w-8 h-8 bg-accent rounded-custom flex items-center justify-center shadow-md shadow-accent/20">
               <Building2 className="w-4 h-4 text-bg" />
             </div>
             <div className="flex flex-col">
-              <span className="font-black text-[15px] tracking-wider text-bg leading-none uppercase">ZEROS</span>
-              <span className="text-[12px] text-bg/70 font-semibold tracking-tight mt-0.5">AI Native 검증 앱</span>
+              <span className="font-black text-[19px] text-bg leading-none uppercase">ZEROS</span>
+              {!isMobileLanding && (
+                <span className="text-[12px] text-bg/70 font-semibold mt-0.5">AI Native 검증 앱</span>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[12px] px-2 py-0.5 rounded-full font-black tracking-wide">
-              AI NATIVE
-            </span>
-            <div className="w-2 h-2 rounded-full bg-success animate-pulse" title="온라인 상태" />
-          </div>
+          {isMobileLanding ? (
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="w-10 h-10 inline-flex items-center justify-center text-white"
+              aria-label="메뉴 열기"
+            >
+              {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[12px] px-2 py-0.5 rounded-full font-black">
+                AI NATIVE
+              </span>
+              <div className="w-2 h-2 rounded-full bg-success animate-pulse" title="온라인 상태" />
+            </div>
+          )}
         </div>
 
         {/* 모바일 퀵메뉴 칩 영역 (홈 화면일 때만 노출) */}
-        {mobileActiveTab === 'home' && isUserMode && (
+        {mobileActiveTab === 'home' && isUserMode && !isMobileLanding && (
           <div className="sticky top-0 z-30 bg-bg border-b border-border shadow-sm flex flex-col shrink-0">
             <div ref={quickMenuScrollRef} className="flex items-center gap-2 overflow-x-auto whitespace-nowrap px-4 py-2.5 scrollbar-none no-scrollbar">
               {mobileMenuItems.map((item) => {
@@ -338,6 +400,59 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   </button>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {mobileMenuOpen && isMobileLanding && (
+          <div className="fixed inset-0 z-50 bg-[#031225]/70 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
+            <div
+              className="ml-auto h-full w-[82%] max-w-[320px] bg-[#071F3C] border-l border-white/10 p-5 flex flex-col gap-5"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-white text-[15px] font-black">ZEROS 메뉴</span>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-9 h-9 inline-flex items-center justify-center text-white/80"
+                  aria-label="메뉴 닫기"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  { label: '홈', tab: 'home' as MobileActiveTab },
+                  { label: '서비스 소개', tab: 'service' as MobileActiveTab },
+                  { label: '견적 문의', tab: 'request' as MobileActiveTab },
+                  { label: '이용 내역', tab: 'history' as MobileActiveTab },
+                  { label: '마이페이지', tab: 'account' as MobileActiveTab },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => handleMobileTabChange(item.tab)}
+                    className="text-left rounded-custom bg-white/[0.07] border border-white/10 px-4 py-3 text-[13px] font-bold text-white"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="border-t border-white/10 pt-4 flex flex-col gap-2">
+                <span className="text-[12px] font-bold text-white/60">공종 바로가기</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {mobileMenuItems.slice(0, 8).map((item) => (
+                    <button
+                      key={item.value}
+                      onClick={() => handleMobileQuickMenuClick(item)}
+                      className="rounded-custom bg-white/[0.07] border border-white/10 px-3 py-2 text-[12px] font-bold text-white/90 text-left"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -375,8 +490,25 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         )}
 
         {/* 모바일 전용 메인 스크롤 콘텐츠 뷰포트 */}
-        <div data-main-scroll="true" className="flex-1 overflow-y-auto bg-bg p-4 pb-28 min-w-0 relative">
-          {mobileActiveTab === 'decision' ? (
+        <div
+          data-main-scroll="true"
+          className={`flex-1 overflow-y-auto min-w-0 relative ${isMobileLanding ? 'bg-[#041B33] p-0' : 'bg-bg p-4 pb-28'}`}
+        >
+          {mobileActiveTab === 'account' ? (
+            <div className="max-w-md mx-auto bg-bg border border-border rounded-custom p-5 flex flex-col gap-3">
+              <span className="text-[12px] font-black text-steel">MY PAGE</span>
+              <h2 className="text-[20px] font-black text-navy">마이페이지</h2>
+              <p className="text-[13px] text-gray font-semibold leading-relaxed">
+                견적 문의 내역과 담당자 배정 현황을 확인할 수 있는 영역입니다.
+              </p>
+              <button
+                onClick={() => handleMobileTabChange('request')}
+                className="mt-2 bg-accent text-white rounded-custom px-4 py-3 text-[13px] font-black"
+              >
+                새 견적 문의하기
+              </button>
+            </div>
+          ) : mobileActiveTab === 'decision' ? (
             <div className="max-w-md mx-auto">
               <RightSidebar />
             </div>
@@ -386,11 +518,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </div>
 
         {/* 모바일 고유의 네이티브형 하단 네비게이션 바 (iOS/Android 스타일) */}
-        <div className="shrink-0 bg-bg/95 backdrop-blur-md border-t border-border shadow-custom-lg grid grid-cols-3 items-center justify-around py-2.5 pb-safe z-40 text-center select-none">
+        <div className={`${isMobileLanding ? 'bg-[#061F3C]/96 border-white/10 text-white' : 'bg-bg/95 border-border'} shrink-0 backdrop-blur-md border-t shadow-custom-lg grid grid-cols-5 items-center justify-around py-2.5 pb-safe z-40 text-center select-none`}>
           <button
             onClick={() => handleMobileTabChange('home')}
             className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'home' ? 'text-steel font-black scale-105' : 'text-gray hover:text-navy'
+              mobileActiveTab === 'home' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
             }`}
           >
             <Home className="w-5.5 h-5.5" />
@@ -398,23 +530,43 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           </button>
 
           <button
-            onClick={() => handleMobileTabChange('request')}
+            onClick={() => handleMobileTabChange('service')}
             className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'request' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
+              mobileActiveTab === 'service' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
             }`}
           >
-            <FileText className="w-5.5 h-5.5" />
-            <span className="text-[12px]">의뢰하기</span>
+            <BookOpen className="w-5.5 h-5.5" />
+            <span className="text-[12px]">서비스 소개</span>
           </button>
 
           <button
-            onClick={() => handleMobileTabChange('decision')}
+            onClick={() => handleMobileTabChange('request')}
             className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'decision' ? 'text-steel font-black scale-105' : 'text-gray hover:text-navy'
+              mobileActiveTab === 'request' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
             }`}
           >
-            <TrendingUp className="w-5.5 h-5.5" />
-            <span className="text-[12px]">예산조율</span>
+            <FileText className="w-5.5 h-5.5" />
+            <span className="text-[12px]">견적 문의</span>
+          </button>
+
+          <button
+            onClick={() => handleMobileTabChange('history')}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              mobileActiveTab === 'history' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
+            }`}
+          >
+            <ClipboardList className="w-5.5 h-5.5" />
+            <span className="text-[12px]">이용 내역</span>
+          </button>
+
+          <button
+            onClick={() => handleMobileTabChange('account')}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              mobileActiveTab === 'account' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
+            }`}
+          >
+            <User className="w-5.5 h-5.5" />
+            <span className="text-[12px]">마이페이지</span>
           </button>
         </div>
       </div>
