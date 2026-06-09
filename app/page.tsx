@@ -28,7 +28,11 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
-  MapPin
+  MapPin,
+  Truck,
+  LineChart,
+  Award,
+  ChevronDown
 } from 'lucide-react';
 
 // 랜딩 쇼케이스 자동 순회 공종 순서 — 최상단 칩바와 값으로 매칭(연동)되므로 모듈 스코프로 고정
@@ -1221,20 +1225,47 @@ export default function Home() {
 
     return (
       <>
-      <div className="lg:hidden min-h-full bg-[#041B33] text-white pb-6">
-        <section className="px-5 pt-8 pb-7 text-center flex flex-col gap-5 bg-[linear-gradient(180deg,#0A2D56_0%,#06213F_52%,#041B33_100%)]">
-          <div className="flex flex-col gap-3">
-            <h1 className="text-[31px] leading-[1.16] font-black text-white">
-              데이터로 증명하는
-              <br />
-              완벽한 견적, ZEROS
-            </h1>
-            <p className="text-[15px] leading-relaxed text-white/70 font-semibold">
-              30년 현장 노하우와 AI 기술의 결합으로 최적의 공사비를 제안합니다.
-            </p>
+      <div className="lg:hidden h-full flex flex-col bg-[#041B33] text-white">
+        {/* ── 1페이지: 히어로 (풀스크린 스냅) ── */}
+        <section className="snap-start snap-always min-h-full flex flex-col px-5 pt-8 pb-4 bg-[linear-gradient(180deg,#0A2D56_0%,#06213F_52%,#041B33_100%)]">
+          {/* 상단 영역 — 타이틀·카피·핵심 3대 역량 */}
+          <div className="flex-1 flex flex-col justify-center gap-7">
+            <div className="flex flex-col gap-3 text-center">
+              <h1 className="text-[31px] leading-[1.16] font-black text-white">
+                데이터로 증명하는
+                <br />
+                완벽한 견적, ZEROS
+              </h1>
+              <p className="text-[15px] leading-relaxed text-white/70 font-semibold">
+                30년 현장 노하우와 AI 기술의 결합으로 최적의 공사비를 제안합니다.
+              </p>
+            </div>
+
+            {/* 핵심 3대 역량 아이콘 칩 */}
+            <div className="flex flex-col gap-2.5">
+              {[
+                { icon: Truck, label: '무료 출장 견적 서비스', sub: '전국 현장 직접 방문', tone: 'bg-[#FF6A00]' },
+                { icon: LineChart, label: 'AI 데이터 분석', sub: '실거래 기반 정량 검증', tone: 'bg-[#1E73D8]' },
+                { icon: Award, label: '현장 실무 30년', sub: 'PM · 국가기술자격 보유', tone: 'bg-[#28A76F]' },
+              ].map(({ icon: Icon, label, sub, tone }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-3.5 rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3.5"
+                >
+                  <span className={`w-11 h-11 rounded-lg ${tone} flex items-center justify-center shrink-0 shadow-md`}>
+                    <Icon className="w-5.5 h-5.5 text-white" />
+                  </span>
+                  <span className="flex flex-col leading-tight min-w-0">
+                    <span className="text-[16px] font-black text-white">{label}</span>
+                    <span className="text-[12.5px] font-semibold text-white/55">{sub}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          {/* 하단 영역 — CTA 2종 + 스와이프 큐 */}
+          <div className="flex flex-col gap-3 pt-6">
             <button
               onClick={() => setActiveTabAtTop('request')}
               className="min-h-14 rounded-lg bg-[#FF6A00] text-white text-[18px] font-black shadow-lg shadow-[#ff6a00]/20 active:scale-[0.98] transition-transform"
@@ -1247,10 +1278,15 @@ export default function Home() {
             >
               서비스 프로세스 보기
             </button>
+            <div className="flex flex-col items-center gap-0.5 pt-2 text-white/55 select-none">
+              <span className="text-[12.5px] font-semibold">현재 프로젝트 분석</span>
+              <ChevronDown className="w-5 h-5 animate-bounce" />
+            </div>
           </div>
         </section>
 
-        <section className="px-5 pb-5 bg-[#041B33]">
+        {/* ── 2페이지: 분석 대시보드 (풀스크린 스냅) ── */}
+        <section className="snap-start snap-always min-h-full flex flex-col justify-center px-5 py-6 bg-[#041B33]">
           <div className="rounded-lg bg-[#092B50] border border-white/10 p-5 flex flex-col gap-4 overflow-hidden">
             <div className="flex flex-col gap-1">
               <span className="text-[15px] text-white/55 font-semibold">공장 증설 및 지점 연계</span>
@@ -1306,13 +1342,13 @@ export default function Home() {
             <div className="flex flex-col gap-3 pt-1">
               <span className="text-[16px] text-white/62 font-semibold">실시간 분석 현황</span>
               <div className="rounded-lg bg-[#173B61] border border-white/10 p-4 flex flex-col gap-4">
-                <h3 className="text-[20px] font-black text-white">배관 공사</h3>
+                <h3 className="text-[20px] font-black text-white">총 공사 견적금액</h3>
 
                 <div className="flex flex-col gap-2">
                   <div className="relative h-7">
                     <div className="absolute left-0 right-0 top-3 h-1.5 rounded-full bg-[linear-gradient(90deg,#55D886_0%,#FFB134_52%,#E84F58_100%)]" />
                     <div className="absolute top-[5px] left-[45%] w-5 h-5 rounded-full border-2 border-white bg-[#FF6A00] shadow-md" />
-                    <span className="absolute left-[40%] -top-1 text-[12px] text-white/80 font-semibold whitespace-nowrap">예상 가격</span>
+                    <span className="absolute left-[40%] -top-1 text-[12px] text-white/80 font-semibold whitespace-nowrap">예상 견적</span>
                   </div>
                   <div className="flex items-center justify-between text-[14px] text-white/62 font-semibold">
                     <span>최소 12M 원</span>
@@ -1322,7 +1358,7 @@ export default function Home() {
 
                 <div className="flex flex-col gap-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[14px] text-white font-semibold whitespace-nowrap shrink-0">예상 가격:</span>
+                    <span className="text-[14px] text-white font-semibold whitespace-nowrap shrink-0">예상 견적:</span>
                     <span className="text-[18px] text-white font-black tabular-nums whitespace-nowrap">{mobileEstimateAmount.toLocaleString()} 원</span>
                   </div>
                   <span className="self-end text-[12px] text-white/60 font-semibold whitespace-nowrap">(중앙값 28M 대비 +0.0%)</span>
