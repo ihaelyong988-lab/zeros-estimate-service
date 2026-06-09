@@ -1274,7 +1274,7 @@ export default function Home() {
           <div className="flex flex-col gap-3 pt-4 shrink-0">
             <button
               onClick={() => setActiveTabAtTop('request')}
-              className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[18px] font-black shadow-lg shadow-[#ff6a00]/20 active:scale-[0.98] transition-transform"
+              className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[18px] font-black active:scale-[0.98] transition-transform"
             >
               무료 컨설팅 신청하기
             </button>
