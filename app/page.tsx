@@ -108,6 +108,8 @@ export default function Home() {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTradeIdx, setActiveTradeIdx] = useState(0);
+  // 모바일 랜딩 실시간 견적 슬라이더 — 핸들을 끌면 예상 견적·수수료·중앙값 대비가 연동되어 변동
+  const [mobileEstimateAmount, setMobileEstimateAmount] = useState(26850000);
 
   // 실시간 공종 쇼케이스 애니메이션 로테이션 타이머
   useEffect(() => {
@@ -1220,8 +1222,12 @@ export default function Home() {
     const activeVisuals = getCategoryVisuals(activeTradeName);
     const mobileTradeName = '공장증설';
     const mobileMetrics = getDynamicMetrics(mobileTradeName);
-    const mobileEstimateAmount = 26850000;
+    const MOBILE_MIN = 12000000;
+    const MOBILE_MAX = 45000000;
+    const MOBILE_MEDIAN = 28000000;
     const mobileFeeAmount = Math.round(mobileEstimateAmount * 0.02);
+    const mobilePct = ((mobileEstimateAmount - MOBILE_MIN) / (MOBILE_MAX - MOBILE_MIN)) * 100;
+    const mobileVsMedian = ((mobileEstimateAmount - MOBILE_MEDIAN) / MOBILE_MEDIAN) * 100;
 
     return (
       <>
@@ -1346,9 +1352,31 @@ export default function Home() {
 
                 <div className="flex flex-col gap-2">
                   <div className="relative h-7">
-                    <div className="absolute left-0 right-0 top-3 h-1.5 rounded-full bg-[linear-gradient(90deg,#55D886_0%,#FFB134_52%,#E84F58_100%)]" />
-                    <div className="absolute top-[5px] left-[45%] w-5 h-5 rounded-full border-2 border-white bg-[#FF6A00] shadow-md" />
-                    <span className="absolute left-[40%] -top-1 text-[12px] text-white/80 font-semibold whitespace-nowrap">예상 견적</span>
+                    {/* 그라데이션 트랙(시각) */}
+                    <div className="absolute left-0 right-0 top-3 h-1.5 rounded-full bg-[linear-gradient(90deg,#55D886_0%,#FFB134_52%,#E84F58_100%)] pointer-events-none" />
+                    {/* 핸들 — 상태값 위치로 이동 */}
+                    <div
+                      className="absolute top-[5px] -translate-x-1/2 w-5 h-5 rounded-full border-2 border-white bg-[#FF6A00] shadow-md pointer-events-none transition-[left] duration-75"
+                      style={{ left: `${mobilePct}%` }}
+                    />
+                    {/* '예상 견적' 라벨 — 핸들 따라 이동 */}
+                    <span
+                      className="absolute -top-1 -translate-x-1/2 text-[12px] text-white/80 font-semibold whitespace-nowrap pointer-events-none transition-[left] duration-75"
+                      style={{ left: `${Math.min(Math.max(mobilePct, 12), 88)}%` }}
+                    >
+                      예상 견적
+                    </span>
+                    {/* 드래그/터치 입력 — 투명 range가 트랙 전체를 덮어 값 조절 */}
+                    <input
+                      type="range"
+                      min={MOBILE_MIN}
+                      max={MOBILE_MAX}
+                      step={50000}
+                      value={mobileEstimateAmount}
+                      onChange={(e) => setMobileEstimateAmount(Number(e.target.value))}
+                      aria-label="예상 견적 조절 슬라이더"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
                   </div>
                   <div className="flex items-center justify-between text-[14px] text-white/62 font-semibold">
                     <span>최소 12M 원</span>
@@ -1361,7 +1389,7 @@ export default function Home() {
                     <span className="text-[14px] text-white font-semibold whitespace-nowrap shrink-0">예상 견적:</span>
                     <span className="text-[18px] text-white font-black tabular-nums whitespace-nowrap">{mobileEstimateAmount.toLocaleString()} 원</span>
                   </div>
-                  <span className="self-end text-[12px] text-white/60 font-semibold whitespace-nowrap">(중앙값 28M 대비 +0.0%)</span>
+                  <span className="self-end text-[12px] text-white/60 font-semibold whitespace-nowrap">(중앙값 28M 대비 {mobileVsMedian >= 0 ? '+' : ''}{mobileVsMedian.toFixed(1)}%)</span>
                 </div>
 
                 <div className="border-t border-white/12 pt-4 flex items-center justify-between gap-2">
