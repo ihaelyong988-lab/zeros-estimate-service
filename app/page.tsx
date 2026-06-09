@@ -1238,12 +1238,14 @@ export default function Home() {
           <div className="flex-1 flex flex-col justify-center gap-5 min-h-0">
             <div className="flex flex-col gap-3 text-center">
               <h1 className="text-[28px] leading-[1.16] font-black text-white">
-                데이터로 증명하는
+                데이터 분석으로 증명하는
                 <br />
-                완벽한 견적, ZEROS
+                최적의 견적, ZEROS
               </h1>
               <p className="text-[15px] leading-relaxed text-white/70 font-semibold">
-                30년 현장 노하우와 AI 기술의 결합으로 최적의 공사비를 제안합니다.
+                현장실무 암묵지와 AI-Native 기반의
+                <br />
+                정확한 공사비를 제공합니다.
               </p>
             </div>
 
