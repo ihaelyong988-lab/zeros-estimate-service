@@ -1264,8 +1264,8 @@ export default function Home() {
                     <Icon className="w-5 h-5 text-white" />
                   </span>
                   <span className="flex flex-col leading-tight min-w-0">
-                    <span className="text-[16px] font-black text-white">{label}</span>
-                    <span className="text-[12.5px] font-semibold text-white/55">{sub}</span>
+                    <span className="text-[15.5px] font-black text-white">{label}</span>
+                    <span className="text-[13px] font-semibold text-white/60">{sub}</span>
                   </span>
                 </div>
               ))}
@@ -1299,14 +1299,14 @@ export default function Home() {
         </section>
 
         {/* ── 2페이지: 현재 프로젝트 분석 (풀스크린 스냅) ── */}
-        <section id="m-landing-2" className="snap-start snap-always min-h-full flex flex-col justify-center gap-5 px-5 py-6 bg-[#041B33]">
-          <div className="rounded-lg bg-[#092B50] border border-white/10 p-5 flex flex-col gap-4 overflow-hidden">
-            <div className="flex flex-col gap-1">
-              <span className="text-[15px] text-white/55 font-semibold">공장 증설 및 지점 연계</span>
-              <span className="text-[18px] text-white font-black">현재 프로젝트 분석</span>
+        <section id="m-landing-2" className="snap-start snap-always min-h-full flex flex-col justify-center gap-6 px-5 py-6 bg-[#041B33]">
+          <div className="rounded-2xl bg-[#092B50] border border-white/10 p-5 flex flex-col gap-5 overflow-hidden">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-white/45">공장 증설 및 지점 연계</span>
+              <span className="text-[22px] text-white font-black tracking-tight">현재 프로젝트 분석</span>
             </div>
 
-            <div className="rounded-lg bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-4">
+            <div className="rounded-xl bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-5">
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 rounded-lg bg-[#EAF2FF] border border-[#C7DBF5] flex items-center justify-center shrink-0 text-[#1E5FA7]">
                   <BookOpen className="w-6 h-6" />
@@ -1318,15 +1318,15 @@ export default function Home() {
                 </h2>
               </div>
 
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-3">
                 {[
                   { label: 'AI 분석 신뢰도', value: `${mobileMetrics.confidence}%`, tone: 'bg-[#1E63B6] text-white' },
                   { label: '실제 표준 비교', value: '100% 일치', tone: 'bg-[#FF8A1F] text-white' },
                   { label: '평균 비용 절감', value: `-${mobileMetrics.bubbleRate}%`, tone: 'bg-[#28A76F] text-white' },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-2 text-[12.5px]">
-                    <span className="min-w-0 flex items-center gap-2">
-                      <span className={`w-5 h-5 rounded-full ${item.tone} flex items-center justify-center text-[10px] font-black shrink-0`}>
+                  <div key={item.label} className="flex items-center justify-between gap-2 text-[13.5px]">
+                    <span className="min-w-0 flex items-center gap-2.5">
+                      <span className={`w-6 h-6 rounded-full ${item.tone} flex items-center justify-center text-[11px] font-black shrink-0`}>
                         {item.label === 'AI 분석 신뢰도' ? 'AI' : item.label === '실제 표준 비교' ? 'KS' : '%'}
                       </span>
                       <span className="min-w-0 whitespace-nowrap font-bold text-[#172033] mr-2">{item.label}</span>
@@ -1352,11 +1352,14 @@ export default function Home() {
         </section>
 
         {/* ── 3페이지: 실시간 분석 현황 (풀스크린 스냅) ── */}
-        <section id="m-landing-3" className="snap-start snap-always min-h-full flex flex-col justify-center gap-4 px-5 py-6 bg-[#041B33]">
-          <div className="flex flex-col gap-3">
-            <span className="text-[16px] text-white/62 font-semibold">실시간 분석 현황</span>
-              <div className="rounded-lg bg-[#173B61] border border-white/10 p-4 flex flex-col gap-4">
-                <h3 className="text-[20px] font-black text-white">총 공사 견적금액</h3>
+        <section id="m-landing-3" className="snap-start snap-always min-h-full flex flex-col justify-center gap-6 px-5 py-6 bg-[#041B33]">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-white/45">AI 실시간 정량 분석</span>
+              <span className="text-[22px] text-white font-black tracking-tight">실시간 분석 현황</span>
+            </div>
+            <div className="rounded-2xl bg-[#173B61] border border-white/10 p-5 flex flex-col gap-5">
+              <h3 className="text-[19px] font-black text-white">총 공사 견적금액</h3>
 
                 <div className="flex flex-col gap-2">
                   <div className="relative h-7">
@@ -1394,8 +1397,8 @@ export default function Home() {
 
                 <div className="flex flex-col gap-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[14px] text-white font-semibold whitespace-nowrap shrink-0">예상 견적:</span>
-                    <span className="text-[18px] text-white font-black tabular-nums whitespace-nowrap">{mobileEstimateAmount.toLocaleString()} 원</span>
+                    <span className="text-[14px] text-white/80 font-semibold whitespace-nowrap shrink-0">예상 견적</span>
+                    <span className="text-[23px] text-white font-black tabular-nums whitespace-nowrap tracking-tight">{mobileEstimateAmount.toLocaleString()} 원</span>
                   </div>
                   <span className="self-end text-[12px] text-white/60 font-semibold whitespace-nowrap">(중앙값 28M 대비 {mobileVsMedian >= 0 ? '+' : ''}{mobileVsMedian.toFixed(1)}%)</span>
                 </div>
