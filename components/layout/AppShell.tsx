@@ -334,7 +334,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       isUserMode && mobileActiveTab === 'home' && activeTab === 'home' && !selectedMenu && !selectedBudget;
 
     return (
-      <div className={`h-screen overflow-hidden flex flex-col text-text font-sans pb-safe ${isMobileLanding ? 'bg-[#041B33]' : 'bg-bg-subtle'}`}>
+      <div className={`h-[100dvh] overflow-hidden flex flex-col text-text font-sans pb-safe ${isMobileLanding ? 'bg-[#041B33]' : 'bg-bg-subtle'}`}>
         
         {/* 모바일 상단 네이티브 로고 헤더 */}
         <div className={`${isMobileLanding ? 'bg-[#061F3C] border-white/10 px-5 py-4' : 'bg-navy border-white/5 px-5 py-4.5'} shrink-0 text-bg flex items-center justify-between select-none shadow-md border-b relative z-40`}>

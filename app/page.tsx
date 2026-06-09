@@ -1233,11 +1233,11 @@ export default function Home() {
       <>
       <div className="lg:hidden h-full flex flex-col bg-[#041B33] text-white">
         {/* ── 1페이지: 히어로 (풀스크린 스냅) ── */}
-        <section className="snap-start snap-always min-h-full flex flex-col px-5 pt-8 pb-4 bg-[linear-gradient(180deg,#0A2D56_0%,#06213F_52%,#041B33_100%)]">
+        <section className="snap-start snap-always min-h-full flex flex-col px-5 pt-5 pb-4 bg-[linear-gradient(180deg,#0A2D56_0%,#06213F_52%,#041B33_100%)]">
           {/* 상단 영역 — 타이틀·카피·핵심 3대 역량 */}
-          <div className="flex-1 flex flex-col justify-center gap-7">
+          <div className="flex-1 flex flex-col justify-center gap-5 min-h-0">
             <div className="flex flex-col gap-3 text-center">
-              <h1 className="text-[31px] leading-[1.16] font-black text-white">
+              <h1 className="text-[28px] leading-[1.16] font-black text-white">
                 데이터로 증명하는
                 <br />
                 완벽한 견적, ZEROS
@@ -1248,7 +1248,7 @@ export default function Home() {
             </div>
 
             {/* 핵심 3대 역량 아이콘 칩 */}
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2">
               {[
                 { icon: Truck, label: '무료 출장 견적 서비스', sub: '전국 현장 직접 방문', tone: 'bg-[#FF6A00]' },
                 { icon: LineChart, label: 'AI 데이터 분석', sub: '실거래 기반 정량 검증', tone: 'bg-[#1E73D8]' },
@@ -1256,10 +1256,10 @@ export default function Home() {
               ].map(({ icon: Icon, label, sub, tone }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-3.5 rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3.5"
+                  className="flex items-center gap-3.5 rounded-xl bg-white/[0.06] border border-white/10 px-4 py-2.5"
                 >
-                  <span className={`w-11 h-11 rounded-lg ${tone} flex items-center justify-center shrink-0 shadow-md`}>
-                    <Icon className="w-5.5 h-5.5 text-white" />
+                  <span className={`w-10 h-10 rounded-lg ${tone} flex items-center justify-center shrink-0 shadow-md`}>
+                    <Icon className="w-5 h-5 text-white" />
                   </span>
                   <span className="flex flex-col leading-tight min-w-0">
                     <span className="text-[16px] font-black text-white">{label}</span>
@@ -1271,16 +1271,16 @@ export default function Home() {
           </div>
 
           {/* 하단 영역 — CTA 2종 + 스와이프 큐 */}
-          <div className="flex flex-col gap-3 pt-6">
+          <div className="flex flex-col gap-3 pt-4 shrink-0">
             <button
               onClick={() => setActiveTabAtTop('request')}
-              className="min-h-14 rounded-lg bg-[#FF6A00] text-white text-[18px] font-black shadow-lg shadow-[#ff6a00]/20 active:scale-[0.98] transition-transform"
+              className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[18px] font-black shadow-lg shadow-[#ff6a00]/20 active:scale-[0.98] transition-transform"
             >
               무료 컨설팅 신청하기
             </button>
             <button
               onClick={() => setActiveTabAtTop('about')}
-              className="min-h-14 rounded-lg border-2 border-[#2D73C8] bg-[#0B2B50]/70 text-white text-[18px] font-black active:scale-[0.98] transition-transform"
+              className="min-h-12 rounded-lg border-2 border-[#2D73C8] bg-[#0B2B50]/70 text-white text-[18px] font-black active:scale-[0.98] transition-transform"
             >
               서비스 프로세스 보기
             </button>
