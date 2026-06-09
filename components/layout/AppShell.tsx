@@ -334,7 +334,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       isUserMode && mobileActiveTab === 'home' && activeTab === 'home' && !selectedMenu && !selectedBudget;
 
     return (
-      <div className={`h-[100dvh] overflow-hidden flex flex-col text-text font-sans pb-safe ${isMobileLanding ? 'bg-[#041B33]' : 'bg-bg-subtle'}`}>
+      <div className={`overflow-hidden flex flex-col text-text font-sans pb-safe ${isMobileLanding ? 'h-[100svh] bg-[#041B33]' : 'h-[100dvh] bg-bg-subtle'}`}>
         
         {/* 모바일 상단 네이티브 로고 헤더 */}
         <div className={`${isMobileLanding ? 'bg-[#061F3C] border-white/10 px-5 py-4' : 'bg-navy border-white/5 px-5 py-4.5'} shrink-0 text-bg flex items-center justify-between select-none shadow-md border-b relative z-40`}>
@@ -492,7 +492,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         {/* 모바일 전용 메인 스크롤 콘텐츠 뷰포트 */}
         <div
           data-main-scroll="true"
-          className={`flex-1 overflow-y-auto min-w-0 relative ${isMobileLanding ? 'bg-[#041B33] p-0 snap-y snap-proximity' : 'bg-bg p-4 pb-28'}`}
+          className={`flex-1 overflow-y-auto min-w-0 relative ${isMobileLanding ? 'bg-[#041B33] p-0 snap-y snap-mandatory' : 'bg-bg p-4 pb-28'}`}
         >
           {mobileActiveTab === 'account' ? (
             <div className="max-w-md mx-auto bg-bg border border-border rounded-custom p-5 flex flex-col gap-3">

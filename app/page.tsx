@@ -1286,15 +1286,20 @@ export default function Home() {
             >
               서비스 프로세스 보기
             </button>
-            <div className="flex flex-col items-center gap-0.5 pt-2 text-white/55 select-none">
+            <button
+              type="button"
+              onClick={() => document.getElementById('m-landing-2')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              aria-label="현재 프로젝트 분석 보기"
+              className="flex flex-col items-center gap-0.5 pt-2 text-white/55 active:text-white/80 transition-colors select-none"
+            >
               <span className="text-[12.5px] font-semibold">현재 프로젝트 분석</span>
               <ChevronDown className="w-5 h-5 animate-bounce" />
-            </div>
+            </button>
           </div>
         </section>
 
-        {/* ── 2페이지: 분석 대시보드 (풀스크린 스냅) ── */}
-        <section className="snap-start snap-always min-h-full flex flex-col justify-center px-5 py-6 bg-[#041B33]">
+        {/* ── 2페이지: 현재 프로젝트 분석 (풀스크린 스냅) ── */}
+        <section id="m-landing-2" className="snap-start snap-always min-h-full flex flex-col justify-center gap-5 px-5 py-6 bg-[#041B33]">
           <div className="rounded-lg bg-[#092B50] border border-white/10 p-5 flex flex-col gap-4 overflow-hidden">
             <div className="flex flex-col gap-1">
               <span className="text-[15px] text-white/55 font-semibold">공장 증설 및 지점 연계</span>
@@ -1331,24 +1336,25 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="flex flex-col gap-2 pt-1">
-                <button
-                  onClick={() => setActiveTabAtTop('sop')}
-                  className="min-h-12 rounded-lg bg-[#1E73D8] text-white text-[17px] font-black"
-                >
-                  AI 기반 검증 제출
-                </button>
-                <button
-                  onClick={() => setActiveTabAtTop('about')}
-                  className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[17px] font-black"
-                >
-                  ZEROS 진단 절차
-                </button>
-              </div>
             </div>
+          </div>
 
-            <div className="flex flex-col gap-3 pt-1">
-              <span className="text-[16px] text-white/62 font-semibold">실시간 분석 현황</span>
+          {/* ↓ 화살표 탭 — 3페이지(실시간 분석 현황)로 이동 */}
+          <button
+            type="button"
+            onClick={() => document.getElementById('m-landing-3')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            aria-label="실시간 분석 현황 보기"
+            className="flex flex-col items-center gap-0.5 text-white/55 active:text-white/80 transition-colors select-none"
+          >
+            <span className="text-[12.5px] font-semibold">실시간 분석 현황</span>
+            <ChevronDown className="w-5 h-5 animate-bounce" />
+          </button>
+        </section>
+
+        {/* ── 3페이지: 실시간 분석 현황 (풀스크린 스냅) ── */}
+        <section id="m-landing-3" className="snap-start snap-always min-h-full flex flex-col justify-center gap-4 px-5 py-6 bg-[#041B33]">
+          <div className="flex flex-col gap-3">
+            <span className="text-[16px] text-white/62 font-semibold">실시간 분석 현황</span>
               <div className="rounded-lg bg-[#173B61] border border-white/10 p-4 flex flex-col gap-4">
                 <h3 className="text-[20px] font-black text-white">총 공사 견적금액</h3>
 
@@ -1400,6 +1406,21 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+          {/* 최종 CTA — AI 검증 제출 / ZEROS 진단 절차 */}
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => setActiveTabAtTop('sop')}
+              className="min-h-12 rounded-lg bg-[#1E73D8] text-white text-[17px] font-black"
+            >
+              AI 기반 검증 제출
+            </button>
+            <button
+              onClick={() => setActiveTabAtTop('about')}
+              className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[17px] font-black"
+            >
+              ZEROS 진단 절차
+            </button>
           </div>
         </section>
       </div>
