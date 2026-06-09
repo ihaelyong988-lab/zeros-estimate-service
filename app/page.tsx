@@ -1306,36 +1306,58 @@ export default function Home() {
               <span className="text-[22px] text-white font-black tracking-tight">현재 프로젝트 분석</span>
             </div>
 
-            <div className="rounded-xl bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-5">
+            <div className="rounded-xl bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-4">
+              {/* 프로젝트명 + 분석 상태 배지 */}
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-lg bg-[#EAF2FF] border border-[#C7DBF5] flex items-center justify-center shrink-0 text-[#1E5FA7]">
+                <div className="w-12 h-12 rounded-xl bg-[#EAF2FF] border border-[#C7DBF5] flex items-center justify-center shrink-0 text-[#1E5FA7]">
                   <BookOpen className="w-6 h-6" />
                 </div>
-                <h2 className="text-[20px] leading-snug font-black break-keep">
-                  생산 라인 증설 및 지점
-                  <br />
-                  파이프라인
-                </h2>
+                <div className="flex flex-col gap-1.5 min-w-0">
+                  <h2 className="text-[18px] leading-snug font-black break-keep">생산 라인 증설 및 지점 파이프라인</h2>
+                  <span className="inline-flex items-center gap-1.5 self-start text-[11px] font-black text-[#1E7A46] bg-[#E7F6EE] px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#28A76F]" />
+                    AI 분석 완료
+                  </span>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-3">
+              {/* 프로젝트 스펙 칩 */}
+              <div className="flex flex-wrap gap-1.5">
+                {['배관 · 기계설비', '공장 증설', `유사 실거래 ${mobileMetrics.sampleCount}건`].map((t) => (
+                  <span key={t} className="text-[11.5px] font-bold text-[#2A4A6B] bg-[#EEF4FB] border border-[#DCE7F3] px-2.5 py-1 rounded-md">
+                    {t}
+                  </span>
+                ))}
+              </div>
+
+              <div className="h-px bg-[#E5ECF4]" />
+
+              {/* 핵심 지표 — 큰 숫자 스탯 카드 3종 */}
+              <div className="grid grid-cols-3 gap-2.5">
                 {[
-                  { label: 'AI 분석 신뢰도', value: `${mobileMetrics.confidence}%`, tone: 'bg-[#1E63B6] text-white' },
-                  { label: '실제 표준 비교', value: '100% 일치', tone: 'bg-[#FF8A1F] text-white' },
-                  { label: '평균 비용 절감', value: `-${mobileMetrics.bubbleRate}%`, tone: 'bg-[#28A76F] text-white' },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-2 text-[13.5px]">
-                    <span className="min-w-0 flex items-center gap-2.5">
-                      <span className={`w-6 h-6 rounded-full ${item.tone} flex items-center justify-center text-[11px] font-black shrink-0`}>
-                        {item.label === 'AI 분석 신뢰도' ? 'AI' : item.label === '실제 표준 비교' ? 'KS' : '%'}
-                      </span>
-                      <span className="min-w-0 whitespace-nowrap font-bold text-[#172033] mr-2">{item.label}</span>
-                    </span>
-                    <span className="whitespace-nowrap font-black text-[#101827]">{item.value}</span>
+                  { value: `${mobileMetrics.confidence}%`, label: 'AI 신뢰도', color: 'text-[#1E63B6]' },
+                  { value: '100%', label: '표준 일치', color: 'text-[#E07B1A]' },
+                  { value: `-${mobileMetrics.bubbleRate}%`, label: '비용 절감', color: 'text-[#1E7A46]' },
+                ].map((s) => (
+                  <div key={s.label} className="rounded-xl bg-[#F5F8FC] border border-[#E5ECF4] px-2 py-3 flex flex-col items-center gap-0.5">
+                    <span className={`text-[19px] font-black tabular-nums tracking-tight ${s.color}`}>{s.value}</span>
+                    <span className="text-[11px] font-bold text-[#5A6B80]">{s.label}</span>
                   </div>
                 ))}
               </div>
 
+              <div className="h-px bg-[#E5ECF4]" />
+
+              {/* AI 검증 항목 체크리스트 */}
+              <div className="flex flex-col gap-2.5">
+                <span className="text-[12px] font-black uppercase tracking-wide text-[#3A4A5E]">AI 검증 항목</span>
+                {mobileMetrics.checklist.map((item) => (
+                  <div key={item} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#28A76F] shrink-0 mt-0.5" />
+                    <span className="text-[12.5px] font-semibold text-[#33455C] leading-snug break-keep">{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
