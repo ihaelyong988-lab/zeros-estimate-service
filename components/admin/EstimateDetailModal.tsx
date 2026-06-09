@@ -62,6 +62,11 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [showAiAnalyzer, setShowAiAnalyzer] = useState(false);
 
+  // 관리자 파일 업로드 - 실제 파일 선택 후 Storage 업로드
+  const adminFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [adminUploadCategory, setAdminUploadCategory] = useState<string>('도면');
+  const [adminUploading, setAdminUploading] = useState(false);
+
   const refreshDetailData = async () => {
     try {
       const est = await ZerosService.getEstimateById(estimateId);
@@ -223,11 +228,6 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
       alert('의뢰서 삭제 도중 오류가 발생했습니다.');
     }
   };
-
-  // 관리자 파일 업로드 - 실제 파일 선택 후 Storage 업로드
-  const adminFileInputRef = useRef<HTMLInputElement | null>(null);
-  const [adminUploadCategory, setAdminUploadCategory] = useState<string>('도면');
-  const [adminUploading, setAdminUploading] = useState(false);
 
   const openAdminFilePicker = (category: string) => {
     if (!estimate) return;

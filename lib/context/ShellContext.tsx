@@ -45,12 +45,10 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isUserMode, setIsUserMode] = useState<boolean>(true);
 
   // 관리자 인증 여부 — localStorage에서 복원 (기기당 한 번 로그인하면 유지)
-  const [isAdminAuthed, setIsAdminAuthedState] = useState<boolean>(false);
-
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    setIsAdminAuthedState(localStorage.getItem(ADMIN_AUTH_KEY) === 'true');
-  }, []);
+  const [isAdminAuthed, setIsAdminAuthedState] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem(ADMIN_AUTH_KEY) === 'true';
+  });
 
   const setAdminAuthed = (authed: boolean) => {
     setIsAdminAuthedState(authed);
@@ -120,4 +118,3 @@ export const useShell = () => {
   }
   return context;
 };
-

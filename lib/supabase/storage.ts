@@ -29,7 +29,7 @@ function categoryFolder(category: string): string {
   return map[category] || 'etc';
 }
 
-export interface UploadResult extends FileMeta {}
+export type UploadResult = FileMeta;
 
 /**
  * 단일 파일을 Storage에 업로드한다.

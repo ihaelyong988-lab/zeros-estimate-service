@@ -50,27 +50,33 @@ const defaultFormData = {
 
 type RequestFormData = typeof defaultFormData;
 
+const getInitialVerified = () => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const saved = sessionStorage.getItem('zeros_phone_verified');
+  if (!saved) {
+    return false;
+  }
+
+  try {
+    const { phone } = JSON.parse(saved) as { phone?: string };
+    return Boolean(phone);
+  } catch {
+    return false;
+  }
+};
+
 export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // 휴대폰 본인인증 상태 (의뢰 전 필수)
-  const [verified, setVerified] = useState(false);
+  const [verified, setVerified] = useState<boolean>(() => getInitialVerified());
   // SMS(Solapi) 설정 여부: null=확인중, true=인증 필요, false=설정 전이라 인증 생략
   const [verifyEnabled, setVerifyEnabled] = useState<boolean | null>(null);
-
-  // 새로고침 시 세션 내 인증 상태 복원
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const saved = sessionStorage.getItem('zeros_phone_verified');
-    if (saved) {
-      try {
-        const { phone } = JSON.parse(saved) as { phone: string };
-        if (phone) setVerified(true);
-      } catch {}
-    }
-  }, []);
 
   // SMS 설정 여부 확인 — 미설정이면 인증 게이트를 건너뛴다(테스트 코드 노출 방지)
   React.useEffect(() => {

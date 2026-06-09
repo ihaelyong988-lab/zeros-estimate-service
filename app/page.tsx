@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppShell } from "@/components/layout/AppShell";
 import { useShell } from "@/lib/context/ShellContext";
@@ -60,6 +60,18 @@ const LANDING_CHIP_CLASS: Record<string, string> = {
   'CAPEX 개·증설 검토': 'bg-navy border-navy text-white',
 };
 
+// 공종별 대표 견적 밴드(원) — 모바일 랜딩 2↔3페이지 연동용. min/max=슬라이더 범위, median=중앙값, base=기본 표시값
+const MOBILE_TRADE_ESTIMATES: Record<string, { min: number; max: number; median: number; base: number }> = {
+  '배관공사': { min: 8_000_000, max: 40_000_000, median: 22_000_000, base: 21_000_000 },
+  '장비설치': { min: 15_000_000, max: 80_000_000, median: 42_000_000, base: 38_000_000 },
+  'Utility 배관': { min: 10_000_000, max: 55_000_000, median: 30_000_000, base: 28_000_000 },
+  '공장증설': { min: 12_000_000, max: 45_000_000, median: 28_000_000, base: 26_850_000 },
+  '노후배관교체': { min: 6_000_000, max: 35_000_000, median: 18_000_000, base: 17_000_000 },
+  '기계실개선': { min: 9_000_000, max: 50_000_000, median: 26_000_000, base: 24_000_000 },
+  '생산설비 배관 연결': { min: 20_000_000, max: 120_000_000, median: 60_000_000, base: 55_000_000 },
+  'CAPEX 개·증설 검토': { min: 50_000_000, max: 480_000_000, median: 220_000_000, base: 180_000_000 },
+};
+
 // 섹션 머리표 — 박스 래퍼 없이 accent bar + eyebrow + heading 으로 섹션 경계를 표시(L1)
 function SectionHeading({
   eyebrow,
@@ -108,8 +120,39 @@ export default function Home() {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTradeIdx, setActiveTradeIdx] = useState(0);
+  // 모바일 랜딩 — 2페이지 공종 캐러셀 선택 인덱스(3페이지 견적과 연동)
+  const [mobileTradeIdx, setMobileTradeIdx] = useState(0);
   // 모바일 랜딩 실시간 견적 슬라이더 — 핸들을 끌면 예상 견적·수수료·중앙값 대비가 연동되어 변동
-  const [mobileEstimateAmount, setMobileEstimateAmount] = useState(26850000);
+  const [mobileEstimateAmount, setMobileEstimateAmount] = useState(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[0]].base);
+  const mobileCarouselRef = useRef<HTMLDivElement>(null);
+  const mobileChipsRef = useRef<HTMLDivElement>(null);
+
+  // 공종 변경 시: 활성 칩을 보이도록 스크롤
+  useEffect(() => {
+    mobileChipsRef.current
+      ?.querySelector('[data-active="true"]')
+      ?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }, [mobileTradeIdx]);
+
+  // 캐러셀 가로 스크롤(스와이프) → 현재 공종 인덱스 동기화
+  const handleMobileCarouselScroll = () => {
+    const el = mobileCarouselRef.current;
+    if (!el) return;
+    const i = Math.min(LANDING_TRADES.length - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth)));
+    setMobileTradeIdx((prev) => {
+      if (prev === i) return prev;
+      setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[i]].base);
+      return i;
+    });
+  };
+
+  // 공종 칩 탭 → 캐러셀을 해당 카드로 이동
+  const selectMobileTrade = (i: number) => {
+    setMobileTradeIdx(i);
+    setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[i]].base);
+    const el = mobileCarouselRef.current;
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+  };
 
   // 실시간 공종 쇼케이스 애니메이션 로테이션 타이머
   useEffect(() => {
@@ -1220,11 +1263,11 @@ export default function Home() {
     const activeManual = manualData[activeTradeName];
     const activeMetrics = getDynamicMetrics(activeTradeName);
     const activeVisuals = getCategoryVisuals(activeTradeName);
-    const mobileTradeName = '공장증설';
-    const mobileMetrics = getDynamicMetrics(mobileTradeName);
-    const MOBILE_MIN = 12000000;
-    const MOBILE_MAX = 45000000;
-    const MOBILE_MEDIAN = 28000000;
+    const mobileTradeName = LANDING_TRADES[mobileTradeIdx];
+    const mobileBand = MOBILE_TRADE_ESTIMATES[mobileTradeName];
+    const MOBILE_MIN = mobileBand.min;
+    const MOBILE_MAX = mobileBand.max;
+    const MOBILE_MEDIAN = mobileBand.median;
     const mobileFeeAmount = Math.round(mobileEstimateAmount * 0.02);
     const mobilePct = ((mobileEstimateAmount - MOBILE_MIN) / (MOBILE_MAX - MOBILE_MIN)) * 100;
     const mobileVsMedian = ((mobileEstimateAmount - MOBILE_MEDIAN) / MOBILE_MEDIAN) * 100;
@@ -1298,67 +1341,98 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 2페이지: 현재 프로젝트 분석 (풀스크린 스냅) ── */}
-        <section id="m-landing-2" className="snap-start snap-always min-h-full flex flex-col justify-center gap-6 px-5 py-6 bg-[#041B33]">
-          <div className="rounded-2xl bg-[#092B50] border border-white/10 p-5 flex flex-col gap-5 overflow-hidden">
+        {/* ── 2페이지: 공종별 견적 분석 (풀스크린 스냅 · 좌우 스와이프 캐러셀) ── */}
+        <section id="m-landing-2" className="snap-start snap-always min-h-full flex flex-col justify-center gap-5 px-5 py-6 bg-[#041B33]">
+          {/* 헤더 + 공종 칩 탭 */}
+          <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-white/45">공장 증설 및 지점 연계</span>
-              <span className="text-[22px] text-white font-black tracking-tight">현재 프로젝트 분석</span>
+              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-white/45">AI NATIVE 정량 분석</span>
+              <span className="text-[22px] text-white font-black tracking-tight">공종별 견적 분석</span>
             </div>
-
-            <div className="rounded-xl bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-4">
-              {/* 프로젝트명 + 분석 상태 배지 */}
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#EAF2FF] border border-[#C7DBF5] flex items-center justify-center shrink-0 text-[#1E5FA7]">
-                  <BookOpen className="w-6 h-6" />
-                </div>
-                <div className="flex flex-col gap-1.5 min-w-0">
-                  <h2 className="text-[18px] leading-snug font-black break-keep">생산 라인 증설 및 지점 파이프라인</h2>
-                  <span className="inline-flex items-center gap-1.5 self-start text-[11px] font-black text-[#1E7A46] bg-[#E7F6EE] px-2 py-0.5 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#28A76F]" />
-                    AI 분석 완료
-                  </span>
-                </div>
-              </div>
-
-              {/* 프로젝트 스펙 칩 */}
-              <div className="flex flex-wrap gap-1.5">
-                {['배관 · 기계설비', '공장 증설', `유사 실거래 ${mobileMetrics.sampleCount}건`].map((t) => (
-                  <span key={t} className="text-[11.5px] font-bold text-[#2A4A6B] bg-[#EEF4FB] border border-[#DCE7F3] px-2.5 py-1 rounded-md">
-                    {t}
-                  </span>
-                ))}
-              </div>
-
-              <div className="h-px bg-[#E5ECF4]" />
-
-              {/* 핵심 지표 — 큰 숫자 스탯 카드 3종 */}
-              <div className="grid grid-cols-3 gap-2.5">
-                {[
-                  { value: `${mobileMetrics.confidence}%`, label: 'AI 신뢰도', color: 'text-[#1E63B6]' },
-                  { value: '100%', label: '표준 일치', color: 'text-[#E07B1A]' },
-                  { value: `-${mobileMetrics.bubbleRate}%`, label: '비용 절감', color: 'text-[#1E7A46]' },
-                ].map((s) => (
-                  <div key={s.label} className="rounded-xl bg-[#F5F8FC] border border-[#E5ECF4] px-2 py-3 flex flex-col items-center gap-0.5">
-                    <span className={`text-[19px] font-black tabular-nums tracking-tight ${s.color}`}>{s.value}</span>
-                    <span className="text-[11px] font-bold text-[#5A6B80]">{s.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="h-px bg-[#E5ECF4]" />
-
-              {/* AI 검증 항목 체크리스트 */}
-              <div className="flex flex-col gap-2.5">
-                <span className="text-[12px] font-black uppercase tracking-wide text-[#3A4A5E]">AI 검증 항목</span>
-                {mobileMetrics.checklist.map((item) => (
-                  <div key={item} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#28A76F] shrink-0 mt-0.5" />
-                    <span className="text-[12.5px] font-semibold text-[#33455C] leading-snug break-keep">{item}</span>
-                  </div>
-                ))}
-              </div>
+            <div ref={mobileChipsRef} className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5">
+              {LANDING_TRADES.map((t, i) => (
+                <button
+                  key={t}
+                  type="button"
+                  data-active={i === mobileTradeIdx}
+                  onClick={() => selectMobileTrade(i)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-bold border transition-colors ${i === mobileTradeIdx ? LANDING_CHIP_CLASS[t] : 'bg-white/[0.06] border-white/15 text-white/55'}`}
+                >
+                  {t}
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* 공종 카드 캐러셀 — 좌우로 스와이프하면 다음 공종 */}
+          <div
+            ref={mobileCarouselRef}
+            onScroll={handleMobileCarouselScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
+          >
+            {LANDING_TRADES.map((t) => {
+              const m = getDynamicMetrics(t);
+              const v = getCategoryVisuals(t);
+              return (
+                <div key={t} className="shrink-0 basis-full snap-start">
+                  <div className="rounded-2xl bg-[#092B50] border border-white/10 p-5 flex flex-col gap-4 overflow-hidden h-full">
+                    <div className="rounded-xl bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-4">
+                      {/* 공종명 + 분석 상태 배지 */}
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-[#EAF2FF] border border-[#C7DBF5] flex items-center justify-center shrink-0 text-[#1E5FA7]">
+                          <BookOpen className="w-6 h-6" />
+                        </div>
+                        <div className="flex flex-col gap-1.5 min-w-0">
+                          <h2 className="text-[19px] leading-snug font-black break-keep">{t}</h2>
+                          <span className="inline-flex items-center gap-1.5 self-start text-[11px] font-black text-[#1E7A46] bg-[#E7F6EE] px-2 py-0.5 rounded-full">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#28A76F]" />
+                            AI 분석 완료
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 공종 설명 */}
+                      <p className="text-[12.5px] leading-relaxed font-semibold text-[#445268] break-keep line-clamp-2">{v.specText}</p>
+
+                      {/* 스펙 칩 */}
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="text-[11.5px] font-bold text-[#2A4A6B] bg-[#EEF4FB] border border-[#DCE7F3] px-2.5 py-1 rounded-md">유사 실거래 {m.sampleCount}건</span>
+                        <span className="text-[11.5px] font-bold text-[#2A4A6B] bg-[#EEF4FB] border border-[#DCE7F3] px-2.5 py-1 rounded-md">AI Native 검증</span>
+                      </div>
+
+                      <div className="h-px bg-[#E5ECF4]" />
+
+                      {/* 핵심 지표 — 큰 숫자 스탯 카드 3종 */}
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {[
+                          { value: `${m.confidence}%`, label: 'AI 신뢰도', color: 'text-[#1E63B6]' },
+                          { value: '100%', label: '표준 일치', color: 'text-[#E07B1A]' },
+                          { value: `-${m.bubbleRate}%`, label: '비용 절감', color: 'text-[#1E7A46]' },
+                        ].map((s) => (
+                          <div key={s.label} className="rounded-xl bg-[#F5F8FC] border border-[#E5ECF4] px-2 py-3 flex flex-col items-center gap-0.5">
+                            <span className={`text-[18px] font-black tabular-nums tracking-tight ${s.color}`}>{s.value}</span>
+                            <span className="text-[11px] font-bold text-[#5A6B80]">{s.label}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="h-px bg-[#E5ECF4]" />
+
+                      {/* AI 검증 항목 체크리스트 */}
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[12px] font-black uppercase tracking-wide text-[#3A4A5E]">AI 검증 항목</span>
+                        {m.checklist.map((item) => (
+                          <div key={item} className="flex items-start gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-[#28A76F] shrink-0 mt-0.5" />
+                            <span className="text-[12.5px] font-semibold text-[#33455C] leading-snug break-keep">{item}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* ↓ 화살표 탭 — 3페이지(실시간 분석 현황)로 이동 */}
@@ -1381,7 +1455,10 @@ export default function Home() {
               <span className="text-[22px] text-white font-black tracking-tight">실시간 분석 현황</span>
             </div>
             <div className="rounded-2xl bg-[#173B61] border border-white/10 p-5 flex flex-col gap-5">
-              <h3 className="text-[19px] font-black text-white">총 공사 견적금액</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-[19px] font-black text-white">총 공사 견적금액</h3>
+                <span className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black border ${LANDING_CHIP_CLASS[mobileTradeName]}`}>{mobileTradeName}</span>
+              </div>
 
                 <div className="flex flex-col gap-2">
                   <div className="relative h-7">
@@ -1412,8 +1489,8 @@ export default function Home() {
                     />
                   </div>
                   <div className="flex items-center justify-between text-[14px] text-white/62 font-semibold">
-                    <span>최소 12M 원</span>
-                    <span>최대 45M 원</span>
+                    <span>최소 {Math.round(MOBILE_MIN / 1000000)}M 원</span>
+                    <span>최대 {Math.round(MOBILE_MAX / 1000000)}M 원</span>
                   </div>
                 </div>
 
@@ -1422,7 +1499,7 @@ export default function Home() {
                     <span className="text-[14px] text-white/80 font-semibold whitespace-nowrap shrink-0">예상 견적</span>
                     <span className="text-[23px] text-white font-black tabular-nums whitespace-nowrap tracking-tight">{mobileEstimateAmount.toLocaleString()} 원</span>
                   </div>
-                  <span className="self-end text-[12px] text-white/60 font-semibold whitespace-nowrap">(중앙값 28M 대비 {mobileVsMedian >= 0 ? '+' : ''}{mobileVsMedian.toFixed(1)}%)</span>
+                  <span className="self-end text-[12px] text-white/60 font-semibold whitespace-nowrap">(중앙값 {Math.round(MOBILE_MEDIAN / 1000000)}M 대비 {mobileVsMedian >= 0 ? '+' : ''}{mobileVsMedian.toFixed(1)}%)</span>
                 </div>
 
                 <div className="border-t border-white/12 pt-4 flex items-center justify-between gap-2">
