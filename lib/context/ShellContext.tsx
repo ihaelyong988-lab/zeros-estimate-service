@@ -1,8 +1,19 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 
 export type ActiveTab = 'about' | 'performance' | 'request' | 'home' | 'sop';
+
+const TAB_VALUES: ActiveTab[] = ['about', 'performance', 'request', 'home', 'sop'];
+
+// 현재 URL의 ?tab= 값을 탭으로 해석 (없거나 모르는 값이면 home)
+const parseTabFromUrl = (): ActiveTab => {
+  const t = new URLSearchParams(window.location.search).get('tab');
+  return TAB_VALUES.includes(t as ActiveTab) ? (t as ActiveTab) : 'home';
+};
+
+const getMainPanel = () =>
+  document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
 
 export interface ShellContextType {
   isUserMode: boolean;
@@ -62,7 +73,38 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setAdminAuthed(false);
     setIsUserMode(true);
   };
-  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>('home');
+  const activeTabRef = useRef<ActiveTab>('home');
+  // 탭별 메인 패널 스크롤 위치 — 뒤로가기 복귀 시 보던 위치(예: 랜딩 3페이지)로 되돌린다.
+  // URL(?tab=) ↔ 탭 상태 동기화 자체는 AppShell의 applyUrlState/pushState가 담당한다.
+  const tabScrollRef = useRef<Partial<Record<ActiveTab, number>>>({});
+
+  // 뒤로가기·앞으로가기로 탭이 복귀하면, 떠날 때 저장해 둔 스크롤 위치를 복원한다.
+  useEffect(() => {
+    const restoreScrollForUrlTab = () => {
+      const tab = parseTabFromUrl();
+      // AppShell의 popstate 핸들러가 탭 상태를 되돌려 렌더를 마친 뒤 복원
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          const pos = tabScrollRef.current[tab];
+          if (pos != null) getMainPanel()?.scrollTo({ top: pos });
+        });
+      });
+    };
+    window.addEventListener('popstate', restoreScrollForUrlTab);
+    return () => window.removeEventListener('popstate', restoreScrollForUrlTab);
+  }, []);
+
+  // 탭을 떠날 때 현재 스크롤 위치를 기억해 둔다.
+  // useCallback으로 함수 정체성을 고정 — 이 setter를 의존성으로 쓰는 AppShell의
+  // URL 동기화 이펙트가 렌더마다 재실행(applyUrlState 오발동)되는 것을 방지한다.
+  const setActiveTab = useCallback((tab: ActiveTab) => {
+    if (typeof window !== 'undefined' && tab !== activeTabRef.current) {
+      tabScrollRef.current[activeTabRef.current] = getMainPanel()?.scrollTop ?? 0;
+    }
+    activeTabRef.current = tab;
+    setActiveTabState(tab);
+  }, []);
   const [selectedMenu, setSelectedMenu] = useState<string>('');
   const [selectedBudget, setSelectedBudget] = useState<string>('');
   const [landingTradeName, setLandingTradeName] = useState<string>('');

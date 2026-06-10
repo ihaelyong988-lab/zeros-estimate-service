@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppShell } from "@/components/layout/AppShell";
 import { useShell } from "@/lib/context/ShellContext";
-import { RequestWizard } from "@/components/forms/RequestWizard";
+import { RequestWizard, prefetchOtpEnabled } from "@/components/forms/RequestWizard";
 import { manualData } from "@/lib/constants/manuals";
 import { ZerosService } from "@/lib/supabase/client";
 import { Estimate, EstimateStatus } from "@/types/estimate";
@@ -153,6 +153,11 @@ export default function Home() {
     const el = mobileCarouselRef.current;
     if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
   };
+
+  // 신청 탭 진입 전에 OTP 설정 여부를 미리 받아둔다 — "무료 컨설팅 신청하기" 클릭 시 폼이 즉시 뜨도록
+  useEffect(() => {
+    prefetchOtpEnabled();
+  }, []);
 
   // 실시간 공종 쇼케이스 애니메이션 로테이션 타이머
   useEffect(() => {
@@ -1277,36 +1282,29 @@ export default function Home() {
       <div className="lg:hidden h-full flex flex-col bg-[#041B33] text-white">
         {/* ── 1페이지: 히어로 (풀스크린 스냅) ── */}
         <section className="snap-start snap-always min-h-full flex flex-col px-5 pt-5 pb-4 bg-[linear-gradient(180deg,#0A2D56_0%,#06213F_52%,#041B33_100%)]">
-          {/* 상단 영역 — 타이틀·카피·핵심 3대 역량 */}
-          <div className="flex-1 flex flex-col justify-center gap-5 min-h-0">
-            <div className="flex flex-col gap-3 text-center">
-              <h1 className="text-[28px] leading-[1.16] font-black text-white">
-                데이터 분석으로 증명하는
-                <br />
-                최적의 견적, ZEROS
-              </h1>
-              <p className="text-[15px] leading-relaxed text-white/70 font-semibold">
-                현장실무 암묵지와 AI-Native 기반의
-                <br />
-                정확한 공사비를 제공합니다.
-              </p>
-            </div>
+          {/* 상단 영역 — 타이틀·핵심 3대 역량 (역량 칩이 히어로 카피를 겸한다) */}
+          <div className="flex-1 flex flex-col justify-center gap-7 min-h-0">
+            <h1 className="text-[28px] leading-[1.16] font-black text-white text-center">
+              데이터 분석으로 증명하는
+              <br />
+              최적의 견적, ZEROS
+            </h1>
 
-            {/* 핵심 3대 역량 아이콘 칩 */}
-            <div className="flex flex-col gap-2">
+            {/* 핵심 3대 역량 아이콘 칩 — 칩 간격을 내부 패딩(12px)과 일치시켜 동일 박자 유지 */}
+            <div className="flex flex-col gap-3">
               {[
-                { icon: Truck, label: '무료 출장 견적 서비스', sub: '전국 현장 직접 방문', tone: 'bg-[#FF6A00]' },
-                { icon: LineChart, label: 'AI 데이터 분석', sub: '실거래 기반 정량 검증', tone: 'bg-[#1E73D8]' },
-                { icon: Award, label: '현장 실무 30년', sub: 'PM · 국가기술자격 보유', tone: 'bg-[#28A76F]' },
+                { icon: Truck, label: '무료 견적 출장 서비스', sub: '전국 현장 예약방문 실사', tone: 'bg-[#FF6A00]' },
+                { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', tone: 'bg-[#1E73D8]' },
+                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', tone: 'bg-[#28A76F]' },
               ].map(({ icon: Icon, label, sub, tone }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-3.5 rounded-xl bg-white/[0.06] border border-white/10 px-4 py-2.5"
+                  className="flex items-center gap-3.5 rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3"
                 >
                   <span className={`w-10 h-10 rounded-lg ${tone} flex items-center justify-center shrink-0 shadow-md`}>
                     <Icon className="w-5 h-5 text-white" />
                   </span>
-                  <span className="flex flex-col leading-tight min-w-0">
+                  <span className="flex flex-col gap-0.5 leading-tight min-w-0">
                     <span className="text-[15.5px] font-black text-white">{label}</span>
                     <span className="text-[13px] font-semibold text-white/60">{sub}</span>
                   </span>
@@ -1509,13 +1507,13 @@ export default function Home() {
               </div>
             </div>
 
-          {/* 최종 CTA — AI 검증 제출 / ZEROS 진단 절차 */}
+          {/* 최종 CTA — AI Native 검증 절차 / ZEROS 진단 절차 */}
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setActiveTabAtTop('sop')}
               className="min-h-12 rounded-lg bg-[#1E73D8] text-white text-[17px] font-black"
             >
-              AI 기반 검증 제출
+              AI Native 검증 절차
             </button>
             <button
               onClick={() => setActiveTabAtTop('about')}

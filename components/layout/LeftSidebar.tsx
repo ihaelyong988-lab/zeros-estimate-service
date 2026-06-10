@@ -11,9 +11,9 @@ import {
   Users2,
   Cpu,
   Layers,
-  FolderDot,
+  HardHat,
   Gauge,
-  Boxes
+  Factory
 } from 'lucide-react';
 import { WorkType } from '@/types/estimate';
 
@@ -91,10 +91,13 @@ export const LeftSidebar: React.FC = () => {
       {isUserMode ? (
         // ==================== 고객 모드 메뉴 ====================
         <>
+          {/* 상단 청색 액센트 바 — 우측 실시간 검토 패널 상단과 동일한 시그니처로 양측 프레임을 잇는다 */}
+          <div className="h-1 -mx-5 -mt-5 -mb-1 bg-steel shrink-0" />
+
           {/* 공사 영역 카테고리 */}
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
-              <FolderDot className="w-4 h-4 text-steel" />
+              <HardHat className="w-4 h-4 text-steel" />
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적공사 카테고리</h3>
               <span className="ml-auto text-[12px] font-black text-steel bg-steel/10 border border-steel/20 px-1.5 py-0.5 rounded-full tracking-wider">SITE</span>
             </div>
@@ -126,7 +129,7 @@ export const LeftSidebar: React.FC = () => {
           {/* 외주 제작 카테고리 */}
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
-              <Boxes className="w-4 h-4 text-accent" />
+              <Factory className="w-4 h-4 text-accent" />
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">외주제작 견적 컨설팅</h3>
               <span className="ml-auto text-[12px] font-black text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full tracking-wider">FAB</span>
             </div>

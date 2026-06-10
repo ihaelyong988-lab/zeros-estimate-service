@@ -284,13 +284,14 @@ export const RightSidebar: React.FC = () => {
       {/* 상단 액센트 바 — 좌측 선택과 색으로 연결 */}
       <div className={`h-1 w-full ${accentBarBg} shrink-0`} />
 
-      <div className="p-5 flex flex-col gap-4">
+      {/* 우측 가장자리(브라우저 끝)는 좌측(20px)보다 넉넉한 28px — 화면 끝 답답함 해소 */}
+      <div className="py-5 pl-5 pr-7 flex flex-col gap-4">
         {/* 헤더: 좌측에서 선택한 대상을 그대로 반향 */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">선택한 검토 대상</span>
             <span className="inline-flex items-center gap-1 text-[12px] font-black text-success">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간 분석
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간 검토
             </span>
           </div>
           <div className="flex items-center gap-1.5">

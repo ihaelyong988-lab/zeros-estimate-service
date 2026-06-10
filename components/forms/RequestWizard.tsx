@@ -50,6 +50,28 @@ const defaultFormData = {
 
 type RequestFormData = typeof defaultFormData;
 
+// /api/otp/status 결과 모듈 캐시 — 랜딩 진입 시 미리 받아두면(prefetch)
+// 신청 탭을 열 때 "불러오는 중" 대기 없이 폼이 즉시 뜬다(서버리스 콜드스타트 지연 차단).
+let otpEnabledCache: boolean | null = null;
+let otpEnabledPromise: Promise<boolean> | null = null;
+
+export const prefetchOtpEnabled = (): Promise<boolean> => {
+  if (otpEnabledCache !== null) return Promise.resolve(otpEnabledCache);
+  if (!otpEnabledPromise) {
+    otpEnabledPromise = fetch('/api/otp/status')
+      .then((r) => r.json())
+      .then((d) => {
+        otpEnabledCache = !!d.enabled;
+        return otpEnabledCache;
+      })
+      .catch(() => {
+        otpEnabledPromise = null;
+        return false;
+      });
+  }
+  return otpEnabledPromise;
+};
+
 const getInitialVerified = () => {
   if (typeof window === 'undefined') {
     return false;
@@ -76,15 +98,13 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   // 휴대폰 본인인증 상태 (의뢰 전 필수)
   const [verified, setVerified] = useState<boolean>(() => getInitialVerified());
   // SMS(Solapi) 설정 여부: null=확인중, true=인증 필요, false=설정 전이라 인증 생략
-  const [verifyEnabled, setVerifyEnabled] = useState<boolean | null>(null);
+  // 프리페치 캐시가 있으면 첫 렌더부터 폼을 바로 보여준다.
+  const [verifyEnabled, setVerifyEnabled] = useState<boolean | null>(otpEnabledCache);
 
   // SMS 설정 여부 확인 — 미설정이면 인증 게이트를 건너뛴다(테스트 코드 노출 방지)
   React.useEffect(() => {
     let active = true;
-    fetch('/api/otp/status')
-      .then(r => r.json())
-      .then(d => { if (active) setVerifyEnabled(!!d.enabled); })
-      .catch(() => { if (active) setVerifyEnabled(false); });
+    prefetchOtpEnabled().then((enabled) => { if (active) setVerifyEnabled(enabled); });
     return () => { active = false; };
   }, []);
 
