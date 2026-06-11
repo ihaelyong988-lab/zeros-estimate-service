@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useShell, ActiveTab } from '@/lib/context/ShellContext';
-import { Building2, LogOut, Smartphone } from 'lucide-react';
+import { Building2, LogOut } from 'lucide-react';
 
 export const TopHeader: React.FC = () => {
   const {
@@ -13,7 +13,6 @@ export const TopHeader: React.FC = () => {
     setActiveTab,
     setSelectedMenu,
     setSelectedBudget,
-    setShowSimulator,
   } = useShell();
 
   const handleTabClick = (tab: ActiveTab) => {
@@ -94,16 +93,6 @@ export const TopHeader: React.FC = () => {
 
       {/* 3. 우측 컨트롤 영역 - 높이 및 마진 100% 동기화 (h-9) */}
       <div className="flex items-center gap-3">
-        {/* 모바일 시뮬레이터 버튼 - 높이 h-9로 토글과 통일 */}
-        <button
-          onClick={() => setShowSimulator(true)}
-          style={{ touchAction: 'manipulation' }}
-          className="h-9 flex items-center gap-1.5 border border-[#E0701A]/30 hover:border-[#E0701A]/60 rounded-custom bg-[#E0701A]/5 text-accent hover:bg-[#E0701A]/10 px-4 py-2 text-[12px] font-black transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
-        >
-          <Smartphone className="w-3.5 h-3.5" />
-          모바일 앱 시뮬레이터
-        </button>
-
         {/* 관리자 모드일 때만 로그아웃 버튼 노출 (고객 화면에는 관리자 흔적 없음) */}
         {!isUserMode && (
           <button

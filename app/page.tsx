@@ -340,99 +340,102 @@ export default function Home() {
         no: '01',
         phase: 'Data Ingestion',
         title: '데이터 수집 · 정합',
-        desc: '도면·현장 사진·제원서를 파싱해 관경, 길이, 유체, 압력, 층고 등 원천 변수를 단일 스키마로 정규화합니다.',
+        desc: '도면·사진·제원서를 파싱해 관경·길이·유체·압력 등 원천 변수를 단일 스키마로 정규화합니다.',
         output: '정규화된 입력 데이터셋',
       },
       {
         no: '02',
         phase: 'Exploratory Analysis',
         title: '탐색적 데이터 분석(EDA)',
-        desc: '결측·이상치를 탐지하고 분포를 점검합니다. 누락 자료는 보완 요청으로 분기해 오판 리스크를 사전에 차단합니다.',
+        desc: '결측·이상치를 탐지하고 분포를 점검합니다. 누락 자료는 보완 요청으로 분기합니다.',
         output: '데이터 품질 리포트',
       },
       {
         no: '03',
         phase: 'Feature Engineering',
         title: '피처 엔지니어링',
-        desc: '공종별 스펙을 벡터화하고 ASME/KS 자재·표준 품셈 기준에 매핑하여 비교 가능한 정량 피처로 변환합니다.',
+        desc: '공종별 스펙을 ASME/KS 자재·표준 품셈 기준에 매핑해 정량 피처로 변환합니다.',
         output: '표준 매핑 피처셋',
       },
       {
         no: '04',
         phase: 'Modeling & Inference',
         title: '모델 추론 · 정량 검증',
-        desc: '유사 1군 실거래 n건과 대조하고 Darcy-Weisbach 손실·하중·리스크를 계산해 적정 범위와 예산 밴드를 추정합니다.',
+        desc: '유사 1군 실거래와 대조하고 손실·하중·리스크를 계산해 적정 예산 밴드를 추정합니다.',
         output: 'Scope·Budget 추정치',
       },
       {
         no: '05',
         phase: 'Validation',
         title: '교차검증 · 신뢰도 산출',
-        desc: '현장 실무30년 도메인 룰로 모델 결과를 교차검증하고 보수적 신뢰구간을 적용해 과대·과소 추정을 보정합니다.',
+        desc: '실무 30년 도메인 룰로 교차검증하고 보수적 신뢰구간으로 과대·과소 추정을 보정합니다.',
         output: '신뢰도·리스크 등급',
       },
       {
         no: '06',
         phase: 'Result & Decision',
         title: '결과 도출 · 의사결정',
-        desc: '근거가 추적 가능한 단일 검토 시트로 정리하고, 온라인 검토·추가자료·출장 실측 중 다음 액션을 확정합니다.',
+        desc: '근거 추적이 가능한 단일 검토 시트로 정리하고 다음 액션을 확정합니다.',
         output: 'Scope Sheet + 다음 액션',
       },
     ];
 
     const principles = [
-      { title: '같은 자료, 같은 결론', desc: '검토자가 누구든 동일한 기준으로 판단합니다.' },
-      { title: '근거를 남깁니다', desc: '모든 금액은 실거래 자료와 계산 근거로 설명합니다.' },
-      { title: '보수적으로 봅니다', desc: '불확실한 부분은 넉넉히 잡아 현장에서 흔들리지 않습니다.' },
+      { title: '같은 자료, 같은 결론', desc: '누구든 동일 기준으로 판단' },
+      { title: '근거를 남깁니다', desc: '실거래·계산 근거로 설명' },
+      { title: '보수적으로 봅니다', desc: '불확실 구간은 넉넉히 반영' },
     ];
 
     return (
-      <div className="flex flex-col gap-5 max-w-4xl mx-auto py-4">
-        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-6">
-          {/* 헤더 */}
-          <div className="flex flex-col gap-2 border-b border-border pb-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-accent" />
-              <span className="text-[12px] text-accent font-black uppercase tracking-wider">Data Science Pipeline · SOP</span>
-            </div>
-            <h2 className="text-2xl font-black text-navy tracking-tight">AI Native 검증 표준 작업 절차</h2>
-            <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
-              최고의 데이터 사이언티스트가 일하는 방식 그대로 — <strong className="text-navy font-extrabold">데이터 탐색부터 결과 도출까지</strong> 6단계
-              재현 가능한 파이프라인으로 공사 범위·비용·리스크를 정량 검증합니다.
-            </p>
-          </div>
-
-          {/* 신뢰 지표 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 select-none">
-            {[
-              { label: '파이프라인 단계', value: '6-Stage' },
-              { label: '실거래 대조 표본', value: 'n건 DB' },
-              { label: '근거 추적', value: '100%' },
-              { label: '결과물', value: 'Scope Sheet' },
-            ].map((metric) => (
-              <div key={metric.label} className="bg-bg-subtle border border-border rounded-custom p-3.5">
-                <span className="text-[12px] text-gray-light font-bold block">{metric.label}</span>
-                <span className="text-[18px] text-navy font-black tracking-tight mt-1 block tabular-nums">{metric.value}</span>
+      <div className="flex flex-col gap-4 max-w-5xl mx-auto py-3">
+        <section className="bg-bg border border-border rounded-custom p-5 shadow-custom-sm flex flex-col gap-4">
+          {/* 헤더 — 좌측 타이틀 + 우측 신뢰 지표를 한 행으로 합쳐 수직 공간 압축 */}
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 border-b border-border pb-3.5">
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-accent" />
+                <span className="text-[12px] text-accent font-black uppercase tracking-wider">Data Science Pipeline · SOP</span>
               </div>
-            ))}
+              <h2 className="text-xl font-black text-navy tracking-tight">AI Native 검증 표준 작업 절차</h2>
+              <p className="text-[12.5px] text-gray leading-snug font-semibold">
+                <strong className="text-navy font-extrabold">데이터 탐색부터 결과 도출까지</strong> — 6단계 재현 가능한 파이프라인으로 공사 범위·비용·리스크를 정량 검증합니다.
+              </p>
+            </div>
+            {/* 신뢰 지표 — 카드 4장 대신 구분선 스트립으로 슬림화 (모바일은 2×2로 접힘) */}
+            <div className="grid grid-cols-2 lg:flex lg:items-center border border-border rounded-custom bg-bg-subtle shrink-0 select-none overflow-hidden">
+              {[
+                { label: '파이프라인', value: '6-Stage' },
+                { label: '실거래 대조', value: 'n건 DB' },
+                { label: '근거 추적', value: '100%' },
+                { label: '결과물', value: 'Scope Sheet' },
+              ].map((metric, i) => (
+                <div
+                  key={metric.label}
+                  className={`px-3.5 py-2 flex flex-col border-border ${i % 2 === 1 ? 'border-l' : ''} ${i >= 2 ? 'border-t lg:border-t-0' : ''} ${i > 0 ? 'lg:border-l' : ''}`}
+                >
+                  <span className="text-[11px] text-gray-light font-bold whitespace-nowrap">{metric.label}</span>
+                  <span className="text-[13.5px] text-navy font-black tracking-tight tabular-nums whitespace-nowrap">{metric.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* 6단계 파이프라인 */}
-          <div className="flex flex-col gap-3">
+          {/* 6단계 파이프라인 — 패딩·행간 축소로 2행 고정 */}
+          <div className="flex flex-col gap-2">
             <span className="text-[12px] font-black text-navy uppercase tracking-wide">분석 파이프라인 (탐색 → 결과 도출)</span>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {pipeline.map((stage) => (
-                <div key={stage.no} className="bg-bg-subtle border border-border rounded-custom p-4 flex flex-col gap-2.5">
+                <div key={stage.no} className="bg-bg-subtle border border-border rounded-custom p-3 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-custom bg-navy text-bg flex items-center justify-center text-[13px] font-black shrink-0">
+                    <span className="w-6.5 h-6.5 rounded-custom bg-navy text-bg flex items-center justify-center text-[12px] font-black shrink-0">
                       {stage.no}
                     </span>
                     <div className="flex flex-col leading-tight">
-                      <span className="text-[12px] text-steel font-black uppercase tracking-wide">{stage.phase}</span>
-                      <span className="text-[13.5px] font-black text-navy">{stage.title}</span>
+                      <span className="text-[11px] text-steel font-black uppercase tracking-wide">{stage.phase}</span>
+                      <span className="text-[13px] font-black text-navy">{stage.title}</span>
                     </div>
                   </div>
-                  <p className="text-[12px] text-gray leading-relaxed font-medium">{stage.desc}</p>
+                  <p className="text-[12px] text-gray leading-snug font-medium">{stage.desc}</p>
                   <div className="flex items-center gap-1.5 mt-auto pt-1 border-t border-border/70">
                     <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                     <span className="text-[12px] font-black text-navy">{stage.output}</span>
@@ -442,35 +445,33 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 검토 원칙 */}
-          <div className="flex flex-col gap-3">
-            <span className="text-[12px] font-black text-navy uppercase tracking-wide">검토 원칙</span>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {principles.map((p) => (
-                <div key={p.title} className="border border-border rounded-custom p-3.5 bg-bg flex flex-col gap-1.5">
-                  <span className="text-[13.5px] font-black text-navy">{p.title}</span>
-                  <p className="text-[12px] text-gray leading-normal">{p.desc}</p>
-                </div>
-              ))}
-            </div>
+          {/* 검토 원칙 — 카드 3장 대신 한 줄 인라인 스트립 */}
+          <div className="border border-border rounded-custom bg-bg px-3.5 py-2.5 flex flex-col md:flex-row md:items-center gap-2 md:gap-0 md:divide-x md:divide-border">
+            <span className="text-[12px] font-black text-navy uppercase tracking-wide md:pr-3.5 shrink-0">검토 원칙</span>
+            {principles.map((p) => (
+              <div key={p.title} className="md:px-3.5 flex items-baseline gap-1.5 min-w-0">
+                <span className="text-[12.5px] font-black text-navy whitespace-nowrap">{p.title}</span>
+                <span className="text-[12px] text-gray leading-snug whitespace-nowrap">{p.desc}</span>
+              </div>
+            ))}
           </div>
 
-          {/* CTA */}
-          <div className="bg-navy text-bg rounded-custom p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] text-bg/70 font-black uppercase tracking-wider">Ready to verify</span>
-              <span className="text-[15px] font-black tracking-tight">자료를 제출하면 이 절차가 즉시 가동됩니다.</span>
+          {/* CTA — 슬림 단일 행 */}
+          <div className="bg-navy text-bg rounded-custom px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="text-[11px] text-bg/70 font-black uppercase tracking-wider">Ready to verify</span>
+              <span className="text-[14px] font-black tracking-tight">자료를 제출하면 이 절차가 즉시 가동됩니다.</span>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
               <button
                 onClick={() => setActiveTab('request')}
-                className="bg-steel hover:bg-bg hover:text-navy text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95 whitespace-nowrap"
+                className="bg-steel hover:bg-bg hover:text-navy text-bg px-4 py-2 rounded-custom text-[12px] font-black transition-all active:scale-95 whitespace-nowrap"
               >
                 무료 출장 견적 컨설팅 요청
               </button>
               <button
                 onClick={() => setActiveTabAtTop('about')}
-                className="bg-bg/10 hover:bg-bg/15 border border-bg/20 text-bg px-5 py-3 rounded-custom text-[12px] font-black transition-all active:scale-95 whitespace-nowrap"
+                className="bg-bg/10 hover:bg-bg/15 border border-bg/20 text-bg px-4 py-2 rounded-custom text-[12px] font-black transition-all active:scale-95 whitespace-nowrap"
               >
                 ZEROS 진단 절차 보기
               </button>

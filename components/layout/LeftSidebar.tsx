@@ -98,8 +98,8 @@ export const LeftSidebar: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
               <HardHat className="w-4 h-4 text-steel" />
+              <span className="text-[12px] font-black text-steel bg-steel/10 border border-steel/20 px-1.5 py-0.5 rounded-full tracking-wider">SITE</span>
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적공사 카테고리</h3>
-              <span className="ml-auto text-[12px] font-black text-steel bg-steel/10 border border-steel/20 px-1.5 py-0.5 rounded-full tracking-wider">SITE</span>
             </div>
             <div className="flex flex-col gap-1">
               {workCategories.map((cat) => {
@@ -130,8 +130,8 @@ export const LeftSidebar: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
               <Factory className="w-4 h-4 text-accent" />
+              <span className="text-[12px] font-black text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full tracking-wider">FAB</span>
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">외주제작 견적 컨설팅</h3>
-              <span className="ml-auto text-[12px] font-black text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full tracking-wider">FAB</span>
             </div>
             <div className="flex flex-col gap-1">
               {fabricationCategories.map((cat) => {
