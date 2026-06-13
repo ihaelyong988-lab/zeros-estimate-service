@@ -18,11 +18,22 @@ export const TopHeader: React.FC = () => {
   const handleTabClick = (tab: ActiveTab) => {
     setIsUserMode(true);
     setActiveTab(tab);
-    if (tab === 'home') {
+    // 홈(랜딩)·견적 검토(작업공간) 진입 시에는 이전 공종/규모 필터를 초기화해
+    // 항상 해당 화면의 첫 상태로 들어가게 한다.
+    if (tab === 'home' || tab === 'review') {
       setSelectedMenu('');
       setSelectedBudget('');
     }
   };
+
+  // 중앙 네비게이션 항목 — PPT 시안 정보구조(IA)와 정렬
+  const navItems: { tab: ActiveTab; label: string }[] = [
+    { tab: 'review', label: '견적 검토' },
+    { tab: 'about', label: '진단 절차' },
+    { tab: 'performance', label: '실적 레퍼런스' },
+    { tab: 'request', label: '예상견적 의뢰하기' },
+    { tab: 'sop', label: '인사이트' },
+  ];
 
   return (
     <header className="sticky top-0 z-40 w-full h-16 border-b border-border bg-bg/95 backdrop-blur-md px-8 flex items-center justify-between select-none">
@@ -43,52 +54,22 @@ export const TopHeader: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. 중앙 탭 네비게이션 - 데스크탑 전용 */}
+      {/* 2. 중앙 탭 네비게이션 - 데스크탑 전용 (PPT 시안 IA) */}
       <nav className="hidden md:flex items-center gap-1">
-        <button
-          onClick={() => handleTabClick('home')}
-          style={{ touchAction: 'manipulation' }}
-          className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
-            isUserMode && activeTab === 'home'
-              ? 'text-navy after:opacity-100'
-              : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
-          }`}
-        >
-          견적 검토 홈
-        </button>
-        <button
-          onClick={() => handleTabClick('about')}
-          style={{ touchAction: 'manipulation' }}
-          className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
-            isUserMode && activeTab === 'about'
-              ? 'text-navy after:opacity-100'
-              : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
-          }`}
-        >
-          진단 절차
-        </button>
-        <button
-          onClick={() => handleTabClick('performance')}
-          style={{ touchAction: 'manipulation' }}
-          className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
-            isUserMode && activeTab === 'performance'
-              ? 'text-navy after:opacity-100'
-              : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
-          }`}
-        >
-          실적 집계
-        </button>
-        <button
-          onClick={() => handleTabClick('request')}
-          style={{ touchAction: 'manipulation' }}
-          className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
-            isUserMode && activeTab === 'request'
-              ? 'text-navy after:opacity-100'
-              : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
-          }`}
-        >
-          예상견적 의뢰하기
-        </button>
+        {navItems.map(({ tab, label }) => (
+          <button
+            key={tab}
+            onClick={() => handleTabClick(tab)}
+            style={{ touchAction: 'manipulation' }}
+            className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
+              isUserMode && activeTab === tab
+                ? 'text-navy after:opacity-100'
+                : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </nav>
 
       {/* 3. 우측 컨트롤 영역 - 높이 및 마진 100% 동기화 (h-9) */}

@@ -67,8 +67,8 @@ export const LeftSidebar: React.FC = () => {
   };
 
   const handleMenuClick = (menu: string) => {
-    if (activeTab !== 'home') {
-      setActiveTab('home');
+    if (activeTab !== 'review') {
+      setActiveTab('review');
     }
     setSelectedMenu(menu);
     setSelectedBudget(''); // 규모 필터 해제
@@ -77,8 +77,8 @@ export const LeftSidebar: React.FC = () => {
   };
 
   const handleBudgetClick = (budgetVal: string) => {
-    if (activeTab !== 'home') {
-      setActiveTab('home');
+    if (activeTab !== 'review') {
+      setActiveTab('review');
     }
     setSelectedBudget(budgetVal);
     setSelectedMenu(''); // 영역 필터 해제
@@ -103,7 +103,7 @@ export const LeftSidebar: React.FC = () => {
             </div>
             <div className="flex flex-col gap-1">
               {workCategories.map((cat) => {
-                const isActive = selectedMenu === cat.label && !selectedBudget && activeTab === 'home';
+                const isActive = selectedMenu === cat.label && !selectedBudget && activeTab === 'review';
                 return (
                   <button
                     key={cat.label}
@@ -135,7 +135,7 @@ export const LeftSidebar: React.FC = () => {
             </div>
             <div className="flex flex-col gap-1">
               {fabricationCategories.map((cat) => {
-                const isActive = selectedMenu === cat.key && !selectedBudget && activeTab === 'home';
+                const isActive = selectedMenu === cat.key && !selectedBudget && activeTab === 'review';
                 return (
                   <button
                     key={cat.key}
@@ -166,7 +166,7 @@ export const LeftSidebar: React.FC = () => {
             </div>
             <div className="flex flex-col gap-1">
               {budgetCategories.map((cat) => {
-                const isActive = selectedBudget === cat.value && !selectedMenu && activeTab === 'home';
+                const isActive = selectedBudget === cat.value && !selectedMenu && activeTab === 'review';
                 return (
                   <button
                     key={cat.value}

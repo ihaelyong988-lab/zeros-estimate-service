@@ -32,7 +32,10 @@ import {
   Truck,
   LineChart,
   Award,
-  ChevronDown
+  ChevronDown,
+  Clock,
+  TrendingDown,
+  BarChart3
 } from 'lucide-react';
 
 // 랜딩 쇼케이스 자동 순회 공종 순서 — 최상단 칩바와 값으로 매칭(연동)되므로 모듈 스코프로 고정
@@ -1264,11 +1267,8 @@ export default function Home() {
     );
   };
 
-  const renderLandingDashboard = () => {
-    const activeTradeName = LANDING_TRADES[activeTradeIdx];
-    const activeManual = manualData[activeTradeName];
-    const activeMetrics = getDynamicMetrics(activeTradeName);
-    const activeVisuals = getCategoryVisuals(activeTradeName);
+  // 모바일 랜딩(3페이지 스냅) — 홈/견적검토 공통으로 재사용. 현행 그대로 유지.
+  const renderMobileLanding = () => {
     const mobileTradeName = LANDING_TRADES[mobileTradeIdx];
     const mobileBand = MOBILE_TRADE_ESTIMATES[mobileTradeName];
     const MOBILE_MIN = mobileBand.min;
@@ -1279,7 +1279,6 @@ export default function Home() {
     const mobileVsMedian = ((mobileEstimateAmount - MOBILE_MEDIAN) / MOBILE_MEDIAN) * 100;
 
     return (
-      <>
       <div className="lg:hidden h-full flex flex-col bg-[#041B33] text-white">
         {/* ── 1페이지: 히어로 (풀스크린 스냅) ── */}
         <section className="snap-start snap-always min-h-full flex flex-col px-5 pt-5 pb-4 bg-[linear-gradient(180deg,#0A2D56_0%,#06213F_52%,#041B33_100%)]">
@@ -1525,7 +1524,16 @@ export default function Home() {
           </div>
         </section>
       </div>
+    );
+  };
 
+  // 견적 검토(데스크톱) — 기존 첫 화면 랜딩. '견적 검토' 탭에서 노출.
+  const renderReviewDesktop = () => {
+    const activeTradeName = LANDING_TRADES[activeTradeIdx];
+    const activeManual = manualData[activeTradeName];
+    const activeMetrics = getDynamicMetrics(activeTradeName);
+    const activeVisuals = getCategoryVisuals(activeTradeName);
+    return (
       <div className="hidden lg:flex flex-col gap-7 max-w-4xl mx-auto">
 
       {/* ============================================================
@@ -1693,9 +1701,144 @@ export default function Home() {
         </button>
       </section>
     </div>
-    </>
     );
   };
+
+  // 홈(데스크톱) — PPT 시안 기반의 간결한 단독 랜딩. 첫 화면으로 노출되며
+  // 상세 작업공간(견적 검토)·진단·실적·의뢰로 진입하는 관문 역할을 한다.
+  const HOME_STATS = [
+    { icon: ShieldCheck, label: '검토 분석 신뢰도', value: '97.8%' },
+    { icon: Clock, label: '평균 1차 검토 소요', value: '2.1일 이내' },
+    { icon: TrendingDown, label: '평균 절감 효과', value: '-31.5%' },
+    { icon: BarChart3, label: '누적 검토 건수', value: '246건+' },
+  ];
+
+  const renderHomeDesktop = () => (
+    <div className="hidden lg:flex flex-col min-h-full bg-bg">
+
+      {/* ── 히어로 ── */}
+      <section className="flex-1 flex items-center">
+        <div className="w-full max-w-[1240px] mx-auto px-10 py-12 grid grid-cols-2 gap-14 items-center">
+
+          {/* 좌: 카피 + CTA */}
+          <div className="flex flex-col gap-6">
+            {/* 배지 */}
+            <span className="self-start inline-flex items-center gap-2 bg-[#EEF5FF] text-[#155EEF] text-[13px] font-black px-3.5 py-1.5 rounded-full select-none">
+              <Sparkles className="w-3.5 h-3.5" />
+              AI Native 1차 검증 + PM 전문가 최종 검토
+            </span>
+
+            {/* 헤드라인 */}
+            <h1 className="text-[clamp(32px,3.4vw,46px)] font-black leading-[1.18] tracking-tight text-[#08265A]">
+              생산라인 증설·분기 배관공사,
+              <br />
+              <span className="text-[#FF5A1F]">AI 분석</span>
+              <span>으로 더 정확하게</span>
+            </h1>
+
+            {/* 본문 */}
+            <p className="text-[16px] leading-relaxed font-semibold text-[#41566F] max-w-xl">
+              ZEROS는 현장 실무 경험과 <strong className="text-[#08265A] font-black">AI 데이터 분석</strong>을 결합해,
+              비용과 리스크까지 고려한 가장 합리적인 견적을 제안합니다.
+            </p>
+
+            {/* CTA */}
+            <div className="flex flex-wrap items-center gap-3 mt-1">
+              <button
+                onClick={() => setActiveTabAtTop('request')}
+                style={{ touchAction: 'manipulation' }}
+                className="inline-flex items-center justify-center gap-2 bg-[#FF5A1F] hover:bg-[#EA4F18] text-white px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-md shadow-[#FF5A1F]/25 transition-all duration-150 active:scale-95 cursor-pointer"
+              >
+                <FileCheck className="w-4.5 h-4.5 shrink-0" />
+                무료 출장 견적 신청
+              </button>
+              <button
+                onClick={() => setActiveTabAtTop('about')}
+                style={{ touchAction: 'manipulation' }}
+                className="inline-flex items-center justify-center gap-2 bg-bg hover:bg-bg-subtle text-[#071E4F] border border-border px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+              >
+                ZEROS 진단 절차 보기
+                <ArrowRight className="w-4 h-4 shrink-0" />
+              </button>
+            </div>
+
+            {/* 신뢰 칩 */}
+            <div className="flex flex-wrap items-center gap-2 mt-1 select-none">
+              <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[12.5px] font-bold px-3 py-1.5 rounded-full">
+                <MapPin className="w-3.5 h-3.5 text-steel" /> 전국 현장 무료 방문
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[12.5px] font-bold px-3 py-1.5 rounded-full">
+                <Award className="w-3.5 h-3.5 text-success" /> 현장 실무 30년 · 국가기술자격
+              </span>
+            </div>
+          </div>
+
+          {/* 우: 현장 이미지 + 플로팅 배지 */}
+          <div className="relative">
+            <div className="relative rounded-2xl overflow-hidden shadow-custom-md ring-1 ring-black/5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/hero-engineers.jpg"
+                alt="현장 엔지니어가 노트북으로 배관 설비를 검토하는 모습"
+                className="w-full h-full object-cover aspect-[3/2]"
+                loading="eager"
+              />
+              {/* 가독성용 하단 그라데이션 */}
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#08265A]/35 to-transparent pointer-events-none" />
+            </div>
+            {/* 실시간 분석 플로팅 배지 */}
+            <div className="absolute -bottom-4 -left-4 bg-bg border border-border rounded-custom shadow-custom-md px-4 py-3 flex items-center gap-3 select-none">
+              <span className="w-9 h-9 rounded-custom bg-accent/12 flex items-center justify-center shrink-0">
+                <LineChart className="w-4.5 h-4.5 text-accent" />
+              </span>
+              <span className="flex flex-col leading-tight">
+                <span className="flex items-center gap-1.5 text-[11px] font-black text-steel uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간 분석
+                </span>
+                <span className="text-[13px] font-black text-navy">AI Native 검증 가동중</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 통계 밴드 ── */}
+      <section className="relative bg-[#062B64] text-white select-none">
+        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-steel via-[#5D8EC8] to-accent" />
+        <div className="max-w-[1240px] mx-auto px-10 py-7 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
+          {HOME_STATS.map(({ icon: Icon, label, value }, idx) => (
+            <div key={label} className={`flex items-center gap-3.5 ${idx > 0 ? 'md:border-l md:border-white/10 md:pl-6' : ''}`}>
+              <span className="w-11 h-11 rounded-custom bg-[#0A3678] flex items-center justify-center shrink-0">
+                <Icon className="w-5 h-5 text-white" />
+              </span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-[12.5px] font-bold text-[#DCE7F6]">{label}</span>
+                <span className="text-[24px] font-black tracking-tight tabular-nums">{value}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 푸터 ── */}
+      <footer className="bg-[#04204C] text-white/70 select-none">
+        <div className="max-w-[1240px] mx-auto px-10 py-4 flex items-center justify-between gap-4 text-[12.5px] font-semibold">
+          <span>© 2025 ZEROS Co., Ltd. All rights reserved.</span>
+          <div className="flex items-center gap-5">
+            <span className="text-white/45">사업자등록번호 준비중</span>
+            <span className="text-white/25">|</span>
+            <span className="hover:text-white transition-colors">개인정보처리방침</span>
+            <button
+              onClick={() => setActiveTabAtTop('request')}
+              className="text-white hover:text-accent transition-colors font-bold"
+            >
+              문의하기
+            </button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 
   // ==========================================
   // 2. 관리자 백오피스 탭 렌더러
@@ -1764,15 +1907,37 @@ export default function Home() {
         return renderPerformanceTab();
       case 'request':
         return renderRequestTab();
-      case 'home':
-      default:
+      case 'review':
+        // 견적 검토 — 기존 첫 화면. 데스크톱은 상세 랜딩, 공종/규모 선택 시 매뉴얼 상세.
+        // (모바일은 랜딩으로 폴백 — 모바일 네비에는 노출되지 않는 경로)
         if (selectedMenu && !selectedBudget) {
           return renderManualDetail(selectedMenu);
         }
         if (selectedBudget && !selectedMenu) {
           return renderManualDetail(selectedBudget);
         }
-        return renderLandingDashboard();
+        return (
+          <>
+            {renderMobileLanding()}
+            {renderReviewDesktop()}
+          </>
+        );
+      case 'home':
+      default:
+        // 모바일에서 공종/규모 칩 선택 시 매뉴얼 상세(현행 유지)
+        if (selectedMenu && !selectedBudget) {
+          return renderManualDetail(selectedMenu);
+        }
+        if (selectedBudget && !selectedMenu) {
+          return renderManualDetail(selectedBudget);
+        }
+        // 모바일: 기존 3페이지 랜딩 / 데스크톱: PPT 시안 단독 랜딩
+        return (
+          <>
+            {renderMobileLanding()}
+            {renderHomeDesktop()}
+          </>
+        );
     }
   };
 

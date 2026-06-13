@@ -36,7 +36,7 @@ interface MobileAdminMenuItem {
 type MobileActiveTab = 'home' | 'service' | 'request' | 'history' | 'account' | 'decision' | 'admin';
 type AdminView = MobileAdminMenuItem['value'];
 
-const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request', 'sop'];
+const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request', 'sop', 'review'];
 const adminViewValues: AdminView[] = ['dashboard', 'estimates', 'visits', 'customers', 'performance', 'notifications'];
 
 const mobileMenuItems: MobileMenuItem[] = [
@@ -573,38 +573,52 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     );
   }
 
-  // 2. 데스크탑용 프리미엄 3-Pane AppShell 레이아웃 렌더링
+  // 2. 데스크탑 레이아웃 렌더링
+  // 홈(고객 모드)은 PPT 시안 기반의 풀-블리드 단독 랜딩으로 표시하고,
+  // '견적 검토'(review)·진단·실적·의뢰 등 그 외 화면은 기존 3-Pane 작업공간을 유지한다.
+  const isFullBleedHome = isUserMode && activeTab === 'home';
+
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-bg-subtle text-text font-sans">
-      
+
       {/* 데스크탑 고정 헤더 */}
       <div className="shrink-0">
         <TopHeader />
       </div>
 
-      {/* 중앙 3-Pane 본문 레이아웃 */}
-      <div className="flex-1 flex relative overflow-hidden h-[calc(100vh-70px)]">
-        
-        {/* Pane 1: 좌측 카테고리 메뉴 사이드바 */}
-        <div className="hidden lg:flex shrink-0 h-full overflow-y-auto border-r border-border bg-bg-subtle">
-          <LeftSidebar />
+      {isFullBleedHome ? (
+        /* 풀-블리드 홈 랜딩 — 좌/우 사이드바 없이 전체폭 단일 스크롤 (PPT 시안) */
+        <div
+          data-main-scroll="true"
+          className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 h-[calc(100vh-64px)] bg-bg"
+        >
+          {children}
         </div>
+      ) : (
+        /* 중앙 3-Pane 본문 레이아웃 */
+        <div className="flex-1 flex relative overflow-hidden h-[calc(100vh-70px)]">
 
-        {/* Pane 2 & Pane 3 결합 영역 */}
-        <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-full">
-          
-          {/* Pane 2: 중앙 핵심 워크스페이스 패널 (독립 스크롤) */}
-          <div data-main-scroll="true" className="flex-1 p-6 overflow-y-auto min-w-0 h-full bg-bg pb-12">
-            {children}
+          {/* Pane 1: 좌측 카테고리 메뉴 사이드바 */}
+          <div className="hidden lg:flex shrink-0 h-full overflow-y-auto border-r border-border bg-bg-subtle">
+            <LeftSidebar />
           </div>
 
-          {/* Pane 3: 우측 의사결정 보조 & 데이터 매핑 위젯 */}
-          <div className="w-72 h-full shrink-0 border-l border-border overflow-y-auto bg-bg-subtle print:hidden">
-            <RightSidebar />
-          </div>
+          {/* Pane 2 & Pane 3 결합 영역 */}
+          <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-full">
 
-        </main>
-      </div>
+            {/* Pane 2: 중앙 핵심 워크스페이스 패널 (독립 스크롤) */}
+            <div data-main-scroll="true" className="flex-1 p-6 overflow-y-auto min-w-0 h-full bg-bg pb-12">
+              {children}
+            </div>
+
+            {/* Pane 3: 우측 의사결정 보조 & 데이터 매핑 위젯 */}
+            <div className="w-72 h-full shrink-0 border-l border-border overflow-y-auto bg-bg-subtle print:hidden">
+              <RightSidebar />
+            </div>
+
+          </main>
+        </div>
+      )}
 
       {/* 데스크탑 탑재 모바일 시뮬레이터 포탈 렌더링 */}
       <MobileSimulator />
