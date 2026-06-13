@@ -2114,10 +2114,10 @@ export default function Home() {
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(224,112,26,0.04),transparent_70%)] pointer-events-none" />
 
-      {/* ── 히어로 ── */}
-      <section className="h-[60%] flex items-center min-h-0 py-4 z-10">
+      {/* ── 히어로 (수직 중앙 소실점 정렬) ── */}
+      <section className="flex-1 flex items-center justify-center min-h-0 py-4 z-10">
         <div className="w-full max-w-[1320px] mx-auto px-6 xl:px-8">
-          <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] py-6 md:py-8 xl:py-10 px-10 md:px-12 xl:px-16 grid grid-cols-[1.1fr_0.9fr] gap-16 xl:gap-20 items-center relative overflow-hidden">
+          <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] py-14 md:py-18 xl:py-22 px-10 md:px-12 xl:px-16 grid grid-cols-[1.1fr_0.9fr] gap-16 xl:gap-20 items-center relative overflow-hidden">
             {/* 은은한 내부 데코레이션 그라데이션 */}
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(245,247,250,0.5),rgba(255,255,255,0)_65%)] pointer-events-none" />
 
@@ -2206,26 +2206,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 통계 밴드 ── */}
-      <section className="h-[37.5%] flex items-center relative bg-[#062B64] text-white z-10">
+      {/* ── 통계 밴드 (비율 1: h-[60px] 고정) ── */}
+      <section className="h-[60px] shrink-0 flex items-center relative bg-[#062B64] text-white z-10 select-none">
         <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-steel via-[#5D8EC8] to-accent" />
-        <div className="w-full max-w-[1240px] mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6">
+        <div className="w-full max-w-[1240px] mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2">
           {HOME_STATS.map(({ icon: Icon, label, value }, idx) => (
-            <div key={label} className={`flex items-center gap-4.5 ${idx > 0 ? 'md:border-l md:border-white/10 md:pl-8' : ''}`}>
-              <span className="w-13 h-13 rounded-custom bg-[#0A3678] flex items-center justify-center shrink-0">
-                <Icon className="w-6 h-6 text-white" />
+            <div key={label} className={`flex items-center gap-3.5 ${idx > 0 ? 'md:border-l md:border-white/10 md:pl-8' : ''}`}>
+              <span className="w-9 h-9 rounded-custom bg-[#0A3678] flex items-center justify-center shrink-0">
+                <Icon className="w-4.5 h-4.5 text-white" />
               </span>
-              <span className="flex flex-col leading-tight gap-0.5">
-                <span className="text-[13.5px] font-bold text-[#DCE7F6]">{label}</span>
-                <span className="text-[30px] md:text-[34px] font-black tracking-tight tabular-nums">{value}</span>
+              <span className="flex items-baseline gap-2 leading-none">
+                <span className="text-[12.5px] font-bold text-[#DCE7F6] whitespace-nowrap">{label}</span>
+                <span className="text-[18px] md:text-[21px] font-black tracking-tight tabular-nums text-white">{value}</span>
               </span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── 푸터 ── */}
-      <footer className="bg-[#04204C] text-white/70 h-[2.5%] min-h-[36px] flex items-center z-10">
+      {/* ── 푸터 (비율 1.6: h-[96px] 고정) ── */}
+      <footer className="bg-[#04204C] text-white/70 h-[96px] shrink-0 flex items-center z-10 select-none">
         <div className="w-full max-w-[1240px] mx-auto px-10 flex items-center justify-between gap-4 text-[12.5px] font-semibold">
           <span>© 2025 ZEROS Co., Ltd. All rights reserved.</span>
           <div className="flex items-center gap-5">
