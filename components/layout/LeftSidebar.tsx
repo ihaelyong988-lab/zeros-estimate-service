@@ -10,10 +10,7 @@ import {
   CalendarRange,
   Users2,
   Cpu,
-  Layers,
-  HardHat,
-  Gauge,
-  Factory
+  Gauge
 } from 'lucide-react';
 import { WorkType } from '@/types/estimate';
 
@@ -87,7 +84,7 @@ export const LeftSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-full xl:w-72 xl:h-full bg-bg-subtle p-5 flex flex-col gap-6 select-none shrink-0 overflow-y-auto">
+    <aside className="w-full xl:w-72 xl:h-full bg-bg-subtle p-5 flex flex-col gap-6 select-none shrink-0 overflow-y-auto no-scrollbar">
       {isUserMode ? (
         // ==================== 고객 모드 메뉴 ====================
         <>
@@ -97,8 +94,7 @@ export const LeftSidebar: React.FC = () => {
           {/* 공사 영역 카테고리 */}
           <div>
             <div className="flex items-center gap-1.5 px-2 mb-2">
-              <HardHat className="w-4 h-4 text-steel" />
-              <span className="text-[12px] font-black text-steel bg-steel/10 border border-steel/20 px-1.5 py-0.5 rounded-full tracking-wider">SITE</span>
+              <span className="text-[11px] font-extrabold text-[#155EEF] tracking-widest mr-0.5 select-none">SITE</span>
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적공사 카테고리</h3>
             </div>
             <div className="flex flex-col gap-1">
@@ -127,10 +123,9 @@ export const LeftSidebar: React.FC = () => {
           </div>
 
           {/* 외주 제작 카테고리 */}
-          <div>
+          <div className="border-t border-border/40 pt-5 mt-1">
             <div className="flex items-center gap-1.5 px-2 mb-2">
-              <Factory className="w-4 h-4 text-accent" />
-              <span className="text-[12px] font-black text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded-full tracking-wider">FAB</span>
+              <span className="text-[11px] font-extrabold text-[#FF5A1F] tracking-widest mr-0.5 select-none">FAB</span>
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">외주제작 견적 컨설팅</h3>
             </div>
             <div className="flex flex-col gap-1">
@@ -159,9 +154,8 @@ export const LeftSidebar: React.FC = () => {
           </div>
 
           {/* 견적 규모 카테고리 */}
-          <div>
-            <div className="flex items-center gap-1.5 px-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-steel" />
+          <div className="border-t border-border/40 pt-5 mt-1">
+            <div className="flex items-center gap-2 px-2 mb-2">
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적규모별 분류</h3>
             </div>
             <div className="flex flex-col gap-1">
@@ -190,9 +184,8 @@ export const LeftSidebar: React.FC = () => {
           </div>
 
           {/* 빠른 메뉴 */}
-          <div>
-            <div className="flex items-center gap-1.5 px-2 mb-2">
-              <Layers className="w-4 h-4 text-steel" />
+          <div className="border-t border-border/40 pt-5 mt-1">
+            <div className="flex items-center gap-2 px-2 mb-2">
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">빠른 메뉴</h3>
             </div>
             <div className="flex flex-col gap-1">

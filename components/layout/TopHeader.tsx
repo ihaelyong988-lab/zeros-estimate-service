@@ -32,7 +32,7 @@ export const TopHeader: React.FC = () => {
     { tab: 'about', label: '진단 절차' },
     { tab: 'performance', label: '실적 레퍼런스' },
     { tab: 'request', label: '예상견적 의뢰하기' },
-    { tab: 'sop', label: '인사이트' },
+    { tab: 'sop', label: 'AI Native 검증' },
   ];
 
   return (
@@ -45,7 +45,7 @@ export const TopHeader: React.FC = () => {
         style={{ touchAction: 'manipulation' }}
       >
         {/* 완벽한 36px 정사각 로고박스 */}
-        <div className="w-9 h-9 bg-navy rounded-custom flex items-center justify-center shrink-0 shadow-sm shadow-navy/10 hover:scale-102 transition-all">
+        <div className="w-9 h-9 bg-accent rounded-custom flex items-center justify-center shrink-0 shadow-sm shadow-accent/20 hover:scale-102 transition-all">
           <Building2 className="w-4.5 h-4.5 text-bg" />
         </div>
         <div className="flex flex-col justify-center">
@@ -56,20 +56,55 @@ export const TopHeader: React.FC = () => {
 
       {/* 2. 중앙 탭 네비게이션 - 데스크탑 전용 (PPT 시안 IA) */}
       <nav className="hidden md:flex items-center gap-1">
-        {navItems.map(({ tab, label }) => (
-          <button
-            key={tab}
-            onClick={() => handleTabClick(tab)}
-            style={{ touchAction: 'manipulation' }}
-            className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:bg-navy after:transition-opacity after:duration-200 ${
-              isUserMode && activeTab === tab
-                ? 'text-navy after:opacity-100'
-                : 'text-gray hover:text-navy after:opacity-0 hover:after:opacity-50'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+        {navItems.map(({ tab, label }) => {
+          const isActive = isUserMode && activeTab === tab;
+          
+          // 각 탭의 고유 성격을 반영한 테마 색상 설정
+          const themeClasses = {
+            review: {
+              active: 'text-navy after:bg-navy',
+              hover: 'hover:text-navy hover:after:bg-navy'
+            },
+            about: {
+              active: 'text-steel after:bg-steel',
+              hover: 'hover:text-steel hover:after:bg-steel'
+            },
+            performance: {
+              active: 'text-indigo-600 after:bg-indigo-600',
+              hover: 'hover:text-indigo-600 hover:after:bg-indigo-600'
+            },
+            request: {
+              active: 'text-accent after:bg-accent',
+              hover: 'hover:text-accent hover:after:bg-accent'
+            },
+            sop: {
+              active: 'text-success after:bg-success',
+              hover: 'hover:text-success hover:after:bg-success'
+            },
+            home: {
+              active: 'text-navy after:bg-navy',
+              hover: 'hover:text-navy hover:after:bg-navy'
+            }
+          }[tab] || {
+            active: 'text-navy after:bg-navy',
+            hover: 'hover:text-navy hover:after:bg-navy'
+          };
+
+          return (
+            <button
+              key={tab}
+              onClick={() => handleTabClick(tab)}
+              style={{ touchAction: 'manipulation' }}
+              className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:transition-all after:duration-200 ${
+                isActive
+                  ? `${themeClasses.active} after:opacity-100`
+                  : `text-gray ${themeClasses.hover} after:opacity-0 hover:after:opacity-50`
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </nav>
 
       {/* 3. 우측 컨트롤 영역 - 높이 및 마진 100% 동기화 (h-9) */}

@@ -590,7 +590,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         /* 풀-블리드 홈 랜딩 — 좌/우 사이드바 없이 전체폭 단일 스크롤 (PPT 시안) */
         <div
           data-main-scroll="true"
-          className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 h-[calc(100vh-64px)] bg-bg"
+          className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar min-w-0 h-[calc(100vh-64px)] bg-bg"
         >
           {children}
         </div>
@@ -599,7 +599,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <div className="flex-1 flex relative overflow-hidden h-[calc(100vh-70px)]">
 
           {/* Pane 1: 좌측 카테고리 메뉴 사이드바 */}
-          <div className="hidden lg:flex shrink-0 h-full overflow-y-auto border-r border-border bg-bg-subtle">
+          <div className="hidden lg:flex shrink-0 h-full overflow-y-auto no-scrollbar border-r border-border bg-bg-subtle">
             <LeftSidebar />
           </div>
 
@@ -607,12 +607,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-full">
 
             {/* Pane 2: 중앙 핵심 워크스페이스 패널 (독립 스크롤) */}
-            <div data-main-scroll="true" className="flex-1 p-6 overflow-y-auto min-w-0 h-full bg-bg pb-12">
-              {children}
+            <div className="flex-1 flex flex-col h-full bg-bg overflow-hidden">
+              {/* 상단 청색 액센트 바 — 좌/우 사이드바의 상단 액센트 바와 시각적으로 연결 */}
+              <div className="h-1 w-full bg-steel shrink-0" />
+              <div data-main-scroll="true" className="flex-1 p-6 overflow-y-auto no-scrollbar min-w-0 pb-12">
+                {children}
+              </div>
             </div>
 
             {/* Pane 3: 우측 의사결정 보조 & 데이터 매핑 위젯 */}
-            <div className="w-72 h-full shrink-0 border-l border-border overflow-y-auto bg-bg-subtle print:hidden">
+            <div className="w-72 h-full shrink-0 border-l border-border overflow-y-auto no-scrollbar bg-bg-subtle print:hidden">
               <RightSidebar />
             </div>
 

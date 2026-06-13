@@ -109,16 +109,16 @@ export const EstimateFlow: React.FC = () => {
           <span className="text-[12px] font-mono font-bold text-steel/80 uppercase tracking-wider">{step.en}</span>
           <span className="text-[12px] text-gray-light font-bold">· 세부 검토 항목</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        <div className="flex flex-wrap gap-2">
           {step.items.map((item) => (
             <div
               key={item}
-              className="flex items-start gap-2 bg-bg border border-border rounded-custom px-3 py-2.5 shadow-sm hover:border-steel/50 hover:shadow-custom-sm transition-all"
+              className="inline-flex items-center gap-1.5 bg-bg border border-border rounded-full px-3 py-1.5 shadow-sm hover:border-steel/50 transition-all select-none"
             >
-              <span className="shrink-0 w-4 h-4 rounded-full bg-success/10 border border-success/30 flex items-center justify-center mt-0.5">
-                <Check className="w-2.5 h-2.5 text-success" strokeWidth={3} />
+              <span className="shrink-0 w-4 h-4 rounded-full bg-success/15 flex items-center justify-center">
+                <Check className="w-2.5 h-2.5 text-success" strokeWidth={3.5} />
               </span>
-              <span className="text-[12px] font-semibold text-gray leading-snug">{item}</span>
+              <span className="text-[12px] font-semibold text-gray leading-none">{item}</span>
             </div>
           ))}
         </div>
