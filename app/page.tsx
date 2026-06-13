@@ -212,11 +212,32 @@ export default function Home() {
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
         const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
-        mainScroll?.scrollTo({ top: 0, behavior: 'smooth' });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (mainScroll) {
+          const originalSnap = mainScroll.style.scrollSnapType;
+          mainScroll.style.scrollSnapType = 'none';
+          mainScroll.scrollTo({ top: 0, behavior: 'auto' });
+          window.requestAnimationFrame(() => {
+            mainScroll.style.scrollSnapType = originalSnap;
+          });
+        }
+        window.scrollTo({ top: 0, behavior: 'auto' });
       });
     });
   };
+
+  // 모바일 홈/로고 탭 클릭 등으로 첫 랜딩 상태 복귀 시, 내부 서브 캐러셀과 슬라이더 상태도 첫 화면(0)으로 초기화
+  useEffect(() => {
+    const isMobileLanding = activeTab === 'home' && !selectedMenu && !selectedBudget;
+    if (isMobileLanding) {
+      setMobileTradeIdx(0);
+      setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[0]].base);
+      
+      const el = mobileCarouselRef.current;
+      if (el) {
+        el.scrollTo({ left: 0, behavior: 'auto' });
+      }
+    }
+  }, [activeTab, selectedMenu, selectedBudget]);
 
   const setActiveTabAtTop = (tab: Parameters<typeof setActiveTab>[0]) => {
     setActiveTab(tab);

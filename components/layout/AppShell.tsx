@@ -267,47 +267,63 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       setActiveTab('home');
       setSelectedMenu('');
       setSelectedBudget('');
+      scrollMainPanelToTop();
     } else if (tab === 'service') {
       setMobileMenuOpen(false);
       setIsUserMode(true);
       setActiveTab('about');
       setSelectedMenu('');
       setSelectedBudget('');
+      scrollMainPanelToTop();
     } else if (tab === 'request') {
       setMobileMenuOpen(false);
       setIsUserMode(true);
       setActiveTab('request');
       setSelectedMenu('');
       setSelectedBudget('');
+      scrollMainPanelToTop();
     } else if (tab === 'history') {
       setMobileMenuOpen(false);
       setIsUserMode(true);
       setActiveTab('performance');
       setSelectedMenu('');
       setSelectedBudget('');
+      scrollMainPanelToTop();
     } else if (tab === 'account') {
       setMobileMenuOpen(false);
       setIsUserMode(true);
       setActiveTab('home');
       setSelectedMenu('');
       setSelectedBudget('');
+      scrollMainPanelToTop();
     } else if (tab === 'decision') {
       setMobileMenuOpen(false);
       setIsUserMode(true);
       // 의사결정 시, 홈 상태로 두고 sidebar 내용 출력
       setActiveTab('home');
+      scrollMainPanelToTop();
     } else if (tab === 'admin') {
       setMobileMenuOpen(false);
       setIsUserMode(false);
       setAdminView('dashboard');
+      scrollMainPanelToTop();
     }
   };
 
   const scrollMainPanelToTop = () => {
     window.requestAnimationFrame(() => {
-      const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
-      mainScroll?.scrollTo({ top: 0, behavior: 'smooth' });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.requestAnimationFrame(() => {
+        const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
+        if (mainScroll) {
+          const originalSnap = mainScroll.style.scrollSnapType;
+          mainScroll.style.scrollSnapType = 'none';
+          mainScroll.scrollTo({ top: 0, behavior: 'auto' });
+          window.requestAnimationFrame(() => {
+            mainScroll.style.scrollSnapType = originalSnap;
+          });
+        }
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      });
     });
   };
 
