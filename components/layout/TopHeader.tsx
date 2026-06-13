@@ -15,6 +15,23 @@ export const TopHeader: React.FC = () => {
     setSelectedBudget,
   } = useShell();
 
+  const scrollMainPanelToTop = () => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
+        if (mainScroll) {
+          const originalSnap = mainScroll.style.scrollSnapType;
+          mainScroll.style.scrollSnapType = 'none';
+          mainScroll.scrollTo({ top: 0, behavior: 'auto' });
+          window.requestAnimationFrame(() => {
+            mainScroll.style.scrollSnapType = originalSnap;
+          });
+        }
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      });
+    });
+  };
+
   const handleTabClick = (tab: ActiveTab) => {
     setIsUserMode(true);
     setActiveTab(tab);
@@ -24,6 +41,7 @@ export const TopHeader: React.FC = () => {
       setSelectedMenu('');
       setSelectedBudget('');
     }
+    scrollMainPanelToTop();
   };
 
   // 중앙 네비게이션 항목 — PPT 시안 정보구조(IA)와 정렬
@@ -38,9 +56,12 @@ export const TopHeader: React.FC = () => {
   return (
     <header className="sticky top-0 z-40 w-full h-16 border-b border-border bg-bg/95 backdrop-blur-md px-8 flex items-center justify-between select-none">
       
-      {/* 1. 좌측 로고 영역 - 완벽한 기하학적 대칭 정렬 (클릭 이벤트 비활성화) */}
-      <div 
-        className="flex items-center gap-3 cursor-default select-none"
+      {/* 1. 좌측 로고 영역 - 완벽한 기하학적 대칭 정렬 (클릭 시 메인홈 이동) */}
+      <button 
+        type="button"
+        onClick={() => handleTabClick('home')}
+        style={{ touchAction: 'manipulation' }}
+        className="flex items-center gap-3 cursor-pointer select-none active:scale-98 transition-transform text-left bg-transparent border-none p-0 outline-none"
       >
         {/* 완벽한 36px 정사각 로고박스 */}
         <div className="w-9 h-9 bg-accent rounded-custom flex items-center justify-center shrink-0 shadow-sm shadow-accent/20">
@@ -49,7 +70,7 @@ export const TopHeader: React.FC = () => {
         <div className="flex items-center justify-center">
           <span className="font-black text-[18px] tracking-wider text-navy leading-none uppercase font-sans">ZEROS</span>
         </div>
-      </div>
+      </button>
 
       {/* 2. 중앙 탭 네비게이션 - 데스크탑 전용 (PPT 시안 IA) */}
       <nav className="hidden md:flex items-center gap-1">
