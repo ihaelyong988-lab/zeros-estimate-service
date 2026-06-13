@@ -1950,24 +1950,24 @@ export default function Home() {
     const activeMetrics = getDynamicMetrics(activeTradeName);
     const activeVisuals = getCategoryVisuals(activeTradeName);
     return (
-      <div className="hidden lg:flex flex-col gap-7 max-w-4xl mx-auto">
+      <div className="hidden lg:flex flex-col gap-5 max-w-4xl mx-auto">
 
       {/* ============================================================
           핵심 주제 히어로 — 무료 출장 견적 컨설팅 + 현장 실무30년 신뢰
           ============================================================ */}
-      <section className="relative overflow-hidden bg-bg rounded-custom shadow-custom-sm p-5 md:p-6 flex flex-col gap-4 select-none">
+      <section className="relative overflow-hidden bg-bg rounded-custom shadow-custom-sm py-4 px-5 md:py-4.5 md:px-6 flex flex-col gap-3.5 select-none">
         {/* 밝고 신뢰감 있는 맥킨지 톤 배경 */}
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(245,247,250,0.9),rgba(255,255,255,0)_55%)] pointer-events-none" />
         <div className="absolute right-0 top-0 w-64 h-64 bg-[radial-gradient(circle_at_top_right,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
         <div className="absolute left-0 bottom-0 h-1 w-full bg-gradient-to-r from-steel via-accent to-transparent opacity-70 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col gap-3">
+        <div className="relative z-10 flex flex-col gap-2.5">
           {/* 주요 CTA + 보조 — 하단 쇼케이스 버튼과 동일 크기·폭, 오렌지·청색 균형 배치 */}
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+          <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
             <button
               onClick={() => setActiveTabAtTop('request')}
               style={{ touchAction: 'manipulation' }}
-              className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2.5 rounded-custom text-[13.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
+              className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2 rounded-custom text-[13px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
             >
               <FileCheck className="w-4 h-4 shrink-0" />
               <span>무료 출장 견적 컨설팅 신청</span>
@@ -1975,39 +1975,39 @@ export default function Home() {
             <button
               onClick={() => setActiveTabAtTop('about')}
               style={{ touchAction: 'manipulation' }}
-              className="flex-1 min-h-10 inline-flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/30 px-4 py-2.5 rounded-custom text-[13.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
+              className="flex-1 min-h-10 inline-flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/30 px-4 py-2 rounded-custom text-[13px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
             >
               컨설팅 절차 보기 <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </button>
           </div>
 
           {/* 전국 무료 방문 신뢰 칩 (정보 — 테두리 없이 채움만) */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
-              <MapPin className="w-3.5 h-3.5 text-steel" /> 전국 현장 무료 방문
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[11px] font-bold px-2.5 py-1 rounded-full select-none">
+              <MapPin className="w-3 h-3 text-steel" /> 전국 현장 무료 방문
             </span>
-            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[12px] font-bold px-3 py-1.5 rounded-full select-none">
-              <ShieldCheck className="w-3.5 h-3.5 text-success" /> AI Native 1차 검증
+            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[11px] font-bold px-2.5 py-1 rounded-full select-none">
+              <ShieldCheck className="w-3 h-3 text-success" /> AI Native 1차 검증
             </span>
           </div>
 
           {/* 핵심 카피 */}
-          <p className="text-[14px] md:text-[16px] text-gray leading-relaxed font-semibold max-w-2xl text-balance">
+          <p className="text-[13px] md:text-[14.5px] text-gray leading-normal font-semibold max-w-2xl text-balance">
             견적은 감이 아니라, <strong className="text-navy font-extrabold">DATA</strong>입니다.{' '}
             <br className="hidden md:block" />
             현장 경험과 <strong className="text-navy font-extrabold">AI Native 분석</strong>으로 비용과 리스크를 <strong className="text-navy font-extrabold">ZEROS</strong> 합니다.
           </p>
 
           {/* 신뢰 증빙 — 제목/상세 2단 크리덴셜 스트립(형식 통일·세로폭 압축) */}
-          <div className="grid grid-cols-3 gap-2 mt-0.5 border-t border-border/70 pt-2 select-none">
+          <div className="grid grid-cols-3 gap-2 mt-0.5 border-t border-border/70 pt-1.5 select-none">
             {[
               { title: '현장 실무30년', detail: 'Manager, 엔지니어' },
               { title: '국가 기술자격증', detail: '자격증 다수' },
               { title: 'PM 총괄역임', detail: '프로젝트 다수' },
             ].map((c, idx) => (
               <div key={c.title} className={`flex flex-col gap-0.5 min-w-0 ${idx > 0 ? 'pl-2 border-l border-border/60' : ''}`}>
-                <span className="text-[12px] sm:text-[13.5px] font-black text-navy tracking-tight leading-tight whitespace-nowrap">{c.title}</span>
-                <span className="text-[11px] sm:text-[12px] text-gray font-bold leading-tight break-keep">{c.detail}</span>
+                <span className="text-[11px] sm:text-[12.5px] font-black text-navy tracking-tight leading-tight whitespace-nowrap">{c.title}</span>
+                <span className="text-[10.5px] sm:text-[11.5px] text-gray font-bold leading-tight break-keep">{c.detail}</span>
               </div>
             ))}
           </div>
@@ -2016,60 +2016,60 @@ export default function Home() {
       </section>
 
       {/* Symmetrical Single Full-Width Box matching the very bottom card's specifications */}
-      <div className="bg-bg border border-border p-4.5 rounded-custom shadow-custom-sm flex flex-col gap-4 relative overflow-hidden animate-in fade-in duration-300">
+      <div className="bg-bg border border-border py-3.5 px-4.5 rounded-custom shadow-custom-sm flex flex-col gap-3 relative overflow-hidden animate-in fade-in duration-300">
         
-        <div className="grid grid-cols-1 gap-4 items-stretch z-10 relative">
+        <div className="grid grid-cols-1 gap-3 items-stretch z-10 relative">
           
           {/* 활성 공종 정보 — 중첩 박스 껍데기 제거, 쇼케이스 카드에 직접 배치 */}
-          <div className="flex flex-col justify-between gap-4">
-            <div className="flex flex-col gap-3.5">
+          <div className="flex flex-col justify-between gap-3">
+            <div className="flex flex-col gap-2.5">
               {/* 공종 라벨(eyebrow) + 실시간 표본 신호 — 박스 제거 */}
               <div className="flex items-center justify-between gap-2 select-none min-w-0">
-                <span className={`min-w-0 truncate text-[12px] tracking-widest uppercase font-black ${activeMetrics.accentText}`}>
+                <span className={`min-w-0 truncate text-[11px] tracking-widest uppercase font-black ${activeMetrics.accentText}`}>
                   {activeVisuals.badgeText}
                 </span>
-                <div className="shrink-0 whitespace-nowrap text-right text-[12px] font-mono font-bold text-steel">
+                <div className="shrink-0 whitespace-nowrap text-right text-[11px] font-mono font-bold text-steel">
                   표본={activeMetrics.sampleCount}
                 </div>
               </div>
               
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] text-gray-light font-black tracking-wider block uppercase">현재 탐색 공종</span>
-                <h1 className="text-xl font-black leading-tight tracking-tight text-navy font-sans">
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] text-gray-light font-black tracking-wider block uppercase">현재 탐색 공종</span>
+                <h1 className="text-[18px] font-black leading-tight tracking-tight text-navy font-sans">
                   {activeManual.title}
                 </h1>
-                <p className="text-[12px] text-gray leading-relaxed font-semibold font-sans mt-0.5">
+                <p className="text-[11.5px] text-gray leading-normal font-semibold font-sans mt-0.5">
                   {activeManual.problemDefinition}
                 </p>
               </div>
 
               {/* 데이터 AI 정직 검증 수치 대시보드 */}
-              <div className="grid grid-cols-3 gap-3 border-t border-border/60 pt-3 my-0.5 select-none">
+              <div className="grid grid-cols-3 gap-3 border-t border-border/60 pt-2.5 my-0 select-none">
                 <div className="text-center flex flex-col justify-center">
-                  <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">AI 분석 신뢰도</span>
-                  <span className="text-[12px] font-black text-navy tracking-tight tabular-nums">{activeMetrics.confidence}%</span>
+                  <span className="text-[11px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">AI 분석 신뢰도</span>
+                  <span className="text-[11.5px] font-black text-navy tracking-tight tabular-nums">{activeMetrics.confidence}%</span>
                 </div>
                 <div className="text-center flex flex-col justify-center border-l border-border/60">
-                  <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">실거래 표준 품셈</span>
-                  <span className="text-[12px] font-black text-success tracking-tight">100% 매핑</span>
+                  <span className="text-[11px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">실거래 표준 품셈</span>
+                  <span className="text-[11.5px] font-black text-success tracking-tight">100% 매핑</span>
                 </div>
                 <div className="text-center flex flex-col justify-center border-l border-border/60">
-                  <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">평균 거품 절감</span>
-                  <span className="text-[12px] font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}%</span>
+                  <span className="text-[11px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">평균 거품 절감</span>
+                  <span className="text-[11.5px] font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}%</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-1 select-none">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 mt-0.5 select-none">
               <button
                 onClick={() => setActiveTabAtTop('sop')}
-                className="flex-1 min-h-10 bg-transparent hover:bg-[#F0F5FB] text-steel border border-steel/30 px-4 py-2.5 rounded-custom text-[13.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
+                className="flex-1 min-h-9 bg-transparent hover:bg-[#F0F5FB] text-steel border border-steel/30 px-4 py-2 rounded-custom text-[12.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
               >
                 AI Native 검증 제출
               </button>
               <button
                 onClick={() => setActiveTabAtTop('about')}
-                className="flex-1 min-h-10 bg-transparent hover:bg-[#FFF3EB] text-[#F97316] border border-[#F97316]/30 px-4 py-2.5 rounded-custom text-[13.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
+                className="flex-1 min-h-9 bg-transparent hover:bg-[#FFF3EB] text-[#F97316] border border-[#F97316]/30 px-4 py-2 rounded-custom text-[12.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
               >
                 ZEROS 진단 절차
               </button>
@@ -2079,9 +2079,9 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="flex flex-col gap-5 px-1 pt-2">
+      <section className="flex flex-col gap-3.5 px-1 pt-1">
         <SectionHeading eyebrow="How We Review" title="공사비보다 공사 범위를 먼저 고정합니다." accent="steel" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-0">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0">
           {[
             { title: '자료 정밀 검토', desc: '도면·사진의 치수와 연결 규격을 확인해 범위 누락을 막습니다.' },
             { title: '현장 제약 확인', desc: '협소 반입·고소·가동중단 등 단가 급증 리스크를 미리 잡습니다.' },
@@ -2089,29 +2089,29 @@ export default function Home() {
           ].map((item, idx) => (
             <div
               key={item.title}
-              className={`flex flex-col gap-2 px-0 md:px-5 ${idx > 0 ? 'md:border-l md:border-border/60' : ''}`}
+              className={`flex flex-col gap-1 px-0 md:px-5 ${idx > 0 ? 'md:border-l md:border-border/60' : ''}`}
             >
-              <span className="text-[12px] text-steel font-black uppercase tracking-wider">Step {idx + 1}</span>
-              <h3 className="text-[15px] font-bold text-navy mt-1">{item.title}</h3>
-              <p className="text-[12px] text-gray leading-relaxed">{item.desc}</p>
+              <span className="text-[11px] text-steel font-black uppercase tracking-wider">Step {idx + 1}</span>
+              <h3 className="text-[14.5px] font-bold text-navy mt-0.5">{item.title}</h3>
+              <p className="text-[11.5px] text-gray leading-normal">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA 섹션 — 스틸블루 단색 밴드(상단 컬러와 통일), 크기 축소 */}
-      <section className="bg-steel text-white px-4 py-3 md:py-4 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-1.5 border border-white/10">
-        <h2 className="text-[17px] sm:text-xl md:text-2xl font-black tracking-tight max-w-xl text-white font-sans whitespace-nowrap">
+      <section className="bg-steel text-white px-4 py-2.5 md:py-3.5 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-1 border border-white/10">
+        <h2 className="text-[16px] sm:text-[19px] md:text-[21px] font-black tracking-tight max-w-xl text-white font-sans whitespace-nowrap">
           공사를 시작하기 전, 먼저 검토하십시오.
         </h2>
 
-        <p className="text-[12.5px] sm:text-[14.5px] text-white/90 max-w-xl leading-relaxed font-medium break-keep keep-all">
+        <p className="text-[11.5px] sm:text-[13.5px] text-white/90 max-w-xl leading-normal font-medium break-keep keep-all">
           불명확한 공사 범위와 잦은 설계 변경으로 인한 예산 초과 리스크,<br className="hidden sm:inline" /> ZEROS의 정밀 1차 엔지니어링 검토를 통해 선제적으로 예방하십시오.
         </p>
 
         <button
           onClick={() => setActiveTabAtTop('request')}
-          className="mt-0.5 bg-accent hover:bg-accent/90 text-white px-6 py-2.5 rounded-custom text-[14px] sm:text-[15px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer"
+          className="mt-0.5 bg-accent hover:bg-accent/90 text-white px-5 py-2 rounded-custom text-[13px] sm:text-[14px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer"
         >
           무료 출장 견적 컨설팅 신청
         </button>
