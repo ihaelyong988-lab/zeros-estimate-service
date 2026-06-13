@@ -38,19 +38,16 @@ export const TopHeader: React.FC = () => {
   return (
     <header className="sticky top-0 z-40 w-full h-16 border-b border-border bg-bg/95 backdrop-blur-md px-8 flex items-center justify-between select-none">
       
-      {/* 1. 좌측 로고 영역 - 완벽한 기하학적 대칭 정렬 */}
+      {/* 1. 좌측 로고 영역 - 완벽한 기하학적 대칭 정렬 (클릭 이벤트 비활성화) */}
       <div 
-        className="flex items-center gap-3 cursor-pointer select-none"
-        onClick={() => handleTabClick('home')}
-        style={{ touchAction: 'manipulation' }}
+        className="flex items-center gap-3 cursor-default select-none"
       >
         {/* 완벽한 36px 정사각 로고박스 */}
-        <div className="w-9 h-9 bg-accent rounded-custom flex items-center justify-center shrink-0 shadow-sm shadow-accent/20 hover:scale-102 transition-all">
+        <div className="w-9 h-9 bg-accent rounded-custom flex items-center justify-center shrink-0 shadow-sm shadow-accent/20">
           <Building2 className="w-4.5 h-4.5 text-bg" />
         </div>
-        <div className="flex flex-col justify-center">
+        <div className="flex items-center justify-center">
           <span className="font-black text-[18px] tracking-wider text-navy leading-none uppercase font-sans">ZEROS</span>
-          <span className="text-[12px] text-gray-light font-black tracking-widest leading-none mt-1">무료 출장 견적 컨설팅</span>
         </div>
       </div>
 

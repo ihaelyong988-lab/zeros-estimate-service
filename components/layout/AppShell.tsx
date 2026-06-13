@@ -338,17 +338,18 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         
         {/* 모바일 상단 네이티브 로고 헤더 */}
         <div className={`${isMobileLanding ? 'bg-[#061F3C] border-white/10 px-5 py-4' : 'bg-navy border-white/5 px-5 py-4.5'} shrink-0 text-bg flex items-center justify-between select-none shadow-md border-b relative z-40`}>
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleMobileTabChange('home')}
+            style={{ touchAction: 'manipulation' }}
+            className="flex items-center gap-2.5 active:scale-98 transition-transform cursor-pointer text-left"
+          >
             <div className="w-8 h-8 bg-accent rounded-custom flex items-center justify-center shadow-md shadow-accent/20">
               <Building2 className="w-4 h-4 text-bg" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex items-center justify-center">
               <span className="font-black text-[19px] text-bg leading-none uppercase">ZEROS</span>
-              {!isMobileLanding && (
-                <span className="text-[12px] text-bg/70 font-semibold mt-0.5">AI Native 검증 앱</span>
-              )}
             </div>
-          </div>
+          </button>
           {isMobileLanding ? (
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
