@@ -2109,20 +2109,20 @@ export default function Home() {
   ];
 
   const renderHomeDesktop = () => (
-    <div className="hidden lg:flex flex-col min-h-full bg-bg-subtle relative overflow-hidden">
+    <div className="hidden lg:flex flex-col h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] bg-bg-subtle relative overflow-hidden select-none">
       {/* 백그라운드 조명 데코레이션 - 좌우 공간에 화사하고 친근한 톤 보충 */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(224,112,26,0.04),transparent_70%)] pointer-events-none" />
 
       {/* ── 히어로 ── */}
-      <section className="flex-1 flex items-center py-12 xl:py-16">
+      <section className="h-[60%] flex items-center min-h-0 py-4 z-10">
         <div className="w-full max-w-[1320px] mx-auto px-6 xl:px-8">
-          <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] pt-18 pb-18 md:pt-24 md:pb-24 xl:pt-28 xl:pb-28 px-10 md:px-12 xl:px-16 grid grid-cols-[1.1fr_0.9fr] gap-16 xl:gap-20 items-center relative overflow-hidden">
+          <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] py-6 md:py-8 xl:py-10 px-10 md:px-12 xl:px-16 grid grid-cols-[1.1fr_0.9fr] gap-16 xl:gap-20 items-center relative overflow-hidden">
             {/* 은은한 내부 데코레이션 그라데이션 */}
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(245,247,250,0.5),rgba(255,255,255,0)_65%)] pointer-events-none" />
 
             {/* 좌: 카피 + CTA */}
-            <div className="flex flex-col gap-8 xl:gap-10 z-10 relative">
+            <div className="flex flex-col gap-6 xl:gap-8 z-10 relative">
               {/* 배지 */}
               <span className="self-start inline-flex items-center gap-2 bg-[#EEF5FF] text-[#155EEF] text-[13px] font-black px-3.5 py-1.5 rounded-full select-none">
                 <Sparkles className="w-3.5 h-3.5 text-[#155EEF]" />
@@ -2130,7 +2130,7 @@ export default function Home() {
               </span>
 
               {/* 헤드라인 */}
-              <h1 className="text-[clamp(32px,3.2vw,44px)] font-black leading-[1.25] tracking-tight text-[#0F1E35]">
+              <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.25] tracking-tight text-[#0F1E35]">
                 생산라인 증설·개선 배관공사,
                 <br />
                 <span className="text-[#FF5A1F]">AI 분석</span>
@@ -2138,13 +2138,13 @@ export default function Home() {
               </h1>
 
               {/* 본문 */}
-              <p className="text-[15.5px] leading-relaxed font-semibold text-[#5B6573] max-w-xl">
+              <p className="text-[14.5px] xl:text-[15.5px] leading-relaxed font-semibold text-[#5B6573] max-w-xl">
                 ZEROS는 현장 실무 경험과 <strong className="text-[#0F1E35] font-black">AI 데이터 분석</strong>을 결합해,
                 비용과 리스크까지 고려한 가장 합리적인 견적을 제안합니다.
               </p>
 
               {/* CTA */}
-              <div className="flex flex-wrap items-center gap-3 mt-3">
+              <div className="flex flex-wrap items-center gap-3 mt-2">
                 <button
                   onClick={() => setActiveTabAtTop('request')}
                   style={{ touchAction: 'manipulation' }}
@@ -2164,7 +2164,7 @@ export default function Home() {
               </div>
 
               {/* 신뢰 배지 대체: 핵심 가치 피처 라인 */}
-              <div className="flex items-center gap-5 mt-4 pt-6 border-t border-border/50 text-[13px] text-gray font-bold select-none">
+              <div className="flex items-center gap-5 mt-2 pt-4 border-t border-border/50 text-[13px] text-gray font-bold select-none">
                 <div className="flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-steel" />
                   <span>도면·사진 정밀 분석</span>
@@ -2182,7 +2182,7 @@ export default function Home() {
 
             {/* 우: 현장 이미지 + 플로팅 배지 */}
             <div className="relative w-full z-10 flex flex-col items-center">
-              <div className="relative w-full rounded-2xl overflow-hidden shadow-custom-md ring-1 ring-black/5 aspect-[1.16/1]">
+              <div className="relative w-full rounded-2xl overflow-hidden shadow-custom-md ring-1 ring-black/5 aspect-[1.32/1]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/hero-engineers.jpg"
@@ -2207,9 +2207,9 @@ export default function Home() {
       </section>
 
       {/* ── 통계 밴드 ── */}
-      <section className="relative bg-[#062B64] text-white select-none">
+      <section className="h-[37.5%] flex items-center relative bg-[#062B64] text-white z-10">
         <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-steel via-[#5D8EC8] to-accent" />
-        <div className="max-w-[1240px] mx-auto px-10 py-13 md:py-16 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6">
+        <div className="w-full max-w-[1240px] mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6">
           {HOME_STATS.map(({ icon: Icon, label, value }, idx) => (
             <div key={label} className={`flex items-center gap-4.5 ${idx > 0 ? 'md:border-l md:border-white/10 md:pl-8' : ''}`}>
               <span className="w-13 h-13 rounded-custom bg-[#0A3678] flex items-center justify-center shrink-0">
@@ -2225,8 +2225,8 @@ export default function Home() {
       </section>
 
       {/* ── 푸터 ── */}
-      <footer className="bg-[#04204C] text-white/70 select-none">
-        <div className="max-w-[1240px] mx-auto px-10 py-4 flex items-center justify-between gap-4 text-[12.5px] font-semibold">
+      <footer className="bg-[#04204C] text-white/70 h-[2.5%] min-h-[36px] flex items-center z-10">
+        <div className="w-full max-w-[1240px] mx-auto px-10 flex items-center justify-between gap-4 text-[12.5px] font-semibold">
           <span>© 2025 ZEROS Co., Ltd. All rights reserved.</span>
           <div className="flex items-center gap-5">
             <span className="text-white/45">사업자등록번호 준비중</span>
