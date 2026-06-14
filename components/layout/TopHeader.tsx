@@ -113,7 +113,7 @@ export const TopHeader: React.FC = () => {
               key={tab}
               onClick={() => handleTabClick(tab)}
               style={{ touchAction: 'manipulation' }}
-              className={`relative px-3.5 py-2 text-[13.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:transition-all after:duration-200 ${
+              className={`relative px-3.5 py-2 text-[14.5px] font-bold uppercase tracking-wide transition-colors duration-200 cursor-pointer after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-[2px] after:transition-all after:duration-200 ${
                 isActive
                   ? `${themeClasses.active} after:opacity-100`
                   : `text-gray ${themeClasses.hover} after:opacity-0 hover:after:opacity-50`

@@ -2183,7 +2183,7 @@ export default function Home() {
               {/* 좌: 카피 + CTA */}
               <div className="flex flex-col gap-6 xl:gap-8 relative">
                 {/* 배지 */}
-                <span className="self-start inline-flex items-center gap-2 bg-[#EEF5FF] text-[#155EEF] text-[13px] font-black px-3.5 py-1.5 rounded-full select-none">
+                <span className="self-start inline-flex items-center gap-2 bg-[#EEF5FF] text-[#155EEF] text-[14.5px] font-black px-3.5 py-1.5 rounded-full select-none">
                   <Sparkles className="w-3.5 h-3.5 text-[#155EEF]" />
                   AI Native 1차 검증 + PM 전문가 최종 검토
                 </span>
@@ -2197,7 +2197,7 @@ export default function Home() {
                 </h1>
 
                 {/* 본문 */}
-                <p className="text-[14.5px] xl:text-[15.5px] leading-relaxed font-semibold text-[#5B6573] max-w-xl">
+                <p className="text-[14.5px] leading-relaxed font-semibold text-[#5B6573] max-w-xl">
                   ZEROS는 현장 실무 경험과 <strong className="text-[#0F1E35] font-black">AI 데이터 분석</strong>을 결합해,
                   비용과 리스크까지 고려한 가장 합리적인 견적을 제안합니다.
                 </p>
@@ -2227,7 +2227,7 @@ export default function Home() {
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
-                      <span className="text-[13px] font-black text-[#0F1E35]">도면·사진 정밀 분석</span>
+                      <span className="text-[14.5px] font-black text-[#0F1E35]">도면·사진 정밀 분석</span>
                     </div>
                     <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
                       도면·사진의 치수와 연결 규격을 분석하여 물량 누락을 방지합니다.
@@ -2236,7 +2236,7 @@ export default function Home() {
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
-                      <span className="text-[13px] font-black text-[#0F1E35]">공사 범위 사전 조율</span>
+                      <span className="text-[14.5px] font-black text-[#0F1E35]">공사 범위 사전 조율</span>
                     </div>
                     <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
                       모호한 범위를 명확히 고정하여 시공사 비교 견적의 동일 기준을 수립합니다.
@@ -2245,7 +2245,7 @@ export default function Home() {
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
-                      <span className="text-[13px] font-black text-[#0F1E35]">실거래 공량 검토</span>
+                      <span className="text-[14.5px] font-black text-[#0F1E35]">실거래 공량 검토</span>
                     </div>
                     <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
                       표준 품셈 및 1군 실거래 표본 대조로 과도하게 부풀려진 노무 단가를 교정합니다.
@@ -2290,7 +2290,7 @@ export default function Home() {
                   }}
                   className="flex flex-col items-start text-left gap-1 pb-3 relative group transition-all duration-200 cursor-pointer focus:outline-none hover:-translate-y-0.5"
                 >
-                  <span className="text-[13.5px] md:text-[14.5px] font-black text-navy group-hover:text-steel transition-colors duration-150 whitespace-nowrap">
+                  <span className="text-[14.5px] font-black text-navy group-hover:text-steel transition-colors duration-150 whitespace-nowrap">
                     {cat.title}
                   </span>
                   <span className="text-[10.5px] md:text-[11.5px] font-semibold text-[#5B6573] leading-normal break-keep">
