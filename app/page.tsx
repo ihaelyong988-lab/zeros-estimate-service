@@ -1969,7 +1969,7 @@ export default function Home() {
             <button
               onClick={() => setActiveTabAtTop('request')}
               style={{ touchAction: 'manipulation' }}
-              className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2 rounded-custom text-[13px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
+              className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2 rounded-custom text-[14.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
             >
               <FileCheck className="w-4 h-4 shrink-0" />
               <span>무료 출장 견적 컨설팅 신청</span>
@@ -1977,7 +1977,7 @@ export default function Home() {
             <button
               onClick={() => setActiveTabAtTop('about')}
               style={{ touchAction: 'manipulation' }}
-              className="flex-1 min-h-10 inline-flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/30 px-4 py-2 rounded-custom text-[13px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
+              className="flex-1 min-h-10 inline-flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
             >
               컨설팅 절차 보기 <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </button>
@@ -2065,13 +2065,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 mt-0.5 select-none">
               <button
                 onClick={() => setActiveTabAtTop('sop')}
-                className="flex-1 min-h-9 bg-transparent hover:bg-[#F0F5FB] text-steel border border-steel/30 px-4 py-2 rounded-custom text-[12.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
+                className="flex-1 min-h-9 bg-transparent hover:bg-[#F0F5FB] text-steel border border-steel/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
               >
                 AI Native 검증 제출
               </button>
               <button
                 onClick={() => setActiveTabAtTop('about')}
-                className="flex-1 min-h-9 bg-transparent hover:bg-[#FFF3EB] text-[#F97316] border border-[#F97316]/30 px-4 py-2 rounded-custom text-[12.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
+                className="flex-1 min-h-9 bg-transparent hover:bg-[#FFF3EB] text-[#F97316] border border-[#F97316]/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
               >
                 ZEROS 진단 절차
               </button>
