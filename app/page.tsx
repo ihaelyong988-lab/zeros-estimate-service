@@ -575,41 +575,38 @@ export default function Home() {
             <div className="bg-bg border-t-[3px] border-t-steel border-x border-b border-border/80 rounded-b-custom rounded-tr-custom p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden shadow-sm">
               <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(30,77,140,0.005)_1px,transparent_1px),linear-gradient(to_bottom,rgba(30,77,140,0.005)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
 
-              {/* 좌측: 최종 산출물 (Scope Sheet) 설명 및 데이터 프리뷰 */}
-              <div className="flex-1 flex flex-col gap-3.5">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] text-steel font-black uppercase tracking-wider">Document Output (최종 결과물 미리보기)</span>
-                  <h3 className="text-[14.5px] font-black text-navy tracking-tight">
-                    모든 분석 검증의 최종 결과물은 단 한 장의 검토 시트로 정돈됩니다
-                  </h3>
-                </div>
-                
-                {/* 미니 검토 시트 프리뷰 카드 (정적 데이터 스냅샷 - 4열 가로 리스트 구조) */}
-                <div className="bg-[#F8FAFC] border border-border/50 rounded-custom p-3 w-full">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-[11px] font-bold text-gray">
-                    <div className="bg-bg border border-border/40 rounded px-2.5 py-1.5 flex flex-col gap-0.5 shadow-sm">
-                      <span className="text-[9px] text-gray-light uppercase font-mono">Scope Spec</span>
-                      <span className="text-navy font-black truncate">범위 고정 (Spec Fixed)</span>
-                    </div>
-                    <div className="bg-bg border border-border/40 rounded px-2.5 py-1.5 flex flex-col gap-0.5 shadow-sm">
-                      <span className="text-[9px] text-gray-light uppercase font-mono">Budget Band</span>
-                      <span className="text-navy font-black truncate">₩18M ~ ₩22M</span>
-                    </div>
-                    <div className="bg-bg border border-border/40 rounded px-2.5 py-1.5 flex flex-col gap-0.5 shadow-sm">
-                      <span className="text-[9px] text-gray-light uppercase font-mono">Risk Grade</span>
-                      <span className="text-navy font-black truncate">LOW (이상치 배제)</span>
-                    </div>
-                    <div className="bg-bg border border-border/40 rounded px-2.5 py-1.5 flex flex-col gap-0.5 shadow-sm">
-                      <span className="text-[9px] text-gray-light uppercase font-mono">Next Action</span>
-                      <span className="text-accent font-black truncate">온라인 검토 확정</span>
-                    </div>
+              {/* 1열: 최종 결과물 (Scope Sheet) 설명 텍스트 */}
+              <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
+                <span className="text-[10px] text-steel font-black uppercase tracking-wider">Document Output (최종 결과물 미리보기)</span>
+                <h3 className="text-[14px] font-black text-navy tracking-tight leading-snug">
+                  모든 분석 검증의 최종 결과물은 단 한 장의 검토 시트로 정돈됩니다.
+                </h3>
+              </div>
+              
+              {/* 2열: 미니 검토 시트 프리뷰 카드 (정적 데이터 스냅샷 - 4열 가로 리스트 구조) */}
+              <div className="flex-[1.3] min-w-[280px] bg-[#F8FAFC] border border-border/50 rounded-custom p-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10.5px] font-bold text-gray">
+                  <div className="bg-bg border border-border/40 rounded px-2 py-1.5 flex flex-col gap-0.5 shadow-sm text-center">
+                    <span className="text-[8px] text-gray-light uppercase font-mono">Scope Spec</span>
+                    <span className="text-navy font-black truncate">범위 고정</span>
+                  </div>
+                  <div className="bg-bg border border-border/40 rounded px-2 py-1.5 flex flex-col gap-0.5 shadow-sm text-center">
+                    <span className="text-[8px] text-gray-light uppercase font-mono">Budget Band</span>
+                    <span className="text-navy font-black truncate">₩18M~₩22M</span>
+                  </div>
+                  <div className="bg-bg border border-border/40 rounded px-2 py-1.5 flex flex-col gap-0.5 shadow-sm text-center">
+                    <span className="text-[8px] text-gray-light uppercase font-mono">Risk Grade</span>
+                    <span className="text-navy font-black truncate">LOW 등급</span>
+                  </div>
+                  <div className="bg-bg border border-border/40 rounded px-2 py-1.5 flex flex-col gap-0.5 shadow-sm text-center">
+                    <span className="text-[8px] text-gray-light uppercase font-mono">Next Action</span>
+                    <span className="text-accent font-black truncate">온라인검토</span>
                   </div>
                 </div>
               </div>
               
-              {/* 우측: 화면 탭 이동 컨트롤 영역 (Tab Transition Buttons) */}
-              <div className="w-full lg:w-64 shrink-0 flex flex-col justify-center">
-
+              {/* 3열: 화면 탭 이동 컨트롤 영역 (Tab Transition Buttons) */}
+              <div className="w-full lg:w-56 shrink-0 flex flex-col justify-center">
                 {/* 탭 2: SOP 검증 탭 */}
                 <button
                   onClick={() => setActiveTab('sop')}
