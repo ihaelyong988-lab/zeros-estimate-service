@@ -109,6 +109,8 @@ export default function Home() {
     setActiveTab,
     selectedMenu,
     selectedBudget,
+    setSelectedMenu,
+    setSelectedBudget,
     setLandingTradeName,
     setLandingTradeChipClass,
     adminView,
@@ -2129,99 +2131,160 @@ export default function Home() {
     { icon: BarChart3, label: '누적 검토 건수', value: '246건+' },
   ];
 
+  const HOME_CATEGORIES = [
+    {
+      title: '배관공사',
+      desc: '일반/용수/가스배관',
+      colorClass: 'bg-[#FF5A1F]',
+      menu: '배관공사',
+    },
+    {
+      title: '장비 설치',
+      desc: '펌프,탱크,기타 장비 설치',
+      colorClass: 'bg-[#F97316]',
+      menu: '장비설치',
+    },
+    {
+      title: '생산설비 배관',
+      desc: '설비 Hook-up연결',
+      colorClass: 'bg-[#EAB308]',
+      menu: '생산설비 배관 연결',
+    },
+    {
+      title: 'CAPEX개,증설 검토',
+      desc: '도면 및 견적 검토',
+      colorClass: 'bg-[#10B981]',
+      menu: 'CAPEX 개·증설 검토',
+    },
+    {
+      title: 'SKID제작,설치',
+      desc: '배관SPOOL Module검토',
+      colorClass: 'bg-[#3B82F6]',
+      menu: 'skid',
+    },
+  ];
+
   const renderHomeDesktop = () => (
     <div className="hidden lg:flex flex-col h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] bg-bg-subtle relative overflow-hidden select-none">
       {/* 백그라운드 조명 데코레이션 - 좌우 공간에 화사하고 친근한 톤 보충 */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(224,112,26,0.04),transparent_70%)] pointer-events-none" />
 
-      {/* ── 히어로 (수직 중앙 소실점 정렬) ── */}
-      <section className="flex-1 flex items-center justify-center min-h-0 py-4 z-10">
+      {/* ── 히어로 및 핵심 영역 카테고리 (수직 정렬 및 상하 여백 균형 매칭) ── */}
+      <section className="flex-1 flex items-center justify-center min-h-0 py-6 xl:py-8 z-10">
         <div className="w-full max-w-[1320px] mx-auto px-6 xl:px-8">
-          <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] py-14 md:py-18 xl:py-22 px-10 md:px-12 xl:px-16 grid grid-cols-[1.05fr_0.95fr] gap-16 xl:gap-20 items-center relative overflow-hidden">
+          {/* 히어로 카드 (5대 카테고리까지 내부로 통합해 감싸도록 세로폭 확장) */}
+          <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] py-10 md:py-12 xl:py-14 px-10 md:px-12 xl:px-16 flex flex-col gap-10 relative overflow-hidden">
             {/* 은은한 내부 데코레이션 그라데이션 */}
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(245,247,250,0.5),rgba(255,255,255,0)_65%)] pointer-events-none" />
 
-            {/* 좌: 카피 + CTA */}
-            <div className="flex flex-col gap-6 xl:gap-8 z-10 relative">
-              {/* 배지 */}
-              <span className="self-start inline-flex items-center gap-2 bg-[#EEF5FF] text-[#155EEF] text-[13px] font-black px-3.5 py-1.5 rounded-full select-none">
-                <Sparkles className="w-3.5 h-3.5 text-[#155EEF]" />
-                AI Native 1차 검증 + PM 전문가 최종 검토
-              </span>
+            {/* 상단: 카피 + 이미지 (2열 레이아웃) */}
+            <div className="grid grid-cols-[1.05fr_0.95fr] gap-16 xl:gap-20 items-center z-10 relative">
+              {/* 좌: 카피 + CTA */}
+              <div className="flex flex-col gap-6 xl:gap-8 relative">
+                {/* 배지 */}
+                <span className="self-start inline-flex items-center gap-2 bg-[#EEF5FF] text-[#155EEF] text-[13px] font-black px-3.5 py-1.5 rounded-full select-none">
+                  <Sparkles className="w-3.5 h-3.5 text-[#155EEF]" />
+                  AI Native 1차 검증 + PM 전문가 최종 검토
+                </span>
 
-              {/* 헤드라인 */}
-              <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.25] tracking-tight text-[#0F1E35]">
-                생산라인 증설·개선 배관공사,
-                <br />
-                <span className="text-[#FF5A1F]">AI 분석</span>
-                <span>으로 더 정확하게</span>
-              </h1>
+                {/* 헤드라인 */}
+                <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.25] tracking-tight text-[#0F1E35]">
+                  생산라인 증설·개선 배관공사,
+                  <br />
+                  <span className="text-[#FF5A1F]">AI 분석</span>
+                  <span>으로 더 정확하게</span>
+                </h1>
 
-              {/* 본문 */}
-              <p className="text-[14.5px] xl:text-[15.5px] leading-relaxed font-semibold text-[#5B6573] max-w-xl">
-                ZEROS는 현장 실무 경험과 <strong className="text-[#0F1E35] font-black">AI 데이터 분석</strong>을 결합해,
-                비용과 리스크까지 고려한 가장 합리적인 견적을 제안합니다.
-              </p>
+                {/* 본문 */}
+                <p className="text-[14.5px] xl:text-[15.5px] leading-relaxed font-semibold text-[#5B6573] max-w-xl">
+                  ZEROS는 현장 실무 경험과 <strong className="text-[#0F1E35] font-black">AI 데이터 분석</strong>을 결합해,
+                  비용과 리스크까지 고려한 가장 합리적인 견적을 제안합니다.
+                </p>
 
-              {/* CTA */}
-              <div className="flex flex-wrap items-center gap-3 mt-2">
-                <button
-                  onClick={() => setActiveTabAtTop('request')}
-                  style={{ touchAction: 'manipulation' }}
-                  className="inline-flex items-center justify-center gap-2 bg-[#FF5A1F] hover:bg-[#EA4F18] text-white px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-md shadow-[#FF5A1F]/25 transition-all duration-150 active:scale-95 cursor-pointer"
-                >
-                  <FileCheck className="w-4.5 h-4.5 shrink-0" />
-                  무료 출장 견적 신청
-                </button>
-                <button
-                  onClick={() => setActiveTabAtTop('about')}
-                  style={{ touchAction: 'manipulation' }}
-                  className="inline-flex items-center justify-center gap-2 bg-surface hover:bg-bg-subtle text-[#0F1E35] border border-border px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
-                >
-                  ZEROS 진단 절차 보기
-                  <ArrowRight className="w-4 h-4 shrink-0" />
-                </button>
+                {/* CTA */}
+                <div className="flex flex-wrap items-center gap-3 mt-2">
+                  <button
+                    onClick={() => setActiveTabAtTop('request')}
+                    style={{ touchAction: 'manipulation' }}
+                    className="inline-flex items-center justify-center gap-2 bg-[#FF5A1F] hover:bg-[#EA4F18] text-white px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-md shadow-[#FF5A1F]/25 transition-all duration-150 active:scale-95 cursor-pointer"
+                  >
+                    <FileCheck className="w-4.5 h-4.5 shrink-0" />
+                    무료 출장 견적 신청
+                  </button>
+                  <button
+                    onClick={() => setActiveTabAtTop('about')}
+                    style={{ touchAction: 'manipulation' }}
+                    className="inline-flex items-center justify-center gap-2 bg-surface hover:bg-bg-subtle text-[#0F1E35] border border-border px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+                  >
+                    ZEROS 진단 절차 보기
+                    <ArrowRight className="w-4 h-4 shrink-0" />
+                  </button>
+                </div>
+
+                {/* 신뢰 배지 대체: 핵심 가치 피처 라인 */}
+                <div className="flex items-center gap-5 mt-2 pt-4 border-t border-border/50 text-[13px] text-gray font-bold select-none">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-steel" />
+                    <span>도면·사진 정밀 분석</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-steel" />
+                    <span>공사 범위 사전 조율</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-steel" />
+                    <span>실거래 공량 검토</span>
+                  </div>
+                </div>
               </div>
 
-              {/* 신뢰 배지 대체: 핵심 가치 피처 라인 */}
-              <div className="flex items-center gap-5 mt-2 pt-4 border-t border-border/50 text-[13px] text-gray font-bold select-none">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-steel" />
-                  <span>도면·사진 정밀 분석</span>
+              {/* 우: 현장 이미지 + 플로팅 배지 */}
+              <div className="relative w-full flex flex-col items-center">
+                <div className="relative w-full rounded-2xl overflow-hidden shadow-custom-md ring-1 ring-black/5 aspect-[1.25/1]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/hero-engineers.jpg"
+                    alt="현장 엔지니어가 노트북으로 배관 설비를 검토하는 모습"
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                  />
+                  {/* 가독성용 하단 그라데이션 */}
+                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0F1E35]/30 to-transparent pointer-events-none" />
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-steel" />
-                  <span>공사 범위 사전 조율</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-steel" />
-                  <span>실거래 공량 검토</span>
+                
+                {/* 실시간 분석 플로팅 배지 — 이미지 하단 가로축 정중앙 배치 및 초소형/고정 정렬 (REAL-TIME | AI Native 검증) */}
+                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border border-[#E2E8F0] rounded-full shadow-custom-md px-3.5 py-1.5 flex items-center gap-2.5 select-none z-20 whitespace-nowrap hover:scale-105 transition-transform duration-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
+                  <span className="text-[11px] font-black text-gray uppercase tracking-wider">REAL-TIME</span>
+                  <span className="w-px h-3 bg-border shrink-0" />
+                  <span className="text-[12.5px] font-extrabold text-[#0F1E35]">AI Native 검증</span>
                 </div>
               </div>
             </div>
 
-            {/* 우: 현장 이미지 + 플로팅 배지 */}
-            <div className="relative w-full z-10 flex flex-col items-center">
-              <div className="relative w-full rounded-2xl overflow-hidden shadow-custom-md ring-1 ring-black/5 aspect-[1.25/1]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/hero-engineers.jpg"
-                  alt="현장 엔지니어가 노트북으로 배관 설비를 검토하는 모습"
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-                {/* 가독성용 하단 그라데이션 */}
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0F1E35]/30 to-transparent pointer-events-none" />
-              </div>
-              
-              {/* 실시간 분석 플로팅 배지 — 이미지 하단 가로축 정중앙 배치 및 초소형/고정 정렬 (REAL-TIME | AI Native 검증) */}
-              <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border border-[#E2E8F0] rounded-full shadow-custom-md px-3.5 py-1.5 flex items-center gap-2.5 select-none z-20 whitespace-nowrap hover:scale-105 transition-transform duration-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
-                <span className="text-[11px] font-black text-gray uppercase tracking-wider">REAL-TIME</span>
-                <span className="w-px h-3 bg-border shrink-0" />
-                <span className="text-[12.5px] font-extrabold text-[#0F1E35]">AI Native 검증</span>
-              </div>
+            {/* ── 5대 공정/서비스 영역 카테고리 (하얀 바탕 카드 내부 하단 배치) ── */}
+            <div className="grid grid-cols-5 gap-6 xl:gap-8 border-t border-border/40 pt-8 z-10 relative">
+              {HOME_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.title}
+                  onClick={() => {
+                    setSelectedMenu(cat.menu);
+                    setSelectedBudget('');
+                    setActiveTabAtTop('review');
+                  }}
+                  className="flex flex-col items-start text-left gap-1 pb-3 relative group transition-all duration-200 cursor-pointer focus:outline-none hover:-translate-y-0.5"
+                >
+                  <span className="text-[13.5px] md:text-[14.5px] font-black text-navy group-hover:text-steel transition-colors duration-150 whitespace-nowrap">
+                    {cat.title}
+                  </span>
+                  <span className="text-[10.5px] md:text-[11.5px] font-semibold text-[#5B6573] leading-normal break-keep">
+                    {cat.desc}
+                  </span>
+                  {/* 컬러색 밑줄에 양끝이 아주 살짝 라운딩 지는 것 (두께 3px, 곡률 1.5px) */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-[3px] ${cat.colorClass} rounded-[1.5px] transition-transform duration-200 group-hover:scale-y-[1.3] origin-bottom`} />
+                </button>
+              ))}
             </div>
           </div>
         </div>
