@@ -375,7 +375,7 @@ export const RightSidebar: React.FC = () => {
         </button>
 
         {/* 추천 다음 단계 CTA — 좌측 하단 박스와 상부 테두리 수평 정렬을 위한 여백 보정 */}
-        <div className="flex flex-col gap-2 border-t border-border/60 pt-3 mt-10">
+        <div className="flex flex-col gap-2 border-t border-border/60 pt-3 mt-8">
           <button
             onClick={() => setActiveTab('request')}
             style={{ touchAction: 'manipulation' }}
