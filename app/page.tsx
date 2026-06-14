@@ -579,7 +579,7 @@ export default function Home() {
               <div className="flex-1 flex flex-col gap-3.5">
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] text-steel font-black uppercase tracking-wider">Document Output (최종 결과물 미리보기)</span>
-                  <h3 className="text-[15.5px] font-black text-navy tracking-tight">
+                  <h3 className="text-[14.5px] font-black text-navy tracking-tight">
                     모든 분석 검증의 최종 결과물은 단 한 장의 검토 시트로 정돈됩니다
                   </h3>
                 </div>
@@ -612,7 +612,7 @@ export default function Home() {
                 {/* 탭 1: 의뢰 신청 탭 */}
                 <button
                   onClick={() => setActiveTab('request')}
-                  className="w-full flex items-center justify-center gap-1.5 bg-[#F97316] hover:bg-[#EA670F] text-white py-2.5 px-4 rounded-custom text-[12.5px] font-black tracking-wide shadow-sm active:scale-95 transition-all duration-150 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-1.5 bg-[#F97316] hover:bg-[#EA670F] text-white py-2.5 px-4 rounded-custom text-[14.5px] font-black tracking-wide shadow-sm active:scale-95 transition-all duration-150 cursor-pointer"
                 >
                   <FileCheck className="w-4 h-4 shrink-0" />
                   <span>무료 출장 견적 신청</span>
@@ -621,7 +621,7 @@ export default function Home() {
                 {/* 탭 2: SOP 검증 탭 */}
                 <button
                   onClick={() => setActiveTab('sop')}
-                  className="w-full flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/20 py-2.5 px-4 rounded-custom text-[12px] font-bold transition-all duration-150 active:scale-95 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/20 py-2.5 px-4 rounded-custom text-[14.5px] font-bold transition-all duration-150 active:scale-95 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-steel shrink-0 animate-pulse" />
                   <span>AI 활용 SOP 상세 과정</span>
@@ -842,18 +842,18 @@ export default function Home() {
           <div className="bg-gradient-to-r from-[#1A365D] to-[#2E5E8A] text-bg rounded-custom p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-[11px] text-bg/75 font-black uppercase tracking-wider font-mono">Ready to verify</span>
-              <span className="text-[13.5px] font-black tracking-tight">도면과 제원서를 제출하시면 AI 검증 절차가 즉시 시작됩니다.</span>
+              <span className="text-[14.5px] font-black tracking-tight">도면과 제원서를 제출하시면 AI 검증 절차가 즉시 시작됩니다.</span>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 shrink-0">
               <button
                 onClick={() => setActiveTab('request')}
-                className="bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2 rounded-custom text-[12.5px] font-black shadow-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                className="bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2 rounded-custom text-[14.5px] font-black shadow-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer"
               >
                 무료 출장 견적 신청
               </button>
               <button
                 onClick={() => setActiveTabAtTop('about')}
-                className="bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2 rounded-custom text-[12px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                className="bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer"
               >
                 ZEROS 진단 절차 보기
               </button>
