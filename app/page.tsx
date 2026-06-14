@@ -2079,8 +2079,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA 섹션 — 스틸블루 단색 밴드(상단 컬러와 통일), 크기 축소 */}
-      <section className="bg-steel text-white px-4 py-2.5 md:py-3.5 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-1 border border-white/10">
+      {/* CTA 섹션 — 스틸블루 단색 밴드(상단 컬러와 통일), 크기 축소 및 패딩 보정 */}
+      <section className="bg-steel text-white px-4 py-4 md:py-5 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-1.5 border border-white/10">
         <h2 className="text-[16px] sm:text-[19px] md:text-[21px] font-black tracking-tight max-w-xl text-white font-sans whitespace-nowrap">
           공사를 시작하기 전, 먼저 검토하십시오.
         </h2>
@@ -2088,13 +2088,6 @@ export default function Home() {
         <p className="text-[11.5px] sm:text-[13.5px] text-white/90 max-w-xl leading-normal font-medium break-keep keep-all">
           불명확한 공사 범위와 잦은 설계 변경으로 인한 예산 초과 리스크,<br className="hidden sm:inline" /> ZEROS의 정밀 1차 엔지니어링 검토를 통해 선제적으로 예방하십시오.
         </p>
-
-        <button
-          onClick={() => setActiveTabAtTop('request')}
-          className="mt-0.5 bg-accent hover:bg-accent/90 text-white px-5 py-2 rounded-custom text-[13px] sm:text-[14px] font-black tracking-wider shadow-lg shadow-accent/25 hover:scale-[1.01] active:scale-95 transition-all duration-150 cursor-pointer"
-        >
-          무료 출장 견적 컨설팅 신청
-        </button>
       </section>
     </div>
     );
