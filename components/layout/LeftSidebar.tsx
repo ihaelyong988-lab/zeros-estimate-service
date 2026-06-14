@@ -29,22 +29,22 @@ export const LeftSidebar: React.FC = () => {
   } = useShell();
 
   // 8대 공사영역 카테고리
-  const workCategories: { label: WorkType; desc: string }[] = [
-    { label: '배관공사', desc: '일반/용수/가스 배관 라인' },
-    { label: '장비설치', desc: '펌프, 탱크, 콤프레셔 안착' },
-    { label: 'Utility 배관', desc: '공장 유틸리티 배관 라인' },
-    { label: '공장증설', desc: '생산라인 증설 및 분기 배관' },
+  const workCategories: { label: WorkType; displayText?: string; desc: string }[] = [
+    { label: '배관공사', displayText: '일반 배관공사', desc: '일반/용수/가스 배관 라인' },
+    { label: '장비설치', displayText: '기계 장비설치', desc: '펌프, 탱크, 콤프레셔 안착' },
+    { label: 'Utility 배관', displayText: 'Utility배관공사', desc: '공장 유틸리티 배관 라인' },
+    { label: '공장증설', displayText: '공장증설 검토', desc: '생산라인 증설 및 분기 배관' },
     { label: '노후배관교체', desc: '노후 배관 철거 및 신설' },
-    { label: '기계실개선', desc: '기계실 배관 효율 및 동선 개선' },
-    { label: '생산설비 배관 연결', desc: '제조 설비 훅업(Hook-up) 연결' },
+    { label: '기계실개선', displayText: '기계실 개선공사', desc: '기계실 배관 효율 및 동선 개선' },
+    { label: '생산설비 배관 연결', displayText: '공정 배관공사', desc: '제조 설비 훅업(Hook-up) 연결' },
     { label: 'CAPEX 개·증설 검토', desc: '사전 도면 및 견적 한도 검토' },
   ];
 
   // 외주 제작 카테고리 (사전제작 / 모듈화 공급)
   const fabricationCategories: { key: string; label: string; desc: string }[] = [
-    { key: 'spool', label: '배관 SPOOL Module', desc: 'ISO 도면 기반 스풀 사전제작' },
-    { key: 'skid', label: 'SKID 제작', desc: '단일 프레임 패키지 모듈화' },
-    { key: 'structure', label: 'Structure 제작', desc: '가대·플랫폼 철구조물 가공' },
+    { key: 'spool', label: '배관 SPOOL Module 검토', desc: 'ISO 도면 기반 스풀 사전제작' },
+    { key: 'skid', label: 'SKID 제작·설치', desc: '단일 프레임 패키지 모듈화' },
+    { key: 'structure', label: 'Structure제작,설치', desc: '가대·플랫폼 철구조물 가공' },
   ];
 
   // 견적규모별 카테고리
@@ -68,7 +68,7 @@ export const LeftSidebar: React.FC = () => {
       setActiveTab('review');
     }
     setSelectedMenu(menu);
-    setSelectedBudget(''); // 규모 필터 해제
+    setSelectedBudget(''); // 영역 필터 해제
     setMobileMenuOpen(false); // 모바일 드로어 자동 닫기
     scrollMainPanelToTop();
   };
@@ -112,7 +112,7 @@ export const LeftSidebar: React.FC = () => {
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-[13.5px] font-bold">{cat.label}</span>
+                      <span className="text-[13.5px] font-bold">{cat.displayText || cat.label}</span>
                       {isActive && <ChevronRight className="w-3.5 h-3.5 text-steel" />}
                     </div>
                     <span className="text-[12px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
@@ -188,35 +188,8 @@ export const LeftSidebar: React.FC = () => {
             <div className="flex items-center gap-2 px-2 mb-2">
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">빠른 메뉴</h3>
             </div>
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={() => {
-                  setActiveTab('request');
-                  setMobileMenuOpen(false);
-                }}
-                style={{ touchAction: 'manipulation' }}
-                className={`w-full text-center px-4 py-3 rounded-custom transition-all duration-150 text-[15px] font-black tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-98 ${
-                  activeTab === 'request'
-                    ? 'bg-accent text-bg shadow-custom-md'
-                    : 'bg-navy text-bg hover:bg-steel'
-                }`}
-              >
-                예상견적 의뢰하기
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab('about');
-                  setMobileMenuOpen(false);
-                }}
-                style={{ touchAction: 'manipulation' }}
-                className={`w-full text-left px-3 py-2.5 rounded-custom transition-all duration-150 text-[13.5px] font-bold ${
-                  activeTab === 'about'
-                    ? 'bg-navy text-bg shadow-sm'
-                    : 'hover:bg-bg/40 text-gray hover:text-navy'
-                }`}
-              >
-                검토 프로세스 안내
-              </button>
+            <div className="flex flex-col gap-1 px-2 text-[12px] text-gray-light font-semibold">
+              * 바로가기 기능 준비 중입니다.
             </div>
           </div>
         </>

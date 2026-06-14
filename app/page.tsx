@@ -1711,7 +1711,7 @@ export default function Home() {
             {/* 핵심 3대 역량 아이콘 칩 — 칩 간격을 내부 패딩(12px)과 일치시켜 동일 박자 유지 */}
             <div className="flex flex-col gap-6 pl-1 select-none">
               {[
-                { icon: Truck, label: '무료 견적 출장 서비스', sub: '전국 현장 예약방문 실사', color: 'text-sky-400' },
+                { icon: Truck, label: '무료 견적 출장 서비스', sub: '전국현장 예약방문 실사 검토', color: 'text-sky-400' },
                 { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-indigo-400' },
                 { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400' },
               ].map(({ icon: Icon, label, sub, color }) => (
@@ -2133,32 +2133,32 @@ export default function Home() {
 
   const HOME_CATEGORIES = [
     {
-      title: '배관공사',
-      desc: '일반/용수/가스배관',
+      title: '일반 배관공사',
+      desc: '일반/용수/가스 배관',
       colorClass: 'bg-[#FF5A1F]',
       menu: '배관공사',
     },
     {
-      title: '장비 설치',
-      desc: '펌프,탱크,기타 장비 설치',
+      title: '기계 장비설치',
+      desc: '펌프, 탱크, 기타 장비 설치',
       colorClass: 'bg-[#F97316]',
       menu: '장비설치',
     },
     {
-      title: '생산설비 배관',
-      desc: '설비 Hook-up연결',
+      title: '공정 배관공사',
+      desc: '설비 Hook-up 연결',
       colorClass: 'bg-[#EAB308]',
       menu: '생산설비 배관 연결',
     },
     {
-      title: 'CAPEX개,증설 검토',
+      title: 'CAPEX 개·증설 검토',
       desc: '도면 및 견적 검토',
       colorClass: 'bg-[#10B981]',
       menu: 'CAPEX 개·증설 검토',
     },
     {
-      title: 'SKID제작,설치',
-      desc: '배관SPOOL Module검토',
+      title: 'SKID 제작·설치',
+      desc: '배관 SPOOL Module 검토',
       colorClass: 'bg-[#3B82F6]',
       menu: 'skid',
     },
@@ -2223,18 +2223,33 @@ export default function Home() {
                 </div>
 
                 {/* 신뢰 배지 대체: 핵심 가치 피처 라인 */}
-                <div className="flex items-center gap-5 mt-2 pt-4 border-t border-border/50 text-[13px] text-gray font-bold select-none">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-steel" />
-                    <span>도면·사진 정밀 분석</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3 pt-4 border-t border-border/50 select-none">
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
+                      <span className="text-[13px] font-black text-[#0F1E35]">도면·사진 정밀 분석</span>
+                    </div>
+                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
+                      도면·사진의 치수와 연결 규격을 분석하여 물량 누락을 방지합니다.
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-steel" />
-                    <span>공사 범위 사전 조율</span>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
+                      <span className="text-[13px] font-black text-[#0F1E35]">공사 범위 사전 조율</span>
+                    </div>
+                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
+                      모호한 범위를 명확히 고정하여 시공사 비교 견적의 동일 기준을 수립합니다.
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-steel" />
-                    <span>실거래 공량 검토</span>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
+                      <span className="text-[13px] font-black text-[#0F1E35]">실거래 공량 검토</span>
+                    </div>
+                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
+                      표준 품셈 및 1군 실거래 표본 대조로 과도하게 부풀려진 노무 단가를 교정합니다.
+                    </span>
                   </div>
                 </div>
               </div>
