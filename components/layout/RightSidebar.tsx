@@ -379,7 +379,7 @@ export const RightSidebar: React.FC = () => {
           <button
             onClick={() => setActiveTab('request')}
             style={{ touchAction: 'manipulation' }}
-            className="flex items-center justify-center gap-1.5 w-full bg-steel hover:bg-navy text-bg py-3 rounded-custom text-[12px] font-black transition-colors duration-150 cursor-pointer"
+            className="flex items-center justify-center gap-1.5 w-full bg-steel hover:bg-navy text-bg py-3 rounded-custom text-[14.5px] font-black transition-colors duration-150 cursor-pointer"
           >
             {metrics.recommendation} 신청
             <ArrowRight className="w-3.5 h-3.5" />
