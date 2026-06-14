@@ -608,15 +608,7 @@ export default function Home() {
               </div>
               
               {/* 우측: 화면 탭 이동 컨트롤 영역 (Tab Transition Buttons) */}
-              <div className="w-full lg:w-64 shrink-0 flex flex-col gap-2">
-                {/* 탭 1: 의뢰 신청 탭 */}
-                <button
-                  onClick={() => setActiveTab('request')}
-                  className="w-full flex items-center justify-center gap-1.5 bg-[#F97316] hover:bg-[#EA670F] text-white py-2.5 px-4 rounded-custom text-[14.5px] font-black tracking-wide shadow-sm active:scale-95 transition-all duration-150 cursor-pointer"
-                >
-                  <FileCheck className="w-4 h-4 shrink-0" />
-                  <span>무료 출장 견적 신청</span>
-                </button>
+              <div className="w-full lg:w-64 shrink-0 flex flex-col justify-center">
 
                 {/* 탭 2: SOP 검증 탭 */}
                 <button
@@ -844,16 +836,10 @@ export default function Home() {
               <span className="text-[11px] text-bg/75 font-black uppercase tracking-wider font-mono">Ready to verify</span>
               <span className="text-[14.5px] font-black tracking-tight">도면과 제원서를 제출하시면 AI 검증 절차가 즉시 시작됩니다.</span>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-              <button
-                onClick={() => setActiveTab('request')}
-                className="bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2 rounded-custom text-[14.5px] font-black shadow-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer"
-              >
-                무료 출장 견적 신청
-              </button>
+            <div className="w-full sm:w-64 shrink-0 flex flex-col justify-center">
               <button
                 onClick={() => setActiveTabAtTop('about')}
-                className="bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer text-center"
               >
                 ZEROS 진단 절차 보기
               </button>
@@ -1967,17 +1953,9 @@ export default function Home() {
           {/* 주요 CTA + 보조 — 하단 쇼케이스 버튼과 동일 크기·폭, 오렌지·청색 균형 배치 */}
           <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
             <button
-              onClick={() => setActiveTabAtTop('request')}
-              style={{ touchAction: 'manipulation' }}
-              className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#EA670F] text-white px-4 py-2 rounded-custom text-[14.5px] font-black tracking-wide shadow-sm transition-colors duration-150 active:scale-95 cursor-pointer text-center"
-            >
-              <FileCheck className="w-4 h-4 shrink-0" />
-              <span>무료 출장 견적 컨설팅 신청</span>
-            </button>
-            <button
               onClick={() => setActiveTabAtTop('about')}
               style={{ touchAction: 'manipulation' }}
-              className="flex-1 min-h-10 inline-flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
+              className="w-full min-h-10 inline-flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
             >
               컨설팅 절차 보기 <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </button>
