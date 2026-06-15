@@ -45,12 +45,29 @@ export interface ShellContextType {
   setMobileMenuOpen: (open: boolean) => void;
   showSimulator: boolean;
   setShowSimulator: (show: boolean) => void;
+  // 고객 휴대폰 인증 로그인 — 등록된 본인만 접수현황(시계열)을 열람
+  customerAuth: CustomerAuth | null;
+  setCustomerAuth: (auth: CustomerAuth | null) => void;
+  logoutCustomer: () => void;
+  showLogin: boolean;
+  setShowLogin: (show: boolean) => void;
+  showMyRequests: boolean;
+  setShowMyRequests: (show: boolean) => void;
+}
+
+// 고객 본인인증 로그인 세션 (휴대폰 OTP 인증 성공 시 저장)
+export interface CustomerAuth {
+  name: string;
+  phone: string;        // 표시용 포맷 (010-0000-0000)
+  verifiedAt: string;   // 인증 시각(ISO)
 }
 
 const ShellContext = createContext<ShellContextType | undefined>(undefined);
 
 // 관리자 인증 상태 저장 키 (브라우저별로 1회 로그인 유지)
 const ADMIN_AUTH_KEY = 'zeros_admin_authed';
+// 고객 휴대폰 인증 로그인 세션 저장 키
+const CUSTOMER_AUTH_KEY = 'zeros_customer_auth';
 
 export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isUserMode, setIsUserMode] = useState<boolean>(true);
@@ -116,6 +133,31 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [showSimulator, setShowSimulator] = useState<boolean>(false);
 
+  // 고객 휴대폰 인증 로그인 — localStorage에서 복원(기기당 세션 유지)
+  const [customerAuth, setCustomerAuthState] = useState<CustomerAuth | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(CUSTOMER_AUTH_KEY);
+      return raw ? (JSON.parse(raw) as CustomerAuth) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [showLogin, setShowLogin] = useState<boolean>(false);
+  const [showMyRequests, setShowMyRequests] = useState<boolean>(false);
+
+  const setCustomerAuth = useCallback((auth: CustomerAuth | null) => {
+    setCustomerAuthState(auth);
+    if (typeof window === 'undefined') return;
+    if (auth) localStorage.setItem(CUSTOMER_AUTH_KEY, JSON.stringify(auth));
+    else localStorage.removeItem(CUSTOMER_AUTH_KEY);
+  }, []);
+
+  const logoutCustomer = useCallback(() => {
+    setCustomerAuth(null);
+    setShowMyRequests(false);
+  }, [setCustomerAuth]);
+
   return (
     <ShellContext.Provider
       value={{
@@ -146,6 +188,13 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setMobileMenuOpen,
         showSimulator,
         setShowSimulator,
+        customerAuth,
+        setCustomerAuth,
+        logoutCustomer,
+        showLogin,
+        setShowLogin,
+        showMyRequests,
+        setShowMyRequests,
       }}
     >
       {children}

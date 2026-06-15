@@ -116,3 +116,30 @@ button:disabled {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   "신뢰감·정직성" 3색 애니메이션 그라데이션
+   - 홈 데스크톱 하단 통계 플레이트(청색 2단 중 상단 띠) 배경에 사용.
+   - Deep Navy(#04204C, 신뢰)→ Steel Blue(#0B3D6E, 신뢰)→ Teal-Green(#0E5A52, 정직)을
+     아주 느리게(16s) 순환시켜, 흰 글자 가독성을 유지하면서도 신뢰·정직의 톤을 전달한다.
+   ───────────────────────────────────────────────────────────────────────────── */
+@keyframes trustGradientShift {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+.bg-trust-animated {
+  background-image: linear-gradient(
+    115deg,
+    #04204C 0%,
+    #0B3D6E 28%,
+    #0E5A52 50%,
+    #0B3D6E 72%,
+    #04204C 100%
+  );
+  background-size: 240% 240%;
+  animation: trustGradientShift 16s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bg-trust-animated { animation: none; }
+}
+

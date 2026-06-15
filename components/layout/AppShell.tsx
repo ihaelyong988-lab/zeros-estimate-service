@@ -81,6 +81,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     setMobileMenuOpen,
     adminView,
     setAdminView,
+    customerAuth,
+    logoutCustomer,
+    setShowLogin,
+    setShowMyRequests,
   } = useShell();
 
   // 모바일 레이아웃(PWA, Simulator, ScreenWidth) 감지 상태
@@ -362,8 +366,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <div className="w-8 h-8 bg-accent rounded-custom flex items-center justify-center shadow-md shadow-accent/20">
               <Building2 className="w-4 h-4 text-bg" />
             </div>
-            <div className="flex items-center justify-center">
-              <span className="font-black text-[19px] text-bg leading-none uppercase">ZEROS</span>
+            {/* 로고박스 높이에 맞춰 워드마크 수직 중앙 정렬 + 대문자 광학오차 1px 보정 */}
+            <div className="h-8 flex items-center">
+              <span className="relative top-[1px] font-black text-[19px] text-bg leading-none uppercase">ZEROS</span>
             </div>
           </button>
           {isMobileLanding ? (
@@ -437,6 +442,32 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
+              {/* 휴대폰 인증 로그인 / 본인 접수현황 */}
+              {customerAuth ? (
+                <div className="rounded-custom bg-white/[0.07] border border-white/10 p-3 flex flex-col gap-2.5">
+                  <span className="text-[12px] font-bold text-white/80">{customerAuth.name || '고객'}님 · 인증 완료</span>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); setShowMyRequests(true); }}
+                    className="w-full bg-accent text-white rounded-custom px-3 py-2.5 text-[13px] font-black text-left"
+                  >
+                    내 접수현황 보기
+                  </button>
+                  <button
+                    onClick={() => { logoutCustomer(); }}
+                    className="text-[12px] font-bold text-white/55 self-start"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setMobileMenuOpen(false); setShowLogin(true); }}
+                  className="w-full rounded-custom bg-accent text-white px-4 py-3 text-[13px] font-black text-left"
+                >
+                  로그인 — 접수현황 확인하기
+                </button>
+              )}
 
               <div className="grid grid-cols-1 gap-2">
                 {[

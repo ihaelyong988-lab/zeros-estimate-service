@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useShell, ActiveTab } from '@/lib/context/ShellContext';
-import { Building2, LogOut } from 'lucide-react';
+import { Building2, LogOut, LogIn, ClipboardList } from 'lucide-react';
 
 export const TopHeader: React.FC = () => {
   const {
@@ -13,6 +13,10 @@ export const TopHeader: React.FC = () => {
     setActiveTab,
     setSelectedMenu,
     setSelectedBudget,
+    customerAuth,
+    logoutCustomer,
+    setShowLogin,
+    setShowMyRequests,
   } = useShell();
 
   const scrollMainPanelToTop = () => {
@@ -67,8 +71,10 @@ export const TopHeader: React.FC = () => {
         <div className="w-9 h-9 bg-accent rounded-custom flex items-center justify-center shrink-0 shadow-sm shadow-accent/20">
           <Building2 className="w-4.5 h-4.5 text-bg" />
         </div>
-        <div className="flex items-center justify-center">
-          <span className="font-black text-[18px] tracking-wider text-navy leading-none uppercase font-sans">ZEROS</span>
+        {/* 로고박스와 동일한 높이 컨테이너에서 워드마크를 수직 중앙 정렬 +
+            대문자 메트릭상 위로 떠 보이는 광학 오차를 1px 보정해 글자 중심선을 박스 중심선과 일치 */}
+        <div className="h-9 flex items-center">
+          <span className="relative top-[1px] font-black text-[18px] tracking-wider text-navy leading-none uppercase font-sans">ZEROS</span>
         </div>
       </button>
 
@@ -126,7 +132,40 @@ export const TopHeader: React.FC = () => {
       </nav>
 
       {/* 3. 우측 컨트롤 영역 - 높이 및 마진 100% 동기화 (h-9) */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        {/* 고객 모드: 휴대폰 인증 로그인 / 본인 접수현황 */}
+        {isUserMode && (
+          customerAuth ? (
+            <>
+              <button
+                onClick={() => setShowMyRequests(true)}
+                style={{ touchAction: 'manipulation' }}
+                className="h-9 flex items-center gap-1.5 rounded-custom bg-steel hover:bg-navy text-bg px-3.5 py-2 text-[13px] font-black transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
+              >
+                <ClipboardList className="w-4 h-4 shrink-0" />
+                내 접수현황
+              </button>
+              <button
+                onClick={() => logoutCustomer()}
+                title={`${customerAuth.name || '고객'} · 로그아웃`}
+                style={{ touchAction: 'manipulation' }}
+                className="h-9 flex items-center gap-1.5 border border-border hover:border-navy/40 rounded-custom bg-bg text-gray hover:text-navy px-2.5 py-2 text-[12px] font-bold transition-all duration-150 active:scale-95 cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5 shrink-0" />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowLogin(true)}
+              style={{ touchAction: 'manipulation' }}
+              className="h-9 flex items-center gap-1.5 border border-steel/30 hover:border-steel rounded-custom bg-steel/5 text-steel hover:bg-steel hover:text-bg px-4 py-2 text-[13px] font-black transition-all duration-150 active:scale-95 cursor-pointer shadow-sm"
+            >
+              <LogIn className="w-4 h-4 shrink-0" />
+              로그인
+            </button>
+          )
+        )}
+
         {/* 관리자 모드일 때만 로그아웃 버튼 노출 (고객 화면에는 관리자 흔적 없음) */}
         {!isUserMode && (
           <button

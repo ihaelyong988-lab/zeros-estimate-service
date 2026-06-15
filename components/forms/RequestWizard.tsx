@@ -145,11 +145,17 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   // 폼 입력값 변경 시 자동 임시저장
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-    
+    let val: string | boolean = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+
+    // 연락처: 하이픈 없이 숫자만 입력해도 010-0000-0000 형태로 자동 정돈
+    if (name === 'phone' && typeof val === 'string') {
+      const d = val.replace(/[^0-9]/g, '').slice(0, 11);
+      val = d.length < 4 ? d : d.length < 8 ? `${d.slice(0, 3)}-${d.slice(3)}` : `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+    }
+
     const updated = { ...formData, [name]: val };
     setFormData(updated);
-    
+
     // 임시저장
     localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
   };
@@ -231,10 +237,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
     if (step === 1) {
       if (!formData.customer_name.trim()) return failValidation('성함을 입력해 주세요.');
       if (!formData.phone.trim()) return failValidation('연락처를 입력해 주세요.');
-      // 010-0000-0000 패턴 정밀 체크 - §3.6
-      const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
-      if (!phoneRegex.test(formData.phone.trim())) {
-        return failValidation('연락처는 010-0000-0000 형식으로 입력해 주세요.');
+      // 휴대폰 번호 검증 — 하이픈 유무와 무관하게 숫자만 정규화하여 11자리 휴대폰을 인식 - §3.6
+      const phoneDigits = formData.phone.replace(/[^0-9]/g, '');
+      if (!/^01[0-9]{8,9}$/.test(phoneDigits)) {
+        return failValidation('연락처는 휴대폰 번호로 입력해 주세요. (하이픈 없이 숫자만 입력해도 됩니다)');
       }
       if (!formData.email.trim()) return failValidation('이메일 주소를 입력해 주세요.');
       if (!formData.site_address.trim()) return failValidation('현장 주소를 입력해 주세요.');

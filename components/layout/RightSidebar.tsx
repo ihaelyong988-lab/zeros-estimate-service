@@ -1,8 +1,21 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
-import { AlertCircle, ArrowRight, ChevronLeft } from 'lucide-react';
+import { ZerosService } from '@/lib/supabase/client';
+import { Estimate, SiteVisit, Customer, NotificationLog } from '@/types/estimate';
+import {
+  ArrowRight,
+  ChevronLeft,
+  LayoutGrid,
+  FileText,
+  CalendarRange,
+  Users2,
+  TrendingUp,
+  Bell,
+  CheckCircle2,
+  Clock,
+} from 'lucide-react';
 
 export interface DecisionMetrics {
   avgDays: number;
@@ -210,6 +223,8 @@ export const RightSidebar: React.FC = () => {
     setActiveTab,
     sliderVal,
     setSliderVal,
+    adminView,
+    setAdminView,
   } = useShell();
 
   // 현재 활성화된 주제 선택
@@ -221,36 +236,45 @@ export const RightSidebar: React.FC = () => {
     setSliderVal(metrics.percent);
   }, [activeKey, metrics.percent, setSliderVal]);
 
+  // 관리자 우측 "확인 패널" 실데이터 — 좌측 주제 탭(adminView)에 따라 주제별로 재구성된다.
+  const [adminEstimates, setAdminEstimates] = useState<Estimate[]>([]);
+  const [adminVisits, setAdminVisits] = useState<SiteVisit[]>([]);
+  const [adminCustomers, setAdminCustomers] = useState<Customer[]>([]);
+  const [adminLogs, setAdminLogs] = useState<NotificationLog[]>([]);
+
+  useEffect(() => {
+    if (isUserMode) return;
+    let alive = true;
+    (async () => {
+      try {
+        const [est, vis, cus, logs] = await Promise.all([
+          ZerosService.getEstimates(),
+          ZerosService.getSiteVisits(),
+          ZerosService.getCustomers(),
+          ZerosService.getNotificationLogs(),
+        ]);
+        if (!alive) return;
+        setAdminEstimates(est);
+        setAdminVisits(vis);
+        setAdminCustomers(cus);
+        setAdminLogs(logs);
+      } catch (e) {
+        console.error('관리자 우측 패널 데이터 로드 실패', e);
+      }
+    })();
+    return () => { alive = false; };
+  }, [isUserMode, adminView]);
+
   if (!isUserMode) {
-    // 관리자 모드일 때는 우측 사이드바에 퀵 가이드나 바로가기를 노출
     return (
-      <aside className="w-full h-full p-5 flex flex-col gap-6 shrink-0 select-none overflow-y-auto bg-bg-subtle">
-        <div>
-          <div className="flex items-center gap-1.5 px-1 mb-3 text-navy">
-            <AlertCircle className="w-4 h-4 text-steel animate-bounce" />
-            <h3 className="text-[12px] font-black uppercase tracking-wider">업무 진행 가이드</h3>
-          </div>
-          <div className="bg-bg border border-border p-4 rounded-custom flex flex-col gap-3 shadow-custom-sm">
-            <p className="text-[12px] text-gray leading-relaxed font-medium">
-              새로 접수된 사전진단 요청은 <span className="font-extrabold text-navy border-b border-steel/30 pb-0.5">24시간 이내</span>에 1차 엔지니어링 계산 자료 검토를 완료해야 합니다.
-            </p>
-            <div className="border-t border-border/60 pt-3 flex flex-col gap-2.5">
-              <div className="flex items-center gap-2 text-[12px] font-bold text-gray">
-                <span className="w-2 h-2 rounded-full bg-warning"></span>
-                출장 결제대기 건 확인
-              </div>
-              <div className="flex items-center gap-2 text-[12px] font-bold text-gray">
-                <span className="w-2 h-2 rounded-full bg-info"></span>
-                금주 레이저 실측일정 수립
-              </div>
-              <div className="flex items-center gap-2 text-[12px] font-bold text-gray">
-                <span className="w-2 h-2 rounded-full bg-success"></span>
-                수주 완료 견적 실적 업데이트
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <AdminContextPanel
+        adminView={adminView}
+        setAdminView={setAdminView}
+        estimates={adminEstimates}
+        visits={adminVisits}
+        customers={adminCustomers}
+        logs={adminLogs}
+      />
     );
   }
 
@@ -386,6 +410,286 @@ export const RightSidebar: React.FC = () => {
           </button>
           <p className="text-[12px] text-gray-light font-medium leading-normal">{metrics.recommendationDesc}</p>
         </div>
+      </div>
+    </aside>
+  );
+};
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 관리자 우측 "확인 패널" — 좌측 주제 탭(adminView)에 맞춰 주제별로 재구성된다.
+// 실데이터 기반 핵심 지표 2×2 + 주제별 확인 체크리스트 + 주제 빠른 이동.
+// ──────────────────────────────────────────────────────────────────────────────
+type AdminViewKey = 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications';
+type Tone = 'navy' | 'steel' | 'success' | 'warning' | 'danger' | 'accent' | 'info' | 'gray';
+
+const toneText: Record<Tone, string> = {
+  navy: 'text-navy', steel: 'text-steel', success: 'text-success', warning: 'text-warning',
+  danger: 'text-danger', accent: 'text-accent', info: 'text-info', gray: 'text-gray',
+};
+const toneDot: Record<Tone, string> = {
+  navy: 'bg-navy', steel: 'bg-steel', success: 'bg-success', warning: 'bg-warning',
+  danger: 'bg-danger', accent: 'bg-accent', info: 'bg-info', gray: 'bg-gray-light',
+};
+
+const StatTile: React.FC<{ label: string; value: string; tone?: Tone }> = ({ label, value, tone = 'navy' }) => (
+  <div className="bg-bg border border-border rounded-custom px-3 py-2.5 flex flex-col gap-1 shadow-custom-sm">
+    <span className="text-[11px] text-gray-light font-bold uppercase tracking-wider leading-none">{label}</span>
+    <span className={`text-[19px] font-black tabular-nums tracking-tight leading-none ${toneText[tone]}`}>{value}</span>
+  </div>
+);
+
+const ChecklistRow: React.FC<{ tone: Tone; text: string }> = ({ tone, text }) => (
+  <div className="flex items-start gap-2 text-[12px] font-semibold text-gray leading-snug">
+    <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${toneDot[tone]}`} />
+    <span>{text}</span>
+  </div>
+);
+
+// 큰 금액을 패널 폭(w-72)에 맞게 억/만 단위로 압축 표기
+const wonShort = (n: number): string => {
+  if (n >= 100000000) return `${(n / 100000000).toFixed(n % 100000000 === 0 ? 0 : 1)}억`;
+  if (n >= 10000) return `${Math.round(n / 10000).toLocaleString()}만`;
+  return n.toLocaleString();
+};
+
+const isInThisWeek = (dateStr: string): boolean => {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return false;
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(now.getDate() - now.getDay());
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+  return d >= start && d < end;
+};
+
+const ADMIN_VIEW_CHIPS: { key: AdminViewKey; label: string }[] = [
+  { key: 'dashboard', label: '대시보드' },
+  { key: 'estimates', label: '접수' },
+  { key: 'visits', label: '방문' },
+  { key: 'customers', label: '고객' },
+  { key: 'performance', label: '실적' },
+  { key: 'notifications', label: '알림' },
+];
+
+interface AdminContextPanelProps {
+  adminView: AdminViewKey;
+  setAdminView: (v: AdminViewKey) => void;
+  estimates: Estimate[];
+  visits: SiteVisit[];
+  customers: Customer[];
+  logs: NotificationLog[];
+}
+
+const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
+  adminView, setAdminView, estimates, visits, customers, logs,
+}) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const closed = ['수주성공', '수주실패', '취소', '보류'];
+
+  // ── 견적 파생 지표 ──
+  const total = estimates.length;
+  const newCnt = estimates.filter(e => e.status === '접수완료').length;
+  const reviewCnt = estimates.filter(e => e.status === '검토중' || e.status === '추가자료요청').length;
+  const payWaitCnt = estimates.filter(e => e.status === '출장견적 결제대기').length;
+  const visitWaitCnt = estimates.filter(e => e.status === '현장방문 예정' || e.status === '방문일정 조율중').length;
+  const sentCnt = estimates.filter(e => e.status === '견적서 송부완료').length;
+  const wonCnt = estimates.filter(e => e.status === '수주성공').length;
+  const urgentCnt = estimates.filter(e => e.urgency && !closed.includes(e.status)).length;
+  const winRate = total ? Math.round((wonCnt / total) * 100) : 0;
+  const pipelineRevenue = estimates
+    .filter(e => e.status === '견적서 작성중' || e.status === '견적서 송부완료')
+    .reduce((a, c) => a + (c.estimated_amount || 0), 0);
+  const confirmedRevenue = estimates
+    .filter(e => e.status === '수주성공')
+    .reduce((a, c) => a + (c.confirmed_contract_amount || 0), 0);
+
+  // ── 방문 파생 지표 ──
+  const vUp = visits.filter(v => v.visit_status === '예정').length;
+  const vDone = visits.filter(v => v.visit_status === '완료').length;
+  const vCancel = visits.filter(v => v.visit_status === '취소').length;
+  const vWeek = visits.filter(v => v.visit_status === '예정' && isInThisWeek(v.visit_date)).length;
+
+  // ── 고객 파생 지표 ──
+  const cTotal = customers.length;
+  const cNew = customers.filter(c => c.customer_grade === '신규').length;
+  const cRepeat = customers.filter(c => c.customer_grade === '재문의').length;
+  const cWon = customers.filter(c => c.customer_grade === '수주고객').length;
+
+  // ── 알림 파생 지표 ──
+  const lTotal = logs.length;
+  const lToday = logs.filter(l => (l.sent_at || '').slice(0, 10) === today).length;
+  const lOk = logs.filter(l => l.status === '발송완료').length;
+  const lErr = logs.filter(l => l.status === '발송오류').length;
+
+  const views: Record<AdminViewKey, {
+    icon: React.ElementType; title: string; sub: string;
+    stats: { label: string; value: string; tone?: Tone }[];
+    checklist: { tone: Tone; text: string }[];
+  }> = {
+    dashboard: {
+      icon: LayoutGrid, title: '종합 대시보드', sub: '전체 운영 현황 한눈에',
+      stats: [
+        { label: '전체 접수', value: `${total}건`, tone: 'navy' },
+        { label: '신규 접수', value: `${newCnt}건`, tone: 'steel' },
+        { label: '검토중', value: `${reviewCnt}건`, tone: 'warning' },
+        { label: '수주성공', value: `${wonCnt}건`, tone: 'success' },
+      ],
+      checklist: [
+        { tone: 'warning', text: `결제대기 ${payWaitCnt}건 — 출장견적비 입금 확인` },
+        { tone: 'info', text: `방문 실측 대기 ${visitWaitCnt}건 일정 수립` },
+        { tone: 'success', text: `수주 전환율 ${winRate}% — 실적 업데이트` },
+      ],
+    },
+    estimates: {
+      icon: FileText, title: '견적 접수관리', sub: '접수 건 처리 우선순위',
+      stats: [
+        { label: '신규 접수', value: `${newCnt}건`, tone: 'steel' },
+        { label: '검토·보완', value: `${reviewCnt}건`, tone: 'warning' },
+        { label: '결제대기', value: `${payWaitCnt}건`, tone: 'accent' },
+        { label: '긴급 표기', value: `${urgentCnt}건`, tone: 'danger' },
+      ],
+      checklist: [
+        { tone: 'danger', text: '긴급 건 우선 — 24시간 내 1차 검토 완료' },
+        { tone: 'steel', text: '접수완료 → 검토중 전환 후 담당 배정' },
+        { tone: 'accent', text: '결제대기 건은 토스 결제 안내 재발송' },
+      ],
+    },
+    visits: {
+      icon: CalendarRange, title: '현장방문 관리', sub: '레이저 실측 일정·진행',
+      stats: [
+        { label: '방문 예정', value: `${vUp}건`, tone: 'info' },
+        { label: '금주 예정', value: `${vWeek}건`, tone: 'steel' },
+        { label: '방문 완료', value: `${vDone}건`, tone: 'success' },
+        { label: '취소', value: `${vCancel}건`, tone: 'gray' },
+      ],
+      checklist: [
+        { tone: 'info', text: '예정 건 방문 1일 전 고객 일정 재확인' },
+        { tone: 'steel', text: '현장 리스크 메모·다음 액션 기입 필수' },
+        { tone: 'success', text: '완료 즉시 진단서 산출 단계로 전환' },
+      ],
+    },
+    customers: {
+      icon: Users2, title: '고객 정보 관리', sub: '고객 등급 분포',
+      stats: [
+        { label: '전체 고객', value: `${cTotal}명`, tone: 'navy' },
+        { label: '신규', value: `${cNew}명`, tone: 'steel' },
+        { label: '재문의', value: `${cRepeat}명`, tone: 'warning' },
+        { label: '수주고객', value: `${cWon}명`, tone: 'success' },
+      ],
+      checklist: [
+        { tone: 'success', text: '수주고객 — 후속 유지보수·증설 제안' },
+        { tone: 'warning', text: '재문의 고객 — 미결 사유 확인 후 재접촉' },
+        { tone: 'steel', text: '중요고객 등급 관리 및 우선 응대' },
+      ],
+    },
+    performance: {
+      icon: TrendingUp, title: '실적·파이프라인', sub: '매출 전환 현황',
+      stats: [
+        { label: '확정 매출', value: `₩${wonShort(confirmedRevenue)}`, tone: 'navy' },
+        { label: '파이프라인', value: `₩${wonShort(pipelineRevenue)}`, tone: 'steel' },
+        { label: '수주 전환율', value: `${winRate}%`, tone: 'success' },
+        { label: '견적 송부', value: `${sentCnt}건`, tone: 'accent' },
+      ],
+      checklist: [
+        { tone: 'success', text: '확정 매출 = 수주성공 계약금 합계' },
+        { tone: 'steel', text: '파이프라인 = 작성중·송부완료 예상금액' },
+        { tone: 'navy', text: '전환율 추이로 영업 병목 단계 점검' },
+      ],
+    },
+    notifications: {
+      icon: Bell, title: '알림 발송 로그', sub: '카카오·문자 발송 현황',
+      stats: [
+        { label: '총 발송', value: `${lTotal}건`, tone: 'navy' },
+        { label: '오늘 발송', value: `${lToday}건`, tone: 'steel' },
+        { label: '발송완료', value: `${lOk}건`, tone: 'success' },
+        { label: '발송오류', value: `${lErr}건`, tone: 'danger' },
+      ],
+      checklist: [
+        { tone: 'danger', text: '발송오류 건 — 번호 정정 후 재발송' },
+        { tone: 'steel', text: '상태 변경 시 자동 알림 정상 동작 확인' },
+        { tone: 'success', text: '접수·송부·수주 단계별 템플릿 점검' },
+      ],
+    },
+  };
+
+  const cfg = views[adminView] || views.dashboard;
+  const Icon = cfg.icon;
+
+  return (
+    <aside className="w-full h-full flex flex-col shrink-0 select-none overflow-y-auto bg-bg-subtle">
+      {/* 상단 네이비 액센트 바 — 좌측 관리 사이드바와 동일 시그니처로 양측 프레임을 잇는다 */}
+      <div className="h-1 w-full bg-navy shrink-0" />
+
+      <div className="py-5 pl-5 pr-6 flex flex-col gap-4">
+        {/* 헤더 — 좌측에서 선택한 관리 주제를 그대로 반향 */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] text-gray-light font-bold uppercase tracking-wider">확인 패널</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-black text-success">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간
+            </span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-custom bg-navy/8 text-navy flex items-center justify-center shrink-0">
+              <Icon className="w-4 h-4" />
+            </span>
+            <div className="flex flex-col leading-tight">
+              <h3 className="text-[15px] font-black text-navy tracking-tight">{cfg.title}</h3>
+              <span className="text-[11.5px] font-semibold text-gray-light">{cfg.sub}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 주제별 핵심 지표 2×2 */}
+        <div className="grid grid-cols-2 gap-2">
+          {cfg.stats.map((s) => (
+            <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
+          ))}
+        </div>
+
+        {/* 주제별 확인 체크리스트 */}
+        <div className="bg-bg border border-border rounded-custom p-4 flex flex-col gap-2.5 shadow-custom-sm">
+          <span className="text-[11px] font-black text-navy uppercase tracking-wider flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-steel shrink-0" /> 확인 체크리스트
+          </span>
+          <div className="flex flex-col gap-2 border-t border-border/60 pt-2.5">
+            {cfg.checklist.map((c, i) => (
+              <ChecklistRow key={i} tone={c.tone} text={c.text} />
+            ))}
+          </div>
+        </div>
+
+        {/* 주제 빠른 이동 — 좌측 탭 미러(현재 주제 강조) */}
+        <div className="flex flex-col gap-2 border-t border-border/60 pt-3">
+          <span className="text-[11px] font-black text-navy uppercase tracking-wider">주제 빠른 이동</span>
+          <div className="grid grid-cols-3 gap-1.5">
+            {ADMIN_VIEW_CHIPS.map((v) => {
+              const active = v.key === adminView;
+              return (
+                <button
+                  key={v.key}
+                  onClick={() => setAdminView(v.key)}
+                  className={`px-2 py-1.5 rounded-custom text-[11.5px] font-bold border transition-all duration-150 ${
+                    active
+                      ? 'bg-navy border-navy text-bg shadow-sm'
+                      : 'bg-bg border-border text-gray hover:text-navy hover:border-navy/40'
+                  }`}
+                >
+                  {v.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 운영 원칙 한 줄 */}
+        <p className="text-[11px] text-gray-light font-medium leading-normal border-t border-border/60 pt-3 flex items-start gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-steel shrink-0 mt-px" />
+          <span>신규 사전진단 요청은 <strong className="text-navy font-black">24시간 이내</strong> 1차 엔지니어링 검토를 완료합니다.</span>
+        </p>
       </div>
     </aside>
   );

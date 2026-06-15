@@ -20,6 +20,8 @@ import { PerformanceInsights } from "@/components/PerformanceInsights";
 import { EstimateFlow } from "@/components/EstimateFlow";
 import { CustomerList } from "@/components/admin/CustomerList";
 import { NotificationLog } from "@/components/admin/NotificationLog";
+import { CustomerLoginModal } from "@/components/forms/CustomerLoginModal";
+import { MyRequestsModal } from "@/components/MyRequestsModal";
 
 import {
   BookOpen,
@@ -2150,17 +2152,21 @@ export default function Home() {
             <div className="grid grid-cols-[1.05fr_0.95fr] gap-16 xl:gap-20 items-center z-10 relative">
               {/* 좌: 카피 + CTA */}
               <div className="flex flex-col gap-6 xl:gap-8 relative">
-                {/* 배지 */}
-                <span className="self-start inline-flex items-center gap-2 bg-[#EEF5FF] text-[#155EEF] text-[14.5px] font-black px-3.5 py-1.5 rounded-full select-none">
-                  <Sparkles className="w-3.5 h-3.5 text-[#155EEF]" />
-                  AI Native 1차 검증 + PM 전문가 최종 검토
+                {/* 배지 — AI 1차 검증 → PM 최종 검토 2단계를 분절해 보여주는 세련된 신뢰 칩 */}
+                <span className="self-start inline-flex items-center gap-2 bg-gradient-to-r from-white to-[#EEF5FF] border border-[#155EEF]/25 text-[#0F1E35] text-[14.5px] font-black pl-1.5 pr-4 py-1.5 rounded-full shadow-sm shadow-[#155EEF]/5 select-none">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#155EEF] shrink-0 shadow-sm shadow-[#155EEF]/30">
+                    <Sparkles className="w-3.5 h-3.5 text-white" />
+                  </span>
+                  <span className="text-[#155EEF]">AI Native 1차 검증</span>
+                  <span className="w-px h-3.5 bg-[#155EEF]/25 shrink-0" />
+                  <span className="text-[#0F1E35]">PM 전문가 최종 검토</span>
                 </span>
 
                 {/* 헤드라인 */}
                 <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.25] tracking-tight text-[#0F1E35]">
                   생산라인 증설·개선 배관공사,
                   <br />
-                  <span className="text-[#FF5A1F]">AI 분석</span>
+                  <span className="text-[#155EEF]">AI 분석</span>
                   <span>으로 더 정확하게</span>
                 </h1>
 
@@ -2273,9 +2279,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 하단 미니멀 통합 통계 플레이트 ── */}
-      <section className="h-[75px] shrink-0 flex items-center relative bg-[#04204C] text-white z-10 select-none border-b border-white/5">
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-steel via-[#5D8EC8] to-accent" />
+      {/* ── 하단 미니멀 통합 통계 플레이트 (청색 2단 中 상단 띠 — 신뢰·정직 3색 애니메이션 배경) ── */}
+      <section className="h-16 shrink-0 flex items-center relative bg-trust-animated text-white z-10 select-none border-b border-white/10">
+        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-steel via-[#2E8C8C] to-success" />
         <div className="w-full max-w-[1240px] mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2">
           {HOME_STATS.map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-center gap-3 justify-center md:justify-start">
@@ -2289,8 +2295,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 푸터 ── */}
-      <footer className="bg-[#04204C] text-white/60 h-[75px] shrink-0 flex items-center z-10 select-none">
+      {/* ── 푸터 (청색 2단 中 하단 띠 — 헤더와 동일한 64px 높이) ── */}
+      <footer className="bg-[#04204C] text-white/60 h-16 shrink-0 flex items-center z-10 select-none">
         <div className="w-full max-w-[1240px] mx-auto px-10 flex items-center justify-between gap-4 text-[12.5px] font-semibold">
           <span>© 2025 ZEROS Co., Ltd. All rights reserved.</span>
           <div className="flex items-center gap-5">
@@ -2422,6 +2428,10 @@ export default function Home() {
           onSaved={handleRefresh}
         />
       )}
+
+      {/* 고객 휴대폰 인증 로그인 & 본인 접수현황(시계열) 모달 */}
+      <CustomerLoginModal />
+      <MyRequestsModal />
     </AppShell>
   );
 }
