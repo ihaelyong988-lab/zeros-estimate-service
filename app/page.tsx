@@ -2314,18 +2314,20 @@ export default function Home() {
                   <span className="text-[10.5px] md:text-[11.5px] font-semibold text-[#5B6573] leading-normal break-keep">
                     {cat.desc}
                   </span>
-                  {/* 세로 컬러선: 상하단 끝이 안쪽으로 살짝 쏠리는 느낌 */}
+                  {/* 세로 컬러선 및 하단 수평선: 좌측은 날카로운 갈고리 형태, 하단은 동일한 수평선 길이 */}
                   <svg 
-                    className="absolute left-0 top-1 bottom-1 w-2 h-[calc(100%-8px)] transition-transform duration-200 group-hover:scale-y-[1.15] origin-center" 
-                    viewBox="0 0 10 40" 
+                    className="absolute left-0 top-1 bottom-0 w-[90px] h-[calc(100%-4px)] transition-all duration-200 group-hover:scale-y-[1.05] group-hover:scale-x-[1.05] origin-bottom-left" 
+                    viewBox="0 0 90 40" 
                     preserveAspectRatio="none"
                   >
                     <path 
-                      d="M8,2 Q2,2 2,10 L2,30 Q2,38 8,38" 
+                      d="M 8,3 L 2,2 L 2,38 L 90,38" 
                       fill="none" 
                       stroke={cat.color} 
                       strokeWidth="3.5" 
                       strokeLinecap="round" 
+                      strokeLinejoin="miter"
+                      vectorEffect="non-scaling-stroke"
                     />
                   </svg>
                 </button>
