@@ -2320,7 +2320,20 @@ export default function Home() {
 
       {/* ── 하단 미니멀 통합 통계 플레이트 (청색 2단 中 상단 띠 — 신뢰·정직 3색 애니메이션 배경) ── */}
       <section className="h-16 shrink-0 flex items-center relative bg-trust-animated text-white z-10 select-none border-b border-white/10">
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-steel via-[#2E8C8C] to-success" />
+        <div className="absolute inset-x-0 top-0 h-[3px] bg-white/5 overflow-hidden">
+          <style>{`
+            @keyframes flowOrange {
+              0% { left: -50%; }
+              100% { left: 100%; }
+            }
+          `}</style>
+          <div 
+            className="absolute top-0 bottom-0 w-[50%] bg-gradient-to-r from-transparent via-[#FF6A00] to-transparent"
+            style={{
+              animation: 'flowOrange 6s linear infinite',
+            }}
+          />
+        </div>
         <div className="w-full max-w-[1240px] mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2">
           {HOME_STATS.map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-center gap-3 justify-center md:justify-start">
