@@ -37,7 +37,7 @@ interface MobileAdminMenuItem {
 type MobileActiveTab = 'home' | 'service' | 'request' | 'history' | 'account' | 'decision' | 'admin';
 type AdminView = MobileAdminMenuItem['value'];
 
-const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request', 'sop', 'review'];
+const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request', 'sop', 'review', 'process'];
 const adminViewValues: AdminView[] = ['dashboard', 'estimates', 'visits', 'customers', 'performance', 'notifications'];
 
 const mobileMenuItems: MobileMenuItem[] = [
@@ -155,7 +155,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         setMobileActiveTab(
           tab === 'request'
             ? 'request'
-            : tab === 'about' || tab === 'sop'
+            : tab === 'about' || tab === 'sop' || tab === 'process'
               ? 'service'
               : tab === 'performance'
                 ? 'history'
@@ -248,7 +248,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     if (!layoutReady || !isMobileLayout) return;
     if (activeTab === 'request') {
       setMobileActiveTab('request');
-    } else if (activeTab === 'about' || activeTab === 'sop') {
+    } else if (activeTab === 'about' || activeTab === 'sop' || activeTab === 'process') {
       setMobileActiveTab('service');
     } else if (activeTab === 'performance') {
       setMobileActiveTab('history');
@@ -269,7 +269,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             style={{
               background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
               backgroundSize: '300% 300%',
-              animation: 'logoGlowSplash 4s ease infinite',
+              animation: 'logoGlowSplash 9s ease-in-out infinite',
             }}
           >
             <style>{`
@@ -399,7 +399,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               style={{
                 background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
                 backgroundSize: '300% 300%',
-                animation: 'logoGlowApp 4s ease infinite',
+                animation: 'logoGlowApp 9s ease-in-out infinite',
               }}
             >
               <style>{`

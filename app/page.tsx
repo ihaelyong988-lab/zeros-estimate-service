@@ -39,7 +39,13 @@ import {
   TrendingDown,
   BarChart3,
   Scale,
-  Cpu
+  Cpu,
+  FileText,
+  Search,
+  MessageCircle,
+  Database,
+  Send,
+  RefreshCw
 } from 'lucide-react';
 
 // 랜딩 쇼케이스 자동 순회 공종 순서 — 최상단 칩바와 값으로 매칭(연동)되므로 모듈 스코프로 고정
@@ -874,6 +880,236 @@ export default function Home() {
                 className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer text-center"
               >
                 ZEROS 데이터분석 절차 보기
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  };
+
+  // 서비스 프로세스(고객 여정) — "서비스 프로세스 보기" 전용 화면.
+  // 데이터 사이언스 파이프라인 언어로 9단계를 정립하되, 각 단계마다
+  // '고객이 하는 일 / ZEROS가 하는 일'과 '고객 궁금증 해소' Q&A를 함께 보여 신뢰를 만든다.
+  const renderServiceProcessTab = () => {
+    // 3개 국면(Phase)으로 묶은 고객 여정 9단계
+    const phases = [
+      {
+        key: 'P1',
+        label: '접수 & 요건 정의',
+        en: 'Intake & Scoping',
+        tone: 'steel' as const,
+      },
+      {
+        key: 'P2',
+        label: '데이터 모델링 & AI 검증',
+        en: 'Modeling & Verification',
+        tone: 'accent' as const,
+      },
+      {
+        key: 'P3',
+        label: '시뮬레이션 & 결과 전달',
+        en: 'Simulation & Delivery',
+        tone: 'success' as const,
+      },
+    ];
+
+    const steps = [
+      {
+        no: '01', phaseIdx: 0, en: 'Request Intake', title: '견적 요청 접수',
+        actor: '고객', icon: FileText,
+        desc: '무료 출장 견적 신청과 함께 보유하신 도면(DWG/PDF)·현장 사진·장비 제원서를 업로드합니다. 자료가 부족해도 괜찮습니다 — 부족한 부분은 현장 실사로 보완합니다.',
+        output: '요청 티켓 발급',
+        faq: 'Q. 제출 자료가 적어도 접수되나요?  →  사진 몇 장만으로도 시작합니다.',
+      },
+      {
+        no: '02', phaseIdx: 0, en: 'Data Validation', title: '제출 자료 적합성 검토',
+        actor: 'ZEROS', icon: Search,
+        desc: '업로드된 원천 자료의 해상도·누락 항목·규격 정합성을 데이터 품질 기준으로 1차 점검합니다. "분석이 가능한 데이터인가"부터 투명하게 확인해 드립니다.',
+        output: '자료 적합성 리포트',
+        faq: 'Q. 제 자료로 분석이 되긴 하나요?  →  적합성 리포트로 가능 여부를 먼저 알려드립니다.',
+      },
+      {
+        no: '03', phaseIdx: 0, en: 'Gap Resolution', title: '추가 정보 확인·문의',
+        actor: '고객·ZEROS', icon: MessageCircle,
+        desc: '누락되었거나 모호한 요건(유체 종류, 설계 압력, 시공 환경 등)을 담당 PM이 직접 여쭤 채웁니다. 임의 가정이 아닌 "확인"으로 오차의 뿌리를 제거합니다.',
+        output: '요건 확정 체크리스트',
+        faq: 'Q. 빠진 정보는 마음대로 가정하나요?  →  추측 없이 직접 확인하고 확정합니다.',
+      },
+      {
+        no: '04', phaseIdx: 1, en: 'Model Setup', title: '분석 데이터 모형 확정',
+        actor: 'ZEROS', icon: Database,
+        desc: '공종·규모·기계실 환경 조건을 정량 변수(Feature)로 정형화하여, 귀사 공사에 꼭 맞는 견적 추론 모델의 입력 구조를 확정합니다.',
+        output: '분석 데이터셋',
+        faq: 'Q. 무슨 기준으로 금액을 계산하나요?  →  표준 품셈 + 실거래 변수로 모델을 구성합니다.',
+      },
+      {
+        no: '05', phaseIdx: 1, en: 'AI Benchmarking', title: 'AI 실적 검증 & 단가 정제',
+        actor: 'ZEROS', icon: Cpu,
+        desc: '1군 건설사 실거래 DB와 표준 품셈을 교차 대조하고, 통계적 이상치 판별(Z-score)로 고단가 거품·허위 할증을 자동 필터링·정제합니다.',
+        output: '정제 단가·물량',
+        faq: 'Q. 부풀려진 단가는 어떻게 거르나요?  →  실거래 대비 이상치를 통계로 잡아냅니다.',
+      },
+      {
+        no: '06', phaseIdx: 1, en: 'Result Lock-in', title: '검토 자료 확정',
+        actor: '고객·ZEROS', icon: FileCheck,
+        desc: '정제된 분석 입력값과 공사 범위를 고객 요청 사항과 최종 대조하여 확정합니다. 고객이 동의한 범위 위에서만 결과를 산출합니다.',
+        output: '확정 Scope',
+        faq: 'Q. 제가 요청한 범위와 다르면요?  →  확정 전 함께 검토해 일치시킵니다.',
+      },
+      {
+        no: '07', phaseIdx: 2, en: 'Budget Simulation', title: '시뮬레이션 적합성 검토',
+        actor: 'ZEROS', icon: BarChart3,
+        desc: '확정 데이터로 시나리오별 예산 대역(Budget Band)과 리스크를 시뮬레이션하고, 30년 경력 PM이 현장 변수를 교차 검증해 정교하게 보정합니다.',
+        output: '안심 예산 밴드 · 리스크 등급',
+        faq: 'Q. 그 결과, 믿어도 되나요?  →  AI 산출 위에 전문가가 한 번 더 봅니다.',
+      },
+      {
+        no: '08', phaseIdx: 2, en: 'Scope Sheet Delivery', title: '견적 검토 자료 제공',
+        actor: 'ZEROS → 고객', icon: Send,
+        desc: '계산 근거가 모두 추적되는 고해상도 검토서(Scope Sheet)로 안심 예산 밴드·필수 자재 요건·리스크 등급을 투명하게 전달합니다.',
+        output: 'ZEROS 검토서',
+        faq: 'Q. 숫자만 덜렁 받나요?  →  근거와 계산 로직까지 함께 드립니다.',
+      },
+      {
+        no: '09', phaseIdx: 2, en: 'Feedback Loop', title: '고객 피드백 확인 & 개선',
+        actor: '고객 → ZEROS', icon: RefreshCw,
+        desc: '검토서에 대한 질문·조정 요청을 반영하고, 필요 시 변수를 갱신해 재검증 루프를 돌립니다. 대표님이 만족하실 때까지 함께 다듬습니다.',
+        output: '최종 확정 · 사후 지원',
+        faq: 'Q. 결과가 아쉬우면 끝인가요?  →  피드백을 반영해 다시 검증합니다.',
+      },
+    ];
+
+    // 국면 톤(색) → Tailwind 클래스 매핑 (디자인 시스템 steel/accent/success 재사용)
+    const toneClasses = {
+      steel: { dot: 'bg-steel ring-steel/20', text: 'text-steel', soft: 'bg-steel/10 text-steel border-steel/20', bar: 'bg-steel' },
+      accent: { dot: 'bg-accent ring-accent/20', text: 'text-accent', soft: 'bg-accent/10 text-accent border-accent/20', bar: 'bg-accent' },
+      success: { dot: 'bg-success ring-success/20', text: 'text-success', soft: 'bg-success/10 text-success border-success/20', bar: 'bg-success' },
+    };
+
+    // 액터(주체) 칩 스타일 — 고객/ZEROS/공동 구분
+    const actorClass = (actor: string) =>
+      actor.includes('고객') && actor.includes('ZEROS')
+        ? 'bg-navy/5 text-navy border-navy/15'
+        : actor.startsWith('고객')
+          ? 'bg-accent/10 text-accent border-accent/20'
+          : 'bg-steel/10 text-steel border-steel/20';
+
+    return (
+      <div className="flex flex-col gap-4 max-w-4xl mx-auto py-3 select-none">
+        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-5.5">
+          {/* 헤더 */}
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4.5 border-b border-border pb-4">
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-accent" />
+                <span className="text-[12px] text-accent font-black uppercase tracking-wider">Customer Journey · Service Process</span>
+              </div>
+              <h2 className="text-xl.5 md:text-2xl font-black text-navy tracking-tight">ZEROS 서비스 프로세스 9단계</h2>
+              <p className="text-[13px] text-gray leading-snug font-semibold max-w-2xl">
+                <strong className="text-navy font-extrabold">요청 접수부터 피드백까지</strong> — 대표님이 무엇을 하고, ZEROS가 무엇을 검증하는지 한눈에. 각 단계의 궁금증을 미리 풀어 드립니다.
+              </p>
+            </div>
+            {/* 국면 범례 */}
+            <div className="grid grid-cols-3 border border-border/80 rounded-custom bg-gradient-to-br from-bg-subtle/50 to-bg shrink-0 select-none overflow-hidden shadow-sm">
+              {phases.map((p, i) => (
+                <div key={p.key} className={`px-2.5 sm:px-3.5 py-2 flex flex-col gap-0.5 min-w-0 ${i > 0 ? 'border-l border-border' : ''}`}>
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    <span className={`w-1.5 h-1.5 rounded-full ${toneClasses[p.tone].bar} shrink-0`} />
+                    <span className="text-[10px] text-gray-light font-bold truncate">
+                      {p.key}<span className="hidden lg:inline"> · {p.en}</span>
+                    </span>
+                  </span>
+                  <span className="text-[11px] sm:text-[12px] text-navy font-black tracking-tight leading-tight break-keep">{p.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 9단계 수직 타임라인 */}
+          <div className="flex flex-col gap-3.5">
+            <span className="text-[12px] font-black text-navy uppercase tracking-wide">고객 여정 타임라인 (9단계)</span>
+
+            <div className="relative pl-6 md:pl-8 flex flex-col gap-3.5">
+              {/* 타임라인 수직 연결선 */}
+              <div className="absolute top-3 bottom-3 left-[11px] md:left-[15px] w-0.5 bg-gradient-to-b from-steel via-accent to-success pointer-events-none" />
+
+              {steps.map((s, idx) => {
+                const tone = toneClasses[phases[s.phaseIdx].tone];
+                const isPhaseStart = idx === 0 || steps[idx - 1].phaseIdx !== s.phaseIdx;
+                const Icon = s.icon;
+                return (
+                  <React.Fragment key={s.no}>
+                    {/* 국면 머리표 — 그룹 시작 단계 앞에 삽입 */}
+                    {isPhaseStart && (
+                      <div className="relative flex items-center gap-2 -ml-6 md:-ml-8 mt-1 first:mt-0">
+                        <span className={`text-[11px] font-black uppercase tracking-wider ${tone.text} font-mono`}>
+                          {phases[s.phaseIdx].key} · {phases[s.phaseIdx].label}
+                        </span>
+                        <span className="flex-1 h-px bg-border/70" />
+                      </div>
+                    )}
+
+                    <div className="relative flex flex-col gap-2 group transition-all duration-200">
+                      {/* 타임라인 노드 마커 */}
+                      <div className={`absolute -left-[18px] md:-left-[22px] top-2 w-3 h-3 rounded-full ${tone.dot} ring-4 transition-transform duration-200 group-hover:scale-125 z-10`} />
+
+                      <div className="bg-bg border border-border/80 rounded-custom p-4 shadow-sm hover:shadow-custom-sm transition-all duration-200 flex flex-col md:flex-row md:items-start gap-4 relative overflow-hidden">
+                        {/* 호버 시 은은한 광원 */}
+                        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-navy/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                        {/* 단계 번호 + 아이콘 + 타이틀 */}
+                        <div className="md:w-[34%] shrink-0 flex items-center gap-3">
+                          <span className="w-9 h-9 rounded-custom bg-navy/5 text-navy flex items-center justify-center shrink-0 border border-navy/10 relative">
+                            <Icon className="w-4.5 h-4.5 text-steel" />
+                            <span className="absolute -top-1.5 -right-1.5 text-[9px] font-black font-mono text-white bg-navy rounded-full w-4 h-4 flex items-center justify-center shadow-sm">{s.no}</span>
+                          </span>
+                          <div className="flex flex-col leading-tight min-w-0">
+                            <span className="text-[10px] text-steel font-black uppercase tracking-wider font-mono truncate">{s.en}</span>
+                            <span className="text-[14.5px] font-black text-navy mt-0.5">{s.title}</span>
+                            {/* 액터(주체) 칩 */}
+                            <span className={`mt-1.5 self-start text-[10px] font-black px-1.5 py-0.5 rounded border ${actorClass(s.actor)}`}>
+                              {s.actor}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 설명 + 궁금증 해소 */}
+                        <div className="flex-1 flex flex-col gap-2.5 min-w-0">
+                          <p className="text-[12.5px] text-gray leading-relaxed font-semibold">{s.desc}</p>
+                          <div className="flex items-start gap-1.5 bg-bg-subtle/50 border border-border/40 rounded p-2 text-[11.5px] font-bold text-navy/80 leading-snug">
+                            <MessageCircle className="w-3.5 h-3.5 text-accent shrink-0 mt-px" />
+                            <span>{s.faq}</span>
+                          </div>
+                        </div>
+
+                        {/* 산출물 배지 */}
+                        <div className="md:w-[22%] shrink-0 md:self-stretch flex items-end md:justify-end">
+                          <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11.5px] font-bold w-full md:w-auto justify-center md:justify-start border ${tone.soft}`}>
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">{s.output}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="bg-gradient-to-r from-[#1A365D] to-[#2E5E8A] text-bg rounded-custom p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="text-[11px] text-bg/75 font-black uppercase tracking-wider font-mono">9 steps · transparent</span>
+              <span className="text-[14.5px] font-black tracking-tight">접수부터 피드백까지, 모든 과정을 투명하게 함께합니다.</span>
+            </div>
+            <div className="w-full sm:w-64 shrink-0 flex flex-col justify-center">
+              <button
+                onClick={() => setActiveTabAtTop('request')}
+                className="w-full bg-[#FF6A00] hover:brightness-110 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-black transition-all active:scale-95 whitespace-nowrap cursor-pointer text-center"
+              >
+                무료 출장 견적 신청하기
               </button>
             </div>
           </div>
@@ -1764,7 +2000,7 @@ export default function Home() {
               무료 컨설팅 신청하기
             </button>
             <button
-              onClick={() => setActiveTabAtTop('about')}
+              onClick={() => setActiveTabAtTop('process')}
               className="min-h-12 rounded-lg border-2 border-[#2D73C8] bg-[#0B2B50]/70 text-white text-[18px] font-black active:scale-[0.98] transition-transform"
             >
               서비스 프로세스 보기
@@ -2186,14 +2422,14 @@ export default function Home() {
 
       {/* ── 히어로 및 핵심 영역 카테고리 (수직 정렬 및 상하 여백 균형 매칭) ── */}
       <section className="flex-1 flex items-center justify-center min-h-0 py-6 xl:py-8 z-10">
-        <div className="w-full max-w-[1320px] mx-auto px-6 xl:px-8">
+        <div className="w-full max-w-[1480px] mx-auto px-6 xl:px-8">
           {/* 히어로 카드 (5대 카테고리까지 내부로 통합해 감싸도록 세로폭 확장) */}
           <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] py-10 md:py-12 xl:py-14 px-10 md:px-12 xl:px-16 flex flex-col gap-10 relative overflow-hidden">
             {/* 은은한 내부 데코레이션 그라데이션 */}
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(245,247,250,0.5),rgba(255,255,255,0)_65%)] pointer-events-none" />
 
             {/* 상단: 카피 + 이미지 (2열 레이아웃) */}
-            <div className="grid grid-cols-[1.05fr_0.95fr] gap-16 xl:gap-20 items-center z-10 relative">
+            <div className="grid grid-cols-[1.16fr_0.84fr] gap-12 xl:gap-16 items-center z-10 relative">
               {/* 좌: 카피 + CTA */}
               <div className="flex flex-col gap-6 xl:gap-8 relative">
                 {/* 배지 — AI 1차 검증 → PM 최종 검토 2단계를 분절해 보여주는 세련된 신뢰 칩 */}
@@ -2207,8 +2443,8 @@ export default function Home() {
                 </span>
 
                 {/* 헤드라인 */}
-                <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.25] tracking-tight text-[#0F1E35]">
-                  공정설비CAPEX 개선·증설 배관공사,
+                <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.25] tracking-tight text-[#0F1E35] break-keep">
+                  공정설비 CAPEX 개선·증설 <span className="whitespace-nowrap">배관공사,</span>
                   <br />
                   <span className="text-[#155EEF]">AI 분석</span>
                   <span>으로 더 정확하게</span>
@@ -2314,20 +2550,13 @@ export default function Home() {
                   <span className="text-[10.5px] md:text-[11.5px] font-semibold text-[#5B6573] leading-normal break-keep">
                     {cat.desc}
                   </span>
-                  {/* 하단 수평선: 좌측은 붓글씨 시작하듯 살짝 올린 형태, 하단 수평선은 동일한 길이 */}
-                  <svg 
-                    className="absolute left-4.5 bottom-1.5 w-[90px] h-3 transition-transform duration-200 group-hover:scale-x-[1.05] origin-left" 
-                    viewBox="0 0 90 12" 
-                  >
-                    <path 
-                      d="M 6,3 Q 2,2 2,10 L 90,10" 
-                      fill="none" 
-                      stroke={cat.color} 
-                      strokeWidth="3.5" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  {/* 하단 데코 — 프리미엄 모노톤: 평상시 절제된 네이비 헤어라인, 호버 시 브랜드 오렌지가 좌→우로 채워짐 (색 구분은 텍스트가 담당) */}
+                  <span className="absolute left-4.5 right-4 bottom-1.5 h-[2px]" aria-hidden="true">
+                    {/* 기준 헤어라인 — 5개 컬럼 동일 길이로 그리드 리듬 정렬 */}
+                    <span className="absolute inset-x-0 inset-y-0 rounded-full bg-navy/20" />
+                    {/* 호버 채움 — 브랜드 오렌지 */}
+                    <span className="absolute left-0 inset-y-0 w-0 rounded-full bg-[#FF6A00] transition-[width] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-full" />
+                  </span>
                 </button>
               ))}
             </div>
@@ -2351,7 +2580,7 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="w-full max-w-[1240px] mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2">
+        <div className="w-full max-w-[1400px] mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2">
           {HOME_STATS.map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-center gap-3 justify-center md:justify-start">
               <Icon className="w-5 h-5 text-[#88A8D2] shrink-0" />
@@ -2366,7 +2595,7 @@ export default function Home() {
 
       {/* ── 푸터 (청색 2단 中 하단 띠 — 헤더와 동일한 64px 높이) ── */}
       <footer className="bg-[#04204C] text-white/60 h-16 shrink-0 flex items-center z-10 select-none">
-        <div className="w-full max-w-[1240px] mx-auto px-10 flex items-center justify-between gap-4 text-[12.5px] font-semibold">
+        <div className="w-full max-w-[1400px] mx-auto px-10 flex items-center justify-between gap-4 text-[12.5px] font-semibold">
           <span>© 2025 ZEROS Co., Ltd. All rights reserved.</span>
           <div className="flex items-center gap-5">
             <span className="text-white/45">사업자등록번호 준비중</span>
@@ -2445,6 +2674,8 @@ export default function Home() {
     switch (activeTab) {
       case 'about':
         return renderAboutTab();
+      case 'process':
+        return renderServiceProcessTab();
       case 'sop':
         return renderSopTab();
       case 'performance':

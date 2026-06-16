@@ -73,7 +73,7 @@ export const TopHeader: React.FC = () => {
           style={{
             background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
             backgroundSize: '300% 300%',
-            animation: 'logoGlow 4s ease infinite',
+            animation: 'logoGlow 9s ease-in-out infinite',
           }}
         >
           <style>{`
@@ -118,6 +118,10 @@ export const TopHeader: React.FC = () => {
             sop: {
               active: 'text-success after:bg-success',
               hover: 'hover:text-success hover:after:bg-success'
+            },
+            process: {
+              active: 'text-accent after:bg-accent',
+              hover: 'hover:text-accent hover:after:bg-accent'
             },
             home: {
               active: 'text-navy after:bg-navy',
