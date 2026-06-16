@@ -11,12 +11,13 @@ import {
   BookOpen,
   Home,
   FileText,
-  ClipboardList,
+  TrendingUp,
   User,
   Menu,
   X,
   Building2
 } from 'lucide-react';
+import { MyRequestsView } from '../MyRequestsView';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -242,6 +243,22 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     container.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
   }, [landingTradeName, isLandingShowcase]);
 
+  // 모바일 하단 탭과 activeTab 연동 동기화
+  useEffect(() => {
+    if (!layoutReady || !isMobileLayout) return;
+    if (activeTab === 'request') {
+      setMobileActiveTab('request');
+    } else if (activeTab === 'about' || activeTab === 'sop') {
+      setMobileActiveTab('service');
+    } else if (activeTab === 'performance') {
+      setMobileActiveTab('history');
+    } else if (activeTab === 'home') {
+      if (mobileActiveTab !== 'account' && mobileActiveTab !== 'decision') {
+        setMobileActiveTab('home');
+      }
+    }
+  }, [activeTab, layoutReady, isMobileLayout]);
+
   // 레이아웃 확정 전: 브랜드 스플래시 (깨진 헤더 대신 깔끔한 첫 화면)
   if (!layoutReady) {
     return (
@@ -371,22 +388,46 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               <span className="relative top-[1px] font-black text-[19px] text-bg leading-none uppercase">ZEROS</span>
             </div>
           </button>
-          {isMobileLanding ? (
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="w-10 h-10 inline-flex items-center justify-center text-white"
-              aria-label="메뉴 열기"
-            >
-              {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[12px] px-2 py-0.5 rounded-full font-black">
-                AI NATIVE
-              </span>
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse" title="온라인 상태" />
-            </div>
-          )}
+          <div className="flex items-center gap-2.5">
+            {customerAuth ? (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleMobileTabChange('account');
+                }}
+                className="bg-white/10 border border-white/20 hover:bg-white/15 px-3 py-1.5 rounded-custom text-[11.5px] font-bold text-white transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                마이페이지
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setShowLogin(true);
+                }}
+                className="bg-accent hover:bg-[#c95f12] text-white px-3 py-1.5 rounded-custom text-[11.5px] font-black tracking-tight transition-all active:scale-95 shadow-sm cursor-pointer"
+              >
+                간편 로그인/등록
+              </button>
+            )}
+            {isMobileLanding ? (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="w-9 h-9 inline-flex items-center justify-center text-white cursor-pointer"
+                aria-label="메뉴 열기"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[11.5px] px-2 py-0.5 rounded-full font-black">
+                  AI NATIVE
+                </span>
+                <div className="w-2 h-2 rounded-full bg-success animate-pulse" title="온라인 상태" />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 모바일 퀵메뉴 칩 영역 (홈 화면일 때만 노출) */}
@@ -474,7 +515,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   { label: '홈', tab: 'home' as MobileActiveTab },
                   { label: '서비스 소개', tab: 'service' as MobileActiveTab },
                   { label: '견적 문의', tab: 'request' as MobileActiveTab },
-                  { label: '이용 내역', tab: 'history' as MobileActiveTab },
+                  { label: '실적 집계표', tab: 'history' as MobileActiveTab },
                   { label: '마이페이지', tab: 'account' as MobileActiveTab },
                 ].map((item) => (
                   <button
@@ -543,19 +584,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           className={`flex-1 overflow-y-auto min-w-0 relative ${isMobileLanding ? 'bg-[#041B33] p-0 snap-y snap-mandatory' : 'bg-bg p-4 pb-28'}`}
         >
           {mobileActiveTab === 'account' ? (
-            <div className="max-w-md mx-auto bg-bg border border-border rounded-custom p-5 flex flex-col gap-3">
-              <span className="text-[12px] font-black text-steel">MY PAGE</span>
-              <h2 className="text-[20px] font-black text-navy">마이페이지</h2>
-              <p className="text-[13px] text-gray font-semibold leading-relaxed">
-                견적 문의 내역과 담당자 배정 현황을 확인할 수 있는 영역입니다.
-              </p>
-              <button
-                onClick={() => handleMobileTabChange('request')}
-                className="mt-2 bg-accent text-white rounded-custom px-4 py-3 text-[13px] font-black"
-              >
-                새 견적 문의하기
-              </button>
-            </div>
+            <MyRequestsView />
           ) : mobileActiveTab === 'decision' ? (
             <div className="max-w-md mx-auto">
               <RightSidebar />
@@ -603,8 +632,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               mobileActiveTab === 'history' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
             }`}
           >
-            <ClipboardList className="w-5.5 h-5.5" />
-            <span className="text-[12px]">이용 내역</span>
+            <TrendingUp className="w-5.5 h-5.5" />
+            <span className="text-[12px]">실적 집계표</span>
           </button>
 
           <button

@@ -254,12 +254,45 @@ export default function Home() {
   const renderAboutTab = () => {
     return (
       <div className="flex flex-col gap-4 max-w-4xl mx-auto py-2.5 select-none">
-        {/* 하나의 정돈된 진단 절차 카드 */}
+        {/* ZEROS 사업 목적 & 비전 카드 */}
+        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-4.5">
+          <div className="flex flex-col gap-1.5 border-b border-border pb-3.5">
+            <span className="text-[12px] text-accent font-black uppercase tracking-wider">Mission & Vision</span>
+            <h2 className="text-2xl font-black text-navy tracking-tight">소상공인 대표님을 위한 ZEROS의 약속</h2>
+            <p className="text-[13.5px] text-gray leading-relaxed font-semibold">
+              들쑥날쑥한 견적 비용과 설계 변경 분쟁을 사전에 차단하여 소상공인 대표님의 예산 계획에 도움을 드립니다.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 text-[14px] text-navy font-semibold leading-relaxed">
+            <p className="font-extrabold text-steel text-[15.5px]">
+              "최적합의 예산 책정으로 소상공인 대표님이 안심할 수 있는 예산 계획을 돕겠습니다."
+            </p>
+            <p className="text-gray font-medium text-[13.5px] leading-relaxed">
+              건설 및 설비 분야 공사 시 시공사마다 천차만별인 견적 금액으로 인해 발생하는 불확실성은 소상공인 대표님들에게 큰 리스크입니다. ZEROS는 투명한 빅데이터와 30년 현장 엔지니어링 경력을 바탕으로 가장 합리적이고 객관적인 <strong>최적합 예산</strong>을 수립함으로써, 대표님이 자금 계획을 세우고 안심하며 경영에만 집중할 수 있는 환경을 만듭니다.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1.5">
+              <div className="p-4 rounded-custom bg-bg-subtle border border-border/80 flex flex-col gap-1.5">
+                <span className="text-[13px] font-black text-navy">소상공인 대표 안심 예산</span>
+                <span className="text-[12px] text-gray font-semibold leading-normal">
+                  공사 예산을 과다/과소 책정 없이 도메인 지표에 부합하는 적정 대역으로 고정하여 안정적인 투자를 가능하게 합니다.
+                </span>
+              </div>
+              <div className="p-4 rounded-custom bg-[#E0701A]/5 border border-[#E0701A]/20 flex flex-col gap-1.5">
+                <span className="text-[13px] font-black text-[#E0701A]">투명한 빅데이터 필터링</span>
+                <span className="text-[12px] text-gray font-semibold leading-normal">
+                  시장 거래 실사례 및 시공 품셈을 교차 검증하여 고단가 단가 거품이나 허위 요소를 감지하고 차단합니다.
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 하나의 정돈된 데이터분석 절차 카드 */}
         <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-5.5">
           {/* 헤더 */}
           <div className="flex flex-col gap-1.5 border-b border-border pb-3.5">
-            <span className="text-[12px] text-steel font-black uppercase tracking-wider">ZEROS Diagnosis Protocol</span>
-            <h2 className="text-2xl font-black text-navy tracking-tight">ZEROS 진단 절차</h2>
+            <span className="text-[12px] text-steel font-black uppercase tracking-wider">ZEROS Data Analysis Protocol</span>
+            <h2 className="text-2xl font-black text-navy tracking-tight">ZEROS 데이터분석 절차</h2>
             <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
               자료 접수부터 최종 의사결정까지, ZEROS의 데이터 파이프라인 처리 절차입니다.
             </p>
@@ -840,7 +873,7 @@ export default function Home() {
                 onClick={() => setActiveTabAtTop('about')}
                 className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer text-center"
               >
-                ZEROS 진단 절차 보기
+                ZEROS 데이터분석 절차 보기
               </button>
             </div>
           </div>
@@ -1693,25 +1726,31 @@ export default function Home() {
               최적의 견적, ZEROS
             </h1>
 
-            {/* 핵심 3대 역량 아이콘 칩 — 칩 간격을 내부 패딩(12px)과 일치시켜 동일 박자 유지 */}
-            <div className="flex flex-col gap-6 pl-1 select-none">
+            {/* 핵심 3대 역량 아이콘 칩 — 탭화하여 각 탭으로 링크 연결 */}
+            <div className="flex flex-col gap-4 pl-1 select-none">
               {[
-                { icon: Truck, label: '무료 견적 출장 서비스', sub: '전국현장 예약방문 실사 검토', color: 'text-sky-400' },
-                { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-indigo-400' },
-                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400' },
-              ].map(({ icon: Icon, label, sub, color }) => (
-                <div
+                { icon: Truck, label: '무료 견적 출장 서비스', sub: '전국현장 예약방문 실사 검토', color: 'text-sky-400', targetTab: 'request' },
+                { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-indigo-400', targetTab: 'performance' },
+                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400', targetTab: 'about' },
+              ].map(({ icon: Icon, label, sub, color, targetTab }) => (
+                <button
                   key={label}
-                  className="flex items-start gap-4"
+                  onClick={() => setActiveTabAtTop(targetTab as any)}
+                  className="flex items-start gap-4 text-left w-full p-3.5 rounded-[16px] bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
                 >
                   <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
                     <Icon className={`w-5 h-5 ${color}`} />
                   </div>
-                  <div className="flex flex-col gap-1 leading-tight min-w-0 pt-0.5">
-                    <span className="text-[16px] font-black text-white tracking-tight">{label}</span>
+                  <div className="flex-1 flex flex-col gap-1 leading-tight min-w-0 pt-0.5">
+                    <span className="text-[16px] font-black text-white tracking-tight flex items-center justify-between gap-1.5">
+                      {label}
+                      <span className="text-[11px] text-white/45 font-bold uppercase tracking-wider shrink-0 flex items-center gap-0.5">
+                        이동 <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </span>
                     <span className="text-[13px] font-semibold text-white/50 break-keep">{sub}</span>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -1910,7 +1949,7 @@ export default function Home() {
               </div>
             </div>
 
-          {/* 최종 CTA — AI Native 검증 절차 / ZEROS 진단 절차 */}
+          {/* 최종 CTA — AI Native 검증 절차 / ZEROS 데이터분석 절차 */}
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setActiveTabAtTop('sop')}
@@ -1922,7 +1961,7 @@ export default function Home() {
               onClick={() => setActiveTabAtTop('about')}
               className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[17px] font-black"
             >
-              ZEROS 진단 절차
+              ZEROS 데이터분석 절차
             </button>
           </div>
         </section>
@@ -2050,7 +2089,7 @@ export default function Home() {
                 onClick={() => setActiveTabAtTop('about')}
                 className="flex-1 min-h-9 bg-transparent hover:bg-[#FFF3EB] text-[#F97316] border border-[#F97316]/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
               >
-                ZEROS 진단 절차
+                ZEROS 데이터분석 절차
               </button>
             </div>
           </div>
@@ -2191,7 +2230,7 @@ export default function Home() {
                     style={{ touchAction: 'manipulation' }}
                     className="inline-flex items-center justify-center gap-2 bg-surface hover:bg-bg-subtle text-[#0F1E35] border border-border px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
                   >
-                    ZEROS 진단 절차 보기
+                    ZEROS 데이터분석 절차 보기
                     <ArrowRight className="w-4 h-4 shrink-0" />
                   </button>
                 </div>

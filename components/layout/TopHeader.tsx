@@ -51,7 +51,7 @@ export const TopHeader: React.FC = () => {
   // 중앙 네비게이션 항목 — PPT 시안 정보구조(IA)와 정렬
   const navItems: { tab: ActiveTab; label: string }[] = [
     { tab: 'review', label: '견적 검토' },
-    { tab: 'about', label: '진단 절차' },
+    { tab: 'about', label: '데이터분석 절차' },
     { tab: 'performance', label: '실적 레퍼런스' },
     { tab: 'request', label: '예상견적 의뢰하기' },
     { tab: 'sop', label: 'AI Native 검증' },

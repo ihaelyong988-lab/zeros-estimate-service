@@ -17,7 +17,7 @@ function formatPhone(v: string): string {
 export const CustomerLoginModal: React.FC = () => {
   const { showLogin, setShowLogin, setCustomerAuth, setShowMyRequests } = useShell();
 
-  const [name, setName] = useState('');
+  const [name] = useState('');
   const [phone, setPhone] = useState('');
   const [phase, setPhase] = useState<'input' | 'code'>('input');
   const [token, setToken] = useState('');
@@ -30,7 +30,7 @@ export const CustomerLoginModal: React.FC = () => {
   const phoneValid = /^01[0-9]{8,9}$/.test(digits);
 
   const reset = () => {
-    setName(''); setPhone(''); setPhase('input'); setToken('');
+    setPhone(''); setPhase('input'); setToken('');
     setCode(''); setTestCode(null); setLoading(false); setError(null);
   };
 
@@ -99,8 +99,8 @@ export const CustomerLoginModal: React.FC = () => {
               <LogIn className="w-4 h-4 text-white" />
             </span>
             <div className="flex flex-col leading-tight">
-              <span className="text-[15px] font-black tracking-tight">접수현황 로그인</span>
-              <span className="text-[11.5px] font-semibold text-white/60">휴대폰 본인인증으로 안전하게 확인</span>
+              <span className="text-[15px] font-black tracking-tight">접수현황 로그인 / 등록</span>
+              <span className="text-[11.5px] font-semibold text-white/60">전화번호만으로 3초만에 가입/로그인</span>
             </div>
           </div>
           <button
@@ -117,24 +117,13 @@ export const CustomerLoginModal: React.FC = () => {
           <div className="bg-bg-subtle border border-border/80 rounded-custom p-3.5 flex flex-col gap-1.5">
             <span className="text-[12px] font-bold text-navy flex items-center gap-1.5 leading-none">
               <ShieldCheck className="w-3.5 h-3.5 text-steel" />
-              등록된 본인만 접수현황을 열람할 수 있습니다
+              전화번호 하나로 편리하게 시작하기
             </span>
             <span className="text-[12px] text-gray leading-relaxed">
-              의뢰 시 사용하신 휴대폰 번호로 인증하시면, 진행 상황을 시계열로 확인하실 수 있습니다.
+              의뢰 시 사용하신 휴대폰 번호로 인증하시면, 실시간 진행 상황을 시계열로 바로 확인 및 등록하실 수 있습니다.
             </span>
           </div>
 
-          {/* 성함(선택) */}
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[12px] font-bold text-navy">성함 <span className="text-gray-light font-medium">(선택)</span></span>
-            <input
-              value={name}
-              onChange={(e) => { setName(e.target.value); setError(null); }}
-              disabled={phase === 'code'}
-              placeholder="성함 (미입력 시 접수정보로 표시)"
-              className="w-full bg-bg border border-border rounded-custom px-3.5 py-2.5 text-[14px] font-medium text-navy outline-none focus:ring-2 focus:ring-steel/40 disabled:bg-bg-subtle disabled:text-gray"
-            />
-          </label>
 
           {/* 휴대폰 번호 */}
           <label className="flex flex-col gap-1.5">
