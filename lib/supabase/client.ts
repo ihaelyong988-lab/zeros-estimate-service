@@ -67,6 +67,12 @@ abstract class BaseZerosService implements ZerosDataService {
   }
 
   async createEstimate(estimate: Partial<Estimate>): Promise<Estimate> {
+    // 연락처 검증: 폼에서 필수·인증되지만, 누락/형식오류 시 가짜번호(010-0000-0000) 저장을 방지한다.
+    const phone = (estimate.phone || '').trim();
+    if (!/^01[0-9]{8,9}$/.test(phone.replace(/[^0-9]/g, ''))) {
+      throw new Error('휴대폰 번호가 올바르지 않습니다. 접수를 진행할 수 없습니다.');
+    }
+
     const list = await this.getEstimates();
 
     // 접수번호 생성 로직 (ZR-YYYYMMDD-XXX)
@@ -80,7 +86,7 @@ abstract class BaseZerosService implements ZerosDataService {
       created_at: new Date().toISOString(),
       customer_name: estimate.customer_name || '이름 없음',
       company_name: estimate.company_name || '',
-      phone: estimate.phone || '010-0000-0000',
+      phone,
       email: estimate.email || '',
       site_address: estimate.site_address || '',
       customer_type: estimate.customer_type || '기타',

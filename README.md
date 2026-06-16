@@ -71,7 +71,8 @@ zeros-estimate-service/
 
 ## 💾 데이터베이스 스키마 및 보안 (Supabase SQL)
 
-만약 Supabase 클라우드로 확장 시, `/supabase/schema.sql` 및 `seed.sql`을 Supabase SQL Editor에서 실행하십시오.
+실제 클라우드 영속화는 루트의 `supabase-setup.sql`을 Supabase SQL Editor에서 실행해 설정합니다.
+각 테이블은 `id(text) + data(jsonb) + created_at` 구조이며, 아래 항목들은 `data` JSON 안에 담기는 논리 필드입니다.
 
 ### 1. 테이블 설계 구조
 *   `estimates`: 진단 의뢰서 원장 (접수번호, 공사종류, 등급, 금액, 상태 등)

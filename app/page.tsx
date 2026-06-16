@@ -155,11 +155,8 @@ export default function Home() {
     const el = mobileCarouselRef.current;
     if (!el) return;
     const i = Math.min(LANDING_TRADES.length - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth)));
-    setMobileTradeIdx((prev) => {
-      if (prev === i) return prev;
-      setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[i]].base);
-      return i;
-    });
+    setMobileTradeIdx(i);
+    setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[i]].base);
   };
 
   // 공종 칩 탭 → 캐러셀을 해당 카드로 이동
@@ -170,7 +167,7 @@ export default function Home() {
     if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
   };
 
-  // 신청 탭 진입 전에 OTP 설정 여부를 미리 받아둔다 — "무료 컨설팅 신청하기" 클릭 시 폼이 즉시 뜨도록
+  // 신청 탭 진입 전에 OTP 설정 여부를 미리 받아둔다 — "무료 견적 신청하기" 클릭 시 폼이 즉시 뜨도록
   useEffect(() => {
     prefetchOtpEnabled();
   }, []);
@@ -192,15 +189,17 @@ export default function Home() {
 
   // 실시간 데이터 로딩
   useEffect(() => {
+    let active = true;
     const load = async () => {
       try {
         const list = await ZerosService.getEstimates();
-        setEstimates(list);
+        if (active) setEstimates(list);
       } catch (e) {
-        console.error('Failed to load estimates in page root', e);
+        if (active) console.error('Failed to load estimates in page root', e);
       }
     };
     load();
+    return () => { active = false; };
   }, [refreshTrigger, isUserMode, adminView]);
 
   const handleRefresh = () => {
@@ -1965,7 +1964,7 @@ export default function Home() {
             {/* 핵심 3대 역량 아이콘 칩 — 탭화하여 각 탭으로 링크 연결 */}
             <div className="flex flex-col gap-4 pl-1 select-none">
               {[
-                { icon: Truck, label: '무료 견적 출장 서비스', sub: '전국현장 예약방문 실사 검토', color: 'text-sky-400', targetTab: 'request' },
+                { icon: Truck, label: '견적.출장요청 자료 등록하기', sub: '고객 자료등록 및 예약방문 요청', color: 'text-sky-400', targetTab: 'request' },
                 { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-indigo-400', targetTab: 'sop' },
                 { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400', targetTab: 'about' },
               ].map(({ icon: Icon, label, sub, color, targetTab }) => (
@@ -1997,7 +1996,7 @@ export default function Home() {
               onClick={() => setActiveTabAtTop('request')}
               className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[18px] font-black active:scale-[0.98] transition-transform"
             >
-              무료 컨설팅 신청하기
+              무료 견적 신청하기
             </button>
             <button
               onClick={() => setActiveTabAtTop('process')}
