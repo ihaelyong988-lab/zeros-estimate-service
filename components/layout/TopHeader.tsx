@@ -67,9 +67,23 @@ export const TopHeader: React.FC = () => {
         style={{ touchAction: 'manipulation' }}
         className="flex items-center gap-3 cursor-pointer select-none active:scale-98 transition-transform text-left bg-transparent border-none p-0 outline-none"
       >
-        {/* 완벽한 36px 정사각 로고박스 */}
-        <div className="w-9 h-9 bg-accent rounded-custom flex items-center justify-center shrink-0 shadow-sm shadow-accent/20">
-          <Building2 className="w-4.5 h-4.5 text-bg" />
+        {/* 완벽한 36px 정사각 로고박스 - 밝은 파란색 애니메이션, 오렌지색 아이콘 */}
+        <div 
+          className="w-9 h-9 rounded-custom flex items-center justify-center shrink-0 shadow-md"
+          style={{
+            background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
+            backgroundSize: '300% 300%',
+            animation: 'logoGlow 4s ease infinite',
+          }}
+        >
+          <style>{`
+            @keyframes logoGlow {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+          `}</style>
+          <Building2 className="w-4.5 h-4.5 text-[#FF6A00] drop-shadow-[0_0_2px_rgba(255,106,0,0.5)]" />
         </div>
         {/* 로고박스와 동일한 높이 컨테이너에서 워드마크를 수직 중앙 정렬 +
             대문자 메트릭상 위로 떠 보이는 광학 오차를 1px 보정해 글자 중심선을 박스 중심선과 일치 */}

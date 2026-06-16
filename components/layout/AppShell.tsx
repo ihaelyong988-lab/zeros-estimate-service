@@ -48,7 +48,7 @@ const mobileMenuItems: MobileMenuItem[] = [
   { type: 'menu', label: '노후배관교체', value: '노후배관교체' },
   { type: 'menu', label: '기계실개선', value: '기계실개선' },
   { type: 'menu', label: '공정 배관공사', value: '생산설비 배관 연결' },
-  { type: 'menu', label: 'CAPEX 개·증설 검토', value: 'CAPEX 개·증설 검토' },
+  { type: 'menu', label: 'CAPEX개선,증설 검토', value: 'CAPEX 개·증설 검토' },
   { type: 'budget', label: '간편검토(≤1천)', value: 'small' },
   { type: 'budget', label: '출장견적(~1억)', value: 'medium' },
   { type: 'budget', label: '사전진단(>1억)', value: 'large' },
@@ -264,8 +264,22 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     return (
       <div className="h-screen flex items-center justify-center bg-navy text-bg select-none">
         <div className="flex items-center gap-3 animate-pulse">
-          <div className="w-10 h-10 bg-accent rounded-custom flex items-center justify-center shadow-md shadow-accent/20">
-            <Building2 className="w-5 h-5 text-bg" />
+          <div 
+            className="w-10 h-10 rounded-custom flex items-center justify-center shadow-md"
+            style={{
+              background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
+              backgroundSize: '300% 300%',
+              animation: 'logoGlowSplash 4s ease infinite',
+            }}
+          >
+            <style>{`
+              @keyframes logoGlowSplash {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+              }
+            `}</style>
+            <Building2 className="w-5 h-5 text-[#FF6A00] drop-shadow-[0_0_2px_rgba(255,106,0,0.5)]" />
           </div>
           <span className="font-black text-[18px] tracking-widest uppercase">ZEROS</span>
         </div>
@@ -380,8 +394,22 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             style={{ touchAction: 'manipulation' }}
             className="flex items-center gap-2.5 active:scale-98 transition-transform cursor-pointer text-left"
           >
-            <div className="w-8 h-8 bg-accent rounded-custom flex items-center justify-center shadow-md shadow-accent/20">
-              <Building2 className="w-4 h-4 text-bg" />
+            <div 
+              className="w-8 h-8 rounded-custom flex items-center justify-center shadow-md"
+              style={{
+                background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
+                backgroundSize: '300% 300%',
+                animation: 'logoGlowApp 4s ease infinite',
+              }}
+            >
+              <style>{`
+                @keyframes logoGlowApp {
+                  0% { background-position: 0% 50%; }
+                  50% { background-position: 100% 50%; }
+                  100% { background-position: 0% 50%; }
+                }
+              `}</style>
+              <Building2 className="w-4 h-4 text-[#FF6A00] drop-shadow-[0_0_2px_rgba(255,106,0,0.5)]" />
             </div>
             {/* 로고박스 높이에 맞춰 워드마크 수직 중앙 정렬 + 대문자 광학오차 1px 보정 */}
             <div className="h-8 flex items-center">

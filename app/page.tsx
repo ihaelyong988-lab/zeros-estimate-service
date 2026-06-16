@@ -2145,30 +2145,35 @@ export default function Home() {
       title: '일반 배관공사',
       desc: '일반/용수/가스 배관',
       colorClass: 'bg-[#FF5A1F]',
+      color: '#FF5A1F',
       menu: '배관공사',
     },
     {
       title: '기계 장비설치',
       desc: '펌프, 탱크, 기타 장비 설치',
       colorClass: 'bg-[#F97316]',
+      color: '#F97316',
       menu: '장비설치',
     },
     {
       title: '공정 배관공사',
       desc: '설비 Hook-up 연결',
       colorClass: 'bg-[#EAB308]',
+      color: '#EAB308',
       menu: '생산설비 배관 연결',
     },
     {
-      title: 'CAPEX 개·증설 검토',
+      title: 'CAPEX개선,증설 검토',
       desc: '도면 및 견적 검토',
       colorClass: 'bg-[#10B981]',
+      color: '#10B981',
       menu: 'CAPEX 개·증설 검토',
     },
     {
-      title: 'SKID 제작·설치',
+      title: 'SKID . SPOOL제작 견적',
       desc: '배관 SPOOL Module 검토',
       colorClass: 'bg-[#3B82F6]',
+      color: '#3B82F6',
       menu: 'skid',
     },
   ];
@@ -2203,7 +2208,7 @@ export default function Home() {
 
                 {/* 헤드라인 */}
                 <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.25] tracking-tight text-[#0F1E35]">
-                  생산라인 증설·개선 배관공사,
+                  공정설비CAPEX 개선·증설 배관공사,
                   <br />
                   <span className="text-[#155EEF]">AI 분석</span>
                   <span>으로 더 정확하게</span>
@@ -2301,7 +2306,7 @@ export default function Home() {
                     setSelectedBudget('');
                     setActiveTabAtTop('review');
                   }}
-                  className="flex flex-col items-start text-left gap-1 pb-3 relative group transition-all duration-200 cursor-pointer focus:outline-none hover:-translate-y-0.5"
+                  className="flex flex-col items-start text-left gap-1 pl-4.5 pb-2.5 relative group transition-all duration-200 cursor-pointer focus:outline-none hover:-translate-y-0.5"
                 >
                   <span className="text-[14.5px] font-black text-navy group-hover:text-steel transition-colors duration-150 whitespace-nowrap">
                     {cat.title}
@@ -2309,8 +2314,20 @@ export default function Home() {
                   <span className="text-[10.5px] md:text-[11.5px] font-semibold text-[#5B6573] leading-normal break-keep">
                     {cat.desc}
                   </span>
-                  {/* 컬러색 밑줄에 양끝이 아주 살짝 라운딩 지는 것 (두께 3px, 곡률 1.5px) */}
-                  <div className={`absolute bottom-0 left-0 right-0 h-[3px] ${cat.colorClass} rounded-[1.5px] transition-transform duration-200 group-hover:scale-y-[1.3] origin-bottom`} />
+                  {/* 세로 컬러선: 상하단 끝이 안쪽으로 살짝 쏠리는 느낌 */}
+                  <svg 
+                    className="absolute left-0 top-1 bottom-1 w-2 h-[calc(100%-8px)] transition-transform duration-200 group-hover:scale-y-[1.15] origin-center" 
+                    viewBox="0 0 10 40" 
+                    preserveAspectRatio="none"
+                  >
+                    <path 
+                      d="M8,2 Q2,2 2,10 L2,30 Q2,38 8,38" 
+                      fill="none" 
+                      stroke={cat.color} 
+                      strokeWidth="3.5" 
+                      strokeLinecap="round" 
+                    />
+                  </svg>
                 </button>
               ))}
             </div>

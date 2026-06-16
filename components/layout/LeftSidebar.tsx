@@ -37,13 +37,13 @@ export const LeftSidebar: React.FC = () => {
     { label: '노후배관교체', desc: '노후 배관 철거 및 신설' },
     { label: '기계실개선', displayText: '기계실 개선공사', desc: '기계실 배관 효율 및 동선 개선' },
     { label: '생산설비 배관 연결', displayText: '공정 배관공사', desc: '제조 설비 훅업(Hook-up) 연결' },
-    { label: 'CAPEX 개·증설 검토', desc: '사전 도면 및 견적 한도 검토' },
+    { label: 'CAPEX 개·증설 검토', displayText: 'CAPEX개선,증설 검토', desc: '사전 도면 및 견적 한도 검토' },
   ];
 
   // 외주 제작 카테고리 (사전제작 / 모듈화 공급)
   const fabricationCategories: { key: string; label: string; desc: string }[] = [
     { key: 'spool', label: '배관 SPOOL Module 검토', desc: 'ISO 도면 기반 스풀 사전제작' },
-    { key: 'skid', label: 'SKID 제작·설치', desc: '단일 프레임 패키지 모듈화' },
+    { key: 'skid', label: 'SKID . SPOOL제작 견적', desc: '단일 프레임 패키지 모듈화' },
     { key: 'structure', label: 'Structure제작,설치', desc: '가대·플랫폼 철구조물 가공' },
   ];
 
