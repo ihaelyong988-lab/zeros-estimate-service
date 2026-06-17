@@ -1994,7 +1994,7 @@ export default function Home() {
           <div className="flex flex-col gap-3 pt-4 shrink-0">
             <button
               onClick={() => setActiveTabAtTop('request')}
-              className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[18px] font-black active:scale-[0.98] transition-transform"
+              className="bg-cta-wave min-h-12 rounded-lg border border-border text-[#EA4F18] text-[18px] font-black active:scale-[0.98] transition-transform"
             >
               무료 견적 신청하기
             </button>
@@ -2460,7 +2460,7 @@ export default function Home() {
                   <button
                     onClick={() => setActiveTabAtTop('request')}
                     style={{ touchAction: 'manipulation' }}
-                    className="inline-flex items-center justify-center gap-2 bg-[#FF5A1F] hover:bg-[#EA4F18] text-white px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-md shadow-[#FF5A1F]/25 transition-all duration-150 active:scale-95 cursor-pointer"
+                    className="bg-cta-wave inline-flex items-center justify-center gap-2 text-[#EA4F18] border border-border px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 cursor-pointer"
                   >
                     <FileCheck className="w-4.5 h-4.5 shrink-0" />
                     무료 출장 견적 신청
