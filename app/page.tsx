@@ -1692,9 +1692,13 @@ export default function Home() {
 
           {/* 7단계 견적 작업 — 클릭형 시계열 스텝 (좌→우 흐름 + 인플레이스 상세) */}
           <EstimateFlow />
+        </div>
 
-          {/* 하단 분리선 — FLOW(상단)와 공종 상세 카드(하단)를 고정틀 내부에서 명확히 분절 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch border-t border-border/70 pt-5 mt-0.5">
+        {/* ============================================================
+            공종 상세 — FLOW(상단 단독 박스)와 완전히 분리된 별도 박스로 분절
+            ============================================================ */}
+        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             
             {/* Box 1: Engineering Target & Information Box */}
             <div className={`relative overflow-hidden bg-bg text-navy p-5 rounded-custom border ${metrics.accentBorder} flex flex-col justify-between gap-4 transition-all shadow-sm`}>
