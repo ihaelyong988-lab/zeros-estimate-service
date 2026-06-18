@@ -74,48 +74,47 @@ export const EstimateFlow: React.FC = () => {
   const step = STEPS[active];
 
   return (
-    <div className="flex flex-col select-none">
-      {/* 헤드라인 고정틀 — '견적 작업 FLOW' 라벨 + 7단계 스텝퍼를 상단 프레임으로 고정 */}
-      <div className="flex flex-col gap-3 border-b border-border/70 pb-4">
-        <div className="flex items-center gap-2">
-          <span className="w-1 h-4 bg-accent rounded-full shrink-0" />
-          <span className="text-[12px] font-bold text-navy uppercase tracking-wider">견적 작업 FLOW</span>
-        </div>
+    <div className="flex flex-col gap-4 select-none">
+      {/* 헤드라인 — 박스 없이, 액센트 인디케이터 + 진행 표시만 */}
+      <div className="flex items-center gap-2.5">
+        <span className="w-1.5 h-5 bg-accent rounded-full shrink-0" />
+        <h2 className="text-[15px] font-black text-navy tracking-tight">견적 작업 FLOW</h2>
+        <span className="text-[12px] font-bold text-gray-light">AI 데이터 파이프라인</span>
+        <span className="ml-auto text-[12px] font-black tabular-nums text-accent shrink-0">
+          {active + 1}<span className="text-gray-light font-bold"> / {STEPS.length}</span>
+        </span>
+      </div>
 
-        {/* 간결한 텍스트 스텝퍼 — 박스·번호 없이, chevron으로 방향만 */}
-        <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
-          <div className="flex items-center gap-1 min-w-max">
-            {STEPS.map((s, i) => (
-              <React.Fragment key={s.label}>
-                <button
-                  onClick={() => setActive(i)}
-                  style={{ touchAction: 'manipulation' }}
-                  className={`group relative shrink-0 px-1.5 py-1 text-[13.5px] leading-none whitespace-nowrap transition-colors duration-200 cursor-pointer ${
-                    i === active ? 'text-navy font-black' : 'text-gray-light font-semibold hover:text-steel'
-                  }`}
-                >
-                  {s.label}
-                  <span
-                    className={`absolute left-1.5 right-1.5 -bottom-1 h-[2px] rounded-full bg-accent transition-opacity duration-200 ${
-                      i === active ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
-                    }`}
-                  />
-                </button>
-                {i < STEPS.length - 1 && (
-                  <ChevronRight className="w-3.5 h-3.5 text-border shrink-0" strokeWidth={2.5} />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+      {/* 스텝퍼 — 활성 단계만 액센트 알약으로 하이라이트, 나머지는 절제된 텍스트 */}
+      <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
+        <div className="flex items-center gap-1 min-w-max">
+          {STEPS.map((s, i) => (
+            <React.Fragment key={s.label}>
+              <button
+                onClick={() => setActive(i)}
+                style={{ touchAction: 'manipulation' }}
+                className={`shrink-0 px-2.5 py-1.5 rounded-full text-[13px] leading-none whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                  i === active
+                    ? 'bg-accent text-white font-black shadow-sm shadow-accent/25'
+                    : 'text-gray-light font-semibold hover:text-steel hover:bg-bg-subtle'
+                }`}
+              >
+                {s.label}
+              </button>
+              {i < STEPS.length - 1 && (
+                <ChevronRight className="w-3.5 h-3.5 text-border shrink-0" strokeWidth={2.5} />
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </div>
 
-      {/* 활성 단계 세부 검토 항목 칩 (영문 라벨 행 삭제) */}
-      <div key={active} className="flex flex-wrap gap-2 pt-4 animate-in fade-in slide-in-from-bottom-1 duration-300">
+      {/* 활성 단계 세부 검토 항목 칩 */}
+      <div key={active} className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300">
         {step.items.map((item) => (
           <div
             key={item}
-            className="inline-flex items-center gap-1.5 bg-bg border border-border rounded-full px-3 py-1.5 shadow-sm hover:border-steel/50 transition-all select-none"
+            className="inline-flex items-center gap-1.5 bg-bg-subtle/60 border border-border/70 rounded-full px-3 py-1.5 hover:border-steel/50 transition-all select-none"
           >
             <span className="shrink-0 w-4 h-4 rounded-full bg-success/15 flex items-center justify-center">
               <Check className="w-2.5 h-2.5 text-success" strokeWidth={3.5} />

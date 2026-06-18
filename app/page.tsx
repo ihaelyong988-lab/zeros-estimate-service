@@ -1679,10 +1679,8 @@ export default function Home() {
         {/* ============================================================
             상단 (TOP) — 주제 + 데이터분석 + AI툴 신뢰 작업 FLOW
             ============================================================ */}
-        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm max-w-2xl mx-auto">
-          {/* 헤드라인 고정틀(견적 작업 FLOW) + 7단계 스텝퍼 + 활성 단계 칩 — EstimateFlow 내부 구성 */}
-          <EstimateFlow />
-        </div>
+        {/* 견적 작업 FLOW — 박스 없이 깔끔한 헤드라인 하이라이트 (EstimateFlow 내부 구성) */}
+        <EstimateFlow />
 
         {/* ============================================================
             공종 상세 — FLOW(상단 단독 박스)와 완전히 분리된 별도 박스로 분절
