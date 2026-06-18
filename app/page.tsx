@@ -2524,18 +2524,18 @@ export default function Home() {
                   />
                   {/* 가독성용 하단 그라데이션 */}
                   <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0F1E35]/30 to-transparent pointer-events-none" />
-
-                  {/* AI Native 검증 배지 — 이미지 정중앙 배치, 클릭 시 'AI Native 검증' SOP 탭으로 이동 */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabAtTop('sop')}
-                    aria-label="AI Native 검증 표준 작업 절차 보기"
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-[#E2E8F0] rounded-full shadow-custom-md px-3.5 py-1.5 flex items-center gap-2.5 z-20 whitespace-nowrap cursor-pointer hover:scale-105 hover:shadow-lg hover:border-[#155EEF]/40 transition-all duration-200 active:scale-100"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
-                    <span className="text-[12.5px] font-extrabold text-[#0F1E35]">AI Native 검증</span>
-                  </button>
                 </div>
+
+                {/* AI Native 검증 배지 — 이미지 하단 가로축 정중앙(원위치), 클릭 시 'AI Native 검증' SOP 탭으로 이동 */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTabAtTop('sop')}
+                  aria-label="AI Native 검증 표준 작업 절차 보기"
+                  className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border border-[#E2E8F0] rounded-full shadow-custom-md px-3.5 py-1.5 flex items-center gap-2.5 z-20 whitespace-nowrap cursor-pointer hover:scale-105 hover:shadow-lg hover:border-[#155EEF]/40 transition-all duration-200 active:scale-100"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
+                  <span className="text-[12.5px] font-extrabold text-[#0F1E35]">AI Native 검증</span>
+                </button>
               </div>
             </div>
 
