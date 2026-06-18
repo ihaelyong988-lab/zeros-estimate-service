@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
 import { ZerosService } from '@/lib/supabase/client';
 import { Estimate, SiteVisit, Customer, NotificationLog } from '@/types/estimate';
+import { menuDisplayName } from '@/lib/constants/menu';
 import {
   ArrowRight,
   LayoutGrid,
@@ -296,11 +297,8 @@ export const RightSidebar: React.FC = () => {
   const isFab = fabKeys.includes(activeKey);
   const accentBarBg = isFab ? 'bg-accent' : 'bg-steel';
   const accentTextCls = isFab ? 'text-accent' : 'text-steel';
-  const fabLabelMap: Record<string, string> = { spool: '배관 SPOOL Module', skid: 'SKID 제작', structure: 'Structure 제작' };
-  const budgetLabelMap: Record<string, string> = { small: '온라인 간편검토', medium: '출장견적', large: '프로젝트 사전진단', unknown: '금액 미정' };
-  const displayName = selectedBudget
-    ? (budgetLabelMap[selectedBudget] || metrics.recommendation)
-    : (fabLabelMap[activeKey] || selectedMenu || activeKey);
+  // 우측 결과 패널 제목 = 좌측 메뉴 항목 제목과 동일(공용 맵 단일 소스).
+  const displayName = menuDisplayName(activeKey);
 
   return (
     <aside className="w-full h-full flex flex-col shrink-0 select-none overflow-y-auto bg-bg-subtle">
