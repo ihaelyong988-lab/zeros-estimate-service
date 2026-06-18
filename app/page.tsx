@@ -1679,18 +1679,8 @@ export default function Home() {
         {/* ============================================================
             상단 (TOP) — 주제 + 데이터분석 + AI툴 신뢰 작업 FLOW
             ============================================================ */}
-        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-5 relative overflow-hidden">
-
-          {/* 섹션 식별 라벨 — 견적 작업 FLOW 헤더(하단 헤어라인으로 FLOW 영역을 프레임) */}
-          <div className="flex items-center justify-between gap-2 select-none border-b border-border/70 pb-3.5">
-            <div className="flex items-center gap-2">
-              <span className="w-1 h-4 bg-accent rounded-full" />
-              <span className="text-[12px] font-bold text-navy uppercase tracking-wider">견적 작업 FLOW</span>
-            </div>
-            <span className="text-[12px] font-mono font-bold text-gray-light tracking-wider">REQUEST · DATA · AI · SUBMIT</span>
-          </div>
-
-          {/* 7단계 견적 작업 — 클릭형 시계열 스텝 (좌→우 흐름 + 인플레이스 상세) */}
+        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm max-w-2xl mx-auto">
+          {/* 헤드라인 고정틀(견적 작업 FLOW) + 7단계 스텝퍼 + 활성 단계 칩 — EstimateFlow 내부 구성 */}
           <EstimateFlow />
         </div>
 

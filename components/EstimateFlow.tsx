@@ -74,54 +74,55 @@ export const EstimateFlow: React.FC = () => {
   const step = STEPS[active];
 
   return (
-    <div className="flex flex-col gap-4 select-none">
-      {/* 간결한 텍스트 스텝퍼 — 박스·번호 없이, chevron으로 방향만 */}
-      <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
-        <div className="flex items-center gap-1 min-w-max">
-          {STEPS.map((s, i) => (
-            <React.Fragment key={s.label}>
-              <button
-                onClick={() => setActive(i)}
-                style={{ touchAction: 'manipulation' }}
-                className={`group relative shrink-0 px-1.5 py-1 text-[13.5px] leading-none whitespace-nowrap transition-colors duration-200 cursor-pointer ${
-                  i === active ? 'text-navy font-black' : 'text-gray-light font-semibold hover:text-steel'
-                }`}
-              >
-                {s.label}
-                <span
-                  className={`absolute left-1.5 right-1.5 -bottom-1 h-[2px] rounded-full bg-accent transition-opacity duration-200 ${
-                    i === active ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
+    <div className="flex flex-col select-none">
+      {/* 헤드라인 고정틀 — '견적 작업 FLOW' 라벨 + 7단계 스텝퍼를 상단 프레임으로 고정 */}
+      <div className="flex flex-col gap-3 border-b border-border/70 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="w-1 h-4 bg-accent rounded-full shrink-0" />
+          <span className="text-[12px] font-bold text-navy uppercase tracking-wider">견적 작업 FLOW</span>
+        </div>
+
+        {/* 간결한 텍스트 스텝퍼 — 박스·번호 없이, chevron으로 방향만 */}
+        <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
+          <div className="flex items-center gap-1 min-w-max">
+            {STEPS.map((s, i) => (
+              <React.Fragment key={s.label}>
+                <button
+                  onClick={() => setActive(i)}
+                  style={{ touchAction: 'manipulation' }}
+                  className={`group relative shrink-0 px-1.5 py-1 text-[13.5px] leading-none whitespace-nowrap transition-colors duration-200 cursor-pointer ${
+                    i === active ? 'text-navy font-black' : 'text-gray-light font-semibold hover:text-steel'
                   }`}
-                />
-              </button>
-              {i < STEPS.length - 1 && (
-                <ChevronRight className="w-3.5 h-3.5 text-border shrink-0" strokeWidth={2.5} />
-              )}
-            </React.Fragment>
-          ))}
+                >
+                  {s.label}
+                  <span
+                    className={`absolute left-1.5 right-1.5 -bottom-1 h-[2px] rounded-full bg-accent transition-opacity duration-200 ${
+                      i === active ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
+                    }`}
+                  />
+                </button>
+                {i < STEPS.length - 1 && (
+                  <ChevronRight className="w-3.5 h-3.5 text-border shrink-0" strokeWidth={2.5} />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* 클릭 시 카드 형식 세부 검토 항목 (단계 라벨 반복 없음 — 제목 중복 제거) */}
-      <div key={active} className="flex flex-col gap-2.5 animate-in fade-in slide-in-from-bottom-1 duration-300">
-        <div className="flex items-center gap-1.5">
-          <span className="w-1 h-3.5 bg-steel/70 rounded-full" />
-          <span className="text-[12px] font-mono font-bold text-steel/80 uppercase tracking-wider">{step.en}</span>
-          <span className="text-[12px] text-gray-light font-bold">· 세부 검토 항목</span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {step.items.map((item) => (
-            <div
-              key={item}
-              className="inline-flex items-center gap-1.5 bg-bg border border-border rounded-full px-3 py-1.5 shadow-sm hover:border-steel/50 transition-all select-none"
-            >
-              <span className="shrink-0 w-4 h-4 rounded-full bg-success/15 flex items-center justify-center">
-                <Check className="w-2.5 h-2.5 text-success" strokeWidth={3.5} />
-              </span>
-              <span className="text-[12px] font-semibold text-gray leading-none">{item}</span>
-            </div>
-          ))}
-        </div>
+      {/* 활성 단계 세부 검토 항목 칩 (영문 라벨 행 삭제) */}
+      <div key={active} className="flex flex-wrap gap-2 pt-4 animate-in fade-in slide-in-from-bottom-1 duration-300">
+        {step.items.map((item) => (
+          <div
+            key={item}
+            className="inline-flex items-center gap-1.5 bg-bg border border-border rounded-full px-3 py-1.5 shadow-sm hover:border-steel/50 transition-all select-none"
+          >
+            <span className="shrink-0 w-4 h-4 rounded-full bg-success/15 flex items-center justify-center">
+              <Check className="w-2.5 h-2.5 text-success" strokeWidth={3.5} />
+            </span>
+            <span className="text-[12px] font-semibold text-gray leading-none">{item}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
