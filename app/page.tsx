@@ -1679,10 +1679,10 @@ export default function Home() {
         {/* ============================================================
             상단 (TOP) — 주제 + 데이터분석 + AI툴 신뢰 작업 FLOW
             ============================================================ */}
-        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-4 relative overflow-hidden">
+        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col gap-5 relative overflow-hidden">
 
-          {/* 섹션 식별 라벨 */}
-          <div className="flex items-center justify-between gap-2 select-none">
+          {/* 섹션 식별 라벨 — 견적 작업 FLOW 헤더(하단 헤어라인으로 FLOW 영역을 프레임) */}
+          <div className="flex items-center justify-between gap-2 select-none border-b border-border/70 pb-3.5">
             <div className="flex items-center gap-2">
               <span className="w-1 h-4 bg-accent rounded-full" />
               <span className="text-[12px] font-bold text-navy uppercase tracking-wider">견적 작업 FLOW</span>
@@ -1693,7 +1693,8 @@ export default function Home() {
           {/* 7단계 견적 작업 — 클릭형 시계열 스텝 (좌→우 흐름 + 인플레이스 상세) */}
           <EstimateFlow />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+          {/* 하단 분리선 — FLOW(상단)와 공종 상세 카드(하단)를 고정틀 내부에서 명확히 분절 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch border-t border-border/70 pt-5 mt-0.5">
             
             {/* Box 1: Engineering Target & Information Box */}
             <div className={`relative overflow-hidden bg-bg text-navy p-5 rounded-custom border ${metrics.accentBorder} flex flex-col justify-between gap-4 transition-all shadow-sm`}>
@@ -2392,7 +2393,7 @@ export default function Home() {
     },
     {
       title: '공정 배관공사',
-      desc: '설비 Hook-up 연결',
+      desc: '제조설비 훅업 연결',
       colorClass: 'bg-[#EAB308]',
       color: '#EAB308',
       menu: '생산설비 배관 연결',
@@ -2460,7 +2461,7 @@ export default function Home() {
                   <button
                     onClick={() => setActiveTabAtTop('request')}
                     style={{ touchAction: 'manipulation' }}
-                    className="bg-surface hover:bg-bg-subtle inline-flex items-center justify-center gap-2 text-[#EA4F18] border border-border px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+                    className="cta-border-trace cta-border-trace--lead inline-flex items-center justify-center gap-2 text-[#155EEF] px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm active:scale-95 cursor-pointer"
                   >
                     <FileCheck className="w-4.5 h-4.5 shrink-0" />
                     무료 출장 견적 신청
@@ -2468,10 +2469,10 @@ export default function Home() {
                   <button
                     onClick={() => setActiveTabAtTop('about')}
                     style={{ touchAction: 'manipulation' }}
-                    className="inline-flex items-center justify-center gap-2 bg-surface hover:bg-bg-subtle text-[#0F1E35] border border-border px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+                    className="cta-border-trace group inline-flex items-center justify-center gap-2 text-[#0F1E35] px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm active:scale-95 cursor-pointer"
                   >
                     ZEROS 데이터분석 절차 보기
-                    <ArrowRight className="w-4 h-4 shrink-0" />
+                    <ArrowRight className="w-4 h-4 shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-0.5" />
                   </button>
                 </div>
 
@@ -2519,14 +2520,17 @@ export default function Home() {
                   />
                   {/* 가독성용 하단 그라데이션 */}
                   <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0F1E35]/30 to-transparent pointer-events-none" />
-                </div>
-                
-                {/* 실시간 분석 플로팅 배지 — 이미지 하단 가로축 정중앙 배치 및 초소형/고정 정렬 (REAL-TIME | AI Native 검증) */}
-                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border border-[#E2E8F0] rounded-full shadow-custom-md px-3.5 py-1.5 flex items-center gap-2.5 select-none z-20 whitespace-nowrap hover:scale-105 transition-transform duration-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
-                  <span className="text-[11px] font-black text-gray uppercase tracking-wider">REAL-TIME</span>
-                  <span className="w-px h-3 bg-border shrink-0" />
-                  <span className="text-[12.5px] font-extrabold text-[#0F1E35]">AI Native 검증</span>
+
+                  {/* AI Native 검증 배지 — 이미지 정중앙 배치, 클릭 시 'AI Native 검증' SOP 탭으로 이동 */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTabAtTop('sop')}
+                    aria-label="AI Native 검증 표준 작업 절차 보기"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-[#E2E8F0] rounded-full shadow-custom-md px-3.5 py-1.5 flex items-center gap-2.5 z-20 whitespace-nowrap cursor-pointer hover:scale-105 hover:shadow-lg hover:border-[#155EEF]/40 transition-all duration-200 active:scale-100"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
+                    <span className="text-[12.5px] font-extrabold text-[#0F1E35]">AI Native 검증</span>
+                  </button>
                 </div>
               </div>
             </div>

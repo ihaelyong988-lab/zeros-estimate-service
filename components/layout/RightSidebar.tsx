@@ -6,7 +6,6 @@ import { ZerosService } from '@/lib/supabase/client';
 import { Estimate, SiteVisit, Customer, NotificationLog } from '@/types/estimate';
 import {
   ArrowRight,
-  ChevronLeft,
   LayoutGrid,
   FileText,
   CalendarRange,
@@ -318,8 +317,8 @@ export const RightSidebar: React.FC = () => {
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간 검토
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <ChevronLeft className={`w-4 h-4 ${accentTextCls} shrink-0`} />
+          <div className="flex items-center gap-2">
+            <span className={`w-1 h-4 ${accentBarBg} rounded-full shrink-0`} />
             <h3 className={`text-[16px] font-black ${accentTextCls} tracking-tight leading-tight`}>{displayName}</h3>
           </div>
           <p className="text-[12px] font-bold text-gray-light">
@@ -373,7 +372,10 @@ export const RightSidebar: React.FC = () => {
 
         {/* 예상가 신뢰 근거 — borderless 리스트(줄마다 아이콘 제거) */}
         <div className="flex flex-col gap-2 border-t border-border/60 pt-3">
-          <span className="text-[12px] font-black text-navy uppercase tracking-wider">예상가 신뢰 근거</span>
+          <span className="flex items-center gap-2 text-[12px] font-bold text-navy uppercase tracking-wider">
+            <span className="w-1 h-4 bg-steel rounded-full shrink-0" />
+            예상가 신뢰 근거
+          </span>
           {[
             '실제 거래가와 표준 품셈으로 계산합니다.',
             'KS·ASME 자재 규격을 그대로 적용합니다.',

@@ -93,8 +93,8 @@ export const LeftSidebar: React.FC = () => {
 
           {/* 공사 영역 카테고리 */}
           <div>
-            <div className="flex items-center gap-1.5 px-2 mb-2">
-              <span className="text-[11px] font-extrabold text-[#155EEF] tracking-widest mr-0.5 select-none">SITE</span>
+            <div className="flex items-center gap-2 px-2 mb-2">
+              <span className="w-1 h-4 bg-steel rounded-full shrink-0" />
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적공사 카테고리</h3>
             </div>
             <div className="flex flex-col gap-1">
@@ -124,8 +124,8 @@ export const LeftSidebar: React.FC = () => {
 
           {/* 외주 제작 카테고리 */}
           <div className="border-t border-border/40 pt-5 mt-1">
-            <div className="flex items-center gap-1.5 px-2 mb-2">
-              <span className="text-[11px] font-extrabold text-[#FF5A1F] tracking-widest mr-0.5 select-none">FAB</span>
+            <div className="flex items-center gap-2 px-2 mb-2">
+              <span className="w-1 h-4 bg-accent rounded-full shrink-0" />
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">외주제작 견적 컨설팅</h3>
             </div>
             <div className="flex flex-col gap-1">
@@ -156,6 +156,7 @@ export const LeftSidebar: React.FC = () => {
           {/* 견적 규모 카테고리 */}
           <div className="border-t border-border/40 pt-5 mt-1">
             <div className="flex items-center gap-2 px-2 mb-2">
+              <span className="w-1 h-4 bg-steel rounded-full shrink-0" />
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">견적규모별 분류</h3>
             </div>
             <div className="flex flex-col gap-1">
@@ -186,6 +187,7 @@ export const LeftSidebar: React.FC = () => {
           {/* 빠른 메뉴 */}
           <div className="border-t border-border/40 pt-5 mt-1">
             <div className="flex items-center gap-2 px-2 mb-2">
+              <span className="w-1 h-4 bg-gray-light rounded-full shrink-0" />
               <h3 className="text-[12px] font-bold text-navy uppercase tracking-wider">빠른 메뉴</h3>
             </div>
             <div className="flex flex-col gap-1 px-2 text-[12px] text-gray-light font-semibold">

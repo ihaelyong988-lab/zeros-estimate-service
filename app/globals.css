@@ -143,3 +143,43 @@ button:disabled {
   .bg-trust-animated { animation: none; }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   CTA 보더 트레이스: 커서가 닿으면 테두리가 12시 방향부터 시계방향으로
+   오렌지색이 "순차적으로" 채워지는 컨셉. 메인 히어로의 핵심 2버튼 공통 적용.
+   - @property로 conic-gradient 각도(--cta-trace)를 0deg→360deg로 부드럽게 보간한다.
+   - padding-box(흰 표면) + border-box(conic) 이중 배경으로 라운드 코너까지 깔끔하게 처리.
+   ───────────────────────────────────────────────────────────────────────────── */
+@property --cta-trace {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.cta-border-trace {
+  --cta-trace: 0deg;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    conic-gradient(from -90deg, #EA4F18 var(--cta-trace), var(--color-border) 0) border-box;
+  transition:
+    --cta-trace 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease,
+    transform 0.15s ease;
+}
+.cta-border-trace:hover {
+  --cta-trace: 360deg;
+  box-shadow: 0 4px 14px rgba(234, 79, 24, 0.16);
+}
+/* 1차 CTA 전용: 휴지 상태에서도 위계를 잡도록 옅은 AI-블루 틴트 표면.
+   (#EEF5FF는 상단 'AI Native' 배지와 동일 색 — 브랜드 일관성) */
+.cta-border-trace--lead {
+  background:
+    linear-gradient(135deg, #FFFFFF, #EEF5FF) padding-box,
+    conic-gradient(from -90deg, #EA4F18 var(--cta-trace), var(--color-border) 0) border-box;
+}
+.cta-border-trace--lead:hover {
+  box-shadow: 0 6px 18px rgba(234, 79, 24, 0.18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-border-trace { transition: box-shadow 0.3s ease, transform 0.15s ease; }
+}
+
