@@ -30,7 +30,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
-  MapPin,
   Truck,
   LineChart,
   Award,
@@ -45,7 +44,8 @@ import {
   MessageCircle,
   Database,
   Send,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 
 // 랜딩 쇼케이스 자동 순회 공종 순서 — 최상단 칩바와 값으로 매칭(연동)되므로 모듈 스코프로 고정
@@ -1670,159 +1670,98 @@ export default function Home() {
 
   const renderManualDetail = (key: string) => {
     const manual = manualData[key] || manualData['배관공사'];
-    const visuals = getCategoryVisuals(key);
     const metrics = getDynamicMetrics(key);
+    // 공종별 주요 견적 키워드 — 추후 공종마다 교체
+    const tradeKeywords: Record<string, string[]> = {
+      '배관공사': ['HVAC', '위생배관', 'Duct', '소방기계배관'],
+      '장비설치': ['펌프', '탱크', '콤프레셔', '열교환기'],
+      'Utility 배관': ['스팀', '냉각수', '압축공기', '질소'],
+      '공장증설': ['라인증설', 'Tie-in', '무중단분기', '유량검토'],
+      '노후배관교체': ['부식배관', '철거·신설', '무중단교체', '잔존수명'],
+      '기계실개선': ['기계실', '헤더', '펌프배열', '동선개선'],
+      '생산설비 배관 연결': ['Hook-up', '설비연결', '유틸리티 탭', '정밀정렬'],
+      'CAPEX 개·증설 검토': ['CAPEX', '예산상한', '공법검토', 'LCC'],
+      'spool': ['ISO도면', '스풀분할', '사전제작', 'Prefab'],
+      'skid': ['SKID', '패키지모듈', 'P&ID', '모듈화'],
+      'structure': ['가대', '플랫폼', '철구조', '하중검토'],
+    };
+    const keywords = tradeKeywords[key] || [];
+    const tradeReviewItems: Record<string, string[]> = {
+      '배관공사': ['관경 · 압력강하 검토 여부', '표준 품셈 적용 여부', '누수 · 부식 예비 항목'],
+      '장비설치': ['기초 · 앵커 하중 검토', '반입 동선 · 양중 계획', '정렬 · 진동 허용치'],
+      'Utility 배관': ['유틸리티 가동중단 일정', '우회 경로 · 헤더 분기', '보온 · 트레이싱 범위'],
+      '공장증설': ['기존 설비 여유 용량', '무중단 Tie-in 가능성', '증설 후 유량 · 압력 적정성'],
+      '노후배관교체': ['부식 · 잔존수명 진단', '철거 후 신설 동선', '가동 중 교체 가능성'],
+      '기계실개선': ['협소 구역 장비 진입로', '밸브 헤더 분기 최적화', '유지보수 동선 확보'],
+      '생산설비 배관 연결': ['설비측 훅업 규격', 'Utility 탭 연결부', '정밀 정렬 · 누설 시험'],
+      'CAPEX 개·증설 검토': ['도면 · 물량 기반 예산 상한', '공법별 타당성', '단계별 예산 · 공기'],
+      'spool': ['ISO 도면 · 자재 사양', '스풀 분할 · 물량', '사전제작 적합성'],
+      'skid': ['P&ID · 장비 사양', '모듈 구성 · 물량', '운반 · 설치 제약'],
+      'structure': ['구조 도면 · 하중 조건', '부재 물량 · 가공', '설치 · 안전 계획'],
+    };
+    const reviewItems = tradeReviewItems[key] || ['규격 · 압력 검토 여부', '표준 품셈 적용 여부', '예비 · 안전 항목'];
 
     return (
       <div key={key} className="flex flex-col gap-6 max-w-4xl mx-auto py-2 animate-in fade-in duration-300">
 
-        {/* ============================================================
-            상단 (TOP) — 주제 + 데이터분석 + AI툴 신뢰 작업 FLOW
-            ============================================================ */}
-        {/* 견적 작업 FLOW — 박스 없이 깔끔한 헤드라인 하이라이트 (EstimateFlow 내부 구성) */}
-        <EstimateFlow />
-
-        {/* ============================================================
-            공종 상세 — FLOW(상단 단독 박스)와 완전히 분리된 별도 박스로 분절
-            ============================================================ */}
-        <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-            
-            {/* Box 1: Engineering Target & Information Box */}
-            <div className={`relative overflow-hidden bg-bg text-navy p-5 rounded-custom border ${metrics.accentBorder} flex flex-col justify-between gap-4 transition-all shadow-sm`}>
-              {/* 하이 테크 백그라운드 그리드 레이아웃 (라이트 버전) */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
-              <div className={`absolute inset-0 ${metrics.accentBg} opacity-20 pointer-events-none`} />
-              
-              <div className="flex flex-col justify-between gap-4 z-10 relative flex-1">
-                {/* 타이틀 및 핵심 엔지니어링 문제 정의 (상단) */}
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-[18px] md:text-[18px] font-black tracking-tight leading-tight text-navy select-none">
-                    {manual.title}
-                  </h2>
-                  <p className="text-[12px] text-gray leading-snug font-semibold font-sans mt-0.5">
-                    {manual.problemDefinition}
-                  </p>
-                </div>
-
-                {/* 공종 배지 + 데이터 AI 정직 검증 수치 대시보드 */}
-                <div className="flex flex-col gap-2">
-                  <span className={`self-start text-[12px] tracking-widest uppercase font-black px-2.5 py-1 rounded-custom shadow-inner ${metrics.badgeBg}`}>
-                    {visuals.badgeText}
-                  </span>
-                  <div className="grid grid-cols-3 gap-2.5 bg-bg-subtle/80 border border-border/70 p-2.5 rounded-custom shadow-inner select-none">
-                  <div className="text-center flex flex-col justify-center">
-                    <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">AI 분석 신뢰도</span>
-                    <span className="text-[15px] font-black text-navy tracking-tight tabular-nums">{metrics.confidence}%</span>
-                  </div>
-                  <div className="text-center flex flex-col justify-center border-l border-border/60">
-                    <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">실거래 표준 품셈</span>
-                    <span className="text-[15px] font-black text-success tracking-tight">100% 매핑</span>
-                  </div>
-                  <div className="text-center flex flex-col justify-center border-l border-border/60">
-                    <span className="text-[12px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">평균 거품 절감</span>
-                    <span className="text-[15px] font-black text-accent tracking-tight tabular-nums">-{metrics.bubbleRate}%</span>
-                  </div>
-                </div>
-              </div>
-              </div>
-
+        {/* 주요 견적 — 공종별 핵심 키워드 밴드 (상단, 넓게 / 박스 없이 헤드라인) */}
+        {keywords.length > 0 && (
+          <div className="flex flex-col gap-2.5 border-b border-border/70 pb-5 pt-1 select-none">
+            <span className="text-[11px] font-bold tracking-[0.14em] text-accent">주요 견적</span>
+            <div className="flex flex-wrap items-center gap-y-2">
+              {keywords.map((k, i) => (
+                <span key={k} className="inline-flex items-center">
+                  <span className="text-[22px] md:text-[23px] font-extrabold text-navy tracking-tight leading-none">{k}</span>
+                  {i < keywords.length - 1 && <span className="mx-3.5 w-px h-[18px] bg-border shrink-0" />}
+                </span>
+              ))}
             </div>
+          </div>
+        )}
 
-            {/* Box 2: Agent AI Technical Simulation & Honest pricing */}
-            <div className="relative overflow-hidden bg-bg text-navy p-5 rounded-custom border border-border flex flex-col justify-between gap-4 transition-all shadow-sm">
-              {/* 하이 테크 백그라운드 그리드 레이아웃 */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.007)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.007)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
-
-              {/* Agent AI 정직 견적 신뢰 코어 패널 */}
-              <div className="flex flex-col justify-between gap-4 z-10 relative flex-1 select-none">
-                {/* 타이틀 + 한 줄 설명 (공종 공통, 평이한 문장) */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-[18px] md:text-[18px] font-black text-navy tracking-tight leading-tight">
-                    ZEROS Agent AI 정직 단가 교정 모니터
-                  </span>
-                  <span className="text-[12px] text-gray/80 font-bold mt-0.5 leading-relaxed">
-                    실거래 표본과 표준 품셈으로 과도하게 부풀려진 단가를 실시간으로 걸러냅니다.
-                  </span>
-                </div>
-
-                {/* 정밀 공종별 체크사항 목록 */}
-                <ul className="flex flex-col gap-1.5">
-                  {metrics.checklist.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-[12px] text-gray font-semibold leading-tight">
-                      <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* 정직·신뢰 실시간 교정 비교 게이지 차트 — 이중 원형 SVG 링으로 입체적 시각화 */}
-                <div className="flex items-center gap-4 bg-bg-subtle/80 border border-border/50 p-4 rounded-custom shadow-inner">
-                  {/* 좌: 이중 원형 SVG 게이지 */}
-                  <div className="relative w-20 h-20 shrink-0 flex items-center justify-center select-none">
-                    <svg className="w-full h-full transform -rotate-90">
-                      {/* 외곽 링: 시공사 거품 청구 (빨간색 계열) */}
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r="32"
-                        className="stroke-danger/10 fill-none"
-                        strokeWidth="5"
-                      />
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r="32"
-                        className="stroke-danger/70 fill-none transition-all duration-500"
-                        strokeWidth="5"
-                        strokeDasharray={`${2 * Math.PI * 32}`}
-                        strokeDashoffset={`${2 * Math.PI * 32 * (1 - Math.min(1.8, (100 + metrics.bubbleRate) / 100) / 2)}`}
-                      />
-                      {/* 내곽 링: ZEROS 정직 단가 (초록색 계열) */}
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r="24"
-                        className="stroke-success/15 fill-none"
-                        strokeWidth="5"
-                      />
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r="24"
-                        className="stroke-success fill-none transition-all duration-500"
-                        strokeWidth="5"
-                        strokeDasharray={`${2 * Math.PI * 24}`}
-                        strokeDashoffset={`${2 * Math.PI * 24 * (1 - 100 / 200)}`}
-                      />
-                    </svg>
-                    {/* 게이지 중앙 텍스트 */}
-                    <div className="absolute flex flex-col items-center justify-center leading-none">
-                      <span className="text-[9.5px] font-black text-gray-light uppercase tracking-tighter">거품절감</span>
-                      <span className="text-[13.5px] font-black text-accent mt-0.5">-{metrics.bubbleRate}%</span>
-                    </div>
-                  </div>
-
-                  {/* 우: 비교 수치 텍스트 대시보드 */}
-                  <div className="flex-1 flex flex-col gap-2.5 justify-center">
-                    <div className="flex flex-col leading-tight">
-                      <span className="text-[11px] font-bold text-gray">시공사 평균 청구</span>
-                      <span className="text-[13px] font-extrabold text-danger mt-0.5">{(100 + metrics.bubbleRate).toFixed(1)}% <span className="text-[11px] font-medium text-danger/80">(과다 청구)</span></span>
-                    </div>
-                    <div className="w-full h-px bg-border/40" />
-                    <div className="flex flex-col leading-tight">
-                      <span className="text-[11px] font-black text-navy flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-success animate-pulse shrink-0" />
-                        ZEROS AI 교정단가
-                      </span>
-                      <span className="text-[13px] font-extrabold text-success mt-0.5">100.0% <span className="text-[11px] font-medium text-success/80">(적정 청구)</span></span>
-                    </div>
-                  </div>
-                </div>
+        {/* ============================================================
+            공종 상세 — 좌: 검토 항목(문제 도출) / 우: ZEROS 견적 검증
+            (견적 작업 FLOW는 견적 검토 랜딩 히어로로 이동)
+            ============================================================ */}
+        {/* 공종 상세 — 좌: 검토 항목(문제 도출) / 우: ZEROS 견적 검증(benefit). 전 공종 공통·데이터 연동 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-stretch">
+          <div className="bg-bg border border-border rounded-custom p-5 flex flex-col shadow-custom-sm">
+            <h2 className="text-[15px] font-black text-navy tracking-tight mb-1.5">{manual.title}</h2>
+            <p className="text-[12.5px] text-gray font-semibold leading-snug mb-4">{manual.problemDefinition}</p>
+            <ul className="flex flex-col gap-2.5 mb-4">
+              {reviewItems.map((t) => (
+                <li key={t} className="flex items-center gap-2.5 text-[12.5px] text-gray font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto flex items-center gap-3 h-[74px] px-4 bg-bg-subtle border border-border/70 rounded-custom">
+              <AlertTriangle className="w-6 h-6 text-accent shrink-0" />
+              <div className="leading-tight">
+                <div className="text-[12px] text-gray mb-0.5">검토 항목에 따라</div>
+                <div className="text-[19px] font-black text-navy">최대 <span className="text-accent">{metrics.bubbleRate}%</span> 견적 차이</div>
               </div>
-
             </div>
-
+          </div>
+          <div className="bg-bg border border-border rounded-custom p-5 flex flex-col shadow-custom-sm">
+            <h2 className="text-[15px] font-black text-navy tracking-tight mb-1.5">ZEROS Agent AI 견적 검증</h2>
+            <p className="text-[12.5px] text-gray font-semibold leading-snug mb-4">실거래 표본과 표준 품셈으로 <span className="text-steel font-bold">최적합 견적을 산출·제공</span>합니다.</p>
+            <ul className="flex flex-col gap-2.5 mb-4">
+              {['적정 물량 · 단가로 견적 확정', '설계변경 · 재견적 분쟁 예방', '검증 근거 리포트 제공'].map((t) => (
+                <li key={t} className="flex items-center gap-2.5 text-[12.5px] text-gray font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto flex items-center gap-3 h-[74px] px-4 bg-success rounded-custom">
+              <ShieldCheck className="w-7 h-7 text-white/80 shrink-0" />
+              <div className="leading-tight">
+                <div className="text-[12px] text-white/70 mb-0.5">검증 후</div>
+                <div className="text-[19px] font-black text-white">최적합 견적 확정</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1838,9 +1777,7 @@ export default function Home() {
                 <BookOpen className="w-4 h-4 text-steel" />
                 <span className="font-extrabold text-[15px]">작업 준비사항</span>
               </div>
-              <span className="text-[12px] font-black text-steel bg-steel/10 border border-steel/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Prepare</span>
             </div>
-            <p className="text-[12px] text-gray-light font-semibold leading-normal -mt-1">정확한 진단을 위해 아래 자료를 사전에 준비해 주세요.</p>
             <ul className="flex flex-col gap-3">
               {manual.preparationDocs.map((doc, idx) => (
                 <li key={idx} className="flex items-start gap-2.5 text-[12px] text-gray font-medium">
@@ -1858,7 +1795,6 @@ export default function Home() {
                 <FileCheck className="w-4 h-4 text-accent" />
                 <span className="font-extrabold text-[15px]">작업 SOP</span>
               </div>
-              <span className="text-[12px] font-black text-accent bg-accent/10 border border-accent/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Procedure</span>
             </div>
             <ol className="flex flex-col gap-2.5">
               {manual.sop.map((step, idx) => (
@@ -1880,51 +1816,26 @@ export default function Home() {
             하단 (BOTTOM) — 결과 지표 & Benefit 효과 증빙
             ============================================================ */}
         <div className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-5">
-          <div className="flex items-center justify-between gap-2 border-b border-border pb-3.5 select-none">
-            <div className="flex items-center gap-2">
-              <span className="w-1 h-4 bg-success rounded-full" />
-              <h3 className="text-[15px] font-extrabold text-navy">결과 지표 &amp; Benefit 효과 증빙</h3>
-            </div>
-            <span className="text-[12px] font-black text-success bg-success/10 border border-success/20 px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3" /> Proven
-            </span>
+          {/* 헤더 — 이 박스만의 가치: 검토 후 받는 산출물 */}
+          <div className="flex items-center gap-2 border-b border-border pb-3.5 select-none">
+            <span className="w-1 h-4 bg-success rounded-full" />
+            <h3 className="text-[15px] font-extrabold text-navy">검토 후 제공 리포트</h3>
           </div>
 
-          {/* Benefit 효과 카드 (정량 증빙) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {manual.benefits.map((b, idx) => (
-              <div key={idx} className="bg-bg-subtle/70 border border-border p-4.5 rounded-custom flex flex-col gap-1.5 relative overflow-hidden shadow-sm hover:shadow-custom-md transition-all">
-                <div className="absolute right-0 top-0 w-16 h-16 bg-[radial-gradient(circle_at_top_right,rgba(31,122,77,0.06),transparent_70%)] pointer-events-none" />
-                <span className="text-2xl font-black text-navy tracking-tight tabular-nums leading-none">{b.metric}</span>
-                <span className="text-[12px] font-extrabold text-steel leading-none mt-1">{b.label}</span>
-                <span className="text-[12px] text-gray font-medium leading-normal mt-1">{b.desc}</span>
+          {/* 제공 산출물 — flat 카드, 아이콘으로 직관화 (중복 지표 카드 제거) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {manual.deliverables.map((del, idx) => (
+              <div key={idx} className="border border-border rounded-custom p-4 flex flex-col gap-2">
+                <FileText className="w-5 h-5 text-steel" />
+                <span className="text-[12.5px] text-navy font-semibold leading-snug">{del}</span>
               </div>
             ))}
           </div>
 
-          {/* 최종 제공 리포트 (산출물) */}
-          <div className="bg-bg-subtle/50 border border-border/80 rounded-custom p-4.5 flex flex-col gap-3">
-            <div className="flex items-center gap-2 select-none">
-              <FileCheck className="w-3.5 h-3.5 text-steel" />
-              <span className="text-[12px] font-extrabold text-navy uppercase tracking-wide">최종 제공 리포트</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-              {manual.deliverables.map((del, idx) => (
-                <div key={idx} className="flex items-start gap-2 bg-bg border border-border/70 rounded-custom px-3 py-2.5">
-                  <span className="w-4 h-4 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
-                  <span className="text-[12px] text-gray font-medium leading-snug">{del}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 상세 유의점 */}
-          <div className="border-t border-border pt-4 flex flex-col gap-2">
-            <span className="text-[12px] font-black text-navy uppercase tracking-wide">진단 프로세스 상세 유의점</span>
-            <p className="text-[12px] text-gray leading-relaxed font-medium">{manual.details}</p>
-            <span className="text-[12px] text-gray-light font-medium block mt-1">
-              * 제공해주신 자료가 불충분할 경우 담당 엔지니어가 추가 자료를 요청(전화/이메일)할 수 있습니다.
-            </span>
+          {/* 한 줄 노트 — 긴 유의점 문단 대체, ZEROS 톤 */}
+          <div className="flex items-center gap-2 bg-success/8 rounded-custom px-4 py-3">
+            <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+            <span className="text-[12.5px] text-success font-semibold leading-snug">표준 품셈·실거래 표본 기준으로 적정 견적을 산출하고, 1차 검토는 24시간 이내 회신합니다.</span>
           </div>
         </div>
       </div>
@@ -2215,49 +2126,9 @@ export default function Home() {
         <div className="absolute right-0 top-0 w-64 h-64 bg-[radial-gradient(circle_at_top_right,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
         <div className="absolute left-0 bottom-0 h-1 w-full bg-gradient-to-r from-steel via-accent to-transparent opacity-70 pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col gap-2.5">
-          {/* 주요 CTA + 보조 — 하단 쇼케이스 버튼과 동일 크기·폭, 오렌지·청색 균형 배치 */}
-          <div className="flex flex-col sm:flex-row gap-2.5 items-stretch">
-            <button
-              onClick={() => setActiveTabAtTop('about')}
-              style={{ touchAction: 'manipulation' }}
-              className="w-full min-h-10 inline-flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
-            >
-              컨설팅 절차 보기 <ArrowRight className="w-3.5 h-3.5 shrink-0" />
-            </button>
-          </div>
-
-          {/* 전국 무료 방문 신뢰 칩 (정보 — 테두리 없이 채움만) */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[11px] font-bold px-2.5 py-1 rounded-full select-none">
-              <MapPin className="w-3 h-3 text-steel" /> 전국 현장 무료 방문
-            </span>
-            <span className="inline-flex items-center gap-1.5 bg-[#F0F5FB] text-[#123A63] text-[11px] font-bold px-2.5 py-1 rounded-full select-none">
-              <ShieldCheck className="w-3 h-3 text-success" /> AI Native 1차 검증
-            </span>
-          </div>
-
-          {/* 핵심 카피 */}
-          <p className="text-[13px] md:text-[14.5px] text-gray leading-normal font-semibold max-w-2xl text-balance">
-            견적은 감이 아니라, <strong className="text-navy font-extrabold">DATA</strong>입니다.{' '}
-            <br className="hidden md:block" />
-            현장 경험과 <strong className="text-navy font-extrabold">AI Native 분석</strong>으로 비용과 리스크를 <strong className="text-navy font-extrabold">ZEROS</strong> 합니다.
-          </p>
-
-          {/* 신뢰 증빙 — 제목/상세 2단 크리덴셜 스트립(형식 통일·세로폭 압축) */}
-          <div className="grid grid-cols-3 gap-2 mt-0.5 border-t border-border/70 pt-1.5 select-none">
-            {[
-              { title: '현장 실무30년', detail: 'Manager, 엔지니어' },
-              { title: '국가 기술자격증', detail: '자격증 다수' },
-              { title: 'PM 총괄역임', detail: '프로젝트 다수' },
-            ].map((c, idx) => (
-              <div key={c.title} className={`flex flex-col gap-0.5 min-w-0 ${idx > 0 ? 'pl-2 border-l border-border/60' : ''}`}>
-                <span className="text-[11px] sm:text-[12.5px] font-black text-navy tracking-tight leading-tight whitespace-nowrap">{c.title}</span>
-                <span className="text-[10.5px] sm:text-[11.5px] text-gray font-bold leading-tight break-keep">{c.detail}</span>
-              </div>
-            ))}
-          </div>
-
+        {/* 박스 디자인은 유지, 내용은 견적 작업 FLOW로 대체 (공종 상세에서 이동) */}
+        <div className="relative z-10">
+          <EstimateFlow />
         </div>
       </section>
 
@@ -2300,7 +2171,7 @@ export default function Home() {
                   <span className="text-[11.5px] font-black text-success tracking-tight">100% 매핑</span>
                 </div>
                 <div className="text-center flex flex-col justify-center border-l border-border/60">
-                  <span className="text-[11px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">평균 거품 절감</span>
+                  <span className="text-[11px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">평균 견적 최적화</span>
                   <span className="text-[11.5px] font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}%</span>
                 </div>
               </div>
@@ -2324,26 +2195,6 @@ export default function Home() {
 
         </div>
       </div>
-
-      <section className="flex flex-col gap-3.5 px-1 pt-1">
-        <SectionHeading eyebrow="How We Review" title="공사비보다 공사 범위를 먼저 고정합니다." accent="steel" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0">
-          {[
-            { title: '자료 정밀 검토', desc: '도면·사진의 치수와 연결 규격을 확인해 범위 누락을 막습니다.' },
-            { title: '현장 제약 확인', desc: '협소 반입·고소·가동중단 등 단가 급증 리스크를 미리 잡습니다.' },
-            { title: '공사 범위 고정', desc: '동일 스펙으로 여러 업체를 1:1 비교하는 기준을 만듭니다.' },
-          ].map((item, idx) => (
-            <div
-              key={item.title}
-              className={`flex flex-col gap-1 px-0 md:px-5 ${idx > 0 ? 'md:border-l md:border-border/60' : ''}`}
-            >
-              <span className="text-[11px] text-steel font-black uppercase tracking-wider">Step {idx + 1}</span>
-              <h3 className="text-[14.5px] font-bold text-navy mt-0.5">{item.title}</h3>
-              <p className="text-[11.5px] text-gray leading-normal">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* CTA 섹션 — 스틸블루 단색 밴드(상단 컬러와 통일), 크기 축소 및 패딩 보정 */}
       <section className="bg-steel text-white px-4 py-4 md:py-5 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-1.5 border border-white/10">

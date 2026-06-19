@@ -117,7 +117,6 @@ export const LeftSidebar: React.FC = () => {
                       <span className="text-[13.5px] font-bold">{menuDisplayName(cat.label)}</span>
                       {isActive && <ChevronRight className="w-3.5 h-3.5 text-steel" />}
                     </div>
-                    <span className="text-[12px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
                   </button>
                 );
               })}
@@ -148,7 +147,6 @@ export const LeftSidebar: React.FC = () => {
                       <span className="text-[13.5px] font-bold">{menuDisplayName(cat.key)}</span>
                       {isActive && <ChevronRight className="w-3.5 h-3.5 text-accent" />}
                     </div>
-                    <span className="text-[12px] text-gray-light font-medium mt-0.5">{cat.desc}</span>
                   </button>
                 );
               })}

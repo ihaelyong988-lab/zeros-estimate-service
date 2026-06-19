@@ -45,6 +45,9 @@ export interface ShellContextType {
   setMobileMenuOpen: (open: boolean) => void;
   showSimulator: boolean;
   setShowSimulator: (show: boolean) => void;
+  // 데스크톱 우측 결과 패널(실시간 검토) 표시 토글 — 기본 숨김, 중앙 상단 탭으로 열고 닫음
+  showDecisionPanel: boolean;
+  setShowDecisionPanel: (show: boolean) => void;
   // 고객 휴대폰 인증 로그인 — 등록된 본인만 접수현황(시계열)을 열람
   customerAuth: CustomerAuth | null;
   setCustomerAuth: (auth: CustomerAuth | null) => void;
@@ -132,6 +135,7 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [sliderVal, setSliderVal] = useState<number>(50);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [showSimulator, setShowSimulator] = useState<boolean>(false);
+  const [showDecisionPanel, setShowDecisionPanel] = useState<boolean>(true);
 
   // 고객 휴대폰 인증 로그인 — localStorage에서 복원(기기당 세션 유지)
   const [customerAuth, setCustomerAuthState] = useState<CustomerAuth | null>(() => {
@@ -188,6 +192,8 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setMobileMenuOpen,
         showSimulator,
         setShowSimulator,
+        showDecisionPanel,
+        setShowDecisionPanel,
         customerAuth,
         setCustomerAuth,
         logoutCustomer,

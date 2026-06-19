@@ -15,7 +15,8 @@ import {
   User,
   Menu,
   X,
-  Building2
+  Building2,
+  ChevronLeft
 } from 'lucide-react';
 import { MyRequestsView } from '../MyRequestsView';
 
@@ -80,6 +81,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     landingTradeChipClass,
     mobileMenuOpen,
     setMobileMenuOpen,
+    showDecisionPanel,
+    setShowDecisionPanel,
     adminView,
     setAdminView,
     customerAuth,
@@ -242,6 +245,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     const target = activeEl.offsetLeft - (container.clientWidth - activeEl.clientWidth) / 2;
     container.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
   }, [landingTradeName, isLandingShowcase]);
+
+  // 견적 검토(review) 탭 진입 시 우측 결과 패널을 접어 작업 공간을 넓게 — 필요 시 엣지 탭으로 펼침
+  useEffect(() => {
+    if (activeTab === 'review') setShowDecisionPanel(false);
+  }, [activeTab, setShowDecisionPanel]);
 
   // 모바일 하단 탭과 activeTab 연동 동기화
   useEffect(() => {
@@ -712,7 +720,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-full">
 
             {/* Pane 2: 중앙 핵심 워크스페이스 패널 (독립 스크롤) */}
-            <div className="flex-1 flex flex-col h-full bg-bg overflow-hidden">
+            <div className="flex-1 flex flex-col h-full bg-bg overflow-hidden min-w-0">
               {/* 상단 청색 액센트 바 — 좌/우 사이드바의 상단 액센트 바와 시각적으로 연결 */}
               <div className="h-1 w-full bg-steel shrink-0" />
               <div data-main-scroll="true" className="flex-1 p-6 overflow-y-auto no-scrollbar min-w-0 pb-12">
@@ -720,10 +728,27 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               </div>
             </div>
 
-            {/* Pane 3: 우측 의사결정 보조 & 데이터 매핑 위젯 */}
-            <div className="w-72 h-full shrink-0 border-l border-border overflow-y-auto no-scrollbar bg-bg-subtle print:hidden">
-              <RightSidebar />
-            </div>
+            {/* Pane 3: 우측 의사결정 보조 & 데이터 매핑 위젯 — 항상 표시, 헤더 화살표로 접기 */}
+            {showDecisionPanel ? (
+              <div className="w-72 h-full shrink-0 border-l border-border overflow-y-auto no-scrollbar bg-bg-subtle print:hidden animate-in slide-in-from-right duration-300">
+                <RightSidebar />
+              </div>
+            ) : (
+              /* 접힘 — 우측 가장자리 세로 엣지 탭으로 다시 펼침 */
+              <button
+                onClick={() => setShowDecisionPanel(true)}
+                style={{ touchAction: 'manipulation' }}
+                className="shrink-0 w-9 h-full bg-bg flex flex-col items-center pt-1.5 cursor-pointer group print:hidden"
+                aria-label="검토 패널 펼치기"
+                title="검토 패널 펼치기"
+              >
+                {/* 음영 없이, 상단에 '탭'만 인식되도록 테두리 처리 */}
+                <span className="inline-flex flex-col items-center gap-1 px-1 py-2 rounded-l-custom border border-border border-r-0 text-gray group-hover:text-steel group-hover:border-steel/60 transition-colors">
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span className="text-[11px] font-bold [writing-mode:vertical-rl]">검토</span>
+                </span>
+              </button>
+            )}
 
           </main>
         </div>

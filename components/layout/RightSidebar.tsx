@@ -15,6 +15,10 @@ import {
   Bell,
   CheckCircle2,
   Clock,
+  Database,
+  Award,
+  UserCheck,
+  ChevronRight,
 } from 'lucide-react';
 
 export interface DecisionMetrics {
@@ -223,6 +227,7 @@ export const RightSidebar: React.FC = () => {
     setActiveTab,
     sliderVal,
     setSliderVal,
+    setShowDecisionPanel,
     adminView,
     setAdminView,
   } = useShell();
@@ -282,16 +287,6 @@ export const RightSidebar: React.FC = () => {
   const currentAmount = Math.round(metrics.minVal + ((metrics.maxVal - metrics.minVal) * (sliderVal / 100)));
   const feeAmount = Math.round(currentAmount * 0.02);
 
-  // 슬라이더가 권장 위치(중앙값)에서 멀어진 정도 — 분석 신뢰도 산출에 사용
-  const diff = Math.abs(sliderVal - metrics.percent);
-
-  // 유사 현장 중앙값(권장 위치) 대비 현재 슬라이더 견적의 편차 — 고객 정량 비교용
-  const medianVal = Math.round(metrics.minVal + (metrics.maxVal - metrics.minVal) * (metrics.percent / 100));
-  const medianDeltaPct = medianVal > 0 ? ((currentAmount - medianVal) / medianVal) * 100 : 0;
-  const medianDeltaLabel = `${medianDeltaPct >= 0 ? '+' : ''}${medianDeltaPct.toFixed(1)}%`;
-  // 권장 구간 근접도 기반 분석 신뢰도 — 극단값으로 갈수록 보수적으로 하향
-  const analysisConfidence = Math.max(82, 99.8 - diff * 0.32).toFixed(1);
-
   // 좌측 선택과 색을 연결: 외주제작(FAB) 계열은 오렌지, 그 외는 스틸블루
   const fabKeys = ['spool', 'skid', 'structure'];
   const isFab = fabKeys.includes(activeKey);
@@ -307,21 +302,19 @@ export const RightSidebar: React.FC = () => {
 
       {/* 우측 가장자리(브라우저 끝)는 좌측(20px)보다 넉넉한 28px — 화면 끝 답답함 해소 */}
       <div className="py-5 pl-5 pr-7 flex flex-col gap-4">
-        {/* 헤더: 좌측에서 선택한 대상을 그대로 반향 */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">선택한 검토 대상</span>
-            <span className="inline-flex items-center gap-1 text-[12px] font-black text-success">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간 검토
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={`w-1 h-4 ${accentBarBg} rounded-full shrink-0`} />
-            <h3 className={`text-[16px] font-black ${accentTextCls} tracking-tight leading-tight`}>{displayName}</h3>
-          </div>
-          <p className="text-[12px] font-bold text-gray-light">
-            실거래 {metrics.sampleCount}건 대조 · 분석 신뢰도 {analysisConfidence}%
-          </p>
+        {/* 헤더 — 선택한 공종명 + 우측 접기 화살표 */}
+        <div className="flex items-center gap-2">
+          <span className={`w-1 h-4 ${accentBarBg} rounded-full shrink-0`} />
+          <h3 className={`text-[16px] font-black ${accentTextCls} tracking-tight leading-tight`}>{displayName}</h3>
+          <button
+            onClick={() => setShowDecisionPanel(false)}
+            style={{ touchAction: 'manipulation' }}
+            className="ml-auto shrink-0 w-6 h-6 inline-flex items-center justify-center rounded text-gray-light hover:text-steel hover:bg-bg-subtle cursor-pointer transition-colors"
+            aria-label="실시간 검토 패널 접기"
+            title="패널 접기"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
         {/* 평균 소요일 — borderless 행 */}
@@ -333,28 +326,29 @@ export const RightSidebar: React.FC = () => {
         {/* 예상 견적범위 — 유일하게 강조하는 카드(핵심 인터랙션: 슬라이더) */}
         <div className="bg-bg border border-border rounded-custom p-4 flex flex-col gap-3 shadow-custom-sm">
           <span className="text-[12px] font-bold text-navy">예상 견적범위</span>
-          <div className="flex flex-col gap-1">
-            <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">견적 예상가</span>
-            <span className="text-2xl font-black text-navy tracking-tight tabular-nums leading-none">
-              ₩{currentAmount.toLocaleString()}
-            </span>
-            <span className="text-[12px] font-bold text-gray-light tabular-nums">
-              중앙값 {metrics.medianAmount} 대비
-              <span className={`ml-1 font-black ${medianDeltaPct > 0 ? 'text-accent' : 'text-success'}`}>{medianDeltaLabel}</span>
-            </span>
-          </div>
+          <span className="text-2xl font-black text-navy tracking-tight tabular-nums leading-none">
+            ₩{currentAmount.toLocaleString()}
+          </span>
 
-          <div className="flex flex-col gap-2 pt-0.5">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={sliderVal}
-              onChange={(e) => setSliderVal(Number(e.target.value))}
-              className="touch-none w-full h-1.5 bg-bg-subtle rounded-lg appearance-none cursor-pointer accent-steel border border-border focus:outline-none"
-            />
-            <div className="flex items-center justify-between text-[12px] text-gray-light font-black tabular-nums">
+          <div className="flex flex-col gap-2 pt-1.5">
+            <div className="relative">
+              {/* 중앙값 눈금 */}
+              <span
+                className="absolute -top-1 w-0.5 h-3.5 bg-gray-light z-10 pointer-events-none"
+                style={{ left: `${metrics.percent}%` }}
+              />
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliderVal}
+                onChange={(e) => setSliderVal(Number(e.target.value))}
+                className="relative touch-none w-full h-1.5 bg-bg-subtle rounded-lg appearance-none cursor-pointer accent-steel border border-border focus:outline-none"
+              />
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-gray-light font-bold tabular-nums">
               <span>최소 {metrics.minAmount}</span>
+              <span>중앙값 {metrics.medianAmount}</span>
               <span>최대 {metrics.maxAmount}</span>
             </div>
           </div>
@@ -368,19 +362,17 @@ export const RightSidebar: React.FC = () => {
           </p>
         </div>
 
-        {/* 예상가 신뢰 근거 — borderless 리스트(줄마다 아이콘 제거) */}
-        <div className="flex flex-col gap-2 border-t border-border/60 pt-3">
-          <span className="flex items-center gap-2 text-[12px] font-bold text-navy uppercase tracking-wider">
-            <span className="w-1 h-4 bg-steel rounded-full shrink-0" />
-            예상가 신뢰 근거
-          </span>
-          {[
-            '실제 거래가와 표준 품셈으로 계산합니다.',
-            'KS·ASME 자재 규격을 그대로 적용합니다.',
-            '현장 실무30년 기준으로 직접 확인합니다.',
-          ].map((t) => (
-            <span key={t} className="text-[12px] text-gray font-medium leading-normal pl-3 border-l-2 border-border">{t}</span>
-          ))}
+        {/* 신뢰 근거 — 아이콘 칩 (제목·설명문 제거) */}
+        <div className="flex flex-col gap-2.5 border-t border-border/60 pt-3">
+          <div className="flex items-center gap-2 text-[12px] text-navy font-medium">
+            <Database className="w-4 h-4 text-steel shrink-0" />실거래가 · 표준 품셈 산출
+          </div>
+          <div className="flex items-center gap-2 text-[12px] text-navy font-medium">
+            <Award className="w-4 h-4 text-steel shrink-0" />KS · ASME 규격 적용
+          </div>
+          <div className="flex items-center gap-2 text-[12px] text-navy font-medium">
+            <UserCheck className="w-4 h-4 text-steel shrink-0" />현장 실무 30년 직접 확인
+          </div>
         </div>
 
         {/* 검증 실적 — borderless 행(클릭 시 실적 탭) */}
@@ -408,7 +400,6 @@ export const RightSidebar: React.FC = () => {
             {metrics.recommendation} 신청
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
-          <p className="text-[12px] text-gray-light font-medium leading-normal">{metrics.recommendationDesc}</p>
         </div>
       </div>
     </aside>
