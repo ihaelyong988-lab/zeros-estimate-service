@@ -271,393 +271,84 @@ export default function Home() {
   // ==========================================
   // 1. 고객 모드 탭 렌더러
   // ==========================================
-  const renderAboutTab = () => {
+  const renderBusinessTab = () => {
     return (
       <div className="flex flex-col gap-4 max-w-4xl mx-auto py-2.5 select-none">
-        {/* ZEROS 사업 목적 & 비전 — 박스 제거 */}
-        <section className="flex flex-col gap-4.5">
-          <div className="flex flex-col gap-1.5 border-b border-border pb-3.5">
-            <span className="text-[12px] text-accent font-black uppercase tracking-wider">Mission & Vision</span>
-            <h2 className="text-2xl font-black text-navy tracking-tight">소상공인 대표님을 위한 ZEROS의 약속</h2>
-            <p className="text-[13.5px] text-gray leading-relaxed font-semibold">
-              들쑥날쑥한 견적 비용과 설계 변경 분쟁을 사전에 차단하여 소상공인 대표님의 예산 계획에 도움을 드립니다.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 text-[14px] text-navy font-semibold leading-relaxed">
-            <p className="font-extrabold text-steel text-[15.5px]">
-              "최적합의 예산 책정으로 소상공인 대표님이 안심할 수 있는 예산 계획을 돕겠습니다."
-            </p>
-            <p className="text-gray font-medium text-[13.5px] leading-relaxed">
-              건설 및 설비 분야 공사 시 시공사마다 천차만별인 견적 금액으로 인해 발생하는 불확실성은 소상공인 대표님들에게 큰 리스크입니다. ZEROS는 투명한 빅데이터와 30년 현장 엔지니어링 경력을 바탕으로 가장 합리적이고 객관적인 <strong>최적합 예산</strong>을 수립함으로써, 대표님이 자금 계획을 세우고 안심하며 경영에만 집중할 수 있는 환경을 만듭니다.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-7 gap-y-4 mt-2">
-              <div className="border-l-2 border-navy/30 pl-3.5 flex flex-col gap-1.5">
-                <span className="text-[13px] font-black text-navy">소상공인 대표 안심 예산</span>
-                <span className="text-[12px] text-gray font-semibold leading-normal">
-                  공사 예산을 과다/과소 책정 없이 도메인 지표에 부합하는 적정 대역으로 고정하여 안정적인 투자를 가능하게 합니다.
-                </span>
+        {/* 1. 에디토리얼 히어로 — 유일한 하이라이트 */}
+        <section className="flex flex-col gap-3 border-b border-border pb-5">
+          <span className="text-[12px] text-accent font-black uppercase tracking-wider">사업 소개 · About ZEROS</span>
+          <h1 className="text-[clamp(26px,3vw,38px)] font-black text-navy leading-[1.22] tracking-tight">
+            소상공인 대표님이 <span className="text-accent">안심</span>할 수 있는
+            <br />
+            최적합 예산을 만듭니다
+          </h1>
+          <p className="text-[14px] text-gray font-semibold">
+            들쑥날쑥한 견적과 설계변경 분쟁을 데이터로 사전에 차단합니다.
+          </p>
+        </section>
+
+        {/* 2. 3대 핵심 기둥 — de-box, 좌측 헤어라인 색만 */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* 안심 예산 */}
+          <div className="border-l-2 border-navy/40 pl-4 flex flex-col gap-2">
+            <span className="text-[16px] font-black text-navy">안심 예산 책정</span>
+            <span className="text-[12px] text-gray font-semibold leading-normal">과다·과소 없는 적정 대역으로 고정</span>
+            <div className="mt-1">
+              <div className="h-1.5 rounded-full bg-[#E2E8F0] relative overflow-hidden">
+                <div className="absolute top-0 bottom-0 left-[28%] w-[44%] bg-steel rounded-full" />
               </div>
-              <div className="border-l-2 border-accent pl-3.5 flex flex-col gap-1.5">
-                <span className="text-[13px] font-black text-accent">투명한 빅데이터 필터링</span>
-                <span className="text-[12px] text-gray font-semibold leading-normal">
-                  시장 거래 실사례 및 시공 품셈을 교차 검증하여 고단가 단가 거품이나 허위 요소를 감지하고 차단합니다.
-                </span>
+              <div className="flex justify-between text-[9px] text-gray-light font-bold mt-1">
+                <span>min</span><span>최적 대역</span><span>max</span>
               </div>
             </div>
+          </div>
+          {/* 단가 거품 필터링 */}
+          <div className="border-l-2 border-accent pl-4 flex flex-col gap-2">
+            <span className="text-[16px] font-black text-accent">단가 거품 필터링</span>
+            <span className="text-[12px] text-gray font-semibold leading-normal">실거래 빅데이터 교차 검증</span>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-steel bg-steel/10 px-2 py-1 rounded">
+                <Database className="w-3 h-3 shrink-0" />실거래 DB
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-steel bg-steel/10 px-2 py-1 rounded">
+                <Search className="w-3 h-3 shrink-0" />이상치 탐지
+              </span>
+            </div>
+          </div>
+          {/* 30년 현장 경력 */}
+          <div className="border-l-2 border-success pl-4 flex flex-col gap-1">
+            <span className="text-[34px] font-black text-success leading-none tabular-nums">30<span className="text-[18px]">년</span></span>
+            <span className="text-[13px] font-black text-navy mt-1.5">현장 암묵지</span>
+            <span className="text-[12px] text-gray font-semibold leading-normal">플랜트 현장 엔지니어링 경력</span>
           </div>
         </section>
 
-        {/* 데이터분석 절차 — 박스 제거, 섹션 간 헤어라인 */}
-        <section className="flex flex-col gap-5.5 border-t border-border pt-6 mt-1">
-          {/* 헤더 */}
-          <div className="flex flex-col gap-1.5 border-b border-border pb-3.5">
-            <span className="text-[12px] text-steel font-black uppercase tracking-wider">ZEROS Data Analysis Protocol</span>
-            <h2 className="text-2xl font-black text-navy tracking-tight">ZEROS 데이터분석 절차</h2>
-            <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
-              자료 접수부터 최종 의사결정까지, ZEROS의 데이터 파이프라인 처리 절차입니다.
-            </p>
-          </div>
+        {/* 3. 약속 한 줄 */}
+        <section className="border-t border-border pt-5 flex items-stretch gap-3.5">
+          <span className="w-1 bg-accent shrink-0" />
+          <p className="text-[15px] font-extrabold text-steel leading-relaxed m-0">
+            최적합 예산 책정으로 대표님이 경영에만 집중할 수 있는 환경을 만듭니다.
+          </p>
+        </section>
 
-          {/* 1. 초슬림 가로형 세그먼트 워크플로우 탭바 */}
-          <div className="flex flex-col gap-2.5">
-            <span className="text-[12px] font-black text-navy uppercase tracking-wide">진단 프로세스 워크플로우</span>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-1 border-b border-border">
-              {[
-                {
-                  step: '01',
-                  title: 'Data Ingestion',
-                  sub: '자료 수집 · 파싱',
-                  color: 'bg-steel',
-                  badgeColor: 'bg-steel/10 text-steel border-steel/20',
-                  time: '실시간 (즉시)',
-                  output: '정규화 데이터',
-                  methodology: '제출된 설계 도면(DWG/PDF), 현장 실사 사진, 장비 제원서 등 비정형 설계 자료에서 핵심 도메인 정보를 파싱합니다. 자체 개발한 OCR 엔진과 관로 매핑 알고리즘을 통해 관경, 길이, 유체 종류, 설계 압력 등 원천 변수를 추출하고 정형 스키마로 표준 정규화(Normalization)합니다.',
-                  log: `{
-  "agent": "zeros_drawing_parser_v1.4",
-  "status": "COMPLETED",
-  "pipeline_stage": "DATA_INGESTION",
-  "parsed_file": "2026_Yongin_SectorB_Drawing.pdf",
-  "extraction_summary": {
-    "target_materials": ["SUS304", "Carbon Steel"],
-    "total_nodes_extracted": 28,
-    "valve_entities_found": 8,
-    "nominal_diameters": ["50A", "100A"]
-  },
-  "schema_integrity": {
-    "null_fields": 0,
-    "format_compliance": true
-  }
-}`
-                },
-                {
-                  step: '02',
-                  title: 'Data Cleansing',
-                  sub: '이상치 필터링',
-                  color: 'bg-accent',
-                  badgeColor: 'bg-accent/10 text-accent border-accent/20',
-                  time: '10분 이내',
-                  output: '이상치 분석서',
-                  methodology: '수집된 자재 규격 및 공급사 견적 단가를 표준 시공 품셈 및 1군 건설사 거래처 실거래 빅데이터 DB와 교차 대조합니다. 통계적 이상치 판별 알고리즘(Z-score > 2.5)을 통해 비정상적인 고단가 거품, 허위 물량 할증률 등을 실시간 감지하여 이상 가격 항목으로 필터링하고 자동 보정합니다.',
-                  log: `{
-  "agent": "zeros_anomaly_detector_v2.0",
-  "status": "WARNING",
-  "pipeline_stage": "DATA_CLEANSING",
-  "anomaly_alert": {
-    "item_code": "M-SUS-100 (SUS304 Elbow 100A)",
-    "quoted_unit_price": 85000,
-    "market_mean_price": 38500,
-    "z_score": 3.12
-  },
-  "cleansing_action": {
-    "price_corrected_to": 38500,
-    "risk_index_assigned": "MEDIUM_HIGH",
-    "notes": "청구 단가가 시장 표준가를 2.2배 초과함."
-  }
-}`
-                },
-                {
-                  step: '03',
-                  title: 'AI Inference',
-                  sub: 'PM 교차 검증',
-                  color: 'bg-steel',
-                  badgeColor: 'bg-steel/10 text-steel border-steel/20',
-                  time: '24시간 이내',
-                  output: '오차 분석 완료',
-                  methodology: '정제된 데이터를 ZEROS 배관 공사비 추론 모델에 입력하여 적정 공종 범위(Scope)와 합리적 예산 구간(Budget Band)을 산출합니다. 이후 30년 이상의 플랜트 설계/시공 실무 경력을 보유한 전문 PM이 추천 예산의 타당성과 설계 요건을 교차 보정하여 최적의 예측 정확도를 확보합니다.',
-                  log: `{
-  "agent": "zeros_pm_cross_validator_v3",
-  "status": "APPROVED",
-  "pipeline_stage": "PM_VERIFICATION",
-  "ai_inferred_budget": 19500000,
-  "pm_validation_comments": {
-    "issue": "도면 확인 시 굴착 깊이 1.5m 초과 구간 식별됨.",
-    "omission": "토공사 흙막이 가시설 설치 품셈 누락.",
-    "adjustment": "+1,700,000 KRW 반영 필요"
-  },
-  "final_corrected_budget": 21200000,
-  "accuracy_confidence": "98.2%"
-}`
-                },
-                {
-                  step: '04',
-                  title: 'Decision Output',
-                  sub: '최종 판정 확정',
-                  color: 'bg-success',
-                  badgeColor: 'bg-success/10 text-success border-success/20',
-                  time: '최종 제출',
-                  output: '검토 시트 발행',
-                  methodology: 'AI의 기계적 추론값과 도메인 전문가 PM의 보정 데이터를 종합 의사결정 매트릭스에 매칭하여 최종 판정(범위 고정 여부, 최적 예산 밴드, 리스크 등급, 권장 후속 조치)을 확정합니다. 확정된 내용은 고객이 즉시 활용 가능한 고해상도 검토 시트(Scope Sheet)로 자동 변환 발행됩니다.',
-                  log: `{
-  "agent": "zeros_decision_engine_v1.0",
-  "status": "COMPLETED",
-  "pipeline_stage": "DECISION_OUTPUT",
-  "output_document_id": "SS-2026-YONGIN-001",
-  "verdict_summary": {
-    "scope_fix_status": "SPEC_FIXED",
-    "optimal_budget_band": "18,000,000 ~ 22,000,000 KRW",
-    "risk_grade": "LOW",
-    "next_recommended_action": "ONLINE_CONTRACT_CONFIRMATION"
-  }
-}`
-                }
-              ].map((item, idx) => {
-                const isActive = activeDiagNode === idx;
-                
-                // 각 단계별 테마 색상 (윤곽선, 아웃라인 링, 텍스트) 매핑
-                const theme = [
-                  { border: 'border-steel ring-steel/20', text: 'text-steel', borderBottom: 'border-steel/40' },
-                  { border: 'border-accent ring-accent/20', text: 'text-accent', borderBottom: 'border-accent/40' },
-                  { border: 'border-steel ring-steel/20', text: 'text-steel', borderBottom: 'border-steel/40' },
-                  { border: 'border-success ring-success/20', text: 'text-success', borderBottom: 'border-success/40' }
-                ][idx] || { border: 'border-border ring-navy/10', text: 'text-navy', borderBottom: 'border-navy/40' };
-
-                return (
-                  <button
-                    key={item.step}
-                    onClick={() => setActiveDiagNode(idx)}
-                    className={`flex items-center gap-2.5 px-3 py-2.5 -mb-px border-b-[2.5px] transition-all duration-200 cursor-pointer text-left ${
-                      isActive
-                        ? 'border-accent opacity-100'
-                        : 'border-transparent opacity-55 hover:opacity-100'
-                    }`}
-                  >
-                    {/* 단계 번호 배지 */}
-                    <div className={`w-5.5 h-5.5 rounded-full ${item.color} text-white flex items-center justify-center font-bold text-[11px] shrink-0`}>
-                      {item.step}
-                    </div>
-                    {/* 타이틀 및 서브 타이틀 */}
-                    <div className="flex flex-col leading-none gap-0.5">
-                      <span className={`text-[8.5px] font-mono font-bold uppercase tracking-wider ${isActive ? theme.text : 'text-gray-light'}`}>
-                        {item.title}
-                      </span>
-                      <span className={`text-[12.5px] font-black tracking-tight ${isActive ? theme.text : 'text-navy/80'}`}>
-                        {item.sub}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* 2. 동적 통합 상세 카드 (Dynamic Detail Panel) */}
-            {(() => {
-              const details = [
-                {
-                  step: '01',
-                  title: 'Data Ingestion',
-                  sub: '자료 수집 · 파싱',
-                  badgeColor: 'bg-steel/10 text-steel border-steel/20',
-                  time: '실시간 (즉시)',
-                  output: '정규화 데이터',
-                  methodology: '제출된 설계 도면(DWG/PDF), 현장 실사 사진, 장비 제원서 등 비정형 설계 자료에서 핵심 도메인 정보를 파싱합니다. 자체 개발한 OCR 엔진과 관로 매핑 알고리즘을 통해 관경, 길이, 유체 종류, 설계 압력 등 원천 변수를 추출하고 정형 스키마로 표준 정규화(Normalization)합니다.',
-                  log: `{
-  "agent": "zeros_drawing_parser_v1.4",
-  "status": "COMPLETED",
-  "pipeline_stage": "DATA_INGESTION",
-  "parsed_file": "2026_Yongin_SectorB_Drawing.pdf",
-  "extraction_summary": {
-    "target_materials": ["SUS304", "Carbon Steel"],
-    "total_nodes_extracted": 28,
-    "valve_entities_found": 8,
-    "nominal_diameters": ["50A", "100A"]
-  },
-  "schema_integrity": {
-    "null_fields": 0,
-    "format_compliance": true
-  }
-}`
-                },
-                {
-                  step: '02',
-                  title: 'Data Cleansing',
-                  sub: '이상치 필터링',
-                  badgeColor: 'bg-accent/10 text-accent border-accent/20',
-                  time: '10분 이내',
-                  output: '이상치 분석서',
-                  methodology: '수집된 자재 규격 및 공급사 견적 단가를 표준 시공 품셈 및 1군 건설사 거래처 실거래 빅데이터 DB와 교차 대조합니다. 통계적 이상치 판별 알고리즘(Z-score > 2.5)을 통해 비정상적인 고단가 거품, 허위 물량 할증률 등을 실시간 감지하여 이상 가격 항목으로 필터링하고 자동 보정합니다.',
-                  log: `{
-  "agent": "zeros_anomaly_detector_v2.0",
-  "status": "WARNING",
-  "pipeline_stage": "DATA_CLEANSING",
-  "anomaly_alert": {
-    "item_code": "M-SUS-100 (SUS304 Elbow 100A)",
-    "quoted_unit_price": 85000,
-    "market_mean_price": 38500,
-    "z_score": 3.12
-  },
-  "cleansing_action": {
-    "price_corrected_to": 38500,
-    "risk_index_assigned": "MEDIUM_HIGH",
-    "notes": "청구 단가가 시장 표준가를 2.2배 초과함."
-  }
-}`
-                },
-                {
-                  step: '03',
-                  title: 'AI Inference',
-                  sub: 'PM 교차 검증',
-                  badgeColor: 'bg-steel/10 text-steel border-steel/20',
-                  time: '24시간 이내',
-                  output: '오차 분석 완료',
-                  methodology: '정제된 데이터를 ZEROS 배관 공사비 추론 모델에 입력하여 적정 공종 범위(Scope)와 합리적 예산 구간(Budget Band)을 산출합니다. 이후 30년 이상의 플랜트 설계/시공 실무 경력을 보유한 전문 PM이 추천 예산의 타당성과 설계 요건을 교차 보정하여 최적의 예측 정확도를 확보합니다.',
-                  log: `{
-  "agent": "zeros_pm_cross_validator_v3",
-  "status": "APPROVED",
-  "pipeline_stage": "PM_VERIFICATION",
-  "ai_inferred_budget": 19500000,
-  "pm_validation_comments": {
-    "issue": "도면 확인 시 굴착 깊이 1.5m 초과 구간 식별됨.",
-    "omission": "토공사 흙막이 가시설 설치 품셈 누락.",
-    "adjustment": "+1,700,000 KRW 반영 필요"
-  },
-  "final_corrected_budget": 21200000,
-  "accuracy_confidence": "98.2%"
-}`
-                },
-                {
-                  step: '04',
-                  title: 'Decision Output',
-                  sub: '최종 판정 확정',
-                  badgeColor: 'bg-success/10 text-success border-success/20',
-                  time: '최종 제출',
-                  output: '검토 시트 발행',
-                  methodology: 'AI의 기계적 추론값과 도메인 전문가 PM의 보정 데이터를 종합 의사결정 매트릭스에 매칭하여 최종 판정(범위 고정 여부, 최적 예산 밴드, 리스크 등급, 권장 후속 조치)을 확정합니다. 확정된 내용은 고객이 즉시 활용 가능한 고해상도 검토 시트(Scope Sheet)로 자동 변환 발행됩니다.',
-                  log: `{
-  "agent": "zeros_decision_engine_v1.0",
-  "status": "COMPLETED",
-  "pipeline_stage": "DECISION_OUTPUT",
-  "output_document_id": "SS-2026-YONGIN-001",
-  "verdict_summary": {
-    "scope_fix_status": "SPEC_FIXED",
-    "optimal_budget_band": "18,000,000 ~ 22,000,000 KRW",
-    "risk_grade": "LOW",
-    "next_recommended_action": "ONLINE_CONTRACT_CONFIRMATION"
-  }
-}`
-                }
-              ];
-              
-              const currentStep = details[activeDiagNode] || details[0];
-              const borderLeftColor = activeDiagNode === 0 ? 'border-l-steel' : activeDiagNode === 1 ? 'border-l-accent' : activeDiagNode === 2 ? 'border-l-steel' : 'border-l-success';
-
-              return (
-                <div className={`border-l-[3px] ${borderLeftColor} pl-4 md:pl-5 flex flex-col md:flex-row gap-5 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-                  {/* 좌측: 방법론 설명 & 메트릭 */}
-                  <div className="flex-1 flex flex-col gap-3.5">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`px-2 py-0.5 rounded text-[9.5px] font-bold border uppercase tracking-wider ${currentStep.badgeColor}`}>
-                          Step {currentStep.step}
-                        </span>
-                        <span className="text-[12.5px] font-black text-navy uppercase tracking-tight">
-                          {currentStep.title}
-                        </span>
-                      </div>
-                      <h3 className="text-[15px] font-black text-navy leading-tight">
-                        {currentStep.sub} 방법론
-                      </h3>
-                    </div>
-
-                    <p className="text-[12.5px] text-gray leading-relaxed font-semibold">
-                      {currentStep.methodology}
-                    </p>
-
-                    {/* 핵심 메트릭 */}
-                    <div className="grid grid-cols-2 gap-3 mt-1 pt-3 border-t border-border/60">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[9.5px] text-gray-light font-bold">예상 소요 시간</span>
-                        <span className="text-[12.5px] font-extrabold text-navy">
-                          {currentStep.time}
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-0.5 border-l border-border/60 pl-3">
-                        <span className="text-[9.5px] text-gray-light font-bold">주요 산출물</span>
-                        <span className="text-[12.5px] font-extrabold text-navy">
-                          {currentStep.output}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 우측: 실제 시스템 로그 예시 */}
-                  <div className="md:w-5/12 shrink-0 flex flex-col gap-2">
-                    <span className="text-[10px] text-gray font-bold tracking-wide flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
-                      실제 데이터 및 처리 로그 스냅샷
-                    </span>
-                    <div className="bg-slate-900 border border-slate-800 rounded-custom p-4 font-mono text-[10px] text-slate-300 overflow-x-auto shadow-inner leading-normal h-38 select-text">
-                      <pre className="m-0 text-slate-300">
-                        <code>
-                          {currentStep.log}
-                        </code>
-                      </pre>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-
-
-          {/* 4. 최종 산출물 — 박스/폴더 메타포 제거, 헤어라인으로 구분 */}
-          <div className="flex flex-col select-none mt-2 border-t border-border pt-5">
-            <span className="text-[11px] text-steel font-black uppercase tracking-wider">Final Deliverable · Scope Sheet</span>
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mt-3">
-
-              {/* 1열: 최종 결과물 설명 */}
-              <div className="flex-1 min-w-[200px]">
-                <h3 className="text-[14px] font-black text-navy tracking-tight leading-snug">
-                  모든 분석 검증의 최종 결과물은 단 한 장의 검토 시트로 정돈됩니다.
-                </h3>
-              </div>
-
-              {/* 2열: 미니 검토 시트 — 박스 제거, 헤어라인 구분 4지표 */}
-              <div className="flex-[1.3] min-w-[280px] grid grid-cols-2 sm:grid-cols-4">
-                {[
-                  { l: 'Scope Spec', v: '범위 고정', c: 'text-navy' },
-                  { l: 'Budget Band', v: '₩18M~₩22M', c: 'text-navy' },
-                  { l: 'Risk Grade', v: 'LOW 등급', c: 'text-navy' },
-                  { l: 'Next Action', v: '온라인검토', c: 'text-accent' },
-                ].map((m, i) => (
-                  <div key={m.l} className={`flex flex-col gap-0.5 text-center px-2 ${i > 0 ? 'border-l border-border/60' : ''}`}>
-                    <span className="text-[8px] text-gray-light uppercase font-mono">{m.l}</span>
-                    <span className={`text-[12px] font-black truncate ${m.c}`}>{m.v}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* 3열: SOP 탭 이동 */}
-              <div className="w-full lg:w-56 shrink-0 flex flex-col justify-center">
-                <button
-                  onClick={() => setActiveTab('sop')}
-                  className="w-full flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/20 py-2.5 px-4 rounded-custom text-[14.5px] font-bold transition-all duration-150 active:scale-95 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-steel shrink-0 animate-pulse" />
-                  <span>AI 활용 SOP 상세 과정</span>
-                </button>
-              </div>
-            </div>
-          </div>
+        {/* 4. 단일 전진 CTA */}
+        <section className="flex flex-wrap items-center gap-4 mt-1">
+          <button
+            onClick={() => setActiveTabAtTop('request')}
+            style={{ touchAction: 'manipulation' }}
+            className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-[#c95f12] text-white px-6 py-3 rounded-custom text-[14.5px] font-black tracking-tight shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+          >
+            무료 견적 검토 의뢰하기
+            <ArrowRight className="w-4 h-4 shrink-0" />
+          </button>
+          <button
+            onClick={() => setActiveTabAtTop('sop')}
+            style={{ touchAction: 'manipulation' }}
+            className="text-steel hover:text-navy text-[13.5px] font-bold inline-flex items-center gap-1 cursor-pointer"
+          >
+            AI 검증 절차 보기
+            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+          </button>
         </section>
       </div>
     );
@@ -709,6 +400,85 @@ export default function Home() {
         output: '검토 시트(Scope Sheet)',
       },
     ];
+
+    // 실제 처리 로그 스냅샷 — 6단계 파이프라인 중 산출 근거가 남는 4개 에이전트 단계.
+    // 타임라인 노드와 1:1로 묶지 않고 독립 탭 뷰어로 운용한다(인덱스 mismatch 방지).
+    const logSnapshots = [
+      {
+        agent: 'zeros_drawing_parser_v1.4', stage: 'Material Analysis', label: '자료 파싱',
+        dot: 'bg-steel', text: 'text-steel',
+        log: `{
+  "agent": "zeros_drawing_parser_v1.4",
+  "status": "COMPLETED",
+  "pipeline_stage": "DATA_INGESTION",
+  "parsed_file": "2026_Yongin_SectorB_Drawing.pdf",
+  "extraction_summary": {
+    "target_materials": ["SUS304", "Carbon Steel"],
+    "total_nodes_extracted": 28,
+    "valve_entities_found": 8,
+    "nominal_diameters": ["50A", "100A"]
+  },
+  "schema_integrity": {
+    "null_fields": 0,
+    "format_compliance": true
+  }
+}`,
+      },
+      {
+        agent: 'zeros_anomaly_detector_v2.0', stage: 'Exploratory Analysis', label: '이상치 탐지',
+        dot: 'bg-accent', text: 'text-accent',
+        log: `{
+  "agent": "zeros_anomaly_detector_v2.0",
+  "status": "WARNING",
+  "pipeline_stage": "DATA_CLEANSING",
+  "anomaly_alert": {
+    "item_code": "M-SUS-100 (SUS304 Elbow 100A)",
+    "quoted_unit_price": 85000,
+    "market_mean_price": 38500,
+    "z_score": 3.12
+  },
+  "cleansing_action": {
+    "price_corrected_to": 38500,
+    "risk_index_assigned": "MEDIUM_HIGH",
+    "notes": "청구 단가가 시장 표준가를 2.2배 초과함."
+  }
+}`,
+      },
+      {
+        agent: 'zeros_pm_cross_validator_v3', stage: 'PM Cross Validation', label: 'PM 교차검증',
+        dot: 'bg-steel', text: 'text-steel',
+        log: `{
+  "agent": "zeros_pm_cross_validator_v3",
+  "status": "APPROVED",
+  "pipeline_stage": "PM_VERIFICATION",
+  "ai_inferred_budget": 19500000,
+  "pm_validation_comments": {
+    "issue": "도면 확인 시 굴착 깊이 1.5m 초과 구간 식별됨.",
+    "omission": "토공사 흙막이 가시설 설치 품셈 누락.",
+    "adjustment": "+1,700,000 KRW 반영 필요"
+  },
+  "final_corrected_budget": 21200000,
+  "accuracy_confidence": "98.2%"
+}`,
+      },
+      {
+        agent: 'zeros_decision_engine_v1.0', stage: 'Result Sheet Output', label: '최종 판정',
+        dot: 'bg-success', text: 'text-success',
+        log: `{
+  "agent": "zeros_decision_engine_v1.0",
+  "status": "COMPLETED",
+  "pipeline_stage": "DECISION_OUTPUT",
+  "output_document_id": "SS-2026-YONGIN-001",
+  "verdict_summary": {
+    "scope_fix_status": "SPEC_FIXED",
+    "optimal_budget_band": "18,000,000 ~ 22,000,000 KRW",
+    "risk_grade": "LOW",
+    "next_recommended_action": "ONLINE_CONTRACT_CONFIRMATION"
+  }
+}`,
+      },
+    ];
+    const activeLog = logSnapshots[activeDiagNode] || logSnapshots[0];
 
     return (
       <div className="flex flex-col gap-4 max-w-5xl mx-auto py-3 select-none">
@@ -830,6 +600,49 @@ export default function Home() {
             </div>
           </div>
 
+          {/* 실제 처리 로그 스냅샷 — 단계별 산출 근거(에이전트 출력)를 그대로 공개 */}
+          <div className="flex flex-col gap-3 border-t border-border pt-5">
+            <div className="flex flex-col gap-1">
+              <span className="text-[12px] font-black text-navy uppercase tracking-wide">실제 데이터 및 처리 로그 스냅샷</span>
+              <span className="text-[11px] text-gray font-semibold">근거를 남기는 파이프라인 — 각 단계 에이전트의 실제 출력입니다.</span>
+            </div>
+            {/* 4탭 셀렉터 */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-1 border-b border-border">
+              {logSnapshots.map((snap, idx) => {
+                const isActive = activeDiagNode === idx;
+                return (
+                  <button
+                    key={snap.agent}
+                    onClick={() => setActiveDiagNode(idx)}
+                    className={`flex items-center gap-2 px-3 py-2.5 -mb-px border-b-[2.5px] transition-all duration-200 cursor-pointer text-left ${
+                      isActive ? 'border-accent opacity-100' : 'border-transparent opacity-55 hover:opacity-100'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${snap.dot} shrink-0`} />
+                    <div className="flex flex-col leading-none gap-0.5 min-w-0">
+                      <span className={`text-[8.5px] font-mono font-bold uppercase tracking-wider ${isActive ? snap.text : 'text-gray-light'}`}>
+                        {snap.stage}
+                      </span>
+                      <span className={`text-[12.5px] font-black tracking-tight ${isActive ? snap.text : 'text-navy/80'} truncate`}>
+                        {snap.label}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            {/* 다크 콘솔 패널 — 의도된 터미널 메타포 */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] text-gray font-bold tracking-wide flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
+                {activeLog.agent}
+              </span>
+              <div className="bg-slate-900 border border-slate-800 rounded-custom p-4 font-mono text-[10px] text-slate-300 overflow-x-auto shadow-inner leading-normal select-text">
+                <pre className="m-0 text-slate-300"><code>{activeLog.log}</code></pre>
+              </div>
+            </div>
+          </div>
+
           {/* ZEROS AI Native 검토 원칙 리뉴얼 */}
           <div className="flex flex-col gap-3">
             <span className="text-[12px] font-black text-navy uppercase tracking-wide">ZEROS AI Native 검토 원칙</span>
@@ -865,6 +678,31 @@ export default function Home() {
             </div>
           </div>
 
+          {/* 최종 산출물 — Scope Sheet 미니 요약(검증의 결과물을 한 장으로) */}
+          <div className="flex flex-col border-t border-border pt-5">
+            <span className="text-[11px] text-steel font-black uppercase tracking-wider">Final Deliverable · Scope Sheet</span>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mt-3">
+              <div className="flex-1 min-w-[200px]">
+                <h3 className="text-[14px] font-black text-navy tracking-tight leading-snug">
+                  모든 분석 검증의 최종 결과물은 단 한 장의 검토 시트로 정돈됩니다.
+                </h3>
+              </div>
+              <div className="flex-[1.3] min-w-[280px] grid grid-cols-2 sm:grid-cols-4">
+                {[
+                  { l: 'Scope Spec', v: '범위 고정', c: 'text-navy' },
+                  { l: 'Budget Band', v: '₩18M~₩22M', c: 'text-navy' },
+                  { l: 'Risk Grade', v: 'LOW 등급', c: 'text-navy' },
+                  { l: 'Next Action', v: '온라인검토', c: 'text-accent' },
+                ].map((m, i) => (
+                  <div key={m.l} className={`flex flex-col gap-0.5 text-center px-2 ${i > 0 ? 'border-l border-border/60' : ''}`}>
+                    <span className="text-[8px] text-gray-light uppercase font-mono">{m.l}</span>
+                    <span className={`text-[12px] font-black truncate ${m.c}`}>{m.v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* CTA — 프리미엄 네이비/블루 그라데이션 및 통일된 신청 버튼 */}
           <div className="bg-gradient-to-r from-[#1A365D] to-[#2E5E8A] text-bg rounded-custom p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
             <div className="flex items-baseline gap-2 flex-wrap">
@@ -873,10 +711,10 @@ export default function Home() {
             </div>
             <div className="w-full sm:w-64 shrink-0 flex flex-col justify-center">
               <button
-                onClick={() => setActiveTabAtTop('about')}
+                onClick={() => setActiveTabAtTop('request')}
                 className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer text-center"
               >
-                ZEROS 데이터분석 절차 보기
+                무료 견적 검토 의뢰하기
               </button>
             </div>
           </div>
@@ -1842,7 +1680,7 @@ export default function Home() {
               {[
                 { icon: Truck, label: '견적.출장요청 자료 등록하기', sub: '고객 자료등록 및 예약방문 요청', color: 'text-sky-400', targetTab: 'request' },
                 { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-indigo-400', targetTab: 'sop' },
-                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400', targetTab: 'about' },
+                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400', targetTab: 'business' },
               ].map(({ icon: Icon, label, sub, color, targetTab }) => (
                 <button
                   key={label}
@@ -2060,7 +1898,7 @@ export default function Home() {
               </div>
             </div>
 
-          {/* 최종 CTA — AI Native 검증 절차 / ZEROS 데이터분석 절차 */}
+          {/* 최종 CTA — AI Native 검증 절차 / 무료 견적 신청 */}
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setActiveTabAtTop('sop')}
@@ -2069,10 +1907,10 @@ export default function Home() {
               AI Native 검증 절차
             </button>
             <button
-              onClick={() => setActiveTabAtTop('about')}
+              onClick={() => setActiveTabAtTop('request')}
               className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[17px] font-black"
             >
-              ZEROS 데이터분석 절차
+              무료 견적 신청
             </button>
           </div>
         </section>
@@ -2168,11 +2006,11 @@ export default function Home() {
                 무료 견적 검토 의뢰 →
               </button>
               <button
-                onClick={() => setActiveTabAtTop('about')}
+                onClick={() => setActiveTabAtTop('sop')}
                 style={{ touchAction: 'manipulation' }}
                 className="mt-2.5 mx-auto text-steel hover:text-navy text-[12.5px] font-bold underline underline-offset-4 decoration-border hover:decoration-steel transition-colors cursor-pointer"
               >
-                데이터분석 절차 보기
+                AI Native 검증 절차 보기
               </button>
             </div>
           </div>
@@ -2307,11 +2145,11 @@ export default function Home() {
                     무료 출장 견적 신청
                   </button>
                   <button
-                    onClick={() => setActiveTabAtTop('about')}
+                    onClick={() => setActiveTabAtTop('sop')}
                     style={{ touchAction: 'manipulation' }}
                     className="cta-border-trace group inline-flex items-center justify-center gap-2 text-[#0F1E35] px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm active:scale-95 cursor-pointer"
                   >
-                    ZEROS 데이터분석 절차 보기
+                    AI Native 검증 절차 보기
                     <ArrowRight className="w-4 h-4 shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-0.5" />
                   </button>
                 </div>
@@ -2515,8 +2353,8 @@ export default function Home() {
     }
 
     switch (activeTab) {
-      case 'about':
-        return renderAboutTab();
+      case 'business':
+        return renderBusinessTab();
       case 'process':
         return renderServiceProcessTab();
       case 'sop':
