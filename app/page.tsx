@@ -331,25 +331,6 @@ export default function Home() {
           </p>
         </section>
 
-        {/* 4. 단일 전진 CTA */}
-        <section className="flex flex-wrap items-center gap-4 mt-1">
-          <button
-            onClick={() => setActiveTabAtTop('request')}
-            style={{ touchAction: 'manipulation' }}
-            className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-[#c95f12] text-white px-6 py-3 rounded-custom text-[14.5px] font-black tracking-tight shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
-          >
-            무료 견적 검토 의뢰하기
-            <ArrowRight className="w-4 h-4 shrink-0" />
-          </button>
-          <button
-            onClick={() => setActiveTabAtTop('sop')}
-            style={{ touchAction: 'manipulation' }}
-            className="text-steel hover:text-navy text-[13.5px] font-bold inline-flex items-center gap-1 cursor-pointer"
-          >
-            AI 검증 절차 보기
-            <ArrowRight className="w-3.5 h-3.5 shrink-0" />
-          </button>
-        </section>
       </div>
     );
   };
@@ -2110,13 +2091,11 @@ export default function Home() {
             <div className="grid grid-cols-[1.16fr_0.84fr] gap-12 xl:gap-16 items-center z-10 relative">
               {/* 좌: 카피 + CTA */}
               <div className="flex flex-col gap-6 xl:gap-8 relative">
-                {/* 배지 — AI 1차 검증 → PM 최종 검토 2단계를 분절해 보여주는 세련된 신뢰 칩 */}
-                <span className="self-start inline-flex items-center gap-2 bg-gradient-to-r from-white to-[#EEF5FF] border border-[#155EEF]/25 text-[#0F1E35] text-[14.5px] font-black pl-1.5 pr-4 py-1.5 rounded-full shadow-sm shadow-[#155EEF]/5 select-none">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#155EEF] shrink-0 shadow-sm shadow-[#155EEF]/30">
-                    <Sparkles className="w-3.5 h-3.5 text-white" />
-                  </span>
+                {/* 신뢰 표기 — 도형(알약) 제거, 헤어라인 언더라인으로 정리(탭 오인 방지) */}
+                <span className="self-start inline-flex items-center gap-2 pb-1.5 border-b-[1.5px] border-[#155EEF]/35 text-[14.5px] font-black select-none">
+                  <Sparkles className="w-4 h-4 text-[#155EEF] shrink-0" />
                   <span className="text-[#155EEF]">AI Native 1차 검증</span>
-                  <span className="w-px h-3.5 bg-[#155EEF]/25 shrink-0" />
+                  <span className="text-[#9AA3AF] font-bold">·</span>
                   <span className="text-[#0F1E35]">PM 전문가 최종 검토</span>
                 </span>
 
