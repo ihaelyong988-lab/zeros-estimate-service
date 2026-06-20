@@ -1721,68 +1721,63 @@ export default function Home() {
           </div>
         )}
 
-        {/* ============================================================
-            공종 상세 — 좌: 검토 항목(문제 도출) / 우: ZEROS 견적 검증
-            (견적 작업 FLOW는 견적 검토 랜딩 히어로로 이동)
-            ============================================================ */}
-        {/* 공종 상세 — 좌: 검토 항목(문제 도출) / 우: ZEROS 견적 검증(benefit). 전 공종 공통·데이터 연동 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-stretch">
-          <div className="bg-bg border border-border rounded-custom p-5 flex flex-col shadow-custom-sm">
-            <h2 className="text-[15px] font-black text-navy tracking-tight mb-1.5">{manual.title}</h2>
+        {/* 공종 상세 — 좌: 검토 항목(문제 도출) / 세로 헤어라인 / 우: ZEROS 견적 검증. 박스 제거 */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_1fr] gap-x-7 gap-y-5">
+          <div className="flex flex-col">
+            <h2 className="text-[16px] font-black text-navy tracking-tight mb-1.5">{manual.title}</h2>
             <p className="text-[12.5px] text-gray font-semibold leading-snug mb-4">{manual.problemDefinition}</p>
-            <ul className="flex flex-col gap-2.5 mb-4">
+            <ul className="flex flex-col gap-2.5 mb-5">
               {reviewItems.map((t) => (
-                <li key={t} className="flex items-center gap-2.5 text-[12.5px] text-gray font-medium">
+                <li key={t} className="flex items-center gap-2.5 text-[13px] text-gray font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
                   {t}
                 </li>
               ))}
             </ul>
-            <div className="mt-auto flex items-center gap-3 h-[74px] px-4 bg-bg-subtle border border-border/70 rounded-custom">
-              <AlertTriangle className="w-6 h-6 text-accent shrink-0" />
+            <div className="mt-auto flex items-center gap-2.5">
+              <AlertTriangle className="w-5 h-5 text-accent shrink-0" />
               <div className="leading-tight">
-                <div className="text-[12px] text-gray mb-0.5">검토 항목에 따라</div>
-                <div className="text-[19px] font-black text-navy">최대 <span className="text-accent">{metrics.bubbleRate}%</span> 견적 차이</div>
+                <span className="text-[12px] text-gray">검토 항목에 따라 </span>
+                <span className="text-[17px] font-black text-navy">최대 <span className="text-accent">{metrics.bubbleRate}%</span> 견적 차이</span>
               </div>
             </div>
           </div>
-          <div className="bg-bg border border-border rounded-custom p-5 flex flex-col shadow-custom-sm">
-            <h2 className="text-[15px] font-black text-navy tracking-tight mb-1.5">ZEROS Agent AI 견적 검증</h2>
+
+          <div className="hidden md:block bg-border" />
+
+          <div className="flex flex-col">
+            <h2 className="text-[16px] font-black text-navy tracking-tight mb-1.5">ZEROS Agent AI 견적 검증</h2>
             <p className="text-[12.5px] text-gray font-semibold leading-snug mb-4">실거래 표본과 표준 품셈으로 <span className="text-steel font-bold">최적합 견적을 산출·제공</span>합니다.</p>
-            <ul className="flex flex-col gap-2.5 mb-4">
+            <ul className="flex flex-col gap-2.5 mb-5">
               {['적정 물량 · 단가로 견적 확정', '설계변경 · 재견적 분쟁 예방', '검증 근거 리포트 제공'].map((t) => (
-                <li key={t} className="flex items-center gap-2.5 text-[12.5px] text-gray font-medium">
+                <li key={t} className="flex items-center gap-2.5 text-[13px] text-gray font-medium">
                   <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                   {t}
                 </li>
               ))}
             </ul>
-            <div className="mt-auto flex items-center gap-3 h-[74px] px-4 bg-success rounded-custom">
-              <ShieldCheck className="w-7 h-7 text-white/80 shrink-0" />
+            <div className="mt-auto flex items-center gap-2.5">
+              <ShieldCheck className="w-5 h-5 text-success shrink-0" />
               <div className="leading-tight">
-                <div className="text-[12px] text-white/70 mb-0.5">검증 후</div>
-                <div className="text-[19px] font-black text-white">최적합 견적 확정</div>
+                <span className="text-[12px] text-gray">검증 후 </span>
+                <span className="text-[17px] font-black text-success">최적합 견적 확정</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ============================================================
-            중단 (MIDDLE) — 좌: 작업 준비사항 / 우: 작업 SOP
-            ============================================================ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+        <div className="h-px bg-border" />
 
-          {/* 좌측 박스: 작업 준비사항 */}
-          <div className="bg-bg border border-border p-6 rounded-custom shadow-custom-sm flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-2 border-b border-border pb-3 select-none">
-              <div className="flex items-center gap-2 text-navy">
-                <BookOpen className="w-4 h-4 text-steel" />
-                <span className="font-extrabold text-[15px]">작업 준비사항</span>
-              </div>
+        {/* 작업 준비사항 / 작업 SOP — 박스 제거, 세로 헤어라인 */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_1fr] gap-x-7 gap-y-5">
+          <div className="flex flex-col gap-3.5">
+            <div className="flex items-center gap-2 text-navy select-none">
+              <BookOpen className="w-4 h-4 text-steel" />
+              <span className="font-extrabold text-[15px]">작업 준비사항</span>
             </div>
             <ul className="flex flex-col gap-3">
               {manual.preparationDocs.map((doc, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-[12px] text-gray font-medium">
+                <li key={idx} className="flex items-start gap-2.5 text-[12.5px] text-gray font-medium">
                   <CheckCircle2 className="w-4 h-4 text-steel shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{doc}</span>
                 </li>
@@ -1790,21 +1785,20 @@ export default function Home() {
             </ul>
           </div>
 
-          {/* 우측 박스: 작업 SOP (표준 작업 절차) */}
-          <div className="bg-bg border border-border p-6 rounded-custom shadow-custom-sm flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-2 border-b border-border pb-3 select-none">
-              <div className="flex items-center gap-2 text-navy">
-                <FileCheck className="w-4 h-4 text-accent" />
-                <span className="font-extrabold text-[15px]">작업 SOP</span>
-              </div>
+          <div className="hidden md:block bg-border" />
+
+          <div className="flex flex-col gap-3.5">
+            <div className="flex items-center gap-2 text-navy select-none">
+              <FileCheck className="w-4 h-4 text-accent" />
+              <span className="font-extrabold text-[15px]">작업 SOP</span>
             </div>
             <ol className="flex flex-col gap-2.5">
               {manual.sop.map((step, idx) => (
                 <li key={idx} className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shadow-sm shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-navy text-bg text-[12px] font-black flex items-center justify-center shrink-0 mt-0.5">
                     {idx + 1}
                   </span>
-                  <p className="text-[12px] leading-snug">
+                  <p className="text-[12.5px] leading-snug">
                     <span className="font-bold text-navy">{step.title}</span>
                     <span className="text-gray font-medium"> : {step.action}</span>
                   </p>
@@ -1814,30 +1808,25 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ============================================================
-            하단 (BOTTOM) — 결과 지표 & Benefit 효과 증빙
-            ============================================================ */}
-        <div className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-5">
-          {/* 헤더 — 이 박스만의 가치: 검토 후 받는 산출물 */}
-          <div className="flex items-center gap-2 border-b border-border pb-3.5 select-none">
+        <div className="h-px bg-border" />
+
+        {/* 검토 후 제공 리포트 — 박스 제거, 헤어라인·아이콘 정렬 */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 select-none">
             <span className="w-1 h-4 bg-success rounded-full" />
             <h3 className="text-[15px] font-extrabold text-navy">검토 후 제공 리포트</h3>
           </div>
-
-          {/* 제공 산출물 — flat 카드, 아이콘으로 직관화 (중복 지표 카드 제거) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-7 gap-y-3">
             {manual.deliverables.map((del, idx) => (
-              <div key={idx} className="border border-border rounded-custom p-4 flex flex-col gap-2">
-                <FileText className="w-5 h-5 text-steel" />
+              <div key={idx} className="flex items-start gap-2.5">
+                <FileText className="w-4.5 h-4.5 text-steel shrink-0 mt-0.5" />
                 <span className="text-[12.5px] text-navy font-semibold leading-snug">{del}</span>
               </div>
             ))}
           </div>
-
-          {/* 한 줄 노트 — 긴 유의점 문단 대체, ZEROS 톤 */}
-          <div className="flex items-center gap-2 bg-success/8 rounded-custom px-4 py-3">
+          <div className="flex items-center gap-2 border-t border-border pt-3.5">
             <ShieldCheck className="w-4 h-4 text-success shrink-0" />
-            <span className="text-[12.5px] text-success font-semibold leading-snug">표준 품셈·실거래 표본 기준으로 적정 견적을 산출하고, 1차 검토는 24시간 이내 회신합니다.</span>
+            <span className="text-[12.5px] text-gray font-semibold leading-snug">표준 품셈 · 실거래 표본 기준으로 적정 견적을 산출하고, 1차 검토는 24시간 이내 회신합니다.</span>
           </div>
         </div>
       </div>
@@ -2120,98 +2109,117 @@ export default function Home() {
     const optimizedIndex = +(100 - activeMetrics.bubbleRate).toFixed(1);
 
     return (
-      /* 한 화면(뷰포트)을 비율로 채우는 3구역 그리드: 상단 FLOW(auto) · 중앙 히어로(1fr) · 하단 실적 앵커(auto) */
-      <div className="hidden lg:grid h-full grid-rows-[auto_1fr_auto] gap-4 max-w-4xl mx-auto">
+      /* 박스 남발 제거 — 콘텐츠 카드 1개(FLOW+히어로) + 하단 네이비 밴드. 내부는 여백·헤어라인으로만 구분 */
+      <div className="hidden lg:grid h-full grid-rows-[1fr_auto] gap-3 max-w-4xl mx-auto">
 
-        {/* 행1 (auto) — 견적 작업 FLOW 띠 */}
-        <section className="bg-bg border border-border rounded-custom shadow-custom-sm px-5 py-3.5">
+        {/* 콘텐츠 카드 — 견적 작업 FLOW + 히어로 (내부 박스 제거) */}
+        <section className="bg-bg border border-border rounded-custom shadow-custom-sm px-6 py-5 flex flex-col min-h-0 overflow-y-auto no-scrollbar">
+
           <EstimateFlow />
-        </section>
 
-        {/* 행2 (1fr) — 히어로: 좌 공종·최적화 / 우 검증 신뢰 + 단일 CTA */}
-        <section className="bg-bg border border-border rounded-custom shadow-custom-sm p-6 grid grid-cols-1 md:grid-cols-[1.45fr_1fr] gap-6 min-h-0">
+          {/* 가로 헤어라인 — 박스 대신 영역 구분 */}
+          <div className="h-px bg-border my-5 shrink-0" />
 
-          {/* 좌 — 공종 헤드라인 + 키워드 + 평균 견적 최적화(비교 막대) */}
-          <div className="flex flex-col min-w-0">
-            <span className="text-[11px] font-black tracking-[0.14em] text-accent select-none">현재 검토 공종</span>
-            <h1 className="text-[26px] leading-[1.18] font-black text-navy tracking-tight mt-1.5">{activeManual.title}</h1>
-            {keywords.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3.5 select-none">
-                {keywords.map((k) => (
-                  <span key={k} className="text-[13px] font-bold text-navy bg-bg-subtle border border-border rounded-custom px-2.5 py-1">{k}</span>
-                ))}
-              </div>
-            )}
+          {/* 히어로 — 좌 공종·최적화 / 세로 헤어라인 / 우 검증 신뢰 */}
+          <div className="grid grid-cols-[1.5fr_1px_1fr] gap-7 flex-1 min-h-0">
 
-            <div className="mt-auto pt-5 border-t border-border">
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
-                <span className="text-[34px] leading-none font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}<span className="text-[20px]">%</span></span>
-              </div>
-              <div className="flex flex-col gap-2 mt-3.5">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-[72px] text-right text-[11.5px] font-bold text-gray-light shrink-0">검토 전 견적</span>
-                  <div className="flex-1 h-3.5 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full w-full bg-[#D8DEE7]" /></div>
-                  <span className="w-9 text-[11.5px] font-bold text-gray tabular-nums">100</span>
+            {/* 좌 */}
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] font-black tracking-[0.14em] text-accent select-none">현재 검토 공종</span>
+              <h1 className="text-[22px] leading-[1.18] font-black text-navy tracking-tight mt-1">{activeManual.title}</h1>
+              {keywords.length > 0 && (
+                <div className="flex items-center flex-wrap gap-y-1.5 mt-3 select-none">
+                  {keywords.map((k, i) => (
+                    <span key={k} className="flex items-center">
+                      <span className="text-[15px] font-bold text-navy tracking-tight">{k}</span>
+                      {i < keywords.length - 1 && <span className="w-px h-3.5 bg-border mx-3.5 shrink-0" />}
+                    </span>
+                  ))}
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <span className="w-[72px] text-right text-[11.5px] font-black text-accent shrink-0">ZEROS 최적합</span>
-                  <div className="flex-1 h-3.5 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full bg-accent" style={{ width: `${optimizedIndex}%` }} /></div>
-                  <span className="w-9 text-[11.5px] font-black text-accent tabular-nums">{optimizedIndex}</span>
+              )}
+
+              <div className="mt-auto pt-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
+                  <span className="text-[30px] leading-none font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}<span className="text-[18px]">%</span></span>
                 </div>
+                <div className="flex flex-col gap-2 mt-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-[84px] text-right text-[11.5px] font-bold text-gray-light shrink-0 whitespace-nowrap">검토 전 견적</span>
+                    <div className="flex-1 h-3 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full w-full bg-[#D8DEE7]" /></div>
+                    <span className="w-9 text-[11.5px] font-bold text-gray tabular-nums">100</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-[84px] text-right text-[11.5px] font-black text-accent shrink-0 whitespace-nowrap">ZEROS 최적합</span>
+                    <div className="flex-1 h-3 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full bg-accent" style={{ width: `${optimizedIndex}%` }} /></div>
+                    <span className="w-9 text-[11.5px] font-black text-accent tabular-nums">{optimizedIndex}</span>
+                  </div>
+                </div>
+                <p className="text-[11.5px] text-gray-light font-semibold mt-2.5">실거래 표본 · 표준 품셈 대비 / 부풀림 없이 적정 단가로 산출</p>
               </div>
-              <p className="text-[11.5px] text-gray-light font-semibold mt-2.5">실거래 표본 · 표준 품셈 대비 / 부풀림 없이 적정 단가로 산출</p>
+            </div>
+
+            {/* 세로 헤어라인 — 우측 검증 영역을 박스 없이 분리 */}
+            <div className="bg-border" />
+
+            {/* 우 — ZEROS Agent AI 검증 (박스 제거, 헤어라인으로만 구분) + 단일 CTA */}
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5 mb-3.5 select-none">
+                <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+                <span className="text-[13px] font-black text-navy">ZEROS Agent AI 검증</span>
+              </div>
+              <div className="flex flex-col gap-3.5">
+                <div>
+                  <div className="flex justify-between items-baseline mb-1.5"><span className="text-[12px] font-semibold text-gray">AI 분석 신뢰도</span><span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span></div>
+                  <div className="h-1.5 bg-[#E4E9F0] rounded-full overflow-hidden"><div className="h-full bg-steel" style={{ width: `${activeMetrics.confidence}%` }} /></div>
+                </div>
+                <div>
+                  <div className="flex justify-between items-baseline mb-1.5"><span className="text-[12px] font-semibold text-gray">실거래 표준 품셈</span><span className="text-[15px] font-black text-success">100% 매핑</span></div>
+                  <div className="h-1.5 bg-[#E4E9F0] rounded-full overflow-hidden"><div className="h-full w-full bg-success" /></div>
+                </div>
+                <div className="flex justify-between items-baseline border-t border-border pt-3"><span className="text-[12px] font-semibold text-gray">검토 표본</span><span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.sampleCount}건</span></div>
+              </div>
+              <button
+                onClick={() => setActiveTabAtTop('request')}
+                style={{ touchAction: 'manipulation' }}
+                className="mt-auto w-full bg-accent hover:bg-[#c95f12] text-white rounded-custom py-3 text-[15px] font-black tracking-tight shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+              >
+                무료 견적 검토 의뢰 →
+              </button>
+              <button
+                onClick={() => setActiveTabAtTop('about')}
+                style={{ touchAction: 'manipulation' }}
+                className="mt-2.5 mx-auto text-steel hover:text-navy text-[12.5px] font-bold underline underline-offset-4 decoration-border hover:decoration-steel transition-colors cursor-pointer"
+              >
+                데이터분석 절차 보기
+              </button>
             </div>
           </div>
-
-          {/* 우 — ZEROS Agent AI 검증 신뢰 카드 + 단일 메인 CTA */}
-          <div className="bg-bg-subtle border border-border rounded-custom p-4 flex flex-col">
-            <div className="flex items-center gap-1.5 mb-3.5 select-none">
-              <ShieldCheck className="w-4 h-4 text-success shrink-0" />
-              <span className="text-[13px] font-black text-navy">ZEROS Agent AI 검증</span>
-            </div>
-            <div className="flex flex-col gap-3.5">
-              <div>
-                <div className="flex justify-between items-baseline mb-1.5"><span className="text-[12px] font-semibold text-gray">AI 분석 신뢰도</span><span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span></div>
-                <div className="h-1.5 bg-[#E4E9F0] rounded-full overflow-hidden"><div className="h-full bg-steel" style={{ width: `${activeMetrics.confidence}%` }} /></div>
-              </div>
-              <div>
-                <div className="flex justify-between items-baseline mb-1.5"><span className="text-[12px] font-semibold text-gray">실거래 표준 품셈</span><span className="text-[15px] font-black text-success">100% 매핑</span></div>
-                <div className="h-1.5 bg-[#E4E9F0] rounded-full overflow-hidden"><div className="h-full w-full bg-success" /></div>
-              </div>
-              <div className="flex justify-between items-baseline border-t border-dashed border-border pt-3"><span className="text-[12px] font-semibold text-gray">검토 표본</span><span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.sampleCount}건</span></div>
-            </div>
-            <button
-              onClick={() => setActiveTabAtTop('request')}
-              style={{ touchAction: 'manipulation' }}
-              className="mt-auto w-full bg-accent hover:bg-[#c95f12] text-white rounded-custom py-3 text-[15px] font-black tracking-tight shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
-            >
-              무료 견적 검토 의뢰 →
-            </button>
-            <button
-              onClick={() => setActiveTabAtTop('about')}
-              style={{ touchAction: 'manipulation' }}
-              className="mt-2 w-full bg-transparent hover:bg-[#F0F5FB] text-steel border border-border hover:border-steel/40 rounded-custom py-2 text-[12.5px] font-bold transition-all duration-150 active:scale-95 cursor-pointer"
-            >
-              데이터분석 절차 보기
-            </button>
-          </div>
         </section>
 
-        {/* 행3 (auto) — 신뢰 앵커 밴드: 화면 바닥을 잡는 실적 지표 */}
-        <section className="bg-navy rounded-custom shadow-custom-lg px-6 py-4">
-          <div className="flex items-center gap-2 mb-3.5 select-none">
-            <span className="w-1.5 h-4 bg-accent rounded-full shrink-0" />
-            <h2 className="text-[15px] font-black text-white tracking-tight">공사 전, 견적부터 검증하십시오</h2>
-            <span className="text-[11.5px] font-semibold text-white/55 break-keep">설계변경 · 예산초과를 선제적으로 예방</span>
+        {/* 하단 — 신뢰 앵커 밴드: 당당한 비율의 실적 도형(유지) */}
+        <section className="bg-navy rounded-custom shadow-custom-lg px-6 py-4 flex flex-col gap-3.5">
+          <div className="flex items-center gap-2.5 select-none">
+            <span className="w-1.5 h-7 bg-accent rounded-full shrink-0" />
+            <div className="flex flex-col">
+              <h2 className="text-[18px] font-black text-white tracking-tight leading-tight">공사 전, 견적부터 검증하십시오</h2>
+              <span className="text-[12px] font-semibold text-white/55 break-keep mt-0.5">설계변경 · 예산초과 리스크를 데이터로 선제 차단합니다</span>
+            </div>
           </div>
           <div className="grid grid-cols-4 gap-px bg-white/10 rounded-custom overflow-hidden">
-            {HOME_STATS.map((s) => (
-              <div key={s.label} className="bg-navy px-3 py-3 flex flex-col items-center text-center">
-                <span className={`text-[21px] font-black tracking-tight tabular-nums ${s.value.startsWith('-') ? 'text-[#F2A24E]' : 'text-white'}`}>{s.value}</span>
-                <span className="text-[11px] font-semibold text-white/65 mt-0.5 break-keep">{s.label}</span>
-              </div>
-            ))}
+            {HOME_STATS.map((s) => {
+              const Icon = s.icon;
+              const down = s.value.startsWith('-');
+              return (
+                <div key={s.label} className="bg-navy px-3 py-4 flex flex-col items-center text-center gap-1.5">
+                  <span className={`text-[28px] leading-none font-black tracking-tight tabular-nums whitespace-nowrap ${down ? 'text-[#F2A24E]' : 'text-white'}`}>{s.value}</span>
+                  <span className="flex items-center gap-1.5 text-[12px] font-bold text-white/70 break-keep">
+                    <Icon className="w-3.5 h-3.5 text-white/40 shrink-0" />
+                    {s.label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </section>
       </div>

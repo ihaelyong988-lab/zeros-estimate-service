@@ -723,7 +723,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <div className="flex-1 flex flex-col h-full bg-bg overflow-hidden min-w-0">
               {/* 상단 청색 액센트 바 — 좌/우 사이드바의 상단 액센트 바와 시각적으로 연결 */}
               <div className="h-1 w-full bg-steel shrink-0" />
-              <div data-main-scroll="true" className="flex-1 p-6 overflow-y-auto no-scrollbar min-w-0 pb-12">
+              <div data-main-scroll="true" className="flex-1 p-6 overflow-y-auto no-scrollbar min-w-0">
                 {children}
               </div>
             </div>
