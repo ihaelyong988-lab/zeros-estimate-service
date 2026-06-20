@@ -50,7 +50,10 @@ zeros-estimate-service/
 │   ├── 01_frontend_design/   # 프론트/디자인 역할 정의서
 │   ├── 02_backend_db/        # 백엔드/DB 역할 정의서
 │   ├── 03_qa_deploy/         # QA/배포 역할 정의서 + 게이트 검증 로그
-│   └── 99_scripts/           # 보조 스크립트 (open_chrome.ps1 등)
+│   ├── _worklog/             # 일자별 작업 기록 (날짜 prefix 로그)
+│   └── assets/               # 디자인 원본 (편집용 PPTX 등)
+├── scripts/                  # 로컬 보조 스크립트 (open_chrome.ps1, open-browser.bat)
+├── supabase/                 # DB 스키마/셋업 SQL (supabase-setup.sql)
 ├── app/                      # Next.js App Router 
 │   ├── globals.css           # 디자인 토큰 정의 및 Tailwind 세팅
 │   ├── page.tsx              # 전역 AppShell 및 대시보드/백오피스 중앙 라우터
@@ -71,7 +74,7 @@ zeros-estimate-service/
 
 ## 💾 데이터베이스 스키마 및 보안 (Supabase SQL)
 
-실제 클라우드 영속화는 루트의 `supabase-setup.sql`을 Supabase SQL Editor에서 실행해 설정합니다.
+실제 클라우드 영속화는 `supabase/supabase-setup.sql`을 Supabase SQL Editor에서 실행해 설정합니다.
 각 테이블은 `id(text) + data(jsonb) + created_at` 구조이며, 아래 항목들은 `data` JSON 안에 담기는 논리 필드입니다.
 
 ### 1. 테이블 설계 구조

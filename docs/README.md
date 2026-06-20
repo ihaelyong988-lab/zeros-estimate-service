@@ -36,8 +36,11 @@ docs/
 ├── 03_qa_deploy/                   # QA·배포 (검증/게이트)
 │   ├── qa_deploy.md                # QA/배포 역할 정의서
 │   └── gate-checks.md              # PHASE별 자체검증 게이트 로그
-└── 99_scripts/                     # 보조 스크립트
-    └── open_chrome.ps1             # 로컬 크롬 실행 헬퍼
+├── _worklog/                       # 일자별 작업 기록 (날짜 prefix)
+│   ├── 2026-06-20_작업정리.md
+│   └── mobile-landing-2026-06-09.md
+└── assets/                         # 디자인 원본 (편집용 PPTX 등)
 ```
 
+> 보조 스크립트는 루트 `scripts/`(open_chrome.ps1, open-browser.bat), DB 셋업 SQL은 루트 `supabase/`에 있습니다.
 > 참고: 소스 코드(`app/`, `components/`, `lib/`, `types/`)와 루트 설정 파일(`package.json`, `next.config.ts`, `CLAUDE.md`, `AGENTS.md` 등)은 Next.js 빌드 규약상 위치를 옮기지 않습니다.

@@ -6,6 +6,28 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ---
 
+# 0. 저장소 지도 (Repo Map) — 에이전트 진입점
+
+> **작업 시작 전 여기서 "무엇이 어디 있는지"를 잡는다.** 소스/설정 위치는 Next.js 규약상 고정.
+
+| 위치 | 무엇 | 비고 |
+|---|---|---|
+| `app/` | Next.js App Router (page/layout/api) | `app/page.tsx` = 중앙 라우터 |
+| `components/` | UI — `admin/` 백오피스 · `forms/` 위저드 · `layout/` 3-Pane Shell | 재사용 컴포넌트 |
+| `lib/` | 로직 — `calculations.ts`(영업계산식) · `constants/`(매뉴얼 맵) · `supabase/`(영속 래퍼·시드) | 콘텐츠는 데이터(맵)로 분리 |
+| `types/` | TypeScript 인터페이스 | `estimate.ts` |
+| `docs/` | 협업 가이드·역할 정의 (`docs/README.md`가 인덱스) | `00_orchestration/`이 상태/이월/결정 |
+| `docs/_worklog/` | 일자별 작업 기록 (날짜 prefix) | 최신 작업 맥락 추적용 |
+| `docs/assets/` | 디자인 원본 (편집용 PPTX 등) | 바이너리 |
+| `scripts/` | 로컬 보조 스크립트 | `open_chrome.ps1`, `open-browser.bat` |
+| `supabase/` | DB 스키마/셋업 SQL | `supabase-setup.sql` |
+| `graphify-out/` | 지식 그래프 (god node·커뮤니티) | 구조 질문 전 `GRAPH_REPORT.md` 먼저 |
+| 루트 | `package.json`·`next.config.ts`·`tsconfig.json`·`CLAUDE.md`·`AGENTS.md` | **위치 고정** |
+
+**상태 동기화**: PHASE 시작 전 `docs/00_orchestration/state.md` + `handoff.md` 확인 → 종료 시 `docs/03_qa_deploy/gate-checks.md` 게이트 기록.
+
+---
+
 # 작업 원칙 (Working Agreement) — 모든 AI 도구/에이전트 공통
 
 > 사용자 지시로 기록 (2026-06-20). 이 저장소에서 작업하는 **모든 도구(Claude/Cursor/Copilot 등)** 가 우선 적용한다. 도구가 바뀌어도 같은 실수를 반복하지 않기 위함.
@@ -50,4 +72,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **공종 상세 히어로**: 좌=검토 항목(문제 도출)+"최대 N% 견적 차이" / 우=ZEROS Agent AI **견적 검증**+"최적합 견적 확정". **전 공종 공통·데이터 연동**(`tradeReviewItems`, `metrics.bubbleRate`).
 - **주요 견적 키워드 밴드**: 공종 상세 최상단, 큰 키워드, 공종별 `tradeKeywords`로 교체.
 - **우측 결과 패널**: 견적 검토 진입 시 숨김 → 우측 상단 "검토" 엣지 탭(음영 없음)으로 펼침, 헤더 `›`로 접기.
-- 일자별 상세 기록: `docs/2026-06-20_작업정리.md`.
+- 일자별 상세 기록: `docs/_worklog/2026-06-20_작업정리.md`.
