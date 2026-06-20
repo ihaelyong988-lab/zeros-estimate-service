@@ -73,6 +73,21 @@ const LANDING_CHIP_CLASS: Record<string, string> = {
   'CAPEX 개·증설 검토': 'bg-navy border-navy text-white',
 };
 
+// 공종별 주요 견적 키워드 — 공종 상세(renderManualDetail)와 견적 검토 히어로(renderReviewDesktop) 공용. 추후 영업 표현으로 교체.
+const TRADE_KEYWORDS: Record<string, string[]> = {
+  '배관공사': ['HVAC', '위생배관', 'Duct', '소방기계배관'],
+  '장비설치': ['펌프', '탱크', '콤프레셔', '열교환기'],
+  'Utility 배관': ['스팀', '냉각수', '압축공기', '질소'],
+  '공장증설': ['라인증설', 'Tie-in', '무중단분기', '유량검토'],
+  '노후배관교체': ['부식배관', '철거·신설', '무중단교체', '잔존수명'],
+  '기계실개선': ['기계실', '헤더', '펌프배열', '동선개선'],
+  '생산설비 배관 연결': ['Hook-up', '설비연결', '유틸리티 탭', '정밀정렬'],
+  'CAPEX 개·증설 검토': ['CAPEX', '예산상한', '공법검토', 'LCC'],
+  'spool': ['ISO도면', '스풀분할', '사전제작', 'Prefab'],
+  'skid': ['SKID', '패키지모듈', 'P&ID', '모듈화'],
+  'structure': ['가대', '플랫폼', '철구조', '하중검토'],
+};
+
 // 공종별 대표 견적 밴드(원) — 모바일 랜딩 2↔3페이지 연동용. min/max=슬라이더 범위, median=중앙값, base=기본 표시값
 const MOBILE_TRADE_ESTIMATES: Record<string, { min: number; max: number; median: number; base: number }> = {
   '배관공사': { min: 8_000_000, max: 40_000_000, median: 22_000_000, base: 21_000_000 },
@@ -1671,21 +1686,8 @@ export default function Home() {
   const renderManualDetail = (key: string) => {
     const manual = manualData[key] || manualData['배관공사'];
     const metrics = getDynamicMetrics(key);
-    // 공종별 주요 견적 키워드 — 추후 공종마다 교체
-    const tradeKeywords: Record<string, string[]> = {
-      '배관공사': ['HVAC', '위생배관', 'Duct', '소방기계배관'],
-      '장비설치': ['펌프', '탱크', '콤프레셔', '열교환기'],
-      'Utility 배관': ['스팀', '냉각수', '압축공기', '질소'],
-      '공장증설': ['라인증설', 'Tie-in', '무중단분기', '유량검토'],
-      '노후배관교체': ['부식배관', '철거·신설', '무중단교체', '잔존수명'],
-      '기계실개선': ['기계실', '헤더', '펌프배열', '동선개선'],
-      '생산설비 배관 연결': ['Hook-up', '설비연결', '유틸리티 탭', '정밀정렬'],
-      'CAPEX 개·증설 검토': ['CAPEX', '예산상한', '공법검토', 'LCC'],
-      'spool': ['ISO도면', '스풀분할', '사전제작', 'Prefab'],
-      'skid': ['SKID', '패키지모듈', 'P&ID', '모듈화'],
-      'structure': ['가대', '플랫폼', '철구조', '하중검토'],
-    };
-    const keywords = tradeKeywords[key] || [];
+    // 공종별 주요 견적 키워드 — 모듈 공용 맵(TRADE_KEYWORDS) 참조
+    const keywords = TRADE_KEYWORDS[key] || [];
     const tradeReviewItems: Record<string, string[]> = {
       '배관공사': ['관경 · 압력강하 검토 여부', '표준 품셈 적용 여부', '누수 · 부식 예비 항목'],
       '장비설치': ['기초 · 앵커 하중 검토', '반입 동선 · 양중 계획', '정렬 · 진동 허용치'],
@@ -2113,100 +2115,106 @@ export default function Home() {
     const activeTradeName = LANDING_TRADES[activeTradeIdx];
     const activeManual = manualData[activeTradeName];
     const activeMetrics = getDynamicMetrics(activeTradeName);
-    const activeVisuals = getCategoryVisuals(activeTradeName);
+    const keywords = TRADE_KEYWORDS[activeTradeName] || [];
+    // ZEROS 최적합 지수 = 검토 전 견적(100) 대비 (단가 부풀림 없이 적정화한 비율)
+    const optimizedIndex = +(100 - activeMetrics.bubbleRate).toFixed(1);
+
     return (
-      <div className="hidden lg:flex flex-col gap-5 max-w-4xl mx-auto">
+      /* 한 화면(뷰포트)을 비율로 채우는 3구역 그리드: 상단 FLOW(auto) · 중앙 히어로(1fr) · 하단 실적 앵커(auto) */
+      <div className="hidden lg:grid h-full grid-rows-[auto_1fr_auto] gap-4 max-w-4xl mx-auto">
 
-      {/* ============================================================
-          핵심 주제 히어로 — 무료 출장 견적 컨설팅 + 현장 실무30년 신뢰
-          ============================================================ */}
-      <section className="relative overflow-hidden bg-bg rounded-custom shadow-custom-sm py-4 px-5 md:py-4.5 md:px-6 flex flex-col gap-3.5 select-none">
-        {/* 밝고 신뢰감 있는 맥킨지 톤 배경 */}
-        <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(245,247,250,0.9),rgba(255,255,255,0)_55%)] pointer-events-none" />
-        <div className="absolute right-0 top-0 w-64 h-64 bg-[radial-gradient(circle_at_top_right,rgba(30,77,140,0.06),transparent_70%)] pointer-events-none" />
-        <div className="absolute left-0 bottom-0 h-1 w-full bg-gradient-to-r from-steel via-accent to-transparent opacity-70 pointer-events-none" />
-
-        {/* 박스 디자인은 유지, 내용은 견적 작업 FLOW로 대체 (공종 상세에서 이동) */}
-        <div className="relative z-10">
+        {/* 행1 (auto) — 견적 작업 FLOW 띠 */}
+        <section className="bg-bg border border-border rounded-custom shadow-custom-sm px-5 py-3.5">
           <EstimateFlow />
-        </div>
-      </section>
+        </section>
 
-      {/* Symmetrical Single Full-Width Box matching the very bottom card's specifications */}
-      <div className="bg-bg border border-border py-3.5 px-4.5 rounded-custom shadow-custom-sm flex flex-col gap-3 relative overflow-hidden animate-in fade-in duration-300">
-        
-        <div className="grid grid-cols-1 gap-3 items-stretch z-10 relative">
-          
-          {/* 활성 공종 정보 — 중첩 박스 껍데기 제거, 쇼케이스 카드에 직접 배치 */}
-          <div className="flex flex-col justify-between gap-3">
-            <div className="flex flex-col gap-2.5">
-              {/* 공종 라벨(eyebrow) + 실시간 표본 신호 — 박스 제거 */}
-              <div className="flex items-center justify-between gap-2 select-none min-w-0">
-                <span className={`min-w-0 truncate text-[11px] tracking-widest uppercase font-black ${activeMetrics.accentText}`}>
-                  {activeVisuals.badgeText}
-                </span>
-                <div className="shrink-0 whitespace-nowrap text-right text-[11px] font-mono font-bold text-steel">
-                  표본={activeMetrics.sampleCount}
+        {/* 행2 (1fr) — 히어로: 좌 공종·최적화 / 우 검증 신뢰 + 단일 CTA */}
+        <section className="bg-bg border border-border rounded-custom shadow-custom-sm p-6 grid grid-cols-1 md:grid-cols-[1.45fr_1fr] gap-6 min-h-0">
+
+          {/* 좌 — 공종 헤드라인 + 키워드 + 평균 견적 최적화(비교 막대) */}
+          <div className="flex flex-col min-w-0">
+            <span className="text-[11px] font-black tracking-[0.14em] text-accent select-none">현재 검토 공종</span>
+            <h1 className="text-[26px] leading-[1.18] font-black text-navy tracking-tight mt-1.5">{activeManual.title}</h1>
+            {keywords.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3.5 select-none">
+                {keywords.map((k) => (
+                  <span key={k} className="text-[13px] font-bold text-navy bg-bg-subtle border border-border rounded-custom px-2.5 py-1">{k}</span>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-auto pt-5 border-t border-border">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
+                <span className="text-[34px] leading-none font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}<span className="text-[20px]">%</span></span>
+              </div>
+              <div className="flex flex-col gap-2 mt-3.5">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-[72px] text-right text-[11.5px] font-bold text-gray-light shrink-0">검토 전 견적</span>
+                  <div className="flex-1 h-3.5 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full w-full bg-[#D8DEE7]" /></div>
+                  <span className="w-9 text-[11.5px] font-bold text-gray tabular-nums">100</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <span className="w-[72px] text-right text-[11.5px] font-black text-accent shrink-0">ZEROS 최적합</span>
+                  <div className="flex-1 h-3.5 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full bg-accent" style={{ width: `${optimizedIndex}%` }} /></div>
+                  <span className="w-9 text-[11.5px] font-black text-accent tabular-nums">{optimizedIndex}</span>
                 </div>
               </div>
-              
-              <div className="flex flex-col gap-1">
-                <span className="text-[11px] text-gray-light font-black tracking-wider block uppercase">현재 탐색 공종</span>
-                <h1 className="text-[18px] font-black leading-tight tracking-tight text-navy font-sans">
-                  {activeManual.title}
-                </h1>
-                <p className="text-[11.5px] text-gray leading-normal font-semibold font-sans mt-0.5">
-                  {activeManual.problemDefinition}
-                </p>
-              </div>
-
-              {/* 데이터 AI 정직 검증 수치 대시보드 */}
-              <div className="grid grid-cols-3 gap-3 border-t border-border/60 pt-2.5 my-0 select-none">
-                <div className="text-center flex flex-col justify-center">
-                  <span className="text-[11px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">AI 분석 신뢰도</span>
-                  <span className="text-[11.5px] font-black text-navy tracking-tight tabular-nums">{activeMetrics.confidence}%</span>
-                </div>
-                <div className="text-center flex flex-col justify-center border-l border-border/60">
-                  <span className="text-[11px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">실거래 표준 품셈</span>
-                  <span className="text-[11.5px] font-black text-success tracking-tight">100% 매핑</span>
-                </div>
-                <div className="text-center flex flex-col justify-center border-l border-border/60">
-                  <span className="text-[11px] text-gray-light font-bold block uppercase tracking-wide break-keep leading-tight mb-0.5">평균 견적 최적화</span>
-                  <span className="text-[11.5px] font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}%</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 mt-0.5 select-none">
-              <button
-                onClick={() => setActiveTabAtTop('sop')}
-                className="flex-1 min-h-9 bg-transparent hover:bg-[#F0F5FB] text-steel border border-steel/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
-              >
-                AI Native 검증 제출
-              </button>
-              <button
-                onClick={() => setActiveTabAtTop('about')}
-                className="flex-1 min-h-9 bg-transparent hover:bg-[#FFF3EB] text-[#F97316] border border-[#F97316]/30 px-4 py-2 rounded-custom text-[14.5px] font-bold tracking-wide shadow-sm transition-all duration-150 active:scale-95 cursor-pointer text-center"
-              >
-                ZEROS 데이터분석 절차
-              </button>
+              <p className="text-[11.5px] text-gray-light font-semibold mt-2.5">실거래 표본 · 표준 품셈 대비 / 부풀림 없이 적정 단가로 산출</p>
             </div>
           </div>
 
-        </div>
+          {/* 우 — ZEROS Agent AI 검증 신뢰 카드 + 단일 메인 CTA */}
+          <div className="bg-bg-subtle border border-border rounded-custom p-4 flex flex-col">
+            <div className="flex items-center gap-1.5 mb-3.5 select-none">
+              <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+              <span className="text-[13px] font-black text-navy">ZEROS Agent AI 검증</span>
+            </div>
+            <div className="flex flex-col gap-3.5">
+              <div>
+                <div className="flex justify-between items-baseline mb-1.5"><span className="text-[12px] font-semibold text-gray">AI 분석 신뢰도</span><span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span></div>
+                <div className="h-1.5 bg-[#E4E9F0] rounded-full overflow-hidden"><div className="h-full bg-steel" style={{ width: `${activeMetrics.confidence}%` }} /></div>
+              </div>
+              <div>
+                <div className="flex justify-between items-baseline mb-1.5"><span className="text-[12px] font-semibold text-gray">실거래 표준 품셈</span><span className="text-[15px] font-black text-success">100% 매핑</span></div>
+                <div className="h-1.5 bg-[#E4E9F0] rounded-full overflow-hidden"><div className="h-full w-full bg-success" /></div>
+              </div>
+              <div className="flex justify-between items-baseline border-t border-dashed border-border pt-3"><span className="text-[12px] font-semibold text-gray">검토 표본</span><span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.sampleCount}건</span></div>
+            </div>
+            <button
+              onClick={() => setActiveTabAtTop('request')}
+              style={{ touchAction: 'manipulation' }}
+              className="mt-auto w-full bg-accent hover:bg-[#c95f12] text-white rounded-custom py-3 text-[15px] font-black tracking-tight shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+            >
+              무료 견적 검토 의뢰 →
+            </button>
+            <button
+              onClick={() => setActiveTabAtTop('about')}
+              style={{ touchAction: 'manipulation' }}
+              className="mt-2 w-full bg-transparent hover:bg-[#F0F5FB] text-steel border border-border hover:border-steel/40 rounded-custom py-2 text-[12.5px] font-bold transition-all duration-150 active:scale-95 cursor-pointer"
+            >
+              데이터분석 절차 보기
+            </button>
+          </div>
+        </section>
+
+        {/* 행3 (auto) — 신뢰 앵커 밴드: 화면 바닥을 잡는 실적 지표 */}
+        <section className="bg-navy rounded-custom shadow-custom-lg px-6 py-4">
+          <div className="flex items-center gap-2 mb-3.5 select-none">
+            <span className="w-1.5 h-4 bg-accent rounded-full shrink-0" />
+            <h2 className="text-[15px] font-black text-white tracking-tight">공사 전, 견적부터 검증하십시오</h2>
+            <span className="text-[11.5px] font-semibold text-white/55 break-keep">설계변경 · 예산초과를 선제적으로 예방</span>
+          </div>
+          <div className="grid grid-cols-4 gap-px bg-white/10 rounded-custom overflow-hidden">
+            {HOME_STATS.map((s) => (
+              <div key={s.label} className="bg-navy px-3 py-3 flex flex-col items-center text-center">
+                <span className={`text-[21px] font-black tracking-tight tabular-nums ${s.value.startsWith('-') ? 'text-[#F2A24E]' : 'text-white'}`}>{s.value}</span>
+                <span className="text-[11px] font-semibold text-white/65 mt-0.5 break-keep">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
-
-      {/* CTA 섹션 — 스틸블루 단색 밴드(상단 컬러와 통일), 크기 축소 및 패딩 보정 */}
-      <section className="bg-steel text-white px-4 py-4 md:py-5 rounded-custom shadow-custom-lg text-center flex flex-col items-center gap-1.5 border border-white/10">
-        <h2 className="text-[16px] sm:text-[19px] md:text-[21px] font-black tracking-tight max-w-xl text-white font-sans whitespace-nowrap">
-          공사를 시작하기 전, 먼저 검토하십시오.
-        </h2>
-
-        <p className="text-[11.5px] sm:text-[13.5px] text-white/90 max-w-xl leading-normal font-medium break-keep keep-all">
-          불명확한 공사 범위와 잦은 설계 변경으로 인한 예산 초과 리스크,<br className="hidden sm:inline" /> ZEROS의 정밀 1차 엔지니어링 검토를 통해 선제적으로 예방하십시오.
-        </p>
-      </section>
-    </div>
     );
   };
 

@@ -708,8 +708,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           {children}
         </div>
       ) : (
-        /* 중앙 3-Pane 본문 레이아웃 */
-        <div className="flex-1 flex relative overflow-hidden h-[calc(100vh-70px)]">
+        /* 중앙 3-Pane 본문 레이아웃 (헤더 h-16=64px와 정확히 맞춤) */
+        <div className="flex-1 flex relative overflow-hidden h-[calc(100vh-64px)]">
 
           {/* Pane 1: 좌측 카테고리 메뉴 사이드바 */}
           <div className="hidden lg:flex shrink-0 h-full overflow-y-auto no-scrollbar border-r border-border bg-bg-subtle">
