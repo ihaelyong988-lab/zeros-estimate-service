@@ -2178,8 +2178,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 하단 — 신뢰 앵커 밴드: 당당한 비율의 실적 도형(유지) */}
-        <section className="bg-navy rounded-custom shadow-custom-lg px-6 py-4 flex flex-col gap-3.5">
+        {/* 하단 — 신뢰 앵커 밴드: 세련된 딥 블루(--color-band) */}
+        <section className="bg-[var(--color-band)] rounded-custom shadow-custom-lg px-6 py-4 flex flex-col gap-3.5">
           <div className="flex items-center gap-2.5 select-none">
             <span className="w-1.5 h-7 bg-accent rounded-full shrink-0" />
             <div className="flex flex-col">
@@ -2192,7 +2192,7 @@ export default function Home() {
               const Icon = s.icon;
               const down = s.value.startsWith('-');
               return (
-                <div key={s.label} className="bg-navy px-3 py-4 flex flex-col items-center text-center gap-1.5">
+                <div key={s.label} className="bg-[var(--color-band)] px-3 py-4 flex flex-col items-center text-center gap-1.5">
                   <span className={`text-[28px] leading-none font-black tracking-tight tabular-nums whitespace-nowrap ${down ? 'text-[#F2A24E]' : 'text-white'}`}>{s.value}</span>
                   <span className="flex items-center gap-1.5 text-[12px] font-bold text-white/70 break-keep">
                     <Icon className="w-3.5 h-3.5 text-white/40 shrink-0" />
