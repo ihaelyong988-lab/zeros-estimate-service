@@ -143,8 +143,8 @@ export const PerformanceInsights: React.FC = () => {
   return (
     <div className="flex flex-col gap-5 max-w-5xl mx-auto py-4">
 
-      {/* 헤더 */}
-      <div className="bg-bg border border-border rounded-custom p-6 md:p-7 shadow-custom-sm flex flex-col gap-2">
+      {/* 헤더 — 박스 제거 */}
+      <div className="flex flex-col gap-2 border-b border-border pb-4">
         <span className="text-[12px] text-steel font-black uppercase tracking-widest">ZEROS Track Record Analytics</span>
         <h2 className="text-2xl font-black text-navy tracking-tight">ZEROS 실적 집계표</h2>
         <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
@@ -153,28 +153,28 @@ export const PerformanceInsights: React.FC = () => {
         </p>
       </div>
 
-      {/* KPI 스트립 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-bg border border-border p-4 rounded-custom shadow-sm flex flex-col gap-1">
+      {/* KPI 스트립 — 박스 제거, 헤어라인으로 그룹 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 border-b border-border pb-5">
+        <div className="flex flex-col gap-1">
           <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">누적 진단 건수</span>
           <span className="text-2xl font-black text-navy tabular-nums tracking-tight">{metrics.totalCount}건</span>
         </div>
-        <div className="bg-bg border border-border p-4 rounded-custom shadow-sm flex flex-col gap-1">
+        <div className="flex flex-col gap-1">
           <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">검토 완료율</span>
           <span className="text-2xl font-black text-steel tabular-nums tracking-tight">{reviewDoneRate}%</span>
         </div>
-        <div className="bg-bg border border-border p-4 rounded-custom shadow-sm flex flex-col gap-1">
+        <div className="flex flex-col gap-1">
           <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">평균 검토 소요</span>
           <span className="text-2xl font-black text-navy tabular-nums tracking-tight">{metrics.averageProcessDays}일</span>
         </div>
-        <div className="bg-bg border border-border p-4 rounded-custom shadow-sm flex flex-col gap-1">
+        <div className="flex flex-col gap-1">
           <span className="text-[12px] text-gray-light font-bold uppercase tracking-wider">진단 공종 수</span>
           <span className="text-2xl font-black text-navy tabular-nums tracking-tight">{WORK_TYPES.length}종</span>
         </div>
       </div>
 
       {/* 분포 차트 박스 */}
-      <div className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
           <BarChart3 className="w-4 h-4 text-steel" />
           공종별 진단 실적 분포 <span className="text-gray-light font-bold">(건수)</span>
@@ -206,7 +206,7 @@ export const PerformanceInsights: React.FC = () => {
       </div>
 
       {/* 히트맵 박스 — 공종 × 견적규모 */}
-      <div className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
           <Grid3x3 className="w-4 h-4 text-steel" />
           공종 × 견적규모 실적 히트맵 <span className="text-gray-light font-bold">(셀 = 진단 건수)</span>
@@ -270,14 +270,14 @@ export const PerformanceInsights: React.FC = () => {
       </div>
 
       {/* 하위 세부 박스 — 공종별 세부 항목 */}
-      <div className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
           <LayoutGrid className="w-4 h-4 text-steel" />
           공종별 세부 실적 <span className="text-gray-light font-bold">(건수 · 비중 · 평균 검토일 · 대표 현장)</span>
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {cards.map((card) => (
-            <div key={card.name} className="border border-border rounded-custom p-3.5 flex flex-col gap-2 hover:border-steel/60 hover:shadow-sm transition-all">
+            <div key={card.name} className="border-t-2 border-border/70 pt-3 flex flex-col gap-2">
               <div className="flex items-start justify-between gap-2">
                 <span className="text-[13px] font-black text-navy leading-tight">{card.name}</span>
                 <span className="shrink-0 text-[12px] font-black text-steel bg-steel/10 border border-steel/20 px-1.5 py-0.5 rounded-full tabular-nums">{card.share}%</span>

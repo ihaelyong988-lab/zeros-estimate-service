@@ -274,8 +274,8 @@ export default function Home() {
   const renderAboutTab = () => {
     return (
       <div className="flex flex-col gap-4 max-w-4xl mx-auto py-2.5 select-none">
-        {/* ZEROS 사업 목적 & 비전 카드 */}
-        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-4.5">
+        {/* ZEROS 사업 목적 & 비전 — 박스 제거 */}
+        <section className="flex flex-col gap-4.5">
           <div className="flex flex-col gap-1.5 border-b border-border pb-3.5">
             <span className="text-[12px] text-accent font-black uppercase tracking-wider">Mission & Vision</span>
             <h2 className="text-2xl font-black text-navy tracking-tight">소상공인 대표님을 위한 ZEROS의 약속</h2>
@@ -290,15 +290,15 @@ export default function Home() {
             <p className="text-gray font-medium text-[13.5px] leading-relaxed">
               건설 및 설비 분야 공사 시 시공사마다 천차만별인 견적 금액으로 인해 발생하는 불확실성은 소상공인 대표님들에게 큰 리스크입니다. ZEROS는 투명한 빅데이터와 30년 현장 엔지니어링 경력을 바탕으로 가장 합리적이고 객관적인 <strong>최적합 예산</strong>을 수립함으로써, 대표님이 자금 계획을 세우고 안심하며 경영에만 집중할 수 있는 환경을 만듭니다.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1.5">
-              <div className="p-4 rounded-custom bg-bg-subtle border border-border/80 flex flex-col gap-1.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-7 gap-y-4 mt-2">
+              <div className="border-l-2 border-navy/30 pl-3.5 flex flex-col gap-1.5">
                 <span className="text-[13px] font-black text-navy">소상공인 대표 안심 예산</span>
                 <span className="text-[12px] text-gray font-semibold leading-normal">
                   공사 예산을 과다/과소 책정 없이 도메인 지표에 부합하는 적정 대역으로 고정하여 안정적인 투자를 가능하게 합니다.
                 </span>
               </div>
-              <div className="p-4 rounded-custom bg-[#E0701A]/5 border border-[#E0701A]/20 flex flex-col gap-1.5">
-                <span className="text-[13px] font-black text-[#E0701A]">투명한 빅데이터 필터링</span>
+              <div className="border-l-2 border-accent pl-3.5 flex flex-col gap-1.5">
+                <span className="text-[13px] font-black text-accent">투명한 빅데이터 필터링</span>
                 <span className="text-[12px] text-gray font-semibold leading-normal">
                   시장 거래 실사례 및 시공 품셈을 교차 검증하여 고단가 단가 거품이나 허위 요소를 감지하고 차단합니다.
                 </span>
@@ -307,8 +307,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 하나의 정돈된 데이터분석 절차 카드 */}
-        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-5.5">
+        {/* 데이터분석 절차 — 박스 제거, 섹션 간 헤어라인 */}
+        <section className="flex flex-col gap-5.5 border-t border-border pt-6 mt-1">
           {/* 헤더 */}
           <div className="flex flex-col gap-1.5 border-b border-border pb-3.5">
             <span className="text-[12px] text-steel font-black uppercase tracking-wider">ZEROS Data Analysis Protocol</span>
@@ -321,7 +321,7 @@ export default function Home() {
           {/* 1. 초슬림 가로형 세그먼트 워크플로우 탭바 */}
           <div className="flex flex-col gap-2.5">
             <span className="text-[12px] font-black text-navy uppercase tracking-wide">진단 프로세스 워크플로우</span>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 border border-border/80 rounded-custom p-1 bg-bg-subtle/40 shadow-inner">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-1 border-b border-border">
               {[
                 {
                   step: '01',
@@ -435,10 +435,10 @@ export default function Home() {
                   <button
                     key={item.step}
                     onClick={() => setActiveDiagNode(idx)}
-                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-custom transition-all duration-200 cursor-pointer text-left ${
+                    className={`flex items-center gap-2.5 px-3 py-2.5 -mb-px border-b-[2.5px] transition-all duration-200 cursor-pointer text-left ${
                       isActive
-                        ? `bg-bg border ${theme.border} shadow-sm ring-2 ring-offset-1 scale-[1.01]`
-                        : 'bg-transparent border border-transparent hover:bg-bg/40 opacity-70 hover:opacity-100'
+                        ? 'border-accent opacity-100'
+                        : 'border-transparent opacity-55 hover:opacity-100'
                     }`}
                   >
                     {/* 단계 번호 배지 */}
@@ -450,7 +450,7 @@ export default function Home() {
                       <span className={`text-[8.5px] font-mono font-bold uppercase tracking-wider ${isActive ? theme.text : 'text-gray-light'}`}>
                         {item.title}
                       </span>
-                      <span className={`text-[12.5px] font-black tracking-tight ${isActive ? `${theme.text} border-b ${theme.borderBottom} pb-[0.5px]` : 'text-navy/80'}`}>
+                      <span className={`text-[12.5px] font-black tracking-tight ${isActive ? theme.text : 'text-navy/80'}`}>
                         {item.sub}
                       </span>
                     </div>
@@ -561,7 +561,7 @@ export default function Home() {
               const borderLeftColor = activeDiagNode === 0 ? 'border-l-steel' : activeDiagNode === 1 ? 'border-l-accent' : activeDiagNode === 2 ? 'border-l-steel' : 'border-l-success';
 
               return (
-                <div className={`bg-bg border-l-4 ${borderLeftColor} border-y border-r border-border rounded-r-custom p-4 md:p-4.5 flex flex-col md:flex-row gap-5 shadow-custom-sm animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                <div className={`border-l-[3px] ${borderLeftColor} pl-4 md:pl-5 flex flex-col md:flex-row gap-5 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                   {/* 좌측: 방법론 설명 & 메트릭 */}
                   <div className="flex-1 flex flex-col gap-3.5">
                     <div className="flex flex-col gap-1.5">
@@ -584,13 +584,13 @@ export default function Home() {
 
                     {/* 핵심 메트릭 */}
                     <div className="grid grid-cols-2 gap-3 mt-1 pt-3 border-t border-border/60">
-                      <div className="flex flex-col gap-0.5 bg-bg-subtle/30 border border-border/40 rounded px-3 py-2">
+                      <div className="flex flex-col gap-0.5">
                         <span className="text-[9.5px] text-gray-light font-bold">예상 소요 시간</span>
                         <span className="text-[12.5px] font-extrabold text-navy">
                           {currentStep.time}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-0.5 bg-bg-subtle/30 border border-border/40 rounded px-3 py-2">
+                      <div className="flex flex-col gap-0.5 border-l border-border/60 pl-3">
                         <span className="text-[9.5px] text-gray-light font-bold">주요 산출물</span>
                         <span className="text-[12.5px] font-extrabold text-navy">
                           {currentStep.output}
@@ -619,50 +619,35 @@ export default function Home() {
           </div>
 
 
-          {/* 4. 최종 산출물 파일 폴더 레이아웃 (Asymmetric Document Folder Shape) */}
-          <div className="flex flex-col select-none mt-2">
-            {/* 파일 폴더 상단 탭 인덱스 */}
-            <div className="self-start inline-flex bg-steel text-white text-[11px] font-black px-4.5 py-1.5 rounded-t-custom tracking-wider uppercase">
-              Final Deliverable: Scope Sheet
-            </div>
-            
-            {/* 파일 폴더 바디 */}
-            <div className="bg-bg border-t-[3px] border-t-steel border-x border-b border-border/80 rounded-b-custom rounded-tr-custom p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden shadow-sm">
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(30,77,140,0.005)_1px,transparent_1px),linear-gradient(to_bottom,rgba(30,77,140,0.005)_1px,transparent_1px)] bg-[size:14px_14px] pointer-events-none" />
+          {/* 4. 최종 산출물 — 박스/폴더 메타포 제거, 헤어라인으로 구분 */}
+          <div className="flex flex-col select-none mt-2 border-t border-border pt-5">
+            <span className="text-[11px] text-steel font-black uppercase tracking-wider">Final Deliverable · Scope Sheet</span>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mt-3">
 
-              {/* 1열: 최종 결과물 (Scope Sheet) 설명 텍스트 */}
-              <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
-                <span className="text-[10px] text-steel font-black uppercase tracking-wider">Document Output (최종 결과물 미리보기)</span>
+              {/* 1열: 최종 결과물 설명 */}
+              <div className="flex-1 min-w-[200px]">
                 <h3 className="text-[14px] font-black text-navy tracking-tight leading-snug">
                   모든 분석 검증의 최종 결과물은 단 한 장의 검토 시트로 정돈됩니다.
                 </h3>
               </div>
-              
-              {/* 2열: 미니 검토 시트 프리뷰 카드 (정적 데이터 스냅샷 - 4열 가로 리스트 구조) */}
-              <div className="flex-[1.3] min-w-[280px] bg-[#F8FAFC] border border-border/50 rounded-custom p-3">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10.5px] font-bold text-gray">
-                  <div className="bg-bg border border-border/40 rounded px-2 py-1.5 flex flex-col gap-0.5 shadow-sm text-center">
-                    <span className="text-[8px] text-gray-light uppercase font-mono">Scope Spec</span>
-                    <span className="text-navy font-black truncate">범위 고정</span>
+
+              {/* 2열: 미니 검토 시트 — 박스 제거, 헤어라인 구분 4지표 */}
+              <div className="flex-[1.3] min-w-[280px] grid grid-cols-2 sm:grid-cols-4">
+                {[
+                  { l: 'Scope Spec', v: '범위 고정', c: 'text-navy' },
+                  { l: 'Budget Band', v: '₩18M~₩22M', c: 'text-navy' },
+                  { l: 'Risk Grade', v: 'LOW 등급', c: 'text-navy' },
+                  { l: 'Next Action', v: '온라인검토', c: 'text-accent' },
+                ].map((m, i) => (
+                  <div key={m.l} className={`flex flex-col gap-0.5 text-center px-2 ${i > 0 ? 'border-l border-border/60' : ''}`}>
+                    <span className="text-[8px] text-gray-light uppercase font-mono">{m.l}</span>
+                    <span className={`text-[12px] font-black truncate ${m.c}`}>{m.v}</span>
                   </div>
-                  <div className="bg-bg border border-border/40 rounded px-2 py-1.5 flex flex-col gap-0.5 shadow-sm text-center">
-                    <span className="text-[8px] text-gray-light uppercase font-mono">Budget Band</span>
-                    <span className="text-navy font-black truncate">₩18M~₩22M</span>
-                  </div>
-                  <div className="bg-bg border border-border/40 rounded px-2 py-1.5 flex flex-col gap-0.5 shadow-sm text-center">
-                    <span className="text-[8px] text-gray-light uppercase font-mono">Risk Grade</span>
-                    <span className="text-navy font-black truncate">LOW 등급</span>
-                  </div>
-                  <div className="bg-bg border border-border/40 rounded px-2 py-1.5 flex flex-col gap-0.5 shadow-sm text-center">
-                    <span className="text-[8px] text-gray-light uppercase font-mono">Next Action</span>
-                    <span className="text-accent font-black truncate">온라인검토</span>
-                  </div>
-                </div>
+                ))}
               </div>
-              
-              {/* 3열: 화면 탭 이동 컨트롤 영역 (Tab Transition Buttons) */}
+
+              {/* 3열: SOP 탭 이동 */}
               <div className="w-full lg:w-56 shrink-0 flex flex-col justify-center">
-                {/* 탭 2: SOP 검증 탭 */}
                 <button
                   onClick={() => setActiveTab('sop')}
                   className="w-full flex items-center justify-center gap-1.5 bg-transparent hover:bg-bg-subtle text-steel border border-steel/20 py-2.5 px-4 rounded-custom text-[14.5px] font-bold transition-all duration-150 active:scale-95 cursor-pointer"
@@ -727,7 +712,7 @@ export default function Home() {
 
     return (
       <div className="flex flex-col gap-4 max-w-5xl mx-auto py-3 select-none">
-        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-5.5">
+        <section className="flex flex-col gap-5.5">
           {/* 헤더 — 좌측 타이틀 + 우측 신뢰 지표를 한 행으로 합쳐 수직 공간 압축 */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4.5 border-b border-border pb-4">
             <div className="flex flex-col gap-1.5">
@@ -741,7 +726,7 @@ export default function Home() {
               </p>
             </div>
             {/* 신뢰 지표 — 대시보드 위젯 스타일 */}
-            <div className="grid grid-cols-2 lg:flex lg:items-center border border-border/80 rounded-custom bg-gradient-to-br from-bg-subtle/50 to-bg shrink-0 select-none overflow-hidden shadow-sm">
+            <div className="grid grid-cols-2 lg:flex lg:items-center shrink-0 select-none">
               {[
                 { label: '파이프라인', value: '6-Stage' },
                 { label: '실거래 대조', value: 'n건 DB' },
@@ -797,10 +782,8 @@ export default function Home() {
                     {/* 타임라인 노드 마커 */}
                     <div className={`absolute -left-[18px] md:-left-[22px] top-1.5 w-3 h-3 rounded-full ${circleColor} ring-4 transition-transform duration-200 group-hover:scale-125 z-10`} />
                     
-                    {/* 카드 본체: 부드러운 그라데이션 광원 배경 및 세련된 연출 */}
-                    <div className="bg-bg border border-border/80 rounded-custom p-4 shadow-sm hover:shadow-custom-sm transition-all duration-200 flex flex-col md:flex-row md:items-start gap-4 relative overflow-hidden">
-                      {/* 카드 백그라운드 Radial Glow 효과 */}
-                      <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-navy/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    {/* 카드 본체 — 박스 제거, 타임라인 위 콘텐츠 정렬 */}
+                    <div className="flex flex-col md:flex-row md:items-start gap-4 pb-1">
 
                       {/* 단계 번호 및 기본 타이틀 영역 */}
                       <div className="md:w-1/4 shrink-0 flex items-center md:items-start gap-3">
@@ -819,8 +802,8 @@ export default function Home() {
                           {stage.desc}
                         </p>
                         
-                        {/* 역량 및 도구 메타 정보 */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-bg-subtle/40 border border-border/40 rounded p-2 text-[11px] font-semibold text-gray-light leading-snug">
+                        {/* 역량 및 도구 메타 정보 — 박스 제거 */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] font-semibold text-gray-light leading-snug">
                           <div className="flex items-start gap-1.5">
                             <span className="text-[9px] px-1 py-0.5 bg-navy/5 text-navy rounded font-black shrink-0">DS 역량</span>
                             <span className="text-gray">{dsRole}</span>
@@ -871,7 +854,7 @@ export default function Home() {
                   color: 'border-t-4 border-t-success'
                 }
               ].map((p) => (
-                <div key={p.title} className={`bg-bg border ${p.color} border-x-border border-b-border rounded-custom p-4 shadow-sm flex flex-col gap-2 hover:translate-y-[-2px] transition-transform duration-200`}>
+                <div key={p.title} className={`${p.color} pt-3.5 flex flex-col gap-2`}>
                   <div className="flex items-center gap-2">
                     {p.icon}
                     <h4 className="text-[13.5px] font-black text-navy">{p.title}</h4>
@@ -1011,7 +994,7 @@ export default function Home() {
 
     return (
       <div className="flex flex-col gap-4 max-w-4xl mx-auto py-3 select-none">
-        <section className="bg-bg border border-border rounded-custom p-5 md:p-6 shadow-custom-sm flex flex-col gap-5.5">
+        <section className="flex flex-col gap-5.5">
           {/* 헤더 */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4.5 border-b border-border pb-4">
             <div className="flex flex-col gap-1.5">
@@ -1024,8 +1007,8 @@ export default function Home() {
                 <strong className="text-navy font-extrabold">요청 접수부터 피드백까지</strong> — 대표님이 무엇을 하고, ZEROS가 무엇을 검증하는지 한눈에. 각 단계의 궁금증을 미리 풀어 드립니다.
               </p>
             </div>
-            {/* 국면 범례 */}
-            <div className="grid grid-cols-3 border border-border/80 rounded-custom bg-gradient-to-br from-bg-subtle/50 to-bg shrink-0 select-none overflow-hidden shadow-sm">
+            {/* 국면 범례 — 박스 제거, 제목 폭 보호(축소·말줄임) */}
+            <div className="grid grid-cols-3 min-w-0 lg:max-w-[420px] overflow-hidden select-none">
               {phases.map((p, i) => (
                 <div key={p.key} className={`px-2.5 sm:px-3.5 py-2 flex flex-col gap-0.5 min-w-0 ${i > 0 ? 'border-l border-border' : ''}`}>
                   <span className="flex items-center gap-1.5 min-w-0">
@@ -1068,9 +1051,7 @@ export default function Home() {
                       {/* 타임라인 노드 마커 */}
                       <div className={`absolute -left-[18px] md:-left-[22px] top-2 w-3 h-3 rounded-full ${tone.dot} ring-4 transition-transform duration-200 group-hover:scale-125 z-10`} />
 
-                      <div className="bg-bg border border-border/80 rounded-custom p-4 shadow-sm hover:shadow-custom-sm transition-all duration-200 flex flex-col md:flex-row md:items-start gap-4 relative overflow-hidden">
-                        {/* 호버 시 은은한 광원 */}
-                        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-navy/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                      <div className="flex flex-col md:flex-row md:items-start gap-4 pb-1">
 
                         {/* 단계 번호 + 아이콘 + 타이틀 */}
                         <div className="md:w-[34%] shrink-0 flex items-center gap-3">
@@ -1091,7 +1072,7 @@ export default function Home() {
                         {/* 설명 + 궁금증 해소 */}
                         <div className="flex-1 flex flex-col gap-2.5 min-w-0">
                           <p className="text-[12.5px] text-gray leading-relaxed font-semibold">{s.desc}</p>
-                          <div className="flex items-start gap-1.5 bg-bg-subtle/50 border border-border/40 rounded p-2 text-[11.5px] font-bold text-navy/80 leading-snug">
+                          <div className="flex items-start gap-1.5 border-l-2 border-accent/40 pl-2.5 text-[11.5px] font-bold text-navy/80 leading-snug">
                             <MessageCircle className="w-3.5 h-3.5 text-accent shrink-0 mt-px" />
                             <span>{s.faq}</span>
                           </div>
