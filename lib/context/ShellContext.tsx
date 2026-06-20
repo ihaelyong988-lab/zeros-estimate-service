@@ -2,9 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 
-export type ActiveTab = 'about' | 'performance' | 'request' | 'home' | 'sop' | 'review' | 'process';
+export type ActiveTab = 'business' | 'performance' | 'request' | 'home' | 'sop' | 'review' | 'process';
 
-const TAB_VALUES: ActiveTab[] = ['about', 'performance', 'request', 'home', 'sop', 'review', 'process'];
+const TAB_VALUES: ActiveTab[] = ['business', 'performance', 'request', 'home', 'sop', 'review', 'process'];
 
 // 현재 URL의 ?tab= 값을 탭으로 해석 (없거나 모르는 값이면 home)
 const parseTabFromUrl = (): ActiveTab => {

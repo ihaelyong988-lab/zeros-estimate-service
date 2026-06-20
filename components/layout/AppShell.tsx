@@ -38,7 +38,7 @@ interface MobileAdminMenuItem {
 type MobileActiveTab = 'home' | 'service' | 'request' | 'history' | 'account' | 'decision' | 'admin';
 type AdminView = MobileAdminMenuItem['value'];
 
-const activeTabValues: ActiveTab[] = ['home', 'about', 'performance', 'request', 'sop', 'review', 'process'];
+const activeTabValues: ActiveTab[] = ['home', 'business', 'performance', 'request', 'sop', 'review', 'process'];
 const adminViewValues: AdminView[] = ['dashboard', 'estimates', 'visits', 'customers', 'performance', 'notifications'];
 
 const mobileMenuItems: MobileMenuItem[] = [
@@ -158,7 +158,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         setMobileActiveTab(
           tab === 'request'
             ? 'request'
-            : tab === 'about' || tab === 'sop' || tab === 'process'
+            : tab === 'business' || tab === 'sop' || tab === 'process'
               ? 'service'
               : tab === 'performance'
                 ? 'history'
@@ -256,7 +256,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     if (!layoutReady || !isMobileLayout) return;
     if (activeTab === 'request') {
       setMobileActiveTab('request');
-    } else if (activeTab === 'about' || activeTab === 'sop' || activeTab === 'process') {
+    } else if (activeTab === 'business' || activeTab === 'sop' || activeTab === 'process') {
       setMobileActiveTab('service');
     } else if (activeTab === 'performance') {
       setMobileActiveTab('history');
@@ -314,7 +314,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     } else if (tab === 'service') {
       setMobileMenuOpen(false);
       setIsUserMode(true);
-      setActiveTab('about');
+      setActiveTab('business');
       setSelectedMenu('');
       setSelectedBudget('');
       scrollMainPanelToTop();
