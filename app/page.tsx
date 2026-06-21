@@ -273,64 +273,94 @@ export default function Home() {
   // ==========================================
   const renderBusinessTab = () => {
     return (
-      <div className="flex flex-col gap-4 max-w-4xl mx-auto py-2.5 select-none">
-        {/* 1. 에디토리얼 히어로 — 유일한 하이라이트 */}
-        <section className="flex flex-col gap-3 border-b border-border pb-5">
+      <div className="flex flex-col gap-6 max-w-3xl mx-auto py-2.5 select-none">
+        {/* 1. 컴팩트 히어로 */}
+        <section className="flex flex-col gap-3">
           <span className="text-[12px] text-accent font-black uppercase tracking-wider">사업 소개 · About ZEROS</span>
-          <h1 className="text-[clamp(26px,3vw,38px)] font-black text-navy leading-[1.22] tracking-tight">
-            소상공인 대표님이 <span className="text-accent">안심</span>할 수 있는
-            <br />
-            최적합 예산을 만듭니다
+          <h1 className="text-[clamp(24px,2.8vw,34px)] font-black text-navy leading-[1.24] tracking-tight">
+            최적합 예산, <span className="text-accent">한 대역</span>으로 고정합니다
           </h1>
           <p className="text-[14px] text-gray font-semibold">
-            들쑥날쑥한 견적과 설계변경 분쟁을 데이터로 사전에 차단합니다.
+            소상공인 대표님의 들쑥날쑥한 견적과 설계변경 분쟁을 데이터로 사전에 차단합니다.
           </p>
         </section>
 
-        {/* 2. 3대 핵심 기둥 — de-box, 좌측 헤어라인 색만 */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* 안심 예산 */}
-          <div className="border-l-2 border-navy/40 pl-4 flex flex-col gap-2">
-            <span className="text-[16px] font-black text-navy">안심 예산 책정</span>
-            <span className="text-[12px] text-gray font-semibold leading-normal">과다·과소 없는 적정 대역으로 고정</span>
-            <div className="mt-1">
-              <div className="h-1.5 rounded-full bg-[#E2E8F0] relative overflow-hidden">
-                <div className="absolute top-0 bottom-0 left-[28%] w-[44%] bg-steel rounded-full" />
-              </div>
-              <div className="flex justify-between text-[9px] text-gray-light font-bold mt-1">
-                <span>min</span><span>최적 대역</span><span>max</span>
-              </div>
+        {/* 2. 결과 지표 — 안심 예산 대역 (센터피스) */}
+        <section className="bg-bg-subtle rounded-custom p-5 md:p-6">
+          <span className="text-[13px] font-black text-navy">안심 예산 대역</span>
+          <div className="mt-3">
+            <div className="h-2.5 rounded-full bg-surface border border-[#E2E8F0] relative overflow-hidden">
+              <div className="absolute top-0 bottom-0 left-[28%] w-[44%] bg-steel rounded-full" />
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-light font-bold mt-1.5">
+              <span>min</span><span>최적 대역</span><span>max</span>
             </div>
           </div>
-          {/* 단가 거품 필터링 */}
-          <div className="border-l-2 border-accent pl-4 flex flex-col gap-2">
-            <span className="text-[16px] font-black text-accent">단가 거품 필터링</span>
-            <span className="text-[12px] text-gray font-semibold leading-normal">실거래 빅데이터 교차 검증</span>
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-steel bg-steel/10 px-2 py-1 rounded">
-                <Database className="w-3 h-3 shrink-0" />실거래 DB
-              </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-steel bg-steel/10 px-2 py-1 rounded">
-                <Search className="w-3 h-3 shrink-0" />이상치 탐지
-              </span>
-            </div>
+          <p className="text-[12.5px] text-gray font-semibold mt-3 m-0">과다·과소 없는 적정 대역으로 예산을 고정합니다.</p>
+        </section>
+
+        {/* 3. 핵심 지표 — 헤어라인 분리 */}
+        <section className="flex flex-col">
+          <div className="flex items-baseline justify-between py-3 border-b border-border/50">
+            <span className="text-[14.5px] font-black text-navy">단가 거품 필터링</span>
+            <span className="text-[12px] text-gray font-semibold">실거래 DB 교차검증</span>
           </div>
-          {/* 30년 현장 경력 */}
-          <div className="border-l-2 border-success pl-4 flex flex-col gap-1">
-            <span className="text-[34px] font-black text-success leading-none tabular-nums">30<span className="text-[18px]">년</span></span>
-            <span className="text-[13px] font-black text-navy mt-1.5">현장 암묵지</span>
-            <span className="text-[12px] text-gray font-semibold leading-normal">플랜트 현장 엔지니어링 경력</span>
+          <div className="flex items-baseline justify-between py-3 border-b border-border/50">
+            <span className="text-[14.5px] font-black text-success">30년 현장 암묵지</span>
+            <span className="text-[12px] text-gray font-semibold">플랜트 현장 엔지니어링</span>
+          </div>
+          <div className="flex items-baseline justify-between py-3">
+            <span className="text-[14.5px] font-black text-navy">설계변경 분쟁 차단</span>
+            <span className="text-[12px] text-gray font-semibold">동일 기준 견적 정합</span>
           </div>
         </section>
 
-        {/* 3. 약속 한 줄 */}
-        <section className="border-t border-border pt-5 flex items-stretch gap-3.5">
-          <span className="w-1 bg-accent shrink-0" />
-          <p className="text-[15px] font-extrabold text-steel leading-relaxed m-0">
-            최적합 예산 책정으로 대표님이 경영에만 집중할 수 있는 환경을 만듭니다.
-          </p>
+        {/* 4. 사전 차단 리스크 — 키워드 칩 */}
+        <section className="border-t border-border pt-5 flex flex-col gap-2.5">
+          <span className="text-[10.5px] font-semibold text-gray-light uppercase tracking-[0.1em]">사전 차단 리스크</span>
+          <div className="flex flex-wrap gap-2">
+            <span className="text-[12px] font-bold text-gray bg-bg-subtle px-3 py-1.5 rounded">견적 들쑥날쑥</span>
+            <span className="text-[12px] font-bold text-gray bg-bg-subtle px-3 py-1.5 rounded">단가 거품</span>
+            <span className="text-[12px] font-bold text-gray bg-bg-subtle px-3 py-1.5 rounded">설계변경 분쟁</span>
+          </div>
         </section>
 
+        {/* 4. FOOTER 소개란 — 사업소개 탭 하단 회사 소개 (헤어라인·단정표현 없이) */}
+        <footer className="mt-6 border-t-2 border-navy pt-5">
+          <div className="flex justify-between gap-6 flex-wrap">
+            <div className="max-w-[440px]">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[20px] font-black text-navy tracking-tight">ZEROS</span>
+                <span className="text-[11px] font-bold text-accent tracking-wider">최적합 견적 검증</span>
+              </div>
+              <p className="text-[13.5px] leading-[1.75] font-semibold text-gray m-0">
+                현장 실무 경험과 데이터 분석으로 <strong className="text-navy font-black">과다·과소 없는 최적합 예산</strong>을 산출·검증하는 서비스입니다. 시공이 아닌, 대표님의 의사결정을 돕는 견적 파트너입니다.
+              </p>
+            </div>
+            <div className="min-w-[180px]">
+              <div className="text-[10.5px] font-semibold text-gray-light uppercase tracking-[0.1em] mb-2.5">핵심 영역</div>
+              <div className="text-[13px] font-semibold text-navy leading-[2]">
+                공정설비 CAPEX 견적 검증<br />
+                배관·기계설비 물량 분석<br />
+                외주제작(SPOOL·SKID) 검토
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-border/60 mt-5 pt-3.5 flex justify-between items-center gap-4 flex-wrap">
+            <span className="text-[12px] font-medium text-gray-light">© 2025 ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
+            <div className="flex items-center gap-4 text-[12.5px] font-bold">
+              <span className="text-gray hover:text-navy transition-colors cursor-pointer">개인정보처리방침</span>
+              <span className="text-gray-light/40">|</span>
+              <button
+                onClick={() => setActiveTabAtTop('request')}
+                style={{ touchAction: 'manipulation' }}
+                className="inline-flex items-center gap-1 text-steel hover:text-navy transition-colors cursor-pointer"
+              >
+                문의하기 <ArrowRight className="w-3 h-3 shrink-0" />
+              </button>
+            </div>
+          </div>
+        </footer>
       </div>
     );
   };
