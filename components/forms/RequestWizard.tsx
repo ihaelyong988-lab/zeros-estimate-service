@@ -329,15 +329,15 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   const showForm = !checkingVerify && !verifyRequired;
 
   return (
-    <div className="w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-xl mx-auto overflow-hidden">
+    <div className="w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-4xl mx-auto overflow-hidden">
 
       {/* 헤더 바 */}
       <div className="bg-bg-subtle border-b border-border px-5 py-4 flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <span className="text-[12px] text-steel font-extrabold uppercase tracking-wider">ZEROS 간편 신청</span>
-          <h3 className="text-[15px] font-black text-navy leading-none">
-            {showForm ? '고객 간단 등록' : verifyRequired ? '본인확인' : '준비 중'}
+          <h3 className="text-[16px] font-black text-navy leading-none">
+            {showForm ? '예상견적 의뢰하기' : verifyRequired ? '본인확인' : '준비 중'}
           </h3>
+          {showForm && <span className="text-[11.5px] text-gray font-semibold">고객 정보만 등록해도 접수됩니다 · 자료를 함께 올리면 방문 전 1차 검토가 빨라집니다</span>}
         </div>
         {customerAuth && showForm && (
           <span className="text-[11px] font-bold text-success">{customerAuth.name}님 · 자동입력됨</span>
@@ -364,8 +364,16 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
           </div>
         )}
 
-        {/* ================= 고객 기본정보 ================= */}
+        {/* ===== 2분할: ① 고객 정보(필수) / ② 견적 자료(선택) — 가로폭 활용·한 화면 ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+        {/* ① 고객 정보 등록 (필수) */}
         <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-border">
+            <span className="w-5 h-5 rounded-md bg-steel text-white text-[11px] font-black flex items-center justify-center shrink-0">1</span>
+            <span className="text-[14px] font-black text-navy">고객 정보 등록</span>
+            <span className="text-[10px] font-bold text-steel bg-steel/10 px-1.5 py-0.5 rounded">필수</span>
+          </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="customer_name" className="text-[12px] font-bold text-navy flex items-center gap-1">
               <User className="w-3.5 h-3.5 text-steel" />
@@ -477,14 +485,16 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
           </div>
         </div>
 
-        {/* ================= 사진/도면 첨부 (선택) ================= */}
-        <div className="flex flex-col gap-3 border-t border-border pt-4">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[12px] font-bold text-navy leading-none">현장 자료 첨부 (선택)</span>
-            <span className="text-[12px] text-gray-light leading-relaxed mt-1">
-              도면·현장 사진을 첨부하시면 방문 전 1차 검토가 빨라집니다. · 항목별 최대 {MAX_PER_CATEGORY}개, 전체 최대 {MAX_TOTAL_FILES}개 · 허용 형식: {ALLOWED_LABEL}
-            </span>
+        {/* ② 견적 자료 등록 (선택) */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 pb-2 border-b border-border">
+            <span className="w-5 h-5 rounded-md bg-gray-light text-white text-[11px] font-black flex items-center justify-center shrink-0">2</span>
+            <span className="text-[14px] font-black text-navy">견적 자료 등록</span>
+            <span className="text-[10px] font-bold text-gray bg-bg-subtle px-1.5 py-0.5 rounded">선택</span>
           </div>
+          <span className="text-[11.5px] text-gray-light leading-relaxed">
+            지금 자료가 없어도 접수되고, 방문 실측으로 보완합니다. · 항목별 최대 {MAX_PER_CATEGORY}개, 전체 최대 {MAX_TOTAL_FILES}개 · 허용: {ALLOWED_LABEL}
+          </span>
 
           {/* 실제 파일 선택 input (숨김) */}
           <input
@@ -560,10 +570,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
             </div>
           )}
         </div>
+        </div>
 
-        {/* ================= 개인정보 동의 + 등록 ================= */}
-        <div className="flex flex-col gap-4 border-t border-border pt-4">
-          <div className="flex items-start gap-3 border border-border p-3.5 rounded-custom bg-bg-subtle/30 select-none">
+        {/* ================= 개인정보 동의 + 등록 (하단 한 줄) ================= */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 border-t border-border pt-4">
+          <div className="flex items-start gap-3 border border-border p-3.5 rounded-custom bg-bg-subtle/30 select-none flex-1">
             <input
               id="agreePrivacy"
               name="agreePrivacy"
@@ -585,7 +596,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
             type="submit"
             disabled={loading || uploading}
             style={{ touchAction: 'manipulation' }}
-            className="flex items-center justify-center gap-1.5 bg-accent hover:bg-accent/90 text-bg py-3.5 rounded-custom text-[13px] font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
+            className="flex items-center justify-center gap-1.5 bg-accent hover:bg-accent/90 text-bg py-3.5 px-6 sm:px-12 shrink-0 rounded-custom text-[14px] font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? (
               <span>등록 중...</span>
