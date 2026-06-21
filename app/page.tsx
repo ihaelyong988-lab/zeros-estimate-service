@@ -273,10 +273,10 @@ export default function Home() {
   // ==========================================
   const renderBusinessTab = () => {
     return (
-      <div className="flex flex-col gap-6 max-w-3xl mx-auto py-2.5 select-none">
+      <div className="flex flex-col gap-6 max-w-5xl mx-auto py-2.5 select-none">
         {/* 1. 컴팩트 히어로 */}
         <section className="flex flex-col gap-3">
-          <span className="text-[12px] text-accent font-black uppercase tracking-wider">사업 소개 · About ZEROS</span>
+          <span className="text-[12px] text-accent font-black uppercase tracking-wider">사업 소개</span>
           <h1 className="text-[clamp(24px,2.8vw,34px)] font-black text-navy leading-[1.24] tracking-tight">
             최적합 예산, <span className="text-accent">한 대역</span>으로 고정합니다
           </h1>
@@ -285,18 +285,21 @@ export default function Home() {
           </p>
         </section>
 
-        {/* 2. 결과 지표 — 안심 예산 대역 (센터피스) */}
-        <section className="bg-bg-subtle rounded-custom p-5 md:p-6">
-          <span className="text-[13px] font-black text-navy">안심 예산 대역</span>
-          <div className="mt-3">
-            <div className="h-2.5 rounded-full bg-surface border border-[#E2E8F0] relative overflow-hidden">
-              <div className="absolute top-0 bottom-0 left-[28%] w-[44%] bg-steel rounded-full" />
-            </div>
-            <div className="flex justify-between text-[10px] text-gray-light font-bold mt-1.5">
-              <span>min</span><span>최적 대역</span><span>max</span>
-            </div>
+        {/* 2. 결과 지표 — 안심 예산 대역 (히어로 지표) */}
+        <section className="bg-bg-subtle rounded-custom p-6 md:p-8">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="w-1 h-4 bg-accent rounded-full shrink-0" />
+            <span className="text-[17px] font-black text-navy tracking-tight">안심 예산 대역</span>
           </div>
-          <p className="text-[12.5px] text-gray font-semibold mt-3 m-0">과다·과소 없는 적정 대역으로 예산을 고정합니다.</p>
+          <p className="text-[13px] text-gray font-semibold mb-5">과다·과소 없이 <span className="text-accent font-black">적정 대역</span> 하나로 예산을 고정합니다.</p>
+          <div className="h-4 rounded-full bg-surface border border-[#E2E8F0] relative overflow-hidden">
+            <div className="absolute top-0 bottom-0 left-[28%] w-[44%] bg-steel rounded-full" />
+          </div>
+          <div className="flex justify-between text-[11.5px] font-bold mt-2.5">
+            <span className="text-gray-light">min</span>
+            <span className="text-steel">최적 대역</span>
+            <span className="text-gray-light">max</span>
+          </div>
         </section>
 
         {/* 3. 핵심 지표 — 헤어라인 분리 */}
@@ -497,10 +500,6 @@ export default function Home() {
           {/* 헤더 — 좌측 타이틀 + 우측 신뢰 지표를 한 행으로 합쳐 수직 공간 압축 */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4.5 border-b border-border pb-4">
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-accent" />
-                <span className="text-[12px] text-accent font-black uppercase tracking-wider">Data Science Pipeline · SOP</span>
-              </div>
               <h2 className="text-xl.5 md:text-2xl font-black text-navy tracking-tight">AI Native 검증 표준 작업 절차</h2>
               <p className="text-[13px] text-gray leading-snug font-semibold">
                 <strong className="text-navy font-extrabold">데이터 탐색부터 결과 도출까지</strong> — 6단계 재현 가능한 파이프라인으로 공사 범위·비용·리스크를 정량 검증합니다.
@@ -847,10 +846,6 @@ export default function Home() {
           {/* 헤더 */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4.5 border-b border-border pb-4">
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-accent" />
-                <span className="text-[12px] text-accent font-black uppercase tracking-wider">Customer Journey · Service Process</span>
-              </div>
               <h2 className="text-xl.5 md:text-2xl font-black text-navy tracking-tight">ZEROS 서비스 프로세스 9단계</h2>
               <p className="text-[13px] text-gray leading-snug font-semibold max-w-2xl">
                 <strong className="text-navy font-extrabold">요청 접수부터 피드백까지</strong> — 대표님이 무엇을 하고, ZEROS가 무엇을 검증하는지 한눈에. 각 단계의 궁금증을 미리 풀어 드립니다.
@@ -1940,10 +1935,10 @@ export default function Home() {
 
     return (
       /* 박스 남발 제거 — 콘텐츠 카드 1개(FLOW+히어로) + 하단 네이비 밴드. 내부는 여백·헤어라인으로만 구분 */
-      <div className="hidden lg:grid h-full grid-rows-[1fr_auto] gap-3 max-w-4xl mx-auto">
+      <div className="hidden lg:grid h-full grid-rows-[1fr_auto] gap-3 max-w-5xl mx-auto">
 
-        {/* 콘텐츠 카드 — 견적 작업 FLOW + 히어로 (내부 박스 제거) */}
-        <section className="bg-bg border border-border rounded-custom shadow-custom-sm px-6 py-5 flex flex-col min-h-0 overflow-y-auto no-scrollbar">
+        {/* 콘텐츠 — 견적 작업 FLOW + 히어로 (언박싱: 카드 제거, 여백·헤어라인으로만) */}
+        <section className="px-2 py-1 flex flex-col min-h-0 overflow-y-auto no-scrollbar">
 
           <EstimateFlow />
 
@@ -1956,7 +1951,7 @@ export default function Home() {
             {/* 좌 */}
             <div className="flex flex-col min-w-0">
               <span className="text-[11px] font-black tracking-[0.14em] text-accent select-none">현재 검토 공종</span>
-              <h1 className="text-[22px] leading-[1.18] font-black text-navy tracking-tight mt-1">{activeManual.title}</h1>
+              <h1 className="text-[22px] leading-[1.18] font-black text-navy tracking-tight mt-1 pb-2 border-b-2 border-accent inline-block self-start">{activeManual.title}</h1>
               {keywords.length > 0 && (
                 <div className="flex items-center flex-wrap gap-y-1.5 mt-3 select-none">
                   {keywords.map((k, i) => (

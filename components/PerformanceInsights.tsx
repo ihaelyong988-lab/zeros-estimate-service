@@ -145,7 +145,6 @@ export const PerformanceInsights: React.FC = () => {
 
       {/* 헤더 — 박스 제거 */}
       <div className="flex flex-col gap-2 border-b border-border pb-4">
-        <span className="text-[12px] text-steel font-black uppercase tracking-widest">ZEROS Track Record Analytics</span>
         <h2 className="text-2xl font-black text-navy tracking-tight">ZEROS 실적 집계표</h2>
         <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
           홍보용 과장 수치 대신, 누적된 사전진단 포트폴리오를 공종·견적규모 축으로 그대로 집계해 한눈에 보여드립니다.
