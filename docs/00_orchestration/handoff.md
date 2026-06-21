@@ -1,11 +1,12 @@
 # 역할 간 인계 메모 (Handoff)
 
 ## 🔄 최신 이월 (2026-06-21, PHASE M 이후)
-- **[보류 · 다시 물어볼 것]** `.claude` 하네스(훅·커맨드·settings)를 **git 공유로 전환할지** — 사용자가 "나중에 다시 물어봐줘"라고 함(2026-06-21). 다음 세션 시작 시 재확인할 것.
+- **[완료]** `.claude` 하네스 **git 공유 전환 완료**(2026-06-21, `b319ae7`): 훅·커맨드·공유 `settings.json` 추적, 개인 `settings.local.json`만 제외.
+- **[보류]** ②번 **DB·AI Agent 견적 자동화**(단가 마스터부터) — 사용자 지시로 보류. 재개 시: 단가 마스터 엑셀 → Supabase 실연동 → Claude API 분석/검증.
 - **master 배포 완료**(`22c9e94`): 폴더 하네스 정리 + 고객 UI(사이드바·사업소개·CAPEX칩). 상세 `docs/_worklog/2026-06-21_작업정리.md`.
 - **경로 변동 주의:** SQL=`supabase/`, 스크립트=`scripts/`, 디자인원본=`docs/assets/`, 날짜로그=`docs/_worklog/`.
 - **사이드바 디자인 기준:** 색막대 금지·액센트 **steel 단일**·항목 보통굵기(활성만 강조). 같은 톤 유지할 것.
-- **로컬 하네스(.claude, git 제외):** SessionStart/Stop 훅·슬래시커맨드 4종. 다른 머신엔 없음 → 공유하려면 별도 조치.
+- **하네스(.claude, git 공유됨):** SessionStart/Stop/UserPromptSubmit 훅·슬래시커맨드 4종이 커밋됨 → 다른 머신/도구에서도 동작. 개인 권한(`settings.local.json`)만 로컬.
 
 ## 🔄 PHASE 0 ➔ PHASE A 인계 사항
 - **보내는 역할:** 00_오케스트레이터 (PM)
