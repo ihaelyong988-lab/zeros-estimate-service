@@ -58,7 +58,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
       
       {/* 관리자 웰컴 세션 */}
       <div className="flex flex-col gap-1.5 bg-bg border border-border p-6 rounded-custom shadow-custom-sm">
-        <span className="text-[10px] text-steel font-black uppercase tracking-widest">Zeros Backoffice Portal</span>
         <h2 className="text-xl font-black text-navy leading-none">ZEROS 사전진단 종합 관제 패널</h2>
         <p className="text-[12.5px] text-gray leading-relaxed mt-1">
           사전진단 신청 건에 대한 원가 분석, 도면/사진 해상도 1차 검수, 현장 방문 레이저 실측 조율 및 계약 전환율을 통합 관리합니다.

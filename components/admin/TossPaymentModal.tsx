@@ -68,7 +68,6 @@ export const TossPaymentModal: React.FC<TossPaymentModalProps> = ({
             <CheckCircle2 className="w-10 h-10" />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] text-success font-black uppercase tracking-widest">Payment Approved</span>
             <h3 className="text-base font-black text-navy">안전 결제가 완료되었습니다</h3>
             <p className="text-xs text-gray leading-relaxed max-w-xs mt-1.5">
               접수번호 <span className="font-extrabold text-navy tabular-nums">{estimateNo}</span> 의 {paymentType} 수납이 완료되었습니다. 영업 WBS 상태가 즉시 업데이트됩니다.

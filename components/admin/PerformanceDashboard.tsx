@@ -119,7 +119,6 @@ export const PerformanceDashboard: React.FC = () => {
       
       {/* 타이틀 및 헤더 */}
       <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm">
-        <span className="text-[10px] text-steel font-black uppercase tracking-widest">WBS Performance Analytics</span>
         <h2 className="text-xl font-black text-navy leading-none">영업 성과 및 파이프라인 분석</h2>
         <p className="text-[12.5px] text-gray leading-relaxed mt-1">
           사전진단 신청 유입부터 수주 확정 매출, 미수금, 그리고 공종별 분석 자료를 0 나눗셈 예외처리가 완비된 엔지니어링 계산식으로 시각화합니다.
