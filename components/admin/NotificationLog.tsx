@@ -46,7 +46,6 @@ export const NotificationLog: React.FC = () => {
       <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm">
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-[10px] text-steel font-black uppercase tracking-widest">Notification Dispatch Center</span>
             <h2 className="text-xl font-black text-navy leading-none mt-0.5">고객 안내 알림톡 & 이메일 발송 로그</h2>
             <p className="text-[12.5px] text-gray leading-relaxed mt-1">
               WBS 영업 프로세스 상태가 전환될 때 고객사의 휴대폰으로 발송되는 카카오 알림톡 및 전송 이력을 실시간 모니터링합니다.

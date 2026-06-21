@@ -104,7 +104,6 @@ export const CustomerList: React.FC = () => {
       
       {/* 타이틀 및 헤더 */}
       <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm">
-        <span className="text-[10px] text-steel font-black uppercase tracking-widest">ZEROS CRM Portal</span>
         <h2 className="text-xl font-black text-navy leading-none">고객 데이터베이스 및 가치 관리</h2>
         <p className="text-[12.5px] text-gray leading-relaxed mt-1">
           사전진단 신청 이력이 누적된 핵심 B2B 고객사 파이프라인 관리 화면입니다. 누적 문의 수, 수주 매출, CRM 등급을 통합 집계합니다.
@@ -329,7 +328,6 @@ export const CustomerList: React.FC = () => {
             {/* 헤더 */}
             <div className="bg-navy text-bg p-4 flex items-center justify-between border-b border-border select-none">
               <div className="flex flex-col">
-                <span className="text-[10px] text-bg/60 font-black uppercase tracking-wider">Customer Profile Details</span>
                 <h3 className="text-base font-black tracking-tight mt-0.5">{selectedCustomer.customer_name} 고객사 정보</h3>
               </div>
               <button 

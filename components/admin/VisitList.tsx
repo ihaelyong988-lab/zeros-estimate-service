@@ -64,7 +64,6 @@ export const VisitList: React.FC = () => {
       {/* 헤더 및 컨트롤러 */}
       <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-steel font-black uppercase tracking-widest">Site Survey Registry</span>
           <h2 className="text-lg font-black text-navy leading-none">현장방문 실측 대장</h2>
         </div>
         

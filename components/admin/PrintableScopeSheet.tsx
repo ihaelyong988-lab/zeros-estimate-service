@@ -20,7 +20,6 @@ export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estima
       {/* 화면 제어 인터페이스 (인쇄 시 숨김 - noprint class 연동) */}
       <div className="flex items-center justify-between border-b border-border pb-4 bg-bg-subtle/50 p-4 rounded-custom print:hidden">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] text-steel font-black uppercase tracking-wider">Enterprise Document Center</span>
           <span className="text-sm font-black text-navy">B2B 범위 고정 사전진단 리포트 인쇄</span>
         </div>
         <button
