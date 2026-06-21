@@ -41,6 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # local tooling artifacts
-/.claude/
 /.playwright-mcp/
 /graphify-out/
+
+# Claude Code — 훅·커맨드·공유 설정은 추적, 개인용 로컬/상태는 제외
+.claude/settings.local.json
+.claude/hooks/.state/
