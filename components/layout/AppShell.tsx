@@ -53,7 +53,7 @@ const mobileMenuItems: MobileMenuItem[] = [
   { type: 'budget', label: '간편검토(≤1천)', value: 'small' },
   { type: 'budget', label: '출장견적(~1억)', value: 'medium' },
   { type: 'budget', label: '사전진단(>1억)', value: 'large' },
-  { type: 'budget', label: '금액 미정', value: 'unknown' }
+  { type: 'budget', label: '온라인 컨설팅(금액미정)', value: 'unknown' }
 ];
 
 const mobileAdminMenuItems: MobileAdminMenuItem[] = [

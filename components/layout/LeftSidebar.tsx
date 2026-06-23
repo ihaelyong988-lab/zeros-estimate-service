@@ -54,7 +54,7 @@ export const LeftSidebar: React.FC = () => {
     { value: 'small', label: '온라인 간편검토', range: '≤1,000만' },
     { value: 'medium', label: '출장견적', range: '1,000만~1억' },
     { value: 'large', label: '프로젝트 사전진단', range: '>1억' },
-    { value: 'unknown', label: '금액 미정', range: '상담 후 판단' },
+    { value: 'unknown', label: '공사규모·금액 미정', range: '온라인 컨설팅' },
   ];
 
   const scrollMainPanelToTop = () => {
@@ -151,7 +151,7 @@ export const LeftSidebar: React.FC = () => {
           {/* 견적 규모 카테고리 */}
           <div>
             <div className="px-2 mb-3">
-              <h3 className="inline-block text-[11.5px] font-bold text-white tracking-[0.04em] pb-1.5 border-b-2 border-[#34D399]">견적규모별 분류</h3>
+              <h3 className="inline-block text-[11.5px] font-bold text-white tracking-[0.04em] pb-1.5 border-b-2 border-[#34D399]">예상 견적총액별 방안</h3>
             </div>
             <div className="flex flex-col gap-1">
               {budgetCategories.map((cat) => {

@@ -22,7 +22,7 @@ export const MENU_DISPLAY_NAMES: Record<string, string> = {
   'small': '온라인 간편검토',
   'medium': '출장견적',
   'large': '프로젝트 사전진단',
-  'unknown': '금액 미정',
+  'unknown': '공사규모·금액 미정',
 };
 
 // 선택 키 → 메뉴 제목. 매핑이 없으면 키 자체를 반환(안전 폴백).

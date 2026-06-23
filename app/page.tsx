@@ -73,6 +73,19 @@ const LANDING_CHIP_CLASS: Record<string, string> = {
   'CAPEX 개·증설 검토': 'bg-navy border-navy text-white',
 };
 
+// 공종별 시그니처 색(hex) — 견적 검토 히어로(renderReviewDesktop)에서 공종마다 테마색을 입혀
+// 상단 칩바(LANDING_CHIP_CLASS)와 시선을 묶고, 회전하는 공종을 시각적으로 차별화한다.
+const LANDING_SIGNATURE_HEX: Record<string, string> = {
+  '배관공사': '#0891B2',          // cyan-600
+  '장비설치': '#D97706',          // amber-600
+  'Utility 배관': '#0284C7',      // sky-600
+  '공장증설': '#D2691E',          // accent 계열
+  '노후배관교체': '#059669',      // emerald-600
+  '기계실개선': '#0D9488',        // teal-600
+  '생산설비 배관 연결': '#4F46E5', // indigo-600
+  'CAPEX 개·증설 검토': '#16365F', // navy
+};
+
 // 공종별 주요 견적 키워드 — 공종 상세(renderManualDetail)와 견적 검토 히어로(renderReviewDesktop) 공용. 추후 영업 표현으로 교체.
 const TRADE_KEYWORDS: Record<string, string[]> = {
   '배관공사': ['HVAC', '위생배관', 'Duct', '소방기계배관'],
@@ -273,12 +286,11 @@ export default function Home() {
   // ==========================================
   const renderBusinessTab = () => {
     return (
-      <div className="flex flex-col gap-6 max-w-5xl mx-auto py-2.5 select-none">
+      <div className="flex flex-col gap-6 max-w-5xl mx-auto py-3 select-none">
         {/* 1. 컴팩트 히어로 */}
         <section className="flex flex-col gap-3">
-          <span className="text-[12px] text-accent font-black uppercase tracking-wider">사업 소개</span>
           <h1 className="text-[clamp(24px,2.8vw,34px)] font-black text-navy leading-[1.24] tracking-tight">
-            최적합 예산, <span className="text-accent">한 대역</span>으로 고정합니다
+            <span className="text-accent">BIZ모델_</span> 최적합 예산, <span className="text-accent">최소 범주대역</span>으로 책정해 드립니다
           </h1>
           <p className="text-[14px] text-gray font-semibold">
             소상공인 대표님의 들쑥날쑥한 견적과 설계변경 분쟁을 데이터로 사전에 차단합니다.
@@ -291,13 +303,13 @@ export default function Home() {
             <span className="w-1 h-4 bg-accent rounded-full shrink-0" />
             <span className="text-[17px] font-black text-navy tracking-tight">안심 예산 대역</span>
           </div>
-          <p className="text-[13px] text-gray font-semibold mb-5">과다·과소 없이 <span className="text-accent font-black">적정 대역</span> 하나로 예산을 고정합니다.</p>
+          <p className="text-[13px] text-gray font-semibold mb-5">과다·과소 없이 <span className="text-accent font-black">최소 범주대역(±5%)</span>으로 예산을 책정합니다.</p>
           <div className="h-4 rounded-full bg-surface border border-[#E2E8F0] relative overflow-hidden">
-            <div className="absolute top-0 bottom-0 left-[28%] w-[44%] bg-steel rounded-full" />
+            <div className="absolute top-0 bottom-0 left-[45%] w-[10%] bg-steel rounded-full" />
           </div>
-          <div className="flex justify-between text-[11.5px] font-bold mt-2.5">
+          <div className="flex justify-between items-center text-[11.5px] font-bold mt-2.5">
             <span className="text-gray-light">min</span>
-            <span className="text-steel">최적 대역</span>
+            <span className="text-steel">최적 대역 ±5%</span>
             <span className="text-gray-light">max</span>
           </div>
         </section>
@@ -1529,17 +1541,17 @@ export default function Home() {
     const reviewItems = tradeReviewItems[key] || ['규격 · 압력 검토 여부', '표준 품셈 적용 여부', '예비 · 안전 항목'];
 
     return (
-      <div key={key} className="flex flex-col gap-6 max-w-4xl mx-auto py-2 animate-in fade-in duration-300">
+      <div key={key} className="flex flex-col gap-6 max-w-4xl mx-auto py-3 animate-in fade-in duration-300">
 
-        {/* 주요 견적 — 공종별 핵심 키워드 밴드 (상단, 넓게 / 박스 없이 헤드라인) */}
+        {/* 주요 견적공종 — 라벨 + 공종별 핵심 키워드를 한 줄로 옆에 배치 (박스 없이 헤드라인) */}
         {keywords.length > 0 && (
-          <div className="flex flex-col gap-2.5 border-b border-border/70 pb-5 pt-1 select-none">
-            <span className="text-[11px] font-bold tracking-[0.14em] text-accent">주요 견적</span>
-            <div className="flex flex-wrap items-center gap-y-2">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1.5 border-b border-border/70 pb-5 pt-1 select-none">
+            <span className="text-[12px] font-bold tracking-[0.08em] text-accent shrink-0">주요 견적공종</span>
+            <div className="flex flex-wrap items-center gap-y-1.5">
               {keywords.map((k, i) => (
                 <span key={k} className="inline-flex items-center">
-                  <span className="text-[22px] md:text-[23px] font-extrabold text-navy tracking-tight leading-none">{k}</span>
-                  {i < keywords.length - 1 && <span className="mx-3.5 w-px h-[18px] bg-border shrink-0" />}
+                  <span className="text-[20px] md:text-[22px] font-extrabold text-navy tracking-tight leading-none">{k}</span>
+                  {i < keywords.length - 1 && <span className="mx-3 w-px h-[16px] bg-border shrink-0" />}
                 </span>
               ))}
             </div>
@@ -1930,6 +1942,8 @@ export default function Home() {
     const activeManual = manualData[activeTradeName];
     const activeMetrics = getDynamicMetrics(activeTradeName);
     const keywords = TRADE_KEYWORDS[activeTradeName] || [];
+    // 공종별 시그니처 색 — 회전하는 공종마다 히어로 테마를 바꿔 상단 칩바와 시선 연결·차별화
+    const sigHex = LANDING_SIGNATURE_HEX[activeTradeName] || '#D2691E';
     // ZEROS 최적합 지수 = 검토 전 견적(100) 대비 (단가 부풀림 없이 적정화한 비율)
     const optimizedIndex = +(100 - activeMetrics.bubbleRate).toFixed(1);
 
@@ -1950,8 +1964,11 @@ export default function Home() {
 
             {/* 좌 */}
             <div className="flex flex-col min-w-0">
-              <span className="text-[11px] font-black tracking-[0.14em] text-accent select-none">현재 검토 공종</span>
-              <h1 className="text-[22px] leading-[1.18] font-black text-navy tracking-tight mt-1 pb-2 border-b-2 border-accent inline-block self-start">{activeManual.title}</h1>
+              <span className="flex items-center gap-1.5 select-none">
+                <span className="w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-500" style={{ backgroundColor: sigHex }} />
+                <span className="text-[11px] font-black tracking-[0.14em] transition-colors duration-500" style={{ color: sigHex }}>현재 검토 공종</span>
+              </span>
+              <h1 className="text-[22px] leading-[1.18] font-black text-navy tracking-tight mt-1 pb-2 border-b-2 inline-block self-start transition-colors duration-500" style={{ borderColor: sigHex }}>{activeManual.title}</h1>
               {keywords.length > 0 && (
                 <div className="flex items-center flex-wrap gap-y-1.5 mt-3 select-none">
                   {keywords.map((k, i) => (
@@ -1966,7 +1983,7 @@ export default function Home() {
               <div className="mt-auto pt-3">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
-                  <span className="text-[30px] leading-none font-black text-accent tracking-tight tabular-nums">-{activeMetrics.bubbleRate}<span className="text-[18px]">%</span></span>
+                  <span className="text-[30px] leading-none font-black tracking-tight tabular-nums transition-colors duration-500" style={{ color: sigHex }}>-{activeMetrics.bubbleRate}<span className="text-[18px]">%</span></span>
                 </div>
                 <div className="flex flex-col gap-2 mt-3">
                   <div className="flex items-center gap-2.5">
@@ -1975,9 +1992,9 @@ export default function Home() {
                     <span className="w-9 text-[11.5px] font-bold text-gray tabular-nums">100</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <span className="w-[84px] text-right text-[11.5px] font-black text-accent shrink-0 whitespace-nowrap">ZEROS 최적합</span>
-                    <div className="flex-1 h-3 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full bg-accent" style={{ width: `${optimizedIndex}%` }} /></div>
-                    <span className="w-9 text-[11.5px] font-black text-accent tabular-nums">{optimizedIndex}</span>
+                    <span className="w-[84px] text-right text-[11.5px] font-black shrink-0 whitespace-nowrap transition-colors duration-500" style={{ color: sigHex }}>ZEROS 최적합</span>
+                    <div className="flex-1 h-3 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full transition-all duration-500" style={{ width: `${optimizedIndex}%`, backgroundColor: sigHex }} /></div>
+                    <span className="w-9 text-[11.5px] font-black tabular-nums transition-colors duration-500" style={{ color: sigHex }}>{optimizedIndex}</span>
                   </div>
                 </div>
                 <p className="text-[11.5px] text-gray-light font-semibold mt-2.5">실거래 표본 · 표준 품셈 대비 / 부풀림 없이 적정 단가로 산출</p>
