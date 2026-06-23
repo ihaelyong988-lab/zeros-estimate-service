@@ -26,7 +26,7 @@ const BUDGET_COLS: { key: EstimateCategory; label: string; range: string }[] = [
   { key: 'small', label: '온라인 간편검토', range: '≤1,000만' },
   { key: 'medium', label: '출장견적', range: '1,000만~1억' },
   { key: 'large', label: '프로젝트 사전진단', range: '>1억' },
-  { key: 'unknown', label: '금액 미정', range: '상담 후 판단' },
+  { key: 'unknown', label: '공사규모·금액 미정', range: '온라인 컨설팅' },
 ];
 
 const REVIEW_DONE: ReadonlySet<string> = new Set([
@@ -141,7 +141,7 @@ export const PerformanceInsights: React.FC = () => {
   const distMax = Math.max(...distribution.map((d) => d.value), 1);
 
   return (
-    <div className="flex flex-col gap-5 max-w-5xl mx-auto py-4">
+    <div className="flex flex-col gap-5 max-w-5xl mx-auto py-3">
 
       {/* 헤더 — 박스 제거 */}
       <div className="flex flex-col gap-2 border-b border-border pb-4">
