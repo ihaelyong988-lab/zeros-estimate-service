@@ -1,4 +1,93 @@
-import { Estimate, Customer, SiteVisit, Payment, AdminUser } from '@/types/estimate';
+import {
+  Estimate, Customer, SiteVisit, Payment, AdminUser,
+  WorkType, SiteType, EstimateCategory, EstimateStatus, ExpectedBudgetRange,
+} from '@/types/estimate';
+
+// 실적 시각화용 테스트 견적 — 8대 공종 × 각 10~15건을 고정 시드로 무작위 생성한다.
+// 막대그래프·히트맵·KPI에 충분한 표본을 공급하며, 결정적(mulberry32) PRNG라 새로고침해도 분포가 안정적이다.
+// id 가 'est-test-' 접두라 추후 일괄 제거가 쉽다.
+function generateTestEstimates(): Estimate[] {
+  const workTypes: WorkType[] = [
+    '배관공사', '장비설치', 'Utility 배관', '공장증설',
+    '노후배관교체', '기계실개선', '생산설비 배관 연결', 'CAPEX 개·증설 검토',
+  ];
+  const categories: EstimateCategory[] = ['small', 'medium', 'large', 'unknown'];
+  const sites: SiteType[] = ['공장', '상가', '건물', '식품', '제약·바이오', '물류센터', '기계실'];
+  const budgets: ExpectedBudgetRange[] = ['≤1,000만', '1,000만~1억', '≥1억', '모름'];
+  const purposes = ['신규설치', '교체', '증설', '개선', '긴급보수'];
+  // 상태 분포(가중) — 완료(송부/수주/실패)가 충분히 섞이도록 하여 검토 완료율·평균 검토소요가 살아난다
+  const statusPool: EstimateStatus[] = [
+    '접수완료', '접수완료', '검토중', '검토중', '견적서 작성중',
+    '현장방문 예정', '현장방문 완료',
+    '견적서 송부완료', '견적서 송부완료', '수주성공', '수주성공', '수주실패',
+  ];
+  const reviewDone = new Set<EstimateStatus>(['견적서 송부완료', '수주성공', '수주실패']);
+
+  // 결정적 PRNG(mulberry32) — 고정 시드로 재현 가능한 무작위 분포
+  let seed = 0x5eed1234;
+  const rand = (): number => {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
+
+  const baseMs = new Date('2026-06-20T09:00:00Z').getTime();
+  const out: Estimate[] = [];
+  let serial = 100;
+
+  workTypes.forEach((w) => {
+    const count = 10 + Math.floor(rand() * 6); // 10~15건
+    for (let i = 0; i < count; i++) {
+      serial += 1;
+      const createdMs = baseMs - Math.floor(rand() * 170) * 86_400_000;
+      const created = new Date(createdMs);
+      const dateStr = created.toISOString().slice(0, 10).replace(/-/g, '');
+      const status = pick(statusPool);
+
+      const est: Estimate = {
+        id: `est-test-${serial}`,
+        estimate_no: `ZR-${dateStr}-${String(serial).padStart(3, '0')}`,
+        created_at: created.toISOString(),
+        customer_name: `테스트 고객${serial}`,
+        company_name: `테스트 ${w} ${i + 1}`,
+        phone: `010-${String(1000 + (serial % 9000)).padStart(4, '0')}-${String((serial * 7) % 10000).padStart(4, '0')}`,
+        email: `test${serial}@example.com`,
+        site_address: '테스트 현장 주소 (시각화용 표본)',
+        customer_type: '기타',
+        work_type: w,
+        site_type: pick(sites),
+        work_purpose: pick(purposes),
+        expected_budget_range: pick(budgets),
+        desired_schedule: '협의',
+        urgency: rand() < 0.2,
+        description: `[테스트 표본] ${w} 실적 시각화용 자동 생성 건입니다.`,
+        request_detail: '',
+        estimate_category: pick(categories),
+        status,
+        admin_memo: '',
+        payment_required: false,
+        payment_status: '미결제',
+        submitted_files: [],
+      };
+
+      // 완료 계열은 송부일(접수 후 1~9일)을 채워 평균 검토소요·완료율이 산출되게 한다
+      if (reviewDone.has(status)) {
+        const sentMs = createdMs + (1 + Math.floor(rand() * 9)) * 86_400_000;
+        est.estimate_sent_at = new Date(sentMs).toISOString();
+        est.estimated_amount = (1 + Math.floor(rand() * 30)) * 5_000_000;
+        if (status === '수주성공') {
+          est.confirmed_contract_amount = est.estimated_amount;
+          est.contract_won_at = new Date(sentMs + 5 * 86_400_000).toISOString();
+        }
+      }
+      out.push(est);
+    }
+  });
+
+  return out;
+}
 
 // 1. 관리자 모의 데이터 (3건)
 export const mockAdminUsers: AdminUser[] = [
@@ -996,7 +1085,9 @@ export const mockEstimates: Estimate[] = [
     status: '접수완료',
     payment_required: false,
     payment_status: '미결제'
-  }
+  },
+  // --- 실적 시각화용 테스트 표본(공종별 10~15건, 고정 시드 무작위) ---
+  ...generateTestEstimates(),
 ];
 
 // 4. 결제 기록 모의 데이터 (15건)

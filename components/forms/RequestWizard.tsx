@@ -329,54 +329,54 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   const showForm = !checkingVerify && !verifyRequired;
 
   return (
-    <div className="w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-4xl mx-auto overflow-hidden">
+    <div className="w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-5xl mx-auto overflow-hidden">
 
-      {/* 헤더 바 */}
-      <div className="bg-bg-subtle border-b border-border px-5 py-4 flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-[16px] font-black text-navy leading-none">
+      {/* 헤더 바 — 다른 탭과 동일 프레임으로 여유 있게(패딩·헤드라인 확대) */}
+      <div className="bg-bg-subtle border-b border-border px-7 py-5 flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-1.5">
+          <h3 className="text-[22px] font-black text-navy leading-tight tracking-tight">
             {showForm ? '예상견적 의뢰하기' : verifyRequired ? '본인확인' : '준비 중'}
           </h3>
-          {showForm && <span className="text-[11.5px] text-gray font-semibold">고객 정보만 등록해도 접수됩니다 · 자료를 함께 올리면 방문 전 1차 검토가 빨라집니다</span>}
+          {showForm && <span className="text-[13.5px] text-gray font-semibold">고객 정보만 등록해도 접수됩니다 · 자료를 함께 올리면 방문 전 1차 검토가 빨라집니다</span>}
         </div>
         {customerAuth && showForm && (
-          <span className="text-[11px] font-bold text-success">{customerAuth.name}님 · 자동입력됨</span>
+          <span className="text-[12.5px] font-bold text-success shrink-0">{customerAuth.name}님 · 자동입력됨</span>
         )}
       </div>
 
       {/* 인증 상태 확인 중 */}
       {checkingVerify ? (
-        <div className="p-10 text-center text-[12px] text-gray-light font-bold">불러오는 중...</div>
+        <div className="p-10 text-center text-[14px] text-gray-light font-bold">불러오는 중...</div>
       ) : verifyRequired ? (
         /* 본인인증 전: 휴대폰 인증 게이트 */
-        <div className="p-6">
+        <div className="p-7">
           <PhoneVerifyGate onVerified={handleVerified} />
         </div>
       ) : (
       /* 단일 등록 폼 */
-      <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="p-7 md:p-8 flex flex-col gap-7">
 
         {/* 에러 피드백 */}
         {errorMsg && (
-          <div className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[12px] font-bold flex items-start gap-2 animate-in fade-in duration-200">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold flex items-start gap-2 animate-in fade-in duration-200">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {/* ===== 2분할: ① 고객 정보(필수) / ② 견적 자료(선택) — 가로폭 활용·한 화면 ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
 
         {/* ① 고객 정보 등록 (필수) */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-border">
-            <span className="w-5 h-5 rounded-md bg-steel text-white text-[11px] font-black flex items-center justify-center shrink-0">1</span>
-            <span className="text-[14px] font-black text-navy">고객 정보 등록</span>
-            <span className="text-[10px] font-bold text-steel bg-steel/10 px-1.5 py-0.5 rounded">필수</span>
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-border">
+            <span className="w-7 h-7 rounded-md bg-steel text-white text-[14px] font-black flex items-center justify-center shrink-0">1</span>
+            <span className="text-[17px] font-black text-navy">고객 정보 등록</span>
+            <span className="text-[12px] font-bold text-steel bg-steel/10 px-2 py-0.5 rounded">필수</span>
           </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="customer_name" className="text-[12px] font-bold text-navy flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-steel" />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="customer_name" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+              <User className="w-4.5 h-4.5 text-steel" />
               의뢰 주체 성함 (필수)
             </label>
             <input
@@ -387,13 +387,13 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               onChange={handleChange}
               style={{ touchAction: 'manipulation' }}
               placeholder="홍길동"
-              className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
+              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="company_name" className="text-[12px] font-bold text-navy flex items-center gap-1">
-              <Building className="w-3.5 h-3.5 text-steel" />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="company_name" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+              <Building className="w-4.5 h-4.5 text-steel" />
               회사명 / 소속 기관 (선택)
             </label>
             <input
@@ -404,16 +404,16 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               onChange={handleChange}
               style={{ touchAction: 'manipulation' }}
               placeholder="ABC식품 (주)"
-              className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
+              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="phone" className="text-[12px] font-bold text-navy flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-steel" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="phone" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+                <Phone className="w-4.5 h-4.5 text-steel" />
                 연락처 (필수)
-                {verified && <span className="text-[11px] text-success font-bold">· 본인인증 완료</span>}
+                {verified && <span className="text-[12.5px] text-success font-bold">· 본인인증 완료</span>}
               </label>
               <input
                 id="phone"
@@ -424,14 +424,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 readOnly={verified}
                 style={{ touchAction: 'manipulation' }}
                 placeholder="010-0000-0000"
-                className={`w-full border border-border p-2.5 rounded-custom text-[15px] transition-all ${
+                className={`w-full border border-border p-3.5 rounded-custom text-[16.5px] transition-all ${
                   verified ? 'bg-bg-subtle text-gray focus:outline-none' : 'focus:outline-none focus:border-steel'
                 }`}
               />
             </div>
-            <div className="flex flex-col gap-1">
-              <label htmlFor="email" className="text-[12px] font-bold text-navy flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-steel" />
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+                <Mail className="w-4.5 h-4.5 text-steel" />
                 이메일 (필수)
               </label>
               <input
@@ -442,14 +442,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                 onChange={handleChange}
                 style={{ touchAction: 'manipulation' }}
                 placeholder="name@example.com"
-                className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
+                className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="site_address" className="text-[12px] font-bold text-navy flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-steel" />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="site_address" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+              <MapPin className="w-4.5 h-4.5 text-steel" />
               공사 현장 주소 (필수)
             </label>
             <input
@@ -460,14 +460,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               onChange={handleChange}
               style={{ touchAction: 'manipulation' }}
               placeholder="경기도 화성시 향남읍 식품공단로 42"
-              className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all"
+              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
             />
           </div>
 
           {/* 고객 요청 사항 — 200자 이내 텍스트 */}
-          <div className="flex flex-col gap-1">
-            <label htmlFor="description" className="text-[12px] font-bold text-navy flex items-center gap-1">
-              <MessageSquare className="w-3.5 h-3.5 text-steel" />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="description" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+              <MessageSquare className="w-4.5 h-4.5 text-steel" />
               고객 요청 사항 (선택 · 200자 이내)
             </label>
             <textarea
@@ -476,23 +476,23 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               value={formData.description}
               onChange={handleChange}
               maxLength={200}
-              rows={3}
+              rows={4}
               style={{ touchAction: 'manipulation' }}
               placeholder="예) 80A 배관 신규 설치 및 기존 라인 분기 검토를 요청드립니다."
-              className="w-full border border-border p-2.5 rounded-custom text-[15px] focus:outline-none focus:border-steel transition-all resize-none"
+              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all resize-none"
             />
-            <span className="text-[11px] text-gray-light font-bold self-end">{formData.description.length}/200</span>
+            <span className="text-[12.5px] text-gray-light font-bold self-end">{formData.description.length}/200</span>
           </div>
         </div>
 
         {/* ② 견적 자료 등록 (선택) */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2 pb-2 border-b border-border">
-            <span className="w-5 h-5 rounded-md bg-gray-light text-white text-[11px] font-black flex items-center justify-center shrink-0">2</span>
-            <span className="text-[14px] font-black text-navy">견적 자료 등록</span>
-            <span className="text-[10px] font-bold text-gray bg-bg-subtle px-1.5 py-0.5 rounded">선택</span>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-border">
+            <span className="w-7 h-7 rounded-md bg-gray-light text-white text-[14px] font-black flex items-center justify-center shrink-0">2</span>
+            <span className="text-[17px] font-black text-navy">견적 자료 등록</span>
+            <span className="text-[12px] font-bold text-gray bg-bg-subtle px-2 py-0.5 rounded">선택</span>
           </div>
-          <span className="text-[11.5px] text-gray-light leading-relaxed">
+          <span className="text-[13px] text-gray leading-relaxed">
             지금 자료가 없어도 접수되고, 방문 실측으로 보완합니다. · 항목별 최대 {MAX_PER_CATEGORY}개, 전체 최대 {MAX_TOTAL_FILES}개 · 허용: {ALLOWED_LABEL}
           </span>
 
@@ -506,56 +506,56 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
             className="hidden"
           />
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3.5">
             <button
               type="button"
               disabled={uploading}
               onClick={() => openFilePicker('도면')}
               style={{ touchAction: 'manipulation' }}
-              className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
+              className="flex flex-col items-center justify-center gap-2 p-5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
             >
-              <Upload className="w-4 h-4 text-steel" />
-              <span className="text-[12px] font-bold text-navy">도면 업로드</span>
+              <Upload className="w-5.5 h-5.5 text-steel" />
+              <span className="text-[14px] font-bold text-navy">도면 업로드</span>
             </button>
             <button
               type="button"
               disabled={uploading}
               onClick={() => openFilePicker('사진')}
               style={{ touchAction: 'manipulation' }}
-              className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
+              className="flex flex-col items-center justify-center gap-2 p-5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
             >
-              <Upload className="w-4 h-4 text-steel" />
-              <span className="text-[12px] font-bold text-navy">사진 업로드</span>
+              <Upload className="w-5.5 h-5.5 text-steel" />
+              <span className="text-[14px] font-bold text-navy">사진 업로드</span>
             </button>
             <button
               type="button"
               disabled={uploading}
               onClick={() => openFilePicker('기타')}
               style={{ touchAction: 'manipulation' }}
-              className="flex flex-col items-center justify-center gap-1.5 p-3.5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
+              className="flex flex-col items-center justify-center gap-2 p-5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
             >
-              <Upload className="w-4 h-4 text-steel" />
-              <span className="text-[12px] font-bold text-navy">기타 첨부</span>
+              <Upload className="w-5.5 h-5.5 text-steel" />
+              <span className="text-[14px] font-bold text-navy">기타 첨부</span>
             </button>
           </div>
 
           {/* 업로드 진행 표시 */}
           {uploading && (
-            <div className="flex items-center justify-center gap-2 text-[12px] font-bold text-steel py-1">
-              <Upload className="w-3.5 h-3.5 animate-pulse" />
+            <div className="flex items-center justify-center gap-2 text-[13.5px] font-bold text-steel py-1">
+              <Upload className="w-4 h-4 animate-pulse" />
               파일 업로드 중입니다... 잠시만 기다려 주세요.
             </div>
           )}
 
           {/* 첨부된 파일 목록 */}
           {formData.files.length > 0 && (
-            <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto border border-border rounded-custom p-3 bg-bg-subtle/30">
-              <span className="text-[12px] text-gray-light font-bold">첨부된 자료 ({formData.files.length}건)</span>
+            <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto border border-border rounded-custom p-3 bg-bg-subtle/30">
+              <span className="text-[13px] text-gray-light font-bold">첨부된 자료 ({formData.files.length}건)</span>
               {formData.files.map((file, idx) => (
-                <div key={file.id || idx} className="flex items-center justify-between bg-bg border border-border p-2 rounded-custom shadow-sm text-[12px] font-medium">
+                <div key={file.id || idx} className="flex items-center justify-between bg-bg border border-border p-2.5 rounded-custom shadow-sm text-[13px] font-medium">
                   <div className="flex items-center gap-2 text-gray min-w-0">
-                    <span className="bg-steel/15 text-steel px-1.5 py-0.5 rounded-custom text-[12px] font-bold shrink-0">{file.file_category}</span>
-                    <span className="truncate text-navy font-bold text-[12px]">{file.file_name}</span>
+                    <span className="bg-steel/15 text-steel px-1.5 py-0.5 rounded-custom text-[12.5px] font-bold shrink-0">{file.file_category}</span>
+                    <span className="truncate text-navy font-bold text-[13px]">{file.file_name}</span>
                   </div>
                   <button
                     type="button"
@@ -563,7 +563,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
                     style={{ touchAction: 'manipulation' }}
                     className="p-1 hover:bg-bg-subtle rounded-custom text-danger hover:text-danger-active transition-all"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))}
@@ -573,8 +573,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         </div>
 
         {/* ================= 개인정보 동의 + 등록 (하단 한 줄) ================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 border-t border-border pt-4">
-          <div className="flex items-start gap-3 border border-border p-3.5 rounded-custom bg-bg-subtle/30 select-none flex-1">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5 border-t border-border pt-5">
+          <div className="flex items-start gap-3 border border-border p-4 rounded-custom bg-bg-subtle/30 select-none flex-1">
             <input
               id="agreePrivacy"
               name="agreePrivacy"
@@ -582,11 +582,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               checked={formData.agreePrivacy}
               onChange={handleChange}
               style={{ touchAction: 'manipulation' }}
-              className="w-4 h-4 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
+              className="w-5 h-5 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
             />
             <label htmlFor="agreePrivacy" style={{ touchAction: 'manipulation' }} className="flex flex-col gap-0.5 cursor-pointer">
-              <span className="text-[12px] font-bold text-navy">개인정보 수집 및 이용 동의 (필수)</span>
-              <span className="text-[12px] text-gray leading-normal">
+              <span className="text-[14px] font-bold text-navy">개인정보 수집 및 이용 동의 (필수)</span>
+              <span className="text-[13px] text-gray leading-normal">
                 ZEROS 예상견적 서비스 제공 및 연락을 위한 성함·연락처·이메일 저장을 승인합니다.
               </span>
             </label>
@@ -596,14 +596,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
             type="submit"
             disabled={loading || uploading}
             style={{ touchAction: 'manipulation' }}
-            className="flex items-center justify-center gap-1.5 bg-accent hover:bg-accent/90 text-bg py-3.5 px-6 sm:px-12 shrink-0 rounded-custom text-[14px] font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
+            className="flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg py-4 px-8 sm:px-14 shrink-0 rounded-custom text-[16.5px] font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? (
               <span>등록 중...</span>
             ) : (
               <>
                 등록
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
               </>
             )}
           </button>
