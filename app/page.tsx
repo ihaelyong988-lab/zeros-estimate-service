@@ -287,17 +287,17 @@ export default function Home() {
   // ==========================================
   const renderBusinessTab = () => {
     return (
-      <div className="flex flex-col gap-6 max-w-5xl mx-auto py-3 select-none">
-        {/* 1. 히어로 헤드라인 — 30년 현장 크레덴셜 eyebrow(스틸) + 에디토리얼 H1 */}
-        <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-7 max-w-5xl mx-auto py-6 min-h-[calc(100vh-112px)] select-none">
+        {/* 1. 히어로 헤드라인 — 오버사이즈 에디토리얼(타이포 스케일·accent 리듬으로 생동감) */}
+        <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <span className="w-1 h-4 bg-steel rounded-full shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
             <span className="text-[12px] font-black tracking-wider text-steel">현장 실무 30년 · 데이터 검증</span>
           </div>
-          <h1 className="text-[clamp(24px,2.8vw,34px)] font-black text-navy leading-[1.24] tracking-tight">
-            <span className="text-accent">BIZ모델_</span> 최적합 예산, <span className="text-accent">최소 범주대역</span>으로 책정해 드립니다
+          <h1 className="text-[clamp(32px,4.6vw,52px)] font-black text-navy leading-[1.1] tracking-[-0.04em]">
+            <span className="text-accent">BIZ모델_</span> 최적합 예산,<br /> <span className="text-accent">최소 범주대역</span>으로 책정해 드립니다
           </h1>
-          <p className="text-[14px] text-gray font-semibold">
+          <p className="text-[15px] text-gray font-semibold leading-relaxed">
             소상공인 대표님의 들쑥날쑥한 견적과 설계변경 분쟁을 데이터로 사전에 차단합니다.
           </p>
         </section>
@@ -345,8 +345,8 @@ export default function Home() {
           ))}
         </section>
 
-        {/* 4. FOOTER 소개란 — 사업소개 탭 하단 회사 소개 (헤어라인·단정표현 없이) */}
-        <footer className="mt-6 border-t-2 border-navy pt-5">
+        {/* 4. FOOTER 소개란 — 화면 하단 앵커(mt-auto)로 위 여백 균형 */}
+        <footer className="mt-auto border-t-2 border-navy pt-6">
           <div className="flex justify-between gap-6 flex-wrap">
             <div className="max-w-[440px]">
               <div className="flex items-center gap-2 mb-2">
