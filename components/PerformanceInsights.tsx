@@ -29,6 +29,19 @@ const BUDGET_COLS: { key: EstimateCategory; label: string; range: string }[] = [
   { key: 'unknown', label: '공사규모·금액 미정', range: '온라인 컨설팅' },
 ];
 
+// 공종별 시그니처 색 — 좌측 메뉴·견적 검토 히어로(LANDING_SIGNATURE_HEX)와 동일 체계.
+// 분포 막대를 공종마다 다른 색으로 칠해 가독성·식별성을 준다(무지개 남발 아님 — 의미 있는 색).
+const TRADE_COLORS: Record<string, string> = {
+  '배관공사': '#0891B2',
+  '장비설치': '#D97706',
+  'Utility 배관': '#0284C7',
+  '공장증설': '#D2691E',
+  '노후배관교체': '#059669',
+  '기계실개선': '#0D9488',
+  '생산설비 배관 연결': '#4F46E5',
+  'CAPEX 개·증설 검토': '#16365F',
+};
+
 const REVIEW_DONE: ReadonlySet<string> = new Set([
   '견적서 송부완료', '수주성공', '수주실패',
 ]);
@@ -138,7 +151,6 @@ export const PerformanceInsights: React.FC = () => {
 
   const { metrics, matrix, rowTotal, colTotal, matrixMax, grandTotal, distribution, cards, reviewDoneCount } = agg;
   const reviewDoneRate = grandTotal > 0 ? Math.round((reviewDoneCount / grandTotal) * 100) : 0;
-  const distMax = Math.max(...distribution.map((d) => d.value), 1);
 
   return (
     <div className="flex flex-col gap-5 max-w-5xl mx-auto py-3">
@@ -162,7 +174,7 @@ export const PerformanceInsights: React.FC = () => {
             누적 진단 건수
           </span>
           <span className="flex items-baseline gap-1.5">
-            <span className="text-[clamp(48px,5.5vw,64px)] font-black text-accent tabular-nums leading-[0.8] tracking-[-0.03em]">{metrics.totalCount}</span>
+            <span className="text-[clamp(52px,6.5vw,72px)] font-black text-accent tabular-nums leading-[0.78] tracking-[-0.045em]">{metrics.totalCount}</span>
             <span className="text-[22px] font-black text-navy">건</span>
           </span>
           <span className="h-[3px] w-14 bg-accent rounded-full" />
@@ -210,7 +222,7 @@ export const PerformanceInsights: React.FC = () => {
                 <Tooltip formatter={(v) => [`${v}건`, '진단 건수']} wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]} name="진단 건수">
                   {distribution.map((d) => (
-                    <Cell key={d.name} fill={heatCellStyle(d.value, distMax).backgroundColor as string} />
+                    <Cell key={d.name} fill={TRADE_COLORS[d.name] || '#1E4D8C'} fillOpacity={0.9} />
                   ))}
                 </Bar>
               </BarChart>
