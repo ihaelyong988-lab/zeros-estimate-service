@@ -246,9 +246,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     container.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
   }, [landingTradeName, isLandingShowcase]);
 
-  // 견적 검토(review) 탭 진입 시 우측 결과 패널을 접어 작업 공간을 넓게 — 필요 시 엣지 탭으로 펼침
+  // 견적 검토(review)·사업 소개(business) 탭 진입 시 우측 결과 패널을 접어 작업 공간을 넓게 —
+  // 숨긴 상태로 들어가고, 필요 시 우측 가장자리 '검토' 엣지 탭으로 펼친다.
   useEffect(() => {
-    if (activeTab === 'review') setShowDecisionPanel(false);
+    if (activeTab === 'review' || activeTab === 'business') setShowDecisionPanel(false);
   }, [activeTab, setShowDecisionPanel]);
 
   // 모바일 하단 탭과 activeTab 연동 동기화

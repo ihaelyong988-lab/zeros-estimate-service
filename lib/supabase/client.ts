@@ -46,6 +46,11 @@ const TABLES = {
   notificationLogs: 'zeros_notification_logs',
 } as const;
 
+// 시드 버전 — 모의 데이터(특히 실적 시각화용 테스트 표본)를 갱신할 때 올린다.
+// 저장된 버전과 다르면 견적 테이블을 새 시드로 1회 재적재해, 기존 localStorage가 옛 표본을 들고 있어도 반영된다.
+const SEED_VERSION = '2026-06-27-perf-testdata';
+const SEED_VERSION_KEY = 'zeros_seed_version';
+
 // ==========================================
 // 2. 공통 비즈니스 로직 베이스 (저장소 비의존)
 // ==========================================
@@ -406,6 +411,13 @@ class MockZerosService extends BaseZerosService {
   private init() {
     if (this.isInitialized) return;
     if (typeof window === 'undefined') return;
+
+    // 시드 버전이 바뀌면 견적 표본을 새로 적재(실적 시각화용 테스트 데이터 갱신).
+    // 사용자가 직접 입력한 건은 다음 버전 변경 전까지 유지된다.
+    if (localStorage.getItem(SEED_VERSION_KEY) !== SEED_VERSION) {
+      localStorage.setItem(TABLES.estimates, JSON.stringify(mockEstimates));
+      localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION);
+    }
 
     if (!localStorage.getItem(TABLES.estimates)) {
       localStorage.setItem(TABLES.estimates, JSON.stringify(mockEstimates));
