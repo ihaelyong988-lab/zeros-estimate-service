@@ -364,14 +364,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
           </div>
         )}
 
-        {/* ===== 2분할: ① 고객 정보(필수) / ② 견적 자료(선택) — 가로폭 활용·한 화면 ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
+        {/* ===== 3분할: ① 기본 정보(필수) / ② 현장 정보(필수) / ③ 견적 자료(선택) ===== */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 lg:gap-8 items-start">
 
-        {/* ① 고객 정보 등록 (필수) */}
+        {/* ① 기본 정보 (필수) */}
         <div className="flex flex-col gap-5">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-border">
+          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-steel/30">
             <span className="w-7 h-7 rounded-md bg-steel text-white text-[14px] font-black flex items-center justify-center shrink-0">1</span>
-            <span className="text-[17px] font-black text-navy">고객 정보 등록</span>
+            <span className="text-[17px] font-black text-navy">기본 정보</span>
             <span className="text-[12px] font-bold text-steel bg-steel/10 px-2 py-0.5 rounded">필수</span>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -408,43 +408,51 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="phone" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-                <Phone className="w-4.5 h-4.5 text-steel" />
-                연락처 (필수)
-                {verified && <span className="text-[12.5px] text-success font-bold">· 본인인증 완료</span>}
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleChange}
-                readOnly={verified}
-                style={{ touchAction: 'manipulation' }}
-                placeholder="010-0000-0000"
-                className={`w-full border border-border p-3.5 rounded-custom text-[16.5px] transition-all ${
-                  verified ? 'bg-bg-subtle text-gray focus:outline-none' : 'focus:outline-none focus:border-steel'
-                }`}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-                <Mail className="w-4.5 h-4.5 text-steel" />
-                이메일 (필수)
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                style={{ touchAction: 'manipulation' }}
-                placeholder="name@example.com"
-                className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
-              />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="phone" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+              <Phone className="w-4.5 h-4.5 text-steel" />
+              연락처 (필수)
+              {verified && <span className="text-[12.5px] text-success font-bold">· 본인인증 완료</span>}
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleChange}
+              readOnly={verified}
+              style={{ touchAction: 'manipulation' }}
+              placeholder="010-0000-0000"
+              className={`w-full border border-border p-3.5 rounded-custom text-[16.5px] transition-all ${
+                verified ? 'bg-bg-subtle text-gray focus:outline-none' : 'focus:outline-none focus:border-steel'
+              }`}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="email" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+              <Mail className="w-4.5 h-4.5 text-steel" />
+              이메일 (필수)
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              style={{ touchAction: 'manipulation' }}
+              placeholder="name@example.com"
+              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
+            />
+          </div>
+        </div>
+
+        {/* ② 현장 정보 (필수) */}
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-steel/30">
+            <span className="w-7 h-7 rounded-md bg-steel text-white text-[14px] font-black flex items-center justify-center shrink-0">2</span>
+            <span className="text-[17px] font-black text-navy">현장 정보</span>
+            <span className="text-[12px] font-bold text-steel bg-steel/10 px-2 py-0.5 rounded">필수</span>
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -476,7 +484,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               value={formData.description}
               onChange={handleChange}
               maxLength={200}
-              rows={4}
+              rows={7}
               style={{ touchAction: 'manipulation' }}
               placeholder="예) 80A 배관 신규 설치 및 기존 라인 분기 검토를 요청드립니다."
               className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all resize-none"
@@ -485,11 +493,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
           </div>
         </div>
 
-        {/* ② 견적 자료 등록 (선택) */}
+        {/* ③ 견적 자료 (선택) */}
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-border">
-            <span className="w-7 h-7 rounded-md bg-gray-light text-white text-[14px] font-black flex items-center justify-center shrink-0">2</span>
-            <span className="text-[17px] font-black text-navy">견적 자료 등록</span>
+          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-border">
+            <span className="w-7 h-7 rounded-md bg-gray-light text-white text-[14px] font-black flex items-center justify-center shrink-0">3</span>
+            <span className="text-[17px] font-black text-navy">견적 자료</span>
             <span className="text-[12px] font-bold text-gray bg-bg-subtle px-2 py-0.5 rounded">선택</span>
           </div>
           <span className="text-[13px] text-gray leading-relaxed">
@@ -506,37 +514,25 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
             className="hidden"
           />
 
-          <div className="grid grid-cols-3 gap-3.5">
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => openFilePicker('도면')}
-              style={{ touchAction: 'manipulation' }}
-              className="flex flex-col items-center justify-center gap-2 p-5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
-            >
-              <Upload className="w-5.5 h-5.5 text-steel" />
-              <span className="text-[14px] font-bold text-navy">도면 업로드</span>
-            </button>
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => openFilePicker('사진')}
-              style={{ touchAction: 'manipulation' }}
-              className="flex flex-col items-center justify-center gap-2 p-5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
-            >
-              <Upload className="w-5.5 h-5.5 text-steel" />
-              <span className="text-[14px] font-bold text-navy">사진 업로드</span>
-            </button>
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => openFilePicker('기타')}
-              style={{ touchAction: 'manipulation' }}
-              className="flex flex-col items-center justify-center gap-2 p-5 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
-            >
-              <Upload className="w-5.5 h-5.5 text-steel" />
-              <span className="text-[14px] font-bold text-navy">기타 첨부</span>
-            </button>
+          {/* 업로드 존 — 좁은 컬럼에 맞춰 세로 스택(가로 버튼) */}
+          <div className="flex flex-col gap-3">
+            {[
+              { cat: '도면', label: '도면 업로드' },
+              { cat: '사진', label: '사진 업로드' },
+              { cat: '기타', label: '기타 첨부' },
+            ].map((u) => (
+              <button
+                key={u.cat}
+                type="button"
+                disabled={uploading}
+                onClick={() => openFilePicker(u.cat)}
+                style={{ touchAction: 'manipulation' }}
+                className="flex items-center justify-center gap-2.5 w-full p-4 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
+              >
+                <Upload className="w-5 h-5 text-steel" />
+                <span className="text-[14.5px] font-bold text-navy">{u.label}</span>
+              </button>
+            ))}
           </div>
 
           {/* 업로드 진행 표시 */}
@@ -572,9 +568,9 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         </div>
         </div>
 
-        {/* ================= 개인정보 동의 + 등록 (하단 한 줄) ================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-5 border-t border-border pt-5">
-          <div className="flex items-start gap-3 border border-border p-4 rounded-custom bg-bg-subtle/30 select-none flex-1">
+        {/* ===== 하단 등록란 — 카드 폭 전체로 확장한 풀-블리드 푸터 바로 확실히 강조 ===== */}
+        <div className="-mx-7 md:-mx-8 -mb-7 md:-mb-8 mt-1 px-7 md:px-8 py-6 bg-bg-subtle border-t-2 border-border flex flex-col sm:flex-row sm:items-center gap-5">
+          <label htmlFor="agreePrivacy" style={{ touchAction: 'manipulation' }} className="flex items-start gap-3 select-none cursor-pointer flex-1">
             <input
               id="agreePrivacy"
               name="agreePrivacy"
@@ -584,25 +580,25 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               style={{ touchAction: 'manipulation' }}
               className="w-5 h-5 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
             />
-            <label htmlFor="agreePrivacy" style={{ touchAction: 'manipulation' }} className="flex flex-col gap-0.5 cursor-pointer">
-              <span className="text-[14px] font-bold text-navy">개인정보 수집 및 이용 동의 (필수)</span>
+            <span className="flex flex-col gap-0.5">
+              <span className="text-[14.5px] font-black text-navy">개인정보 수집 및 이용 동의 (필수)</span>
               <span className="text-[13px] text-gray leading-normal">
                 ZEROS 예상견적 서비스 제공 및 연락을 위한 성함·연락처·이메일 저장을 승인합니다.
               </span>
-            </label>
-          </div>
+            </span>
+          </label>
 
           <button
             type="submit"
             disabled={loading || uploading}
             style={{ touchAction: 'manipulation' }}
-            className="flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg py-4 px-8 sm:px-14 shrink-0 rounded-custom text-[16.5px] font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
+            className="flex items-center justify-center gap-2 bg-accent hover:bg-[#c95f12] text-white py-4 px-12 sm:px-16 shrink-0 rounded-custom text-[18px] font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? (
               <span>등록 중...</span>
             ) : (
               <>
-                등록
+                등록하기
                 <Send className="w-5 h-5" />
               </>
             )}

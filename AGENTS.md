@@ -32,6 +32,15 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 > 사용자 지시로 기록 (2026-06-20). 이 저장소에서 작업하는 **모든 도구(Claude/Cursor/Copilot 등)** 가 우선 적용한다. 도구가 바뀌어도 같은 실수를 반복하지 않기 위함.
 
+## 0. 스킬 우선 적용 (착수 전 — 가장 먼저) · 필수
+> 사용자 상시 지시 (2026-06-27). **프런트엔드·백엔드·인프라·문서 등 작업 종류를 가리지 않고**, 코드/산출물에 손대기 전에 **적용 가능한 스킬을 먼저 확인하고, 해당되면 무조건 호출한 뒤** 착수한다.
+
+- **UI/프런트엔드**: `ui-ux-pro-max`(반드시 `scripts/search.py … --design-system` 부터 실행) · `frontend-design`.
+- **업무문서(필수 의무화)**: 엑셀 견적서·정산·보고서 = `xlsx` / `excel-report` · PPT 제안서·보고 = `pptx`(도메인: `ve-report-generator`·`dc-mech-proposal-ppt`·`spec-to-ppt-training-v2`·`construction-pm-dashboard` 등) · 워드/문서 = `docx` / `pdf`. **손으로 표·슬라이드를 짜지 말고 반드시 해당 스킬로 생성**한다.
+- **그 외 작업**: 맞는 스킬이 있으면 무조건 사용 — 예) MCP 서버=mcp-builder, 심층조사=deep-research 등.
+- **"직접/수동으로 하면 된다"고 건너뛰지 않는다.** 적용 가능한 스킬이 **없을 때만** 바로 진행한다.
+- 근거: 2026-06-27 — UI 작업에서 스킬을 건너뛰고 수동 설계해 결과가 반복적으로 어설펐음. (UserPromptSubmit 훅이 이 규칙을 매 지시마다 자동 재주입한다.)
+
 ## 1. 의도·맥락 우선 (가장 중요)
 - 작업 지시를 받으면 **먼저 "의도(intent)와 맥락(context)"을 파악**한다.
 - 화면/이미지/텍스트를 **자세히 보고** 무엇을 원하는지 이해한 다음 움직인다.
