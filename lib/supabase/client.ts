@@ -1,7 +1,7 @@
 'use client';
 
 import { Estimate, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
-import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits } from './mock-data';
+import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits, testEstimates } from './mock-data';
 import { getSupabase, isSupabaseEnabled } from './supabaseBrowser';
 
 // ==========================================
@@ -460,6 +460,7 @@ class MockZerosService extends BaseZerosService {
 // 전체 배열을 upsert(onConflict: id) 하여 메모리 상태를 클라우드에 반영한다.
 class SupabaseZerosService extends BaseZerosService {
   private seededAdmins = false;
+  private seededTestData = false;
 
   protected async loadTable<T>(key: string): Promise<T[]> {
     const supabase = getSupabase();
@@ -471,6 +472,16 @@ class SupabaseZerosService extends BaseZerosService {
       const { data } = await supabase.from(key).select('id').limit(1);
       if (!data || data.length === 0) {
         await this.persistTable(TABLES.adminUsers, mockAdminUsers);
+      }
+    }
+
+    // 실적 시각화용 테스트 표본(공종별 10~15건) — 클라우드에 없을 때만 최초 1회 시드.
+    // 고정 id(est-test-*)라 멱등하며, 실제 접수 건(다른 id)은 건드리지 않는다. 추후 접두어로 일괄 삭제 가능.
+    if (key === TABLES.estimates && !this.seededTestData) {
+      this.seededTestData = true;
+      const { data: existing } = await supabase.from(key).select('id').like('id', 'est-test-%').limit(1);
+      if (!existing || existing.length === 0) {
+        await this.persistTable(TABLES.estimates, testEstimates);
       }
     }
 

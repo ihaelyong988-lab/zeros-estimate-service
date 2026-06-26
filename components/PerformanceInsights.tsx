@@ -152,37 +152,42 @@ export const PerformanceInsights: React.FC = () => {
         </p>
       </div>
 
-      {/* KPI 하이라이트 — '누적 진단 건수'를 단일 하이라이트(초대형 지표)로, 보조 3종은 헤어라인 분리 */}
-      <div className="flex flex-col md:flex-row md:items-end gap-6 md:gap-10 border-b border-border pb-6">
-        {/* 히어로 지표 — 포트폴리오 규모를 한눈에 */}
-        <div className="flex flex-col gap-2 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-1 h-4 bg-accent rounded-full shrink-0" />
-            <span className="text-[13px] font-black text-navy tracking-tight">누적 진단 건수</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[clamp(46px,6vw,64px)] font-black text-navy tabular-nums leading-[0.9] tracking-tight">{metrics.totalCount}</span>
+      {/* KPI 하이라이트 — 박스 없이 상·하 헤어라인만. 의도적 비대칭(좌 지배지표 / 우 보조 클러스터),
+          색은 '누적 진단 건수' 한 묶음(점·숫자·베이스라인 룰)에만, 나머지 무채색. 로드 시 스태거 페이드인 */}
+      <section className="border-t border-b border-border py-7 flex flex-wrap items-end gap-x-10 gap-y-6">
+        {/* 누적 진단 건수 — 유일한 컬러 하이라이트 */}
+        <div className="flex flex-col gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
+          <span className="flex items-center gap-2 text-[12.5px] font-bold text-gray tracking-tight">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 animate-pulse motion-reduce:animate-none" title="실시간 집계" />
+            누적 진단 건수
+          </span>
+          <span className="flex items-baseline gap-1.5">
+            <span className="text-[clamp(48px,5.5vw,64px)] font-black text-accent tabular-nums leading-[0.8] tracking-[-0.03em]">{metrics.totalCount}</span>
             <span className="text-[22px] font-black text-navy">건</span>
-          </div>
-          <span className="text-[12.5px] text-gray font-semibold">실제 접수·검토 데이터에서 실시간 집계</span>
+          </span>
+          <span className="h-[3px] w-14 bg-accent rounded-full" />
         </div>
-        {/* 보조 지표 3종 — 세로 헤어라인으로 구분 */}
-        <div className="flex-1 grid grid-cols-3">
+
+        {/* 보조 3종 — 무채색, 우측 클러스터(의도적 비대칭 여백) */}
+        <div className="flex flex-wrap items-end gap-x-9 gap-y-5 ml-auto">
           {[
-            { label: '검토 완료율', value: `${reviewDoneRate}%`, tone: 'text-steel' },
-            { label: '평균 검토 소요', value: `${metrics.averageProcessDays}일`, tone: 'text-navy' },
-            { label: '진단 공종 수', value: `${WORK_TYPES.length}종`, tone: 'text-navy' },
+            { label: '검토 완료율', value: reviewDoneRate, unit: '%' },
+            { label: '평균 검토 소요', value: metrics.averageProcessDays, unit: '일' },
+            { label: '진단 공종 수', value: WORK_TYPES.length, unit: '종' },
           ].map((k, i) => (
             <div
               key={k.label}
-              className={`flex flex-col gap-1.5 ${i > 0 ? 'border-l border-border pl-4 md:pl-6' : ''} ${i < 2 ? 'pr-4 md:pr-6' : ''}`}
+              className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none"
+              style={{ animationDelay: `${120 + i * 90}ms` }}
             >
-              <span className="text-[12.5px] font-bold text-gray">{k.label}</span>
-              <span className={`text-[30px] font-black tabular-nums tracking-tight leading-none ${k.tone}`}>{k.value}</span>
+              <span className="text-[12.5px] font-bold text-gray tracking-tight">{k.label}</span>
+              <span className="text-[30px] font-black text-navy tabular-nums leading-none tracking-[-0.02em]">
+                {k.value}<span className="text-[16px] font-extrabold text-gray-light ml-0.5">{k.unit}</span>
+              </span>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* 분포 차트 박스 */}
       <div className="flex flex-col gap-4">

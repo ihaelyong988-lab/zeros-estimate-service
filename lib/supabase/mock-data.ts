@@ -89,6 +89,9 @@ function generateTestEstimates(): Estimate[] {
   return out;
 }
 
+// 실적 시각화용 테스트 표본을 1회 생성해 공유한다(Mock localStorage · Supabase 시드 공용).
+export const testEstimates: Estimate[] = generateTestEstimates();
+
 // 1. 관리자 모의 데이터 (3건)
 export const mockAdminUsers: AdminUser[] = [
   {
@@ -1087,7 +1090,7 @@ export const mockEstimates: Estimate[] = [
     payment_status: '미결제'
   },
   // --- 실적 시각화용 테스트 표본(공종별 10~15건, 고정 시드 무작위) ---
-  ...generateTestEstimates(),
+  ...testEstimates,
 ];
 
 // 4. 결제 기록 모의 데이터 (15건)
