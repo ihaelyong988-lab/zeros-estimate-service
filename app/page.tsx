@@ -287,58 +287,42 @@ export default function Home() {
   // ==========================================
   const renderBusinessTab = () => {
     return (
-      <div className="flex flex-col gap-5 max-w-5xl mx-auto py-5 min-h-[calc(100vh-104px)] select-none">
-        {/* 1. 히어로 헤드라인 — 오버사이즈 에디토리얼(eyebrow 제거, 한 화면 맞춤) */}
-        <section className="flex flex-col gap-3.5">
-          <h1 className="text-[clamp(30px,4.2vw,48px)] font-black text-navy leading-[1.12] tracking-[-0.04em]">
-            <span className="text-accent">BIZ모델_</span> 최적합 예산,<br /> <span className="text-accent">최소 범주대역</span>으로 책정해 드립니다
+      <div className="flex flex-col gap-6 max-w-5xl mx-auto py-6 min-h-[calc(100vh-128px)] select-none">
+        {/* 1. 히어로 헤드라인 — 문제→해결 핵심 메시지(내부용어 'BIZ모델_' 제거) */}
+        <section className="flex flex-col gap-4">
+          <h1 className="text-[clamp(30px,4.4vw,50px)] font-black text-navy leading-[1.1] tracking-[-0.04em]">
+            들쑥날쑥한 견적,<br /> <span className="text-accent">데이터로 검증</span>해 최적 예산만 남깁니다
           </h1>
-          <p className="text-[15px] text-gray font-semibold leading-relaxed">
-            소상공인 대표님의 들쑥날쑥한 견적과 설계변경 분쟁을 데이터로 사전에 차단합니다.
+          <p className="text-[15.5px] text-gray font-semibold leading-relaxed">
+            현장 실무 30년 + 실거래 데이터로 <strong className="text-navy font-black">과다·과소 없는 최적합 예산</strong>을 산출·검증합니다.
           </p>
         </section>
 
-        {/* 2. 단 하나의 결과 지표 — 안심 예산 대역 ±5% 게이지(이 히어로의 유일한 하이라이트) */}
-        <section className="bg-bg-subtle rounded-custom p-5 md:p-6 flex flex-col gap-3">
-          <div className="flex items-baseline justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="w-1 h-4 bg-accent rounded-full shrink-0" />
-              <span className="text-[15px] font-black text-navy tracking-tight">안심 예산 대역</span>
-            </div>
-            <span className="text-[13px] font-bold text-accent">과다·과소 없는 최적 대역</span>
+        {/* 2. 핵심 지표 — ±5% 안심 예산 대역(상·하 헤어라인, 박스 없이) */}
+        <section className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-x-9 gap-y-3 sm:items-center border-t border-b border-border py-6">
+          <div className="flex flex-col gap-1.5">
+            <span className="flex items-center gap-2 text-[13px] font-black text-navy">
+              <span className="w-1 h-4 bg-accent rounded-full shrink-0" />안심 예산 대역
+            </span>
+            <span className="text-[clamp(40px,5vw,56px)] font-black text-accent tabular-nums leading-[0.85] tracking-[-0.03em]">±5%</span>
+            <span className="h-[3px] w-12 bg-accent rounded-full" />
           </div>
-          {/* 게이지: min—[±5% 최적 대역]—max */}
-          <div className="relative h-[46px] mt-1">
-            <div className="absolute top-[18px] left-0 right-0 h-2.5 rounded-full bg-surface border border-[#E2E8F0]" />
-            <div className="absolute top-[18px] left-[44%] w-[12%] h-2.5 rounded-full bg-accent" />
-            <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[22px] font-black text-navy tracking-tight leading-none">±5%</span>
-            <span className="absolute top-[34px] left-1/2 -translate-x-1/2 text-[11px] font-bold text-accent">최적 대역</span>
-          </div>
-          <div className="flex justify-between items-center text-[11.5px] font-bold text-gray-light">
-            <span>min</span>
-            <span>최소 범주로 좁힌 예산</span>
-            <span>max</span>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[16px] font-black text-navy">최소 범주대역으로 좁힌 안심 예산</span>
+            <span className="text-[14px] font-semibold text-gray leading-relaxed">단가 거품 필터링 · 실거래 DB 교차검증 · 설계변경 분쟁 차단</span>
           </div>
         </section>
 
-        {/* 3. 리스크 → ZEROS 차단 원장 — 문제와 해결을 1:1로 묶어 중복 제거(기존 핵심지표+리스크칩 통합) */}
-        <section className="flex flex-col border-t border-border">
-          {[
-            { risk: '견적 들쑥날쑥', fix: '최소 범주대역 책정' },
-            { risk: '단가 거품', fix: '실거래 DB 교차검증' },
-            { risk: '설계변경 분쟁', fix: '동일 기준 견적 정합' },
-          ].map((row, i, arr) => (
-            <div
-              key={row.risk}
-              className={`flex items-center justify-between gap-3 py-3 ${i < arr.length - 1 ? 'border-b border-border/50' : ''}`}
-            >
-              <span className="flex items-center gap-2 text-[14.5px] font-black text-gray-light">
-                <ArrowRight className="w-3.5 h-3.5 text-accent shrink-0" />
-                {row.risk}
-              </span>
-              <span className="text-[13px] font-black text-navy">{row.fix}</span>
-            </div>
-          ))}
+        {/* 3. 단일 CTA + 신뢰 근거(스킬 권고: Single CTA focus) */}
+        <section className="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <button
+            onClick={() => setActiveTabAtTop('request')}
+            style={{ touchAction: 'manipulation' }}
+            className="inline-flex items-center gap-2 bg-accent hover:bg-[#c95f12] text-white px-7 py-3.5 rounded-custom text-[16px] font-black shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+          >
+            무료 견적 검토 신청 <ArrowRight className="w-4 h-4" />
+          </button>
+          <span className="text-[13.5px] font-bold text-gray">현장 실무 30년 · 누적 검증 246건 · 준수율 98.4%</span>
         </section>
 
         {/* 4. FOOTER 소개란 — 화면 하단 앵커(mt-auto). 잔글씨 개선: 폰트 한 단계 상향 */}
