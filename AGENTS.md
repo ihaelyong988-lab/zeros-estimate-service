@@ -88,3 +88,27 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **주요 견적 키워드 밴드**: 공종 상세 최상단, 큰 키워드, 공종별 `tradeKeywords`로 교체.
 - **우측 결과 패널**: 견적 검토 진입 시 숨김 → 우측 상단 "검토" 엣지 탭(음영 없음)으로 펼침, 헤더 `›`로 접기.
 - 일자별 상세 기록: `docs/_worklog/2026-06-20_작업정리.md`.
+
+## 8. 변경 검증·배포 확인 프로토콜 (필수 — "똑같다" 무한반복 방지)
+> 2026-06-27 — 사용자가 배포 후 "똑같은데"를 반복했고, 매번 디자인을 더 고치려다 헛돌았다. **거의 전부 캐시 문제였다.** 아래를 반드시 지킨다.
+
+- **헤드리스 프리뷰(`preview_*`)는 신뢰 불가**: 이 앱은 `AppShell`이 `layoutReady`(rAF)까지 스플래시를 띄우는데, 헤드리스 탭은 백그라운드 rAF 스로틀로 **스플래시에서 멈춘다**(스크린샷 타임아웃). → 시각 검증은 **(a) `npm run build` 0에러 + (b) `show_widget` 시안**으로 대체한다. 프리뷰 스크린샷에 매달리지 말 것.
+- **배포 후 "똑같다" 1순위 원인 = PWA/브라우저 캐시.** 코드·배포는 정상인데(커밋 해시로 증명) 캐시가 옛 화면을 보여준다. → 사용자에게 **시크릿(incognito) 창 / 하드리프레시(Ctrl+Shift+R)** 로 확인 요청. 설치형 PWA면 완전 종료 후 재실행.
+- **"똑같다" 보고가 오면 코드부터 고치지 않는다.** 먼저 **(1) 지금 보이는 헤드라인 문구 한 줄, (2) 보는 주소(`zerospipe.co.kr` vs localhost)** 를 확인해 **캐시인지 기대 불일치인지** 가린 뒤 움직인다.
+- **라이브 도메인**: `zerospipe.co.kr`(프로젝트 폴더명과 동일). 배포 = master 푸시 → 호스팅 자동.
+- **마감처리 git은 단계별 출력을 확인**한다. 여러 명령을 한 줄로 묶을 때 도구 호출이 깨져 **푸시가 안 나가는 일**이 있었음(2026-06-27) → `push`/`merge` 결과(`xxx..yyy master -> master`)를 **눈으로 확인**하고 보고.
+
+## 9. 데이터 소스 = Supabase (Mock 아님 — 중요)
+> 2026-06-27 — 실적 테스트데이터를 `mock-data.ts`에 시드했는데 화면에 안 떴다. **이 앱은 Mock이 아니라 Supabase(실클라우드)를 읽기 때문**이었다.
+
+- `lib/supabase/supabaseBrowser.ts`에 **DEFAULT Supabase URL/anon 키가 하드코딩**돼 있고 `.env.local`에도 실 키가 있어 **`isSupabaseEnabled = true` 항상** → 앱은 **`SupabaseZerosService`(실 DB)** 를 쓴다. `MockZerosService`(localStorage)는 **이 환경에서 실행되지 않는다.**
+- 따라서 `lib/supabase/mock-data.ts` 시드는 **Mock 경로 전용** — Supabase 환경에선 화면에 안 보인다. **견적/실적 데이터를 채우려면 Supabase에 직접 시드**한다: `SupabaseZerosService.loadTable`에 멱등 시드(클라우드에 없을 때만 upsert), 테스트행은 `est-test-*` id로 추후 일괄 삭제 가능.
+- 라이브 Supabase 프로젝트: `xtljznrfmythnnpeorgz.supabase.co`. 같은 키로 막힘없이 select/upsert 가능(RLS 통과 확인).
+
+## 10. 확정 디자인 패턴 (이번 세션 — 히어로/KPI, 4번의 연장)
+> 2026-06-27 확정. ui-ux-pro-max(Style=Trust & Authority, Pattern=Minimal Single Column·Exaggerated Minimalism) 근거.
+
+- **사업소개 히어로**: eyebrow 없음 · **오버사이즈 헤드라인**(`clamp ~50px`, `font-extrabold`=800; 900은 과해서 품위↓) · **accent(오렌지)는 키워드 한 곳만** · 본문 `max-w-[560px]`로 줄길이 균형(가독 65~75자) · **단일 CTA "무료 견적 검토 신청"** · Footer는 `mt-auto`+`min-h-[calc(100vh-128px)]`로 **하단 앵커+한 화면**(안전여백 둬 미세 스크롤 방지) · 헤드라인 카피는 **격식 어미("…책정합니다")**, 구어체("들쑥날쑥/남깁니다") 지양.
+- **위계 규칙**: 헤드라인이 항상 최상위. 보조 지표(±5% 등)는 **헤드라인보다 작게**(역전 금지).
+- **실적 KPI**: 박스 없이 **상·하 헤어라인만** · 누적 건수만 오렌지(펄스 점+숫자+짧은 룰) · 나머지 무채색(navy/gray) · 막대그래프=**공종 시그니처 색**(`TRADE_COLORS`, `fillOpacity 0.9`).
+- **가독성 체크리스트(ui-ux-pro-max)**: 본문 **≥16px**, 대비 **4.5:1**(→ `gray-light`#9AA3AF는 본문 금지, `gray`#5B6573 이상) · `prefers-reduced-motion` 존중(`motion-reduce:animate-none`) · `tabular-nums`로 숫자 정렬.
