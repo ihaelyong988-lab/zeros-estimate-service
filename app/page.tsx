@@ -1531,7 +1531,7 @@ export default function Home() {
         {/* 주요 견적공종 — 라벨 + 공종별 핵심 키워드를 한 줄로 옆에 배치 (박스 없이 헤드라인) */}
         {keywords.length > 0 && (
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1.5 border-b border-border/70 pb-6 pt-1 select-none">
-            <span className="text-[22px] md:text-[24px] font-extrabold tracking-tight text-accent shrink-0 leading-none">주요 견적공종</span>
+            <span className="text-[22px] md:text-[24px] font-extrabold tracking-tight text-[#155EEF] shrink-0 leading-none">WORK_ITEM</span>
             <div className="flex flex-wrap items-center gap-y-1.5">
               {keywords.map((k, i) => (
                 <span key={k} className="inline-flex items-center">
