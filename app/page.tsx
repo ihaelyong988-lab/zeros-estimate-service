@@ -290,11 +290,11 @@ export default function Home() {
       <div className="flex flex-col gap-6 max-w-5xl mx-auto py-6 min-h-[calc(100vh-128px)] select-none">
         {/* 1. 히어로 헤드라인 — 문제→해결 핵심 메시지(내부용어 'BIZ모델_' 제거) */}
         <section className="flex flex-col gap-4">
-          <h1 className="text-[clamp(30px,4.4vw,50px)] font-black text-navy leading-[1.1] tracking-[-0.04em]">
-            들쑥날쑥한 견적,<br /> <span className="text-accent">데이터로 검증</span>해 최적 예산만 남깁니다
+          <h1 className="text-[clamp(30px,4.4vw,50px)] font-extrabold text-navy leading-[1.14] tracking-[-0.035em]">
+            흔들리는 견적을 <span className="text-accent">데이터로</span> 바로잡아,<br /> 최적의 예산을 책정합니다
           </h1>
-          <p className="text-[15.5px] text-gray font-semibold leading-relaxed">
-            현장 실무 30년 + 실거래 데이터로 <strong className="text-navy font-black">과다·과소 없는 최적합 예산</strong>을 산출·검증합니다.
+          <p className="text-[16px] max-w-[560px] text-gray font-medium leading-relaxed">
+            현장 실무 30년과 실거래 데이터로, 대표님의 견적에 확신을 더합니다.
           </p>
         </section>
 
@@ -304,7 +304,7 @@ export default function Home() {
             <span className="flex items-center gap-2 text-[13px] font-black text-navy">
               <span className="w-1 h-4 bg-accent rounded-full shrink-0" />안심 예산 대역
             </span>
-            <span className="text-[clamp(40px,5vw,56px)] font-black text-accent tabular-nums leading-[0.85] tracking-[-0.03em]">±5%</span>
+            <span className="text-[clamp(34px,4.4vw,46px)] font-black text-accent tabular-nums leading-[0.85] tracking-[-0.03em]">±5%</span>
             <span className="h-[3px] w-12 bg-accent rounded-full" />
           </div>
           <div className="flex flex-col gap-1.5">
