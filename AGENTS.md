@@ -78,7 +78,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## 6. "마감처리" = 끝까지 (반복 지시 금지)
 - "마감처리"라고 하면 매번 묻지 말고 **전 과정을 자동 수행**한다:
-  **빌드 확인 → (master면) 새 브랜치 커밋 → 푸시 → master 머지 → master 푸시(=호스팅 자동 배포)**.
+  **빌드 확인 → (master면) 새 브랜치 → 【작업 기록 자동 갱신】 → 커밋 → 푸시 → master 머지 → master 푸시(=호스팅 자동 배포)**.
+- **작업 기록은 마감처리에 포함된 자동 단계다(사용자가 매번 시키지 않는다).** 커밋 직전에 `docs/_worklog/<오늘날짜>_작업정리.md` 항목 추가(같은 날짜면 이어붙임) + `docs/00_orchestration/state.md` "최신 반영"·"다음 할 일" 갱신 → **같은 커밋에 포함**. 상세 절차: `.claude/commands/마감처리.md`.
 - 배포 메커니즘: 로컬 vercel/deploy 스크립트 없음 → **origin master 푸시 시 GitHub 연동 호스팅 자동 배포**. 원격: `ihaelyong988-lab/zeros-estimate-service`.
 - 커밋 메시지 끝에 `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
 
