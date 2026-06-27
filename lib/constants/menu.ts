@@ -16,8 +16,8 @@ export const MENU_DISPLAY_NAMES: Record<string, string> = {
   'CAPEX 개·증설 검토': 'CAPEX개선,증설 검토',
   // 외주 제작 (selectedMenu = fab key)
   'spool': '배관 SPOOL Module 검토',
-  'skid': 'SKID . SPOOL제작 견적',
-  'structure': 'Structure제작,설치',
+  'skid': 'SKID 제작설치 검토',
+  'structure': 'Structure제작,설치 검토',
   // 견적 규모 (selectedBudget = budget value)
   'small': '온라인 간편검토',
   'medium': '출장견적',
