@@ -287,14 +287,10 @@ export default function Home() {
   // ==========================================
   const renderBusinessTab = () => {
     return (
-      <div className="flex flex-col gap-7 max-w-5xl mx-auto py-6 min-h-[calc(100vh-112px)] select-none">
-        {/* 1. 히어로 헤드라인 — 오버사이즈 에디토리얼(타이포 스케일·accent 리듬으로 생동감) */}
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
-            <span className="text-[12px] font-black tracking-wider text-steel">현장 실무 30년 · 데이터 검증</span>
-          </div>
-          <h1 className="text-[clamp(32px,4.6vw,52px)] font-black text-navy leading-[1.1] tracking-[-0.04em]">
+      <div className="flex flex-col gap-5 max-w-5xl mx-auto py-5 min-h-[calc(100vh-104px)] select-none">
+        {/* 1. 히어로 헤드라인 — 오버사이즈 에디토리얼(eyebrow 제거, 한 화면 맞춤) */}
+        <section className="flex flex-col gap-3.5">
+          <h1 className="text-[clamp(30px,4.2vw,48px)] font-black text-navy leading-[1.12] tracking-[-0.04em]">
             <span className="text-accent">BIZ모델_</span> 최적합 예산,<br /> <span className="text-accent">최소 범주대역</span>으로 책정해 드립니다
           </h1>
           <p className="text-[15px] text-gray font-semibold leading-relaxed">
@@ -303,7 +299,7 @@ export default function Home() {
         </section>
 
         {/* 2. 단 하나의 결과 지표 — 안심 예산 대역 ±5% 게이지(이 히어로의 유일한 하이라이트) */}
-        <section className="bg-bg-subtle rounded-custom p-6 md:p-8 flex flex-col gap-3.5">
+        <section className="bg-bg-subtle rounded-custom p-5 md:p-6 flex flex-col gap-3">
           <div className="flex items-baseline justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="w-1 h-4 bg-accent rounded-full shrink-0" />
@@ -334,7 +330,7 @@ export default function Home() {
           ].map((row, i, arr) => (
             <div
               key={row.risk}
-              className={`flex items-center justify-between gap-3 py-3.5 ${i < arr.length - 1 ? 'border-b border-border/50' : ''}`}
+              className={`flex items-center justify-between gap-3 py-3 ${i < arr.length - 1 ? 'border-b border-border/50' : ''}`}
             >
               <span className="flex items-center gap-2 text-[14.5px] font-black text-gray-light">
                 <ArrowRight className="w-3.5 h-3.5 text-accent shrink-0" />
@@ -345,30 +341,30 @@ export default function Home() {
           ))}
         </section>
 
-        {/* 4. FOOTER 소개란 — 화면 하단 앵커(mt-auto)로 위 여백 균형 */}
-        <footer className="mt-auto border-t-2 border-navy pt-6">
+        {/* 4. FOOTER 소개란 — 화면 하단 앵커(mt-auto). 잔글씨 개선: 폰트 한 단계 상향 */}
+        <footer className="mt-auto border-t-2 border-navy pt-5">
           <div className="flex justify-between gap-6 flex-wrap">
-            <div className="max-w-[440px]">
+            <div className="max-w-[460px]">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[20px] font-black text-navy tracking-tight">ZEROS</span>
-                <span className="text-[11px] font-bold text-accent tracking-wider">최적합 견적 검증</span>
+                <span className="text-[22px] font-black text-navy tracking-tight">ZEROS</span>
+                <span className="text-[12.5px] font-bold text-accent tracking-wider">최적합 견적 검증</span>
               </div>
-              <p className="text-[13.5px] leading-[1.75] font-semibold text-gray m-0">
+              <p className="text-[16px] leading-[1.7] font-semibold text-gray m-0">
                 현장 실무 경험과 데이터 분석으로 <strong className="text-navy font-black">과다·과소 없는 최적합 예산</strong>을 산출·검증하는 서비스입니다. 시공이 아닌, 대표님의 의사결정을 돕는 견적 파트너입니다.
               </p>
             </div>
-            <div className="min-w-[180px]">
-              <div className="text-[10.5px] font-semibold text-gray-light uppercase tracking-[0.1em] mb-2.5">핵심 영역</div>
-              <div className="text-[13px] font-semibold text-navy leading-[2]">
+            <div className="min-w-[190px]">
+              <div className="text-[12px] font-bold text-gray uppercase tracking-[0.1em] mb-2">핵심 영역</div>
+              <div className="text-[14.5px] font-semibold text-navy leading-[1.85]">
                 공정설비 CAPEX 견적 검증<br />
                 배관·기계설비 물량 분석<br />
                 외주제작(SPOOL·SKID) 검토
               </div>
             </div>
           </div>
-          <div className="border-t border-border/60 mt-5 pt-3.5 flex justify-between items-center gap-4 flex-wrap">
-            <span className="text-[12px] font-medium text-gray-light">© 2025 ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
-            <div className="flex items-center gap-4 text-[12.5px] font-bold">
+          <div className="border-t border-border/60 mt-4 pt-3 flex justify-between items-center gap-4 flex-wrap">
+            <span className="text-[13px] font-medium text-gray">© 2025 ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
+            <div className="flex items-center gap-4 text-[13.5px] font-bold">
               <span className="text-gray hover:text-navy transition-colors cursor-pointer">개인정보처리방침</span>
               <span className="text-gray-light/40">|</span>
               <button
