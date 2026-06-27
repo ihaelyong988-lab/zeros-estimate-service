@@ -91,15 +91,15 @@ const LANDING_SIGNATURE_HEX: Record<string, string> = {
 const TRADE_KEYWORDS: Record<string, string[]> = {
   '배관공사': ['HVAC', '위생배관', 'Duct', '소방기계배관'],
   '장비설치': ['펌프', '탱크', '콤프레셔', '열교환기'],
-  'Utility 배관': ['스팀', '냉각수', '압축공기', '질소'],
-  '공장증설': ['라인증설', 'Tie-in', '무중단분기', '유량검토'],
-  '노후배관교체': ['부식배관', '철거·신설', '무중단교체', '잔존수명'],
+  'Utility 배관': ['스팀', '냉각수', '압축공기', '온수 배관'],
+  '공장증설': ['생산라인 증설', 'Tie-in', '무단수 작업'],
+  '노후배관교체': ['배관교체', '철거·신설'],
   '기계실개선': ['기계실', '헤더', '펌프배열', '동선개선'],
-  '생산설비 배관 연결': ['Hook-up', '설비연결', '유틸리티 탭', '정밀정렬'],
-  'CAPEX 개·증설 검토': ['CAPEX', '예산상한', '공법검토', 'LCC'],
-  'spool': ['ISO도면', '스풀분할', '사전제작', 'Prefab'],
+  '생산설비 배관 연결': ['Hook-up', '장비 연결'],
+  'CAPEX 개·증설 검토': ['CAPEX', '예산 견적', '공법검토'],
+  'spool': ['ISO도면', '사전제작', 'Prefab'],
   'skid': ['SKID', '패키지모듈', 'P&ID', '모듈화'],
-  'structure': ['가대', '플랫폼', '철구조', '하중검토'],
+  'structure': ['가대', '플랫폼', '철구조'],
 };
 
 // 공종별 대표 견적 밴드(원) — 모바일 랜딩 2↔3페이지 연동용. min/max=슬라이더 범위, median=중앙값, base=기본 표시값
@@ -1526,17 +1526,17 @@ export default function Home() {
     const reviewItems = tradeReviewItems[key] || ['규격 · 압력 검토 여부', '표준 품셈 적용 여부', '예비 · 안전 항목'];
 
     return (
-      <div key={key} className="flex flex-col gap-6 max-w-4xl mx-auto py-3 animate-in fade-in duration-300">
+      <div key={key} className="flex flex-col gap-8 max-w-4xl mx-auto py-4 animate-in fade-in duration-300">
 
         {/* 주요 견적공종 — 라벨 + 공종별 핵심 키워드를 한 줄로 옆에 배치 (박스 없이 헤드라인) */}
         {keywords.length > 0 && (
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1.5 border-b border-border/70 pb-5 pt-1 select-none">
-            <span className="text-[12px] font-bold tracking-[0.08em] text-accent shrink-0">주요 견적공종</span>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1.5 border-b border-border/70 pb-6 pt-1 select-none">
+            <span className="text-[22px] md:text-[24px] font-extrabold tracking-tight text-accent shrink-0 leading-none">주요 견적공종</span>
             <div className="flex flex-wrap items-center gap-y-1.5">
               {keywords.map((k, i) => (
                 <span key={k} className="inline-flex items-center">
-                  <span className="text-[20px] md:text-[22px] font-extrabold text-navy tracking-tight leading-none">{k}</span>
-                  {i < keywords.length - 1 && <span className="mx-3 w-px h-[16px] bg-border shrink-0" />}
+                  <span className="text-[22px] md:text-[24px] font-extrabold text-navy tracking-tight leading-none">{k}</span>
+                  {i < keywords.length - 1 && <span className="mx-3 w-px h-[20px] bg-border shrink-0" />}
                 </span>
               ))}
             </div>
@@ -2106,7 +2106,7 @@ export default function Home() {
       menu: 'CAPEX 개·증설 검토',
     },
     {
-      title: 'SKID . SPOOL제작 견적',
+      title: 'SKID 제작설치 검토',
       desc: '배관 SPOOL Module 검토',
       colorClass: 'bg-[#3B82F6]',
       color: '#3B82F6',

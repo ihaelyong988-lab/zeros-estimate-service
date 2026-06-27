@@ -45,8 +45,8 @@ export const LeftSidebar: React.FC = () => {
   // 외주 제작 카테고리 (사전제작 / 모듈화 공급)
   const fabricationCategories: { key: string; label: string; desc: string }[] = [
     { key: 'spool', label: '배관 SPOOL Module 검토', desc: 'ISO 도면 기반 스풀 사전제작' },
-    { key: 'skid', label: 'SKID . SPOOL제작 견적', desc: '단일 프레임 패키지 모듈화' },
-    { key: 'structure', label: 'Structure제작,설치', desc: '가대·플랫폼 철구조물 가공' },
+    { key: 'skid', label: 'SKID 제작설치 검토', desc: '단일 프레임 패키지 모듈화' },
+    { key: 'structure', label: 'Structure제작,설치 검토', desc: '가대·플랫폼 철구조물 가공' },
   ];
 
   // 견적규모별 카테고리
