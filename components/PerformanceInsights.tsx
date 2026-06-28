@@ -155,18 +155,14 @@ export const PerformanceInsights: React.FC = () => {
   return (
     <div className="flex flex-col gap-5 max-w-5xl mx-auto py-3">
 
-      {/* 헤더 — 박스 제거 */}
-      <div className="flex flex-col gap-2 border-b border-border pb-4">
+      {/* 헤더 — 제목만(설명 단락 제거: 단조·직관) */}
+      <div className="border-b border-border pb-4">
         <h2 className="text-2xl font-black text-navy tracking-tight">ZEROS 실적 집계표</h2>
-        <p className="text-[13.5px] text-gray leading-relaxed font-semibold max-w-3xl">
-          홍보용 과장 수치 대신, 누적된 사전진단 포트폴리오를 공종·견적규모 축으로 그대로 집계해 한눈에 보여드립니다.
-          모든 수치는 실제 접수·검토 데이터에서 실시간으로 산출됩니다.
-        </p>
       </div>
 
-      {/* KPI 하이라이트 — 박스 없이 상·하 헤어라인만. 의도적 비대칭(좌 지배지표 / 우 보조 클러스터),
-          색은 '누적 진단 건수' 한 묶음(점·숫자·베이스라인 룰)에만, 나머지 무채색. 로드 시 스태거 페이드인 */}
-      <section className="border-t border-b border-border py-7 flex flex-wrap items-end gap-x-10 gap-y-6">
+      {/* KPI 하이라이트 — 박스 없이 상·하 헤어라인만. 좌=지배지표(누적 건수, 유일한 컬러),
+          우=보조 3종은 라벨 단축·컴팩트화로 포지션 축소(검토 비율/평균 소요/공종 수). 색은 누적 건수에만 */}
+      <section className="border-t border-b border-border py-7 flex flex-wrap items-end gap-x-8 gap-y-5">
         {/* 누적 진단 건수 — 유일한 컬러 하이라이트 */}
         <div className="flex flex-col gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
           <span className="flex items-center gap-2 text-[12.5px] font-bold text-gray tracking-tight">
@@ -180,21 +176,21 @@ export const PerformanceInsights: React.FC = () => {
           <span className="h-[3px] w-14 bg-accent rounded-full" />
         </div>
 
-        {/* 보조 3종 — 무채색, 우측 클러스터(의도적 비대칭 여백) */}
-        <div className="flex flex-wrap items-end gap-x-9 gap-y-5 ml-auto">
+        {/* 보조 3종 — 라벨 단축·숫자/여백 축소로 컴팩트하게. 무채색, 우측 클러스터 */}
+        <div className="flex items-end gap-x-6 gap-y-3 ml-auto">
           {[
-            { label: '검토 완료율', value: reviewDoneRate, unit: '%' },
-            { label: '평균 검토 소요', value: metrics.averageProcessDays, unit: '일' },
-            { label: '진단 공종 수', value: WORK_TYPES.length, unit: '종' },
+            { label: '검토 비율', value: reviewDoneRate, unit: '%' },
+            { label: '평균 소요', value: metrics.averageProcessDays, unit: '일' },
+            { label: '공종 수', value: WORK_TYPES.length, unit: '종' },
           ].map((k, i) => (
             <div
               key={k.label}
-              className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none"
-              style={{ animationDelay: `${120 + i * 90}ms` }}
+              className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none"
+              style={{ animationDelay: `${120 + i * 80}ms` }}
             >
-              <span className="text-[12.5px] font-bold text-gray tracking-tight">{k.label}</span>
-              <span className="text-[30px] font-black text-navy tabular-nums leading-none tracking-[-0.02em]">
-                {k.value}<span className="text-[16px] font-extrabold text-gray-light ml-0.5">{k.unit}</span>
+              <span className="text-[12px] font-bold text-gray tracking-tight whitespace-nowrap">{k.label}</span>
+              <span className="text-[23px] font-black text-navy tabular-nums leading-none tracking-[-0.02em]">
+                {k.value}<span className="text-[13px] font-extrabold text-gray-light ml-0.5">{k.unit}</span>
               </span>
             </div>
           ))}

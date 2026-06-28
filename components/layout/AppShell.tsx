@@ -426,18 +426,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </div>
           </button>
           <div className="flex items-center gap-2.5">
-            {customerAuth ? (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleMobileTabChange('account');
-                }}
-                className="bg-white/10 border border-white/20 hover:bg-white/15 px-3 py-1.5 rounded-custom text-[11.5px] font-bold text-white transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                마이페이지
-              </button>
-            ) : (
+            {/* 로그인 전엔 진입 버튼만 — 로그인 후 '마이페이지' 칩은 하단 탭과 중복이라 제거(중복 금지) */}
+            {!customerAuth && (
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -457,12 +447,22 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             ) : (
-              <div className="flex items-center gap-2">
-                <span className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[11.5px] px-2 py-0.5 rounded-full font-black">
-                  AI NATIVE
-                </span>
-                <div className="w-2 h-2 rounded-full bg-success animate-pulse" title="온라인 상태" />
-              </div>
+              /* AI NATIVE — 클릭 시 'AI Native 검증' 표준작업절차(SOP) 설명으로 이동. 옆 점 아이콘 제거(단조·직관) */
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setIsUserMode(true);
+                  setMobileActiveTab('service');
+                  setActiveTab('sop');
+                  setSelectedMenu('');
+                  setSelectedBudget('');
+                  scrollMainPanelToTop();
+                }}
+                aria-label="AI Native 검증 절차 보기"
+                className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[11.5px] px-2 py-0.5 rounded-full font-black active:scale-95 transition-transform cursor-pointer"
+              >
+                AI NATIVE
+              </button>
             )}
           </div>
         </div>
