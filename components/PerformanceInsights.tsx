@@ -153,27 +153,23 @@ export const PerformanceInsights: React.FC = () => {
   const reviewDoneRate = grandTotal > 0 ? Math.round((reviewDoneCount / grandTotal) * 100) : 0;
 
   return (
-    <div className="flex flex-col gap-5 max-w-5xl mx-auto py-3">
+    <div className="flex flex-col gap-4 max-w-5xl mx-auto py-2">
 
-      {/* 헤더 — 제목만(설명 단락 제거: 단조·직관) */}
-      <div className="border-b border-border pb-4">
-        <h2 className="text-2xl font-black text-navy tracking-tight">ZEROS 실적 집계표</h2>
-      </div>
-
-      {/* KPI 하이라이트 — 박스 없이 상·하 헤어라인만. 좌=지배지표(누적 건수, 유일한 컬러),
-          우=보조 3종은 라벨 단축·컴팩트화로 포지션 축소(검토 비율/평균 소요/공종 수). 색은 누적 건수에만 */}
-      <section className="border-t border-b border-border py-7 flex flex-wrap items-end gap-x-8 gap-y-5">
-        {/* 누적 진단 건수 — 유일한 컬러 하이라이트 */}
-        <div className="flex flex-col gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
+      {/* KPI 하이라이트 — 상단 제목 헤더·헤어라인 제거(그래프를 첫 화면 상단으로 끌어올림).
+          좌=지배지표(누적 건수, 유일한 컬러), 우=보조 3종은 라벨 단축·컴팩트(검토 비율/평균 소요/공종 수).
+          하단 헤어라인 1줄만 유지해 분포 차트와 구분. 색은 누적 건수에만 */}
+      <section className="border-b border-border pb-5 flex flex-wrap items-end gap-x-8 gap-y-4">
+        {/* 누적 진단 건수 — 유일한 컬러 하이라이트. 수치 폰트는 절반(52~72px→26~36px)으로 압축 */}
+        <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
           <span className="flex items-center gap-2 text-[12.5px] font-bold text-gray tracking-tight">
             <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 animate-pulse motion-reduce:animate-none" title="실시간 집계" />
             누적 진단 건수
           </span>
           <span className="flex items-baseline gap-1.5">
-            <span className="text-[clamp(52px,6.5vw,72px)] font-black text-accent tabular-nums leading-[0.78] tracking-[-0.045em]">{metrics.totalCount}</span>
-            <span className="text-[22px] font-black text-navy">건</span>
+            <span className="text-[clamp(26px,3.4vw,36px)] font-black text-accent tabular-nums leading-[0.85] tracking-[-0.04em]">{metrics.totalCount}</span>
+            <span className="text-[14px] font-black text-navy">건</span>
           </span>
-          <span className="h-[3px] w-14 bg-accent rounded-full" />
+          <span className="h-[2.5px] w-11 bg-accent rounded-full" />
         </div>
 
         {/* 보조 3종 — 라벨 단축·숫자/여백 축소로 컴팩트하게. 무채색, 우측 클러스터 */}
