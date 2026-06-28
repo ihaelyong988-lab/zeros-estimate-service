@@ -290,6 +290,27 @@ export default function Home() {
   // 1. 고객 모드 탭 렌더러
   // ==========================================
   const renderBusinessTab = () => {
+    // 3단계 흐름(문제→분석→안심) — 서비스 작동 방식을 이야기처럼 보여주는 골격.
+    // 콘텐츠는 데이터로 분리(추후 교체 용이). ±5%는 마지막 '안심' 단계의 시각화 지표 1곳에만.
+    const flowSteps = [
+      {
+        no: '01', tag: '문제', Icon: AlertTriangle,
+        title: '들쑥날쑥한 견적과 숨은 단가 거품',
+        desc: '적정가를 가늠하기 어렵고 분쟁 위험이 큽니다.',
+      },
+      {
+        no: '02', tag: '분석', Icon: Database,
+        title: '실거래 DB로 교차검증',
+        desc: '표준 품셈과 실거래 데이터로 대조 검증합니다.',
+      },
+      {
+        no: '03', tag: '안심', Icon: ShieldCheck,
+        title: '안심 예산 대역 확정',
+        desc: '과다·과소 없는 예산으로 결정을 돕습니다.',
+        metric: '±5%',
+      },
+    ];
+
     return (
       <div className="flex flex-col gap-6 max-w-5xl mx-auto py-6 min-h-[calc(100vh-128px)] select-none">
         {/* 1. 히어로 헤드라인 — 문제→해결 핵심 메시지(내부용어 'BIZ모델_' 제거) */}
@@ -298,22 +319,45 @@ export default function Home() {
             흔들리는 견적을 <span className="text-[#155EEF]">데이터로</span> 바로잡아,<br /> 최적의 예산을 책정합니다
           </h1>
           <p className="text-[16px] max-w-[560px] text-gray font-medium leading-relaxed">
-            현장 실무 30년과 실거래 데이터로, 대표님의 견적에 확신을 더합니다.
+            현장 30년 경험과 실거래 데이터로 검증합니다.
           </p>
         </section>
 
-        {/* 2. 핵심 지표 — ±5% 안심 예산 대역(상·하 헤어라인, 박스 없이) */}
-        <section className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-x-9 gap-y-3 sm:items-center border-t border-b border-border py-6">
-          <div className="flex flex-col gap-1.5">
-            <span className="flex items-center gap-2 text-[13px] font-black text-navy">
-              <span className="w-1 h-4 bg-[#155EEF] rounded-full shrink-0" />안심 예산 대역
-            </span>
-            <span className="text-[clamp(34px,4.4vw,46px)] font-black text-[#155EEF] tabular-nums leading-[0.85] tracking-[-0.03em]">±5%</span>
-            <span className="h-[3px] w-12 bg-[#155EEF] rounded-full" />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[16px] font-black text-navy">최소 범주대역으로 좁힌 안심 예산</span>
-            <span className="text-[14px] font-semibold text-gray leading-relaxed">단가 거품 필터링 · 실거래 DB 교차검증 · 설계변경 분쟁 차단</span>
+        {/* 2. 3단계 흐름 — 문제→분석→안심 수직 타임라인(개편안 B). ±5%는 마지막 단계 지표 1곳. */}
+        <section className="flex flex-col gap-5 border-t border-b border-border py-6">
+          <span className="text-[12px] font-black text-navy uppercase tracking-wide">견적을 바로잡는 3단계</span>
+          <div className="relative flex flex-col gap-5">
+            {/* 수직 연결선 — 분석(steel)→안심(blue)으로 흐름 강조 */}
+            <div className="absolute top-5 bottom-5 left-[17px] w-0.5 bg-gradient-to-b from-gray-light via-steel to-[#155EEF] pointer-events-none" />
+            {flowSteps.map((s, i) => {
+              const isLast = i === flowSteps.length - 1;
+              return (
+                <div key={s.no} className="relative pl-12 flex items-start">
+                  <span
+                    className={`absolute left-0 top-0 w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0 z-10 ${
+                      isLast ? 'bg-[#155EEF] border-[#155EEF] text-white' : 'bg-white border-steel text-steel'
+                    }`}
+                  >
+                    <s.Icon className="w-4 h-4" />
+                  </span>
+                  <div className="flex-1 flex items-start justify-between gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="flex items-center gap-2 text-[12px] font-black tracking-wide">
+                        <span className="text-gray-light tabular-nums">{s.no}</span>
+                        <span className={isLast ? 'text-[#155EEF]' : 'text-gray'}>{s.tag}</span>
+                      </span>
+                      <span className="text-[17px] font-black text-navy leading-snug">{s.title}</span>
+                      <span className="text-[14px] font-semibold text-gray leading-relaxed max-w-[460px]">{s.desc}</span>
+                    </div>
+                    {s.metric && (
+                      <span className="text-[clamp(30px,5vw,44px)] font-black text-[#155EEF] tabular-nums leading-none tracking-[-0.03em] shrink-0">
+                        {s.metric}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -338,7 +382,7 @@ export default function Home() {
                 <span className="text-[12.5px] font-bold text-[#155EEF] tracking-wider">최적합 견적 검증</span>
               </div>
               <p className="text-[16px] leading-[1.7] font-semibold text-gray m-0">
-                현장 실무 경험과 데이터 분석으로 <strong className="text-navy font-black">과다·과소 없는 최적합 예산</strong>을 산출·검증하는 서비스입니다. 시공이 아닌, 대표님의 의사결정을 돕는 견적 파트너입니다.
+                현장 경험과 데이터로 <strong className="text-navy font-black">적정 예산을 검증</strong>합니다. 시공이 아닌, 결정을 돕는 견적 파트너입니다.
               </p>
             </div>
             <div className="min-w-[190px]">
