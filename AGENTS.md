@@ -6,6 +6,18 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ---
 
+# 자기개선 원칙 (Self-Improvement) — 모든 작업 최우선
+
+> **핵심 규칙: 사용자가 한 번 설명한 작업 지시·요청 방식·선호는 두 번 다시 설명하게 하지 않는다.**
+> 같은 지시를 2~3번 반복하게 만든다면, 그것은 하네스가 그 지시를 기록·적용하지 못한 **실패 신호**다.
+> 한 번 받은 지시는 **그 자리에서 영구 규칙으로 굳혀**, 사용자가 다시 입력하는 수고를 없앤다.
+
+1. **첫 지시에 즉시 규칙화(그 턴 안에)**: 작업 명령·방식·선호·교정·금지가 나오면 곧바로 적는다 — 프로젝트 규칙 → 본 `AGENTS.md`/`docs/`, 작업 맥락 → `docs/_worklog/`, 상태 → `docs/00_orchestration/`.
+2. **재설명 요구 금지**: 이미 기록된 지시는 다시 묻지 않고, 새 작업 전 `AGENTS.md`·`docs/`를 먼저 조회해 적용한다.
+3. **마감 자기점검**: 종료 시 "이번에 사용자가 설명한 지시·방식·교정"을 규칙으로 남겼는지 확인. 안 남기면 다음에 또 같은 설명을 요구하게 됨.
+
+---
+
 # 0. 저장소 지도 (Repo Map) — 에이전트 진입점
 
 > **작업 시작 전 여기서 "무엇이 어디 있는지"를 잡는다.** 소스/설정 위치는 Next.js 규약상 고정.
@@ -82,6 +94,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **작업 기록은 마감처리에 포함된 자동 단계다(사용자가 매번 시키지 않는다).** 커밋 직전에 `docs/_worklog/<오늘날짜>_작업정리.md` 항목 추가(같은 날짜면 이어붙임) + `docs/00_orchestration/state.md` "최신 반영"·"다음 할 일" 갱신 → **같은 커밋에 포함**. 상세 절차: `.claude/commands/마감처리.md`.
 - 배포 메커니즘: 로컬 vercel/deploy 스크립트 없음 → **origin master 푸시 시 GitHub 연동 호스팅 자동 배포**. 원격: `ihaelyong988-lab/zeros-estimate-service`.
 - 커밋 메시지 끝에 `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
+- **순번 결과 보고(마감 마지막 단계)**: 마감 완료 후 한 일을 **①②③… 순번으로 간결히** 정리 + 배포 URL·PR/머지 등 남은 1클릭을 명시한다. (매번 따로 시키지 않는다)
 
 ## 7. 오늘 확정된 구조 (2026-06-20)
 - **견적 작업 FLOW**: 공종 상세에서 제거 → **견적 검토 랜딩 히어로 박스**에만 1곳.

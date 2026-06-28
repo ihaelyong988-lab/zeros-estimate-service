@@ -100,6 +100,10 @@ const TRADE_KEYWORDS: Record<string, string[]> = {
   'spool': ['ISO도면', '사전제작', 'Prefab'],
   'skid': ['SKID', '패키지모듈', 'P&ID', '모듈화'],
   'structure': ['가대', '플랫폼', '철구조'],
+  // 예상 견적총액별 방안 — 중앙패널을 공종 상세와 동일 밴드 템플릿으로(밋밋함 해소)
+  'small': ['소규모 분기', '펌프·밸브 교체', '단가 검토'],
+  'medium': ['현장 실측', '중규모 배관', '계통 검토'],
+  'large': ['대규모 설비', 'CAPEX', '공법·예산'],
 };
 
 // 공종별 대표 견적 밴드(원) — 모바일 랜딩 2↔3페이지 연동용. min/max=슬라이더 범위, median=중앙값, base=기본 표시값
@@ -291,7 +295,7 @@ export default function Home() {
         {/* 1. 히어로 헤드라인 — 문제→해결 핵심 메시지(내부용어 'BIZ모델_' 제거) */}
         <section className="flex flex-col gap-4">
           <h1 className="text-[clamp(30px,4.4vw,50px)] font-extrabold text-navy leading-[1.14] tracking-[-0.035em]">
-            흔들리는 견적을 <span className="text-accent">데이터로</span> 바로잡아,<br /> 최적의 예산을 책정합니다
+            흔들리는 견적을 <span className="text-[#155EEF]">데이터로</span> 바로잡아,<br /> 최적의 예산을 책정합니다
           </h1>
           <p className="text-[16px] max-w-[560px] text-gray font-medium leading-relaxed">
             현장 실무 30년과 실거래 데이터로, 대표님의 견적에 확신을 더합니다.
@@ -302,10 +306,10 @@ export default function Home() {
         <section className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-x-9 gap-y-3 sm:items-center border-t border-b border-border py-6">
           <div className="flex flex-col gap-1.5">
             <span className="flex items-center gap-2 text-[13px] font-black text-navy">
-              <span className="w-1 h-4 bg-accent rounded-full shrink-0" />안심 예산 대역
+              <span className="w-1 h-4 bg-[#155EEF] rounded-full shrink-0" />안심 예산 대역
             </span>
-            <span className="text-[clamp(34px,4.4vw,46px)] font-black text-accent tabular-nums leading-[0.85] tracking-[-0.03em]">±5%</span>
-            <span className="h-[3px] w-12 bg-accent rounded-full" />
+            <span className="text-[clamp(34px,4.4vw,46px)] font-black text-[#155EEF] tabular-nums leading-[0.85] tracking-[-0.03em]">±5%</span>
+            <span className="h-[3px] w-12 bg-[#155EEF] rounded-full" />
           </div>
           <div className="flex flex-col gap-1.5">
             <span className="text-[16px] font-black text-navy">최소 범주대역으로 좁힌 안심 예산</span>
@@ -331,7 +335,7 @@ export default function Home() {
             <div className="max-w-[460px]">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[22px] font-black text-navy tracking-tight">ZEROS</span>
-                <span className="text-[12.5px] font-bold text-accent tracking-wider">최적합 견적 검증</span>
+                <span className="text-[12.5px] font-bold text-[#155EEF] tracking-wider">최적합 견적 검증</span>
               </div>
               <p className="text-[16px] leading-[1.7] font-semibold text-gray m-0">
                 현장 실무 경험과 데이터 분석으로 <strong className="text-navy font-black">과다·과소 없는 최적합 예산</strong>을 산출·검증하는 서비스입니다. 시공이 아닌, 대표님의 의사결정을 돕는 견적 파트너입니다.
@@ -1531,7 +1535,7 @@ export default function Home() {
         {/* 주요 견적공종 — 라벨 + 공종별 핵심 키워드를 한 줄로 옆에 배치 (박스 없이 헤드라인) */}
         {keywords.length > 0 && (
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1.5 border-b border-border/70 pb-6 pt-1 select-none">
-            <span className="text-[22px] md:text-[24px] font-extrabold tracking-tight text-[#155EEF] shrink-0 leading-none">WORK_ITEM</span>
+            <span className="text-[22px] md:text-[24px] font-extrabold tracking-tight text-[#155EEF] shrink-0 leading-none">주요 공종</span>
             <div className="flex flex-wrap items-center gap-y-1.5">
               {keywords.map((k, i) => (
                 <span key={k} className="inline-flex items-center">
