@@ -312,19 +312,16 @@ export default function Home() {
     ];
 
     return (
-      <div className="flex flex-col gap-6 max-w-5xl mx-auto py-6 min-h-[calc(100vh-128px)] select-none">
-        {/* 1. 히어로 헤드라인 — 문제→해결 핵심 메시지(내부용어 'BIZ모델_' 제거) */}
-        <section className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5 max-w-5xl mx-auto py-5 min-h-[calc(100vh-128px)] select-none">
+        {/* 1. 히어로 헤드라인 — 문제→해결 핵심 메시지(2줄 고정, 보조문장 제거로 세로폭 압축) */}
+        <section className="flex flex-col">
           <h1 className="text-[clamp(30px,4.4vw,50px)] font-extrabold text-navy leading-[1.14] tracking-[-0.035em]">
-            흔들리는 견적을 <span className="text-[#155EEF]">데이터로</span> 바로잡아,<br /> 최적의 예산을 책정합니다
+            흔들리는 견적을 <span className="text-[#155EEF]">데이터로</span><br /> 최적의 예산을 책정합니다
           </h1>
-          <p className="text-[16px] max-w-[560px] text-gray font-medium leading-relaxed">
-            현장 30년 경험과 실거래 데이터로 검증합니다.
-          </p>
         </section>
 
         {/* 2. 3단계 흐름 — 문제→분석→안심 수직 타임라인(개편안 B). ±5%는 마지막 단계 지표 1곳. */}
-        <section className="flex flex-col gap-5 border-t border-b border-border py-6">
+        <section className="flex flex-col gap-4 border-t border-b border-border py-5">
           <span className="text-[12px] font-black text-navy uppercase tracking-wide">견적을 바로잡는 3단계</span>
           <div className="relative flex flex-col gap-5">
             {/* 수직 연결선 — 분석(steel)→안심(blue)으로 흐름 강조 */}
