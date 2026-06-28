@@ -153,12 +153,12 @@ export const PerformanceInsights: React.FC = () => {
   const reviewDoneRate = grandTotal > 0 ? Math.round((reviewDoneCount / grandTotal) * 100) : 0;
 
   return (
-    <div className="flex flex-col gap-4 max-w-5xl mx-auto py-2">
+    <div className="flex flex-col gap-3 max-w-5xl mx-auto py-1">
 
       {/* KPI 하이라이트 — 상단 제목 헤더·헤어라인 제거(그래프를 첫 화면 상단으로 끌어올림).
           좌=지배지표(누적 건수, 유일한 컬러), 우=보조 3종은 라벨 단축·컴팩트(검토 비율/평균 소요/공종 수).
           하단 헤어라인 1줄만 유지해 분포 차트와 구분. 색은 누적 건수에만 */}
-      <section className="border-b border-border pb-5 flex flex-wrap items-end gap-x-8 gap-y-4">
+      <section className="border-b border-border pb-3 flex flex-wrap items-end gap-x-8 gap-y-3">
         {/* 누적 진단 건수 — 유일한 컬러 하이라이트. 수치 폰트는 절반(52~72px→26~36px)으로 압축 */}
         <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
           <span className="flex items-center gap-2 text-[12.5px] font-bold text-gray tracking-tight">
@@ -193,15 +193,15 @@ export const PerformanceInsights: React.FC = () => {
         </div>
       </section>
 
-      {/* 분포 차트 박스 */}
-      <div className="flex flex-col gap-4">
-        <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
+      {/* 분포 차트 박스 — 첫 화면에 8공종 막대 하단까지 노출되도록 높이 압축(300→224) */}
+      <div className="flex flex-col gap-2.5">
+        <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-2.5">
           <BarChart3 className="w-4 h-4 text-steel" />
           공종별 진단 실적 분포 <span className="text-gray-light font-bold">(건수)</span>
         </h3>
         <div className="min-w-0">
           {mounted ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={224}>
               <BarChart
                 data={distribution}
                 layout="vertical"
@@ -220,7 +220,7 @@ export const PerformanceInsights: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[300px] flex items-center justify-center text-[12px] text-gray-light font-bold">차트 준비 중…</div>
+            <div className="h-[224px] flex items-center justify-center text-[12px] text-gray-light font-bold">차트 준비 중…</div>
           )}
         </div>
       </div>
