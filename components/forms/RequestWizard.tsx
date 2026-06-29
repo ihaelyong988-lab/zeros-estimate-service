@@ -404,7 +404,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
               onClick={() => { setChannel(null); setErrorMsg(null); }}
               aria-label="등록 방법 다시 선택"
               style={{ touchAction: 'manipulation' }}
-              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-custom border border-border bg-bg text-steel hover:text-navy hover:border-steel transition-all active:scale-95 cursor-pointer"
+              className="shrink-0 w-11 h-11 flex items-center justify-center rounded-custom border border-border bg-bg text-steel hover:text-navy hover:border-steel transition-all active:scale-95 motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -420,7 +420,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
       {/* 인증 상태 확인 중 */}
       {checkingVerify ? (
-        <div className="p-10 text-center text-[14px] text-gray-light font-bold">불러오는 중...</div>
+        <div className="p-10 text-center text-[14px] text-gray font-bold">불러오는 중...</div>
       ) : verifyRequired ? (
         /* 본인인증 전: 휴대폰 인증 게이트 */
         <div className="p-7">
@@ -436,7 +436,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
               type="button"
               onClick={() => { setChannel('visit'); setErrorMsg(null); }}
               style={{ touchAction: 'manipulation' }}
-              className="group text-left flex items-start gap-4 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] cursor-pointer"
+              className="group text-left flex items-start gap-4 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
             >
               <span className="shrink-0 w-12 h-12 rounded-full bg-steel/10 flex items-center justify-center">
                 <Truck className="w-6 h-6 text-steel" />
@@ -445,7 +445,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                 <span className="text-[17px] font-black text-navy leading-tight">견적·출장요청 자료등록</span>
                 <span className="text-[13.5px] text-gray font-semibold leading-relaxed">자료 등록 + 예약방문 신청<br />출장·컨설팅 요청 창구</span>
               </span>
-              <ChevronRight className="w-5 h-5 text-gray-light shrink-0 mt-2.5 group-hover:text-steel transition-colors" />
+              <ChevronRight className="w-5 h-5 text-gray shrink-0 mt-2.5 group-hover:text-steel transition-colors" />
             </button>
 
             {/* B. 무료 견적(100만원 이하 · AI Native 자동) */}
@@ -453,7 +453,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
               type="button"
               onClick={() => { setChannel('quick'); setErrorMsg(null); }}
               style={{ touchAction: 'manipulation' }}
-              className="group text-left flex items-start gap-4 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] cursor-pointer"
+              className="group text-left flex items-start gap-4 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
             >
               <span className="shrink-0 w-12 h-12 rounded-full bg-steel/10 flex items-center justify-center">
                 <Zap className="w-6 h-6 text-steel" />
@@ -462,10 +462,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                 <span className="text-[17px] font-black text-navy leading-tight">무료 견적 신청</span>
                 <span className="text-[13.5px] text-gray font-semibold leading-relaxed">총 공사비 100만원 이하<br />AI Native 기반 자동 등록</span>
               </span>
-              <ChevronRight className="w-5 h-5 text-gray-light shrink-0 mt-2.5 group-hover:text-steel transition-colors" />
+              <ChevronRight className="w-5 h-5 text-gray shrink-0 mt-2.5 group-hover:text-steel transition-colors" />
             </button>
           </div>
-          <div className="flex items-center gap-2 text-[12.5px] text-gray-light font-bold pt-1">
+          <div className="flex items-center gap-2 text-[13px] text-gray font-bold pt-1">
             <CalendarClock className="w-4 h-4 text-steel shrink-0" />
             접수하신 모든 자료·예약은 이력관리에 자동 저장됩니다.
           </div>
@@ -476,7 +476,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
         {/* 에러 피드백 */}
         {errorMsg && (
-          <div className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold flex items-start gap-2 animate-in fade-in duration-200">
+          <div role="alert" aria-live="assertive" className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold flex items-start gap-2 animate-in fade-in duration-200 motion-reduce:animate-none">
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
@@ -607,7 +607,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
               placeholder="예) 80A 배관 신규 설치 및 기존 라인 분기 검토를 요청드립니다."
               className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all resize-none"
             />
-            <span className="text-[12.5px] text-gray-light font-bold self-end">{formData.description.length}/200</span>
+            <span className="text-[12.5px] text-gray font-bold self-end tabular-nums">{formData.description.length}/200</span>
           </div>
 
           {/* 예약방문 신청 — 출장요청(visit) 채널 전용 */}
@@ -633,7 +633,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                     type="button"
                     onClick={() => setFormData((f) => ({ ...f, visit_time: t }))}
                     style={{ touchAction: 'manipulation' }}
-                    className={`p-3 rounded-custom text-[15px] font-bold border transition-all active:scale-[0.99] cursor-pointer ${
+                    className={`p-3 min-h-[44px] rounded-custom text-[15px] font-bold border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer ${
                       formData.visit_time === t
                         ? 'border-steel bg-steel/10 text-navy'
                         : 'border-border bg-bg text-gray hover:border-steel/60'
@@ -700,7 +700,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
           {/* 첨부된 파일 목록 */}
           {formData.files.length > 0 && (
             <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto border border-border rounded-custom p-3 bg-bg-subtle/30">
-              <span className="text-[13px] text-gray-light font-bold">첨부된 자료 ({formData.files.length}건)</span>
+              <span className="text-[13px] text-gray font-bold">첨부된 자료 ({formData.files.length}건)</span>
               {formData.files.map((file, idx) => (
                 <div key={file.id || idx} className="flex items-center justify-between bg-bg border border-border p-2.5 rounded-custom shadow-sm text-[13px] font-medium">
                   <div className="flex items-center gap-2 text-gray min-w-0">
