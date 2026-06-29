@@ -18,11 +18,24 @@ import {
   Send,
   AlertCircle,
   Upload,
-  Trash2
+  Trash2,
+  Truck,
+  Zap,
+  CalendarClock,
+  ChevronRight,
+  ArrowLeft
 } from 'lucide-react';
+
+// 견적문의 진입 채널 — 자료등록 화면에서 둘 중 하나를 고른다.
+//  visit: 견적·출장요청 자료등록(자료 + 예약방문 신청)  ·  quick: 무료 견적 신청(100만원 이하 · AI Native 자동 등록)
+export type RequestChannel = 'visit' | 'quick';
 
 interface RequestWizardProps {
   onComplete: (estimate: Estimate) => void;
+  // 홈 카드/CTA에서 채널을 지정해 진입하면 선택 화면을 건너뛰고 해당 폼으로 바로 연다.
+  initialChannel?: RequestChannel | null;
+  // 위 initialChannel을 1회 소비했음을 부모에 알려 ref를 비운다(탭바로 재진입 시 선택 화면 노출).
+  onChannelConsumed?: () => void;
 }
 
 const defaultFormData = {
@@ -40,6 +53,9 @@ const defaultFormData = {
   urgency: false,
   description: '',
   request_detail: '',
+  // 예약방문(채널 visit 전용) — 희망 방문일/시간대
+  visit_date: '',
+  visit_time: '오전' as '오전' | '오후',
   files: [] as FileMeta[],
   agreePrivacy: false
 };
@@ -88,10 +104,20 @@ const getInitialVerified = () => {
 
 // 고객 간단 등록 — 단일 화면 폼.
 // 고객 기본정보 + 요청사항(200자) + 사진/도면 첨부 + 개인정보 동의 → [등록] 시 관리자 대시보드에 이력 기록.
-export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
-  const { customerAuth } = useShell();
+export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initialChannel = null, onChannelConsumed }) => {
+  const { customerAuth, setCustomerAuth } = useShell();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // 자료등록 채널 선택 — null이면 2채널 선택 화면, 값이 있으면 해당 폼.
+  // 홈 카드/CTA로 지정 진입(initialChannel)하면 선택 화면을 건너뛴다.
+  const [channel, setChannel] = useState<RequestChannel | null>(initialChannel);
+
+  // 지정 진입값은 1회만 소비 — 부모 ref를 비워, 이후 탭바로 재진입하면 선택 화면이 다시 보인다.
+  useEffect(() => {
+    if (initialChannel) onChannelConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 휴대폰 본인인증 상태 (의뢰 전 필수)
   // 로그인(customerAuth)은 휴대폰 OTP 인증을 거친 상태이므로 본인확인 완료로 간주한다(파생값).
@@ -113,6 +139,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('zeros_phone_verified', JSON.stringify({ phone }));
     }
+    // 처음 사용자도 본인인증을 마치면 로그인으로 영속화한다 — 다음 방문 시 바로 자료등록 화면으로(②③).
+    setCustomerAuth({ name: name.trim(), phone, verifiedAt: new Date().toISOString() });
     setFormData(prev => {
       const updated = { ...prev, phone, customer_name: prev.customer_name || name };
       if (typeof window !== 'undefined') {
@@ -278,6 +306,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
     }
     if (!formData.email.trim()) return failValidation('이메일 주소를 입력해 주세요.');
     if (!formData.site_address.trim()) return failValidation('현장 주소를 입력해 주세요.');
+    // 출장요청 채널은 희망 방문일이 필수
+    if (channel === 'visit' && !formData.visit_date) return failValidation('희망 방문일을 선택해 주세요.');
     if (!formData.agreePrivacy) return failValidation('개인정보 수집 및 이용에 동의해 주세요.');
     return true;
   };
@@ -289,6 +319,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
 
     setLoading(true);
     try {
+      // 채널별 메타 — quick: 100만원 이하 소규모 AI 자동등록 / visit: 출장 예약방문 동반
+      const channelTag = channel === 'quick'
+        ? '[무료견적·총 공사비 100만원 이하] AI Native 자동 등록'
+        : `[출장요청·예약방문] 희망 방문: ${formData.visit_date || '미지정'} ${formData.visit_time}`;
+
       const newEst = await ZerosService.createEstimate({
         customer_name: formData.customer_name,
         company_name: formData.company_name,
@@ -299,16 +334,32 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         work_type: formData.work_type,
         site_type: formData.site_type,
         work_purpose: formData.work_purpose,
-        expected_budget_range: formData.expected_budget_range,
-        desired_schedule: formData.desired_schedule,
+        expected_budget_range: channel === 'quick' ? '≤1,000만' : formData.expected_budget_range,
+        desired_schedule: channel === 'visit' && formData.visit_date ? formData.visit_date : formData.desired_schedule,
         urgency: formData.urgency,
         description: formData.description,        // 고객 요청 사항
-        request_detail: formData.request_detail,
-        // 간단 등록 단계에서는 규모·결제 미산정 — 관리자가 방문 후 분류한다.
-        estimate_category: 'unknown',
+        request_detail: channelTag,
+        // 100만원 이하 간편 신청은 small, 출장요청은 관리자 방문 후 분류(unknown).
+        estimate_category: channel === 'quick' ? 'small' : 'unknown',
         payment_required: false,
         submitted_files: formData.files
       });
+
+      // 출장요청 채널: 예약방문을 이력관리(현장방문 테이블)에 함께 기록(⑦)
+      if (channel === 'visit' && formData.visit_date) {
+        try {
+          await ZerosService.createSiteVisit({
+            estimate_id: newEst.id,
+            visit_date: formData.visit_date,
+            visit_purpose: `고객 예약방문 신청 (${formData.visit_time})`,
+            visit_status: '예정',
+            site_memo: `고객 희망 방문일 ${formData.visit_date} ${formData.visit_time}`,
+          });
+        } catch (vErr) {
+          // 예약방문 기록 실패는 접수 자체를 막지 않는다(관리자가 수기 보완).
+          console.error('예약방문 기록 실패', vErr);
+        }
+      }
 
       // 임시저장 청소
       localStorage.removeItem('zeros_draft_request');
@@ -327,17 +378,40 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
   const checkingVerify = verifyEnabled === null;
   const verifyRequired = verifyEnabled === true && !verified;
   const showForm = !checkingVerify && !verifyRequired;
+  // 자료등록 화면 단계: 채널 미선택=선택 화면, 선택 후=등록 폼
+  const channelView = showForm && !channel;
+  const formView = showForm && !!channel;
+
+  const headerTitle = verifyRequired
+    ? '본인확인'
+    : checkingVerify
+      ? '준비 중'
+      : channelView
+        ? '자료 등록'
+        : channel === 'visit'
+          ? '견적·출장요청 자료등록'
+          : '무료 견적 신청';
 
   return (
     <div className="w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-5xl mx-auto overflow-hidden">
 
-      {/* 헤더 바 — 다른 탭과 동일 프레임으로 여유 있게(패딩·헤드라인 확대) */}
+      {/* 헤더 바 — 설명 박스 제거(단순화). 폼 단계에선 ← 로 채널 선택으로 복귀. */}
       <div className="bg-bg-subtle border-b border-border px-7 py-5 flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
-          <h3 className="text-[22px] font-black text-navy leading-tight tracking-tight">
-            {showForm ? '예상견적 의뢰하기' : verifyRequired ? '본인확인' : '준비 중'}
+        <div className="flex items-center gap-3 min-w-0">
+          {formView && (
+            <button
+              type="button"
+              onClick={() => { setChannel(null); setErrorMsg(null); }}
+              aria-label="등록 방법 다시 선택"
+              style={{ touchAction: 'manipulation' }}
+              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-custom border border-border bg-bg text-steel hover:text-navy hover:border-steel transition-all active:scale-95 cursor-pointer"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <h3 className="text-[22px] font-black text-navy leading-tight tracking-tight truncate">
+            {headerTitle}
           </h3>
-          {showForm && <span className="text-[13.5px] text-gray font-semibold">고객 정보만 등록해도 접수됩니다 · 자료를 함께 올리면 방문 전 1차 검토가 빨라집니다</span>}
         </div>
         {customerAuth && showForm && (
           <span className="text-[12.5px] font-bold text-success shrink-0">{customerAuth.name}님 · 자동입력됨</span>
@@ -351,6 +425,50 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
         /* 본인인증 전: 휴대폰 인증 게이트 */
         <div className="p-7">
           <PhoneVerifyGate onVerified={handleVerified} />
+        </div>
+      ) : channelView ? (
+        /* 로그인 후 첫 화면 — 2채널 등록 방법 선택(자료등록 화면) */
+        <div className="p-7 md:p-8 flex flex-col gap-5">
+          <span className="text-[14.5px] font-bold text-gray">등록 방법을 선택하세요</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* A. 출장요청 + 예약방문 */}
+            <button
+              type="button"
+              onClick={() => { setChannel('visit'); setErrorMsg(null); }}
+              style={{ touchAction: 'manipulation' }}
+              className="group text-left flex items-start gap-4 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] cursor-pointer"
+            >
+              <span className="shrink-0 w-12 h-12 rounded-full bg-steel/10 flex items-center justify-center">
+                <Truck className="w-6 h-6 text-steel" />
+              </span>
+              <span className="flex flex-col gap-1.5 min-w-0 flex-1">
+                <span className="text-[17px] font-black text-navy leading-tight">견적·출장요청 자료등록</span>
+                <span className="text-[13.5px] text-gray font-semibold leading-relaxed">자료 등록 + 예약방문 신청<br />출장·컨설팅 요청 창구</span>
+              </span>
+              <ChevronRight className="w-5 h-5 text-gray-light shrink-0 mt-2.5 group-hover:text-steel transition-colors" />
+            </button>
+
+            {/* B. 무료 견적(100만원 이하 · AI Native 자동) */}
+            <button
+              type="button"
+              onClick={() => { setChannel('quick'); setErrorMsg(null); }}
+              style={{ touchAction: 'manipulation' }}
+              className="group text-left flex items-start gap-4 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] cursor-pointer"
+            >
+              <span className="shrink-0 w-12 h-12 rounded-full bg-steel/10 flex items-center justify-center">
+                <Zap className="w-6 h-6 text-steel" />
+              </span>
+              <span className="flex flex-col gap-1.5 min-w-0 flex-1">
+                <span className="text-[17px] font-black text-navy leading-tight">무료 견적 신청</span>
+                <span className="text-[13.5px] text-gray font-semibold leading-relaxed">총 공사비 100만원 이하<br />AI Native 기반 자동 등록</span>
+              </span>
+              <ChevronRight className="w-5 h-5 text-gray-light shrink-0 mt-2.5 group-hover:text-steel transition-colors" />
+            </button>
+          </div>
+          <div className="flex items-center gap-2 text-[12.5px] text-gray-light font-bold pt-1">
+            <CalendarClock className="w-4 h-4 text-steel shrink-0" />
+            접수하신 모든 자료·예약은 이력관리에 자동 저장됩니다.
+          </div>
         </div>
       ) : (
       /* 단일 등록 폼 */
@@ -491,6 +609,42 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
             />
             <span className="text-[12.5px] text-gray-light font-bold self-end">{formData.description.length}/200</span>
           </div>
+
+          {/* 예약방문 신청 — 출장요청(visit) 채널 전용 */}
+          {channel === 'visit' && (
+            <div className="flex flex-col gap-2.5 pt-1">
+              <label htmlFor="visit_date" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
+                <CalendarClock className="w-4.5 h-4.5 text-steel" />
+                희망 방문일 · 시간대 (필수)
+              </label>
+              <input
+                id="visit_date"
+                name="visit_date"
+                type="date"
+                value={formData.visit_date}
+                onChange={handleChange}
+                style={{ touchAction: 'manipulation' }}
+                className="w-full border border-border p-3.5 rounded-custom text-[16.5px] text-navy focus:outline-none focus:border-steel transition-all"
+              />
+              <div className="grid grid-cols-2 gap-2.5">
+                {(['오전', '오후'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setFormData((f) => ({ ...f, visit_time: t }))}
+                    style={{ touchAction: 'manipulation' }}
+                    className={`p-3 rounded-custom text-[15px] font-bold border transition-all active:scale-[0.99] cursor-pointer ${
+                      formData.visit_time === t
+                        ? 'border-steel bg-steel/10 text-navy'
+                        : 'border-border bg-bg text-gray hover:border-steel/60'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ③ 견적 자료 (선택) */}
@@ -598,7 +752,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete }) => {
               <span>등록 중...</span>
             ) : (
               <>
-                등록하기
+                {channel === 'visit' ? '출장요청·예약 접수하기' : '무료 견적 신청하기'}
                 <Send className="w-5 h-5" />
               </>
             )}

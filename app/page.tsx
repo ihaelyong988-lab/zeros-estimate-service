@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppShell } from "@/components/layout/AppShell";
 import { useShell } from "@/lib/context/ShellContext";
-import { RequestWizard, prefetchOtpEnabled } from "@/components/forms/RequestWizard";
+import { RequestWizard, prefetchOtpEnabled, type RequestChannel } from "@/components/forms/RequestWizard";
 import { manualData } from "@/lib/constants/manuals";
 import { ZerosService } from "@/lib/supabase/client";
 import { Estimate, EstimateStatus } from "@/types/estimate";
@@ -280,6 +280,13 @@ export default function Home() {
       }
     }
   }, [activeTab, selectedMenu, selectedBudget]);
+
+  // 홈 카드/CTA가 지정한 견적문의 진입 채널 — RequestWizard 마운트 시 1회 소비.
+  const pendingRequestChannel = useRef<RequestChannel | null>(null);
+  const openRequestChannel = (ch: RequestChannel) => {
+    pendingRequestChannel.current = ch;
+    setActiveTabAtTop('request');
+  };
 
   const setActiveTabAtTop = (tab: Parameters<typeof setActiveTab>[0]) => {
     setActiveTab(tab);
@@ -1004,6 +1011,8 @@ export default function Home() {
   const renderRequestTab = () => (
     <div className="py-4">
       <RequestWizard
+        initialChannel={pendingRequestChannel.current}
+        onChannelConsumed={() => { pendingRequestChannel.current = null; }}
         onComplete={(newEst) => {
           router.push(`/request/complete?no=${newEst.estimate_no}&cat=${newEst.estimate_category}&name=${encodeURIComponent(newEst.customer_name)}&email=${encodeURIComponent(newEst.email)}`);
         }}
@@ -1726,13 +1735,13 @@ export default function Home() {
             {/* 핵심 3대 역량 아이콘 칩 — 탭화하여 각 탭으로 링크 연결 */}
             <div className="flex flex-col gap-4 pl-1 select-none">
               {[
-                { icon: Truck, label: '견적.출장요청 자료 등록하기', sub: '고객 자료등록 및 예약방문 요청', color: 'text-sky-400', targetTab: 'request' },
-                { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-indigo-400', targetTab: 'sop' },
-                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400', targetTab: 'business' },
-              ].map(({ icon: Icon, label, sub, color, targetTab }) => (
+                { icon: Truck, label: '견적.출장요청 자료 등록하기', sub: '고객 자료등록 및 예약방문 요청', color: 'text-sky-400', targetTab: 'request', channel: 'visit' as RequestChannel | undefined },
+                { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-indigo-400', targetTab: 'sop', channel: undefined as RequestChannel | undefined },
+                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400', targetTab: 'business', channel: undefined as RequestChannel | undefined },
+              ].map(({ icon: Icon, label, sub, color, targetTab, channel }) => (
                 <button
                   key={label}
-                  onClick={() => setActiveTabAtTop(targetTab as any)}
+                  onClick={() => channel ? openRequestChannel(channel) : setActiveTabAtTop(targetTab as any)}
                   className="flex items-start gap-4 text-left w-full p-3.5 rounded-[16px] bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
                 >
                   <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
@@ -1755,7 +1764,7 @@ export default function Home() {
           {/* 하단 영역 — CTA 2종 + 스와이프 큐 */}
           <div className="flex flex-col gap-3 pt-4 shrink-0">
             <button
-              onClick={() => setActiveTabAtTop('request')}
+              onClick={() => openRequestChannel('quick')}
               className="bg-surface min-h-12 rounded-lg border border-border text-[#EA4F18] text-[18px] font-black active:scale-[0.98] transition-transform"
             >
               무료 견적 신청하기
@@ -1955,7 +1964,7 @@ export default function Home() {
               AI Native 검증 절차
             </button>
             <button
-              onClick={() => setActiveTabAtTop('request')}
+              onClick={() => openRequestChannel('quick')}
               className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[17px] font-black"
             >
               무료 견적 신청
