@@ -126,3 +126,20 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **위계 규칙**: 헤드라인이 항상 최상위. 보조 지표(±5% 등)는 **헤드라인보다 작게**(역전 금지).
 - **실적 KPI**: 박스 없이 **상·하 헤어라인만** · 누적 건수만 오렌지(펄스 점+숫자+짧은 룰) · 나머지 무채색(navy/gray) · 막대그래프=**공종 시그니처 색**(`TRADE_COLORS`, `fillOpacity 0.9`).
 - **가독성 체크리스트(ui-ux-pro-max)**: 본문 **≥16px**, 대비 **4.5:1**(→ `gray-light`#9AA3AF는 본문 금지, `gray`#5B6573 이상) · `prefers-reduced-motion` 존중(`motion-reduce:animate-none`) · `tabular-nums`로 숫자 정렬.
+
+## 11. 하네스 · Loop 엔지니어링 규칙 (검증 루프 강제)
+> 사용자 지시로 명문화(2026-06-30). 핵심: **"리마인더가 아니라 검증."** 규칙은 말로 된 지시가 아니라 **기계가 채점하는 게이트**로 구현한다. 스킬은 "호출"이 아니라 **"결과를 산출물에 반영"까지가 완료**다. (전역 `~/.claude/CLAUDE.md`에 동일 명문화 — 모든 작업 적용.)
+
+### 0. 왜 (근본 원인 차단)
+- 리마인더만 있으면 **검사 가능한 것(=호출)** 만 하고 **검사 안 되는 것(=결과 적용)** 을 건너뛰어 같은 구멍이 반복된다(시간·토큰 낭비).
+- 처방: **산출물을 기계가 채점**하고 미통과면 **마감 자체를 차단**한다 → "호출만 하고 적용 안 하기"를 구조적으로 불가능하게.
+
+### 1. 3계층 구조
+1. **기준파일**: `design-system/zeros/MASTER.md`(UI 기준 + AGENTS §10 ZEROS 오버라이드 최상단 고정). 매번 재추론하지 말고 이 파일을 따른다.
+2. **검증 루프(핵심)**: `.claude/hooks/ui-quality-gate.mjs` — 변경 `.tsx`를 결정적 룰로 채점. **차단룰 R1(에러 `role="alert"` 누락)**, 경고 R2(`text-gray-light` 본문)·R3(터치<44px). 미검증·차단룰 위반 시 **Stop 훅이 마감을 `decision:block` 으로 차단 → 통과까지 loop**(세션당 3회 초과 시 경고 후 통과). `.claude/settings.json` Stop 배열에 등록(graphify 훅과 병행).
+3. **강제 게이트(선택)**: 필요 시 PreToolUse로 편집 전 스킬 호출 마커 검사.
+
+### 2. 작동 규약 (UI 변경 시 마감 전 필수)
+- `node .claude/hooks/ui-quality-gate.mjs --check` → 위반 수정 → `node .claude/hooks/ui-quality-gate.mjs --pass`(차단룰 0건일 때만 마커 기록). 미통과면 Stop 게이트가 마감을 막는다.
+- 차단/경고 룰은 §10 가독성 체크리스트와 동기화(role=alert · 대비 4.5:1 · 터치 44px · focus-visible · no-emoji · reduced-motion · tabular-nums).
+- 마감 자기점검에 **"이번 산출물이 검증 루프(--pass)를 통과했는가"** 포함.

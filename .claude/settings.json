@@ -28,6 +28,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node .claude/hooks/ui-quality-gate.mjs",
+            "timeout": 15
+          },
+          {
+            "type": "command",
             "command": "node .claude/hooks/stop-graphify.mjs",
             "timeout": 10
           }
