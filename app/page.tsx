@@ -415,17 +415,26 @@ export default function Home() {
 
   // AI Native 검증 — 데이터 사이언스 표준 작업 절차(SOP)
   const renderSopTab = () => {
-    // 6단계 절차 — 전문용어 제거, 중학생도 이해하는 한글 동사 키워드.
+    // 6단계 절차 — 전문용어 0, 중학생도 읽는 한글 동사 + 8자 이내 함축.
+    //   size = 폰트 리듬(핵심 단계만 키움) · accent/strong = 하이라이트.
     const pipeline = [
-      { no: '1', title: '자료 받기', desc: '도면·사진·요청을 모읍니다', result: '요청 정리' },
-      { no: '2', title: '자동 판독', desc: '도면을 읽어 자재·물량을 뽑습니다', result: '자재·물량' },
-      { no: '3', title: '거품 탐지', desc: '실거래가와 비교해 비싼 단가를 표시', result: '이상 단가', accent: true },
-      { no: '4', title: '예산 산출', desc: 'AI가 적정 예산대역을 계산합니다', result: '예산 범위' },
-      { no: '5', title: '전문가 확인', desc: '30년 경력 PM이 현장 조건을 보정', result: '검증 완료' },
-      { no: '6', title: '검토서 발행', desc: '안심 검토서 한 장으로 정리', result: '검토서', strong: true },
+      { no: '1', title: '자료 받기', desc: '도면·사진 모으기', size: 'text-[18px]' },
+      { no: '2', title: '자동 판독', desc: '자재·물량 추출', size: 'text-[18px]' },
+      { no: '3', title: '거품 탐지', desc: '비싼 단가 표시', size: 'text-[22px]', accent: true },
+      { no: '4', title: '예산 산출', desc: '적정 대역 계산', size: 'text-[18px]' },
+      { no: '5', title: '전문가 확인', desc: '30년 PM 보정', size: 'text-[18px]' },
+      { no: '6', title: '검토서 발행', desc: '검토서 한 장', size: 'text-[22px]', strong: true },
     ];
-    // 내림차순(funnel) — 위→아래로 폭이 좁아지며 결과 한 장으로 수렴(데스크톱만).
-    const funnelW = ['md:w-full', 'md:w-[97%]', 'md:w-[94%]', 'md:w-[91%]', 'md:w-[88%]', 'md:w-[85%]'];
+    // 내림차순 깔때기 — 위는 넓게, 아래로 좁아져 '검토서 한 장'으로 수렴.
+    //   모바일은 완만(100→82%)·데스크톱은 강하게(100→60%) 좁힌다.
+    const funnelW = [
+      'w-full',
+      'w-[97%] md:w-[92%]',
+      'w-[94%] md:w-[84%]',
+      'w-[90%] md:w-[76%]',
+      'w-[86%] md:w-[68%]',
+      'w-[82%] md:w-[60%]',
+    ];
 
     return (
       <div className="flex flex-col gap-7 max-w-4xl mx-auto py-3 select-none">
@@ -434,43 +443,33 @@ export default function Home() {
         <div className="flex flex-col gap-2 border-b border-border pb-5">
           <span className="text-[12px] font-black text-steel uppercase tracking-wider">AI Native 검증 절차</span>
           <h2 className="text-[clamp(22px,4vw,30px)] font-extrabold text-navy tracking-tight leading-[1.3]">
-            AI가 <span className="text-accent">6단계</span>로 검증해, 거품 없는 <span className="text-accent">적정 예산</span>까지
+            AI가 <span className="text-accent">6단계</span>로 걸러, 거품 없는 <span className="text-accent">적정 예산</span>까지
           </h2>
           <p className="text-[14px] text-gray font-bold leading-snug">
-            도면을 올리면 → 자동 분석 → 전문가 확인 → 검토서 한 장
+            도면 한 장 → 자동 분석 → 전문가 확인 → 검토서
           </p>
         </div>
 
-        {/* 절차 — 내림차순 6단계 흐름 */}
-        <div className="flex flex-col gap-2.5">
+        {/* 절차 — 내림차순 깔때기(폭 수렴 + 폰트·하이라이트 리듬) */}
+        <div className="flex flex-col items-center gap-2">
           {pipeline.map((s, idx) => (
-            <div key={s.no} className={`w-full ${funnelW[idx]} flex items-center gap-3`}>
-              <span className="shrink-0 w-6 text-right text-[15px] font-black text-gray-light tabular-nums">{s.no}</span>
-              <div
-                className={`flex-1 flex items-center justify-between gap-3 rounded-custom border px-4 py-3.5 ${
-                  s.accent
-                    ? 'border-accent/40 bg-accent/[0.04]'
-                    : s.strong
-                      ? 'border-navy/25 bg-bg-subtle/60'
-                      : 'border-border bg-bg'
-                }`}
-              >
-                <div className="flex flex-col gap-0.5 min-w-0">
-                  <span className={`text-[18px] font-black leading-tight ${s.accent ? 'text-accent' : 'text-navy'}`}>{s.title}</span>
-                  <span className="text-[13px] text-gray font-semibold leading-snug">{s.desc}</span>
-                </div>
-                <span
-                  className={`shrink-0 text-[12px] font-bold rounded-full px-3 py-1 border whitespace-nowrap ${
-                    s.accent
-                      ? 'text-accent border-accent/40 bg-bg'
-                      : s.strong
-                        ? 'text-navy border-navy/25 bg-bg'
-                        : 'text-gray border-border bg-bg-subtle'
-                  }`}
-                >
-                  {s.result}
-                </span>
-              </div>
+            <div
+              key={s.no}
+              className={`${funnelW[idx]} flex items-center gap-3 rounded-custom border px-4 py-3 ${
+                s.accent
+                  ? 'border-accent/45 bg-accent/[0.05]'
+                  : s.strong
+                    ? 'border-navy/30 bg-navy/[0.04]'
+                    : 'border-border bg-bg'
+              }`}
+            >
+              <span className="shrink-0 w-5 text-[13px] font-black text-gray tabular-nums">{s.no}</span>
+              <span className={`flex-1 font-black leading-tight tracking-tight ${s.size} ${s.accent ? 'text-accent' : 'text-navy'}`}>
+                {s.title}
+              </span>
+              <span className="shrink-0 text-[12.5px] font-bold text-gray leading-snug text-right whitespace-nowrap">
+                {s.desc}
+              </span>
             </div>
           ))}
         </div>
