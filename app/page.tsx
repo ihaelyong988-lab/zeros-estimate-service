@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { AppShell } from "@/components/layout/AppShell";
 import { useShell } from "@/lib/context/ShellContext";
 import { RequestWizard, prefetchOtpEnabled, type RequestChannel } from "@/components/forms/RequestWizard";
@@ -37,7 +36,6 @@ import {
   Clock,
   TrendingDown,
   BarChart3,
-  Scale,
   Cpu,
   FileText,
   Search,
@@ -162,13 +160,11 @@ export default function Home() {
     setSelectedEstimateId
   } = useShell();
 
-  const router = useRouter();
 
   // 견적 목록 상태 관리 (실시간 동기화용)
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTradeIdx, setActiveTradeIdx] = useState(0);
-  const [activeDiagNode, setActiveDiagNode] = useState(0);
   // 모바일 랜딩 — 2페이지 공종 캐러셀 선택 인덱스(3페이지 견적과 연동)
   const [mobileTradeIdx, setMobileTradeIdx] = useState(0);
   // 모바일 랜딩 실시간 견적 슬라이더 — 핸들을 끌면 예상 견적·수수료·중앙값 대비가 연동되어 변동
@@ -419,365 +415,111 @@ export default function Home() {
 
   // AI Native 검증 — 데이터 사이언스 표준 작업 절차(SOP)
   const renderSopTab = () => {
+    // 6단계 절차 — 전문용어 제거, 중학생도 이해하는 한글 동사 키워드.
     const pipeline = [
-      {
-        no: '01',
-        phase: 'Data Ingestion',
-        title: '고객 요청사항 수렴 및 정합',
-        desc: '대표님들이 보내주신 예상 예산, 세부 희망 일정, 특이 공사 요건 등 비정형 요청 사항을 꼼꼼하게 정합하여 검토 출발점을 잡습니다.',
-        output: '고객 요구사항 정의',
-      },
-      {
-        no: '02',
-        phase: 'Material Analysis',
-        title: '제공자료 정밀 분석 · 파싱',
-        desc: '업로드해주신 설계 도면(DWG/PDF), 현물 사진, 기존 제원서 등의 원천 제공자료를 고해상도 OCR 및 제원 파서 엔진으로 파싱하여 자재 규격과 물량을 추출합니다.',
-        output: '정규화 제공자료 데이터',
-      },
-      {
-        no: '03',
-        phase: 'Exploratory Analysis',
-        title: '이상치 실시간 탐지(EDA)',
-        desc: '분석된 자재 규격과 단가를 표준 품셈 및 1군 건설사 거래처 실거래 빅데이터 DB와 실시간 비교 대조하여 비정상적인 고단가 단가 거품을 사전에 감지하고 필터링합니다.',
-        output: '이상치 검토 리포트',
-      },
-      {
-        no: '04',
-        phase: 'AI Inference',
-        title: 'AI Native 예산 밴드 추론',
-        desc: 'ZEROS 배관 공사비 회귀 예측 추론 모델을 가동하여 공사 범위와 기계실 환경 조건에 최적화된 과학적 예산 대역(Budget Band)을 산출합니다.',
-        output: 'AI 예측 예산 범위',
-      },
-      {
-        no: '05',
-        phase: 'PM Cross Validation',
-        title: '전문 PM 교차 검증 (진심을 담은 분석)',
-        desc: '현장 실무 경력 30년 이상의 베테랑 엔지니어 PM이 AI가 미처 식별하지 못한 현장의 장비 반입 장애물, 고소 가동중단 조건, 흙막이 가설 공정 등의 요소를 교차하여 정교하게 보정합니다.',
-        output: '설계 타당성 보정 완료',
-      },
-      {
-        no: '06',
-        phase: 'Result Sheet Output',
-        title: '최종 안심 검토서 발행',
-        desc: '분석과 검증이 모두 끝난 최종 정량 지표(안심 예산 밴드, 리스크 등급, 필수 자재 요건)를 투명하게 담아 소상공인 대표님이 안심할 수 있는 고해상도 결과 보고서를 자동 발행합니다.',
-        output: '검토 시트(Scope Sheet)',
-      },
+      { no: '1', title: '자료 받기', desc: '도면·사진·요청을 모읍니다', result: '요청 정리' },
+      { no: '2', title: '자동 판독', desc: '도면을 읽어 자재·물량을 뽑습니다', result: '자재·물량' },
+      { no: '3', title: '거품 탐지', desc: '실거래가와 비교해 비싼 단가를 표시', result: '이상 단가', accent: true },
+      { no: '4', title: '예산 산출', desc: 'AI가 적정 예산대역을 계산합니다', result: '예산 범위' },
+      { no: '5', title: '전문가 확인', desc: '30년 경력 PM이 현장 조건을 보정', result: '검증 완료' },
+      { no: '6', title: '검토서 발행', desc: '안심 검토서 한 장으로 정리', result: '검토서', strong: true },
     ];
-
-    // 실제 처리 로그 스냅샷 — 6단계 파이프라인 중 산출 근거가 남는 4개 에이전트 단계.
-    // 타임라인 노드와 1:1로 묶지 않고 독립 탭 뷰어로 운용한다(인덱스 mismatch 방지).
-    const logSnapshots = [
-      {
-        agent: 'zeros_drawing_parser_v1.4', stage: 'Material Analysis', label: '자료 파싱',
-        dot: 'bg-steel', text: 'text-steel',
-        log: `{
-  "agent": "zeros_drawing_parser_v1.4",
-  "status": "COMPLETED",
-  "pipeline_stage": "DATA_INGESTION",
-  "parsed_file": "2026_Yongin_SectorB_Drawing.pdf",
-  "extraction_summary": {
-    "target_materials": ["SUS304", "Carbon Steel"],
-    "total_nodes_extracted": 28,
-    "valve_entities_found": 8,
-    "nominal_diameters": ["50A", "100A"]
-  },
-  "schema_integrity": {
-    "null_fields": 0,
-    "format_compliance": true
-  }
-}`,
-      },
-      {
-        agent: 'zeros_anomaly_detector_v2.0', stage: 'Exploratory Analysis', label: '이상치 탐지',
-        dot: 'bg-accent', text: 'text-accent',
-        log: `{
-  "agent": "zeros_anomaly_detector_v2.0",
-  "status": "WARNING",
-  "pipeline_stage": "DATA_CLEANSING",
-  "anomaly_alert": {
-    "item_code": "M-SUS-100 (SUS304 Elbow 100A)",
-    "quoted_unit_price": 85000,
-    "market_mean_price": 38500,
-    "z_score": 3.12
-  },
-  "cleansing_action": {
-    "price_corrected_to": 38500,
-    "risk_index_assigned": "MEDIUM_HIGH",
-    "notes": "청구 단가가 시장 표준가를 2.2배 초과함."
-  }
-}`,
-      },
-      {
-        agent: 'zeros_pm_cross_validator_v3', stage: 'PM Cross Validation', label: 'PM 교차검증',
-        dot: 'bg-steel', text: 'text-steel',
-        log: `{
-  "agent": "zeros_pm_cross_validator_v3",
-  "status": "APPROVED",
-  "pipeline_stage": "PM_VERIFICATION",
-  "ai_inferred_budget": 19500000,
-  "pm_validation_comments": {
-    "issue": "도면 확인 시 굴착 깊이 1.5m 초과 구간 식별됨.",
-    "omission": "토공사 흙막이 가시설 설치 품셈 누락.",
-    "adjustment": "+1,700,000 KRW 반영 필요"
-  },
-  "final_corrected_budget": 21200000,
-  "accuracy_confidence": "98.2%"
-}`,
-      },
-      {
-        agent: 'zeros_decision_engine_v1.0', stage: 'Result Sheet Output', label: '최종 판정',
-        dot: 'bg-success', text: 'text-success',
-        log: `{
-  "agent": "zeros_decision_engine_v1.0",
-  "status": "COMPLETED",
-  "pipeline_stage": "DECISION_OUTPUT",
-  "output_document_id": "SS-2026-YONGIN-001",
-  "verdict_summary": {
-    "scope_fix_status": "SPEC_FIXED",
-    "optimal_budget_band": "18,000,000 ~ 22,000,000 KRW",
-    "risk_grade": "LOW",
-    "next_recommended_action": "ONLINE_CONTRACT_CONFIRMATION"
-  }
-}`,
-      },
-    ];
-    const activeLog = logSnapshots[activeDiagNode] || logSnapshots[0];
+    // 내림차순(funnel) — 위→아래로 폭이 좁아지며 결과 한 장으로 수렴(데스크톱만).
+    const funnelW = ['md:w-full', 'md:w-[97%]', 'md:w-[94%]', 'md:w-[91%]', 'md:w-[88%]', 'md:w-[85%]'];
 
     return (
-      <div className="flex flex-col gap-4 max-w-5xl mx-auto py-3 select-none">
-        <section className="flex flex-col gap-5.5">
-          {/* 헤더 — 좌측 타이틀 + 우측 신뢰 지표를 한 행으로 합쳐 수직 공간 압축 */}
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4.5 border-b border-border pb-4">
-            <div className="flex flex-col gap-1.5">
-              <h2 className="text-xl.5 md:text-2xl font-black text-navy tracking-tight">AI Native 검증 표준 작업 절차</h2>
-              <p className="text-[13px] text-gray leading-snug font-semibold">
-                <strong className="text-navy font-extrabold">데이터 탐색부터 결과 도출까지</strong> — 6단계 재현 가능한 파이프라인으로 공사 범위·비용·리스크를 정량 검증합니다.
-              </p>
-            </div>
-            {/* 신뢰 지표 — 대시보드 위젯 스타일 */}
-            <div className="grid grid-cols-2 lg:flex lg:items-center shrink-0 select-none">
-              {[
-                { label: '파이프라인', value: '6-Stage' },
-                { label: '실거래 대조', value: 'n건 DB' },
-                { label: '근거 추적', value: '100%' },
-                { label: '결과물', value: 'Scope Sheet' },
-              ].map((metric, i) => (
-                <div
-                  key={metric.label}
-                  className={`px-4 py-2 flex flex-col border-border ${i % 2 === 1 ? 'border-l' : ''} ${i >= 2 ? 'border-t lg:border-t-0' : ''} ${i > 0 ? 'lg:border-l' : ''}`}
-                >
-                  <span className="text-[10px] text-gray-light font-bold whitespace-nowrap">{metric.label}</span>
-                  <span className="text-[13px] text-navy font-black tracking-tight tabular-nums whitespace-nowrap flex items-center gap-1">
-                    {metric.value}
-                    <span className="w-1 h-1 rounded-full bg-success animate-pulse shrink-0" />
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="flex flex-col gap-7 max-w-4xl mx-auto py-3 select-none">
 
-          {/* 6단계 파이프라인 — 세련된 수직 타임라인 플로우 */}
-          <div className="flex flex-col gap-3.5">
-            <span className="text-[12px] font-black text-navy uppercase tracking-wide">AI Native 데이터 검증 파이프라인 (6단계 SOP)</span>
-            
-            <div className="relative pl-6 md:pl-8 flex flex-col gap-5">
-              {/* 타임라인 수직 연결선 */}
-              <div className="absolute top-3 bottom-3 left-[11px] md:left-[15px] w-0.5 bg-gradient-to-b from-steel via-accent to-success pointer-events-none" />
-              
-              {pipeline.map((stage, idx) => {
-                const dsRole = [
-                  "컴퓨터 비전(CV) 및 데이터 규격 정형화 데이터사이언티스트",
-                  "데이터 탐색 및 수리/통계 정제 전문가",
-                  "배관 설계 규격 및 자재 코드 피처 매핑 DS",
-                  "딥러닝 예측 모델링 및 건설사 실거래가 추론 모델러",
-                  "Human-in-the-Loop 검증 및 실무 도메인 교차 분석 PM",
-                  "의사결정 엔지니어링 및 최종 보고서 발행 전문가"
-                ][idx];
-                
-                const aiTool = [
-                  "OpenCV, PaddleOCR, ZEROS 맞춤형 DWG/PDF 파서",
-                  "SciPy 통계 분석 모듈, Pandas 데이터 클렌징 알고리즘",
-                  "ASME/KS 자재 코드 매핑 DB, 단가 할증률 매핑 모듈",
-                  "PyTorch 가중 회귀 신경망 모델, 1군 건설사 실거래 매칭 시스템",
-                  "ZEROS Domain Expert-in-the-Loop 피드백 프레임워크",
-                  "Decision Matrix Generator, Scope Sheet 자동 렌더링 엔진"
-                ][idx];
+        {/* 주제 — 헤드라인 + 한 줄 흐름 */}
+        <div className="flex flex-col gap-2 border-b border-border pb-5">
+          <span className="text-[12px] font-black text-steel uppercase tracking-wider">AI Native 검증 절차</span>
+          <h2 className="text-[clamp(22px,4vw,30px)] font-extrabold text-navy tracking-tight leading-[1.3]">
+            AI가 <span className="text-accent">6단계</span>로 검증해, 거품 없는 <span className="text-accent">적정 예산</span>까지
+          </h2>
+          <p className="text-[14px] text-gray font-bold leading-snug">
+            도면을 올리면 → 자동 분석 → 전문가 확인 → 검토서 한 장
+          </p>
+        </div>
 
-                // 노드 포인트 색상 결정
-                const circleColor = idx < 2 ? 'bg-steel ring-steel/20' : idx < 4 ? 'bg-accent ring-accent/20' : 'bg-success ring-success/20';
-
-                return (
-                  <div key={stage.no} className="relative flex flex-col gap-2 group transition-all duration-200">
-                    {/* 타임라인 노드 마커 */}
-                    <div className={`absolute -left-[18px] md:-left-[22px] top-1.5 w-3 h-3 rounded-full ${circleColor} ring-4 transition-transform duration-200 group-hover:scale-125 z-10`} />
-                    
-                    {/* 카드 본체 — 박스 제거, 타임라인 위 콘텐츠 정렬 */}
-                    <div className="flex flex-col md:flex-row md:items-start gap-4 pb-1">
-
-                      {/* 단계 번호 및 기본 타이틀 영역 */}
-                      <div className="md:w-1/4 shrink-0 flex items-center md:items-start gap-3">
-                        <span className="w-8 h-8 rounded-custom bg-navy/5 text-navy flex items-center justify-center text-[13px] font-black shrink-0 font-mono border border-navy/10">
-                          {stage.no}
-                        </span>
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-[10px] text-steel font-black uppercase tracking-wider font-mono">{stage.phase}</span>
-                          <span className="text-[14px] font-black text-navy mt-0.5">{stage.title}</span>
-                        </div>
-                      </div>
-                      
-                      {/* 설명 및 구체적 방법론 */}
-                      <div className="flex-1 flex flex-col gap-2.5">
-                        <p className="text-[12.5px] text-gray leading-relaxed font-semibold">
-                          {stage.desc}
-                        </p>
-                        
-                        {/* 역량 및 도구 메타 정보 — 박스 제거 */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] font-semibold text-gray-light leading-snug">
-                          <div className="flex items-start gap-1.5">
-                            <span className="text-[9px] px-1 py-0.5 bg-navy/5 text-navy rounded font-black shrink-0">DS 역량</span>
-                            <span className="text-gray">{dsRole}</span>
-                          </div>
-                          <div className="flex items-start gap-1.5">
-                            <span className="text-[9px] px-1 py-0.5 bg-accent/10 text-accent rounded font-black shrink-0">활용 엔진</span>
-                            <span className="text-gray">{aiTool}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 주요 산출물 배지 */}
-                      <div className="md:w-1/5 shrink-0 md:self-stretch flex items-end md:justify-end">
-                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-success/5 border border-success/15 rounded text-[11.5px] font-bold text-success w-full md:w-auto justify-center md:justify-start">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-                          <span className="truncate">{stage.output}</span>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 실제 처리 로그 스냅샷 — 단계별 산출 근거(에이전트 출력)를 그대로 공개 */}
-          <div className="flex flex-col gap-3 border-t border-border pt-5">
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-black text-navy uppercase tracking-wide">실제 데이터 및 처리 로그 스냅샷</span>
-              <span className="text-[11px] text-gray font-semibold">근거를 남기는 파이프라인 — 각 단계 에이전트의 실제 출력입니다.</span>
-            </div>
-            {/* 4탭 셀렉터 */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-1 border-b border-border">
-              {logSnapshots.map((snap, idx) => {
-                const isActive = activeDiagNode === idx;
-                return (
-                  <button
-                    key={snap.agent}
-                    onClick={() => setActiveDiagNode(idx)}
-                    className={`flex items-center gap-2 px-3 py-2.5 -mb-px border-b-[2.5px] transition-all duration-200 cursor-pointer text-left ${
-                      isActive ? 'border-accent opacity-100' : 'border-transparent opacity-55 hover:opacity-100'
-                    }`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${snap.dot} shrink-0`} />
-                    <div className="flex flex-col leading-none gap-0.5 min-w-0">
-                      <span className={`text-[8.5px] font-mono font-bold uppercase tracking-wider ${isActive ? snap.text : 'text-gray-light'}`}>
-                        {snap.stage}
-                      </span>
-                      <span className={`text-[12.5px] font-black tracking-tight ${isActive ? snap.text : 'text-navy/80'} truncate`}>
-                        {snap.label}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            {/* 다크 콘솔 패널 — 의도된 터미널 메타포 */}
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] text-gray font-bold tracking-wide flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
-                {activeLog.agent}
-              </span>
-              <div className="bg-slate-900 border border-slate-800 rounded-custom p-4 font-mono text-[10px] text-slate-300 overflow-x-auto shadow-inner leading-normal select-text">
-                <pre className="m-0 text-slate-300"><code>{activeLog.log}</code></pre>
-              </div>
-            </div>
-          </div>
-
-          {/* ZEROS AI Native 검토 원칙 리뉴얼 */}
-          <div className="flex flex-col gap-3">
-            <span className="text-[12px] font-black text-navy uppercase tracking-wide">ZEROS AI Native 검토 원칙</span>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-              {[
-                {
-                  icon: <Scale className="w-5 h-5 text-steel" />,
-                  title: '같은 자료, 같은 결론',
-                  desc: '누가 검토하더라도 동일한 수리 통계 및 표준 품셈 기준으로 신뢰할 수 있는 일관된 결론을 산출합니다.',
-                  color: 'border-t-4 border-t-steel'
-                },
-                {
-                  icon: <Cpu className="w-5 h-5 text-accent" />,
-                  title: '근거를 남깁니다',
-                  desc: '실거래 DB 대조 데이터와 산출물 수리 모델의 모든 계산 로직을 투명하게 스케줄 시트에 기록합니다.',
-                  color: 'border-t-4 border-t-accent'
-                },
-                {
-                  icon: <ShieldCheck className="w-5 h-5 text-success" />,
-                  title: '보수적으로 봅니다',
-                  desc: '품셈 오차 및 이상 단가 감지 영역 등 불확실성 구간은 예산 편향 리스크를 고려하여 안전하게 반영합니다.',
-                  color: 'border-t-4 border-t-success'
-                }
-              ].map((p) => (
-                <div key={p.title} className={`${p.color} pt-3.5 flex flex-col gap-2`}>
-                  <div className="flex items-center gap-2">
-                    {p.icon}
-                    <h4 className="text-[13.5px] font-black text-navy">{p.title}</h4>
-                  </div>
-                  <p className="text-[12px] text-gray leading-relaxed font-semibold">{p.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 최종 산출물 — Scope Sheet 미니 요약(검증의 결과물을 한 장으로) */}
-          <div className="flex flex-col border-t border-border pt-5">
-            <span className="text-[11px] text-steel font-black uppercase tracking-wider">Final Deliverable · Scope Sheet</span>
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mt-3">
-              <div className="flex-1 min-w-[200px]">
-                <h3 className="text-[14px] font-black text-navy tracking-tight leading-snug">
-                  모든 분석 검증의 최종 결과물은 단 한 장의 검토 시트로 정돈됩니다.
-                </h3>
-              </div>
-              <div className="flex-[1.3] min-w-[280px] grid grid-cols-2 sm:grid-cols-4">
-                {[
-                  { l: 'Scope Spec', v: '범위 고정', c: 'text-navy' },
-                  { l: 'Budget Band', v: '₩18M~₩22M', c: 'text-navy' },
-                  { l: 'Risk Grade', v: 'LOW 등급', c: 'text-navy' },
-                  { l: 'Next Action', v: '온라인검토', c: 'text-accent' },
-                ].map((m, i) => (
-                  <div key={m.l} className={`flex flex-col gap-0.5 text-center px-2 ${i > 0 ? 'border-l border-border/60' : ''}`}>
-                    <span className="text-[8px] text-gray-light uppercase font-mono">{m.l}</span>
-                    <span className={`text-[12px] font-black truncate ${m.c}`}>{m.v}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* CTA — 프리미엄 네이비/블루 그라데이션 및 통일된 신청 버튼 */}
-          <div className="bg-gradient-to-r from-[#1A365D] to-[#2E5E8A] text-bg rounded-custom p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-[11px] text-bg/75 font-black uppercase tracking-wider font-mono">Ready to verify</span>
-              <span className="text-[14.5px] font-black tracking-tight">도면과 제원서를 제출하시면 AI 검증 절차가 즉시 시작됩니다.</span>
-            </div>
-            <div className="w-full sm:w-64 shrink-0 flex flex-col justify-center">
-              <button
-                onClick={() => setActiveTabAtTop('request')}
-                className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer text-center"
+        {/* 절차 — 내림차순 6단계 흐름 */}
+        <div className="flex flex-col gap-2.5">
+          {pipeline.map((s, idx) => (
+            <div key={s.no} className={`w-full ${funnelW[idx]} flex items-center gap-3`}>
+              <span className="shrink-0 w-6 text-right text-[15px] font-black text-gray-light tabular-nums">{s.no}</span>
+              <div
+                className={`flex-1 flex items-center justify-between gap-3 rounded-custom border px-4 py-3.5 ${
+                  s.accent
+                    ? 'border-accent/40 bg-accent/[0.04]'
+                    : s.strong
+                      ? 'border-navy/25 bg-bg-subtle/60'
+                      : 'border-border bg-bg'
+                }`}
               >
-                무료 견적 검토 의뢰하기
-              </button>
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <span className={`text-[18px] font-black leading-tight ${s.accent ? 'text-accent' : 'text-navy'}`}>{s.title}</span>
+                  <span className="text-[13px] text-gray font-semibold leading-snug">{s.desc}</span>
+                </div>
+                <span
+                  className={`shrink-0 text-[12px] font-bold rounded-full px-3 py-1 border whitespace-nowrap ${
+                    s.accent
+                      ? 'text-accent border-accent/40 bg-bg'
+                      : s.strong
+                        ? 'text-navy border-navy/25 bg-bg'
+                        : 'text-gray border-border bg-bg-subtle'
+                  }`}
+                >
+                  {s.result}
+                </span>
+              </div>
             </div>
+          ))}
+        </div>
+
+        {/* 결과 지표 — 검증의 최종 산출물 한 줄 */}
+        <div className="flex flex-col gap-3 border-t border-border pt-5">
+          <span className="text-[12px] font-black text-steel uppercase tracking-wider">검증 결과 · 검토서 한 장</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4">
+            {[
+              { l: '적정 예산 밴드', v: '₩18M~22M', accent: false },
+              { l: '리스크 등급', v: 'LOW', accent: false },
+              { l: '공사 범위', v: '고정', accent: false },
+              { l: '근거 추적', v: '100%', accent: true },
+            ].map((m) => (
+              <div key={m.l} className="flex flex-col gap-1 px-1">
+                <span className="text-[11.5px] text-gray-light font-bold">{m.l}</span>
+                <span className={`text-[22px] font-black tracking-tight tabular-nums ${m.accent ? 'text-accent' : 'text-navy'}`}>{m.v}</span>
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
+
+        {/* 검토 원칙 — 아이콘 없이 3가지 신뢰 약속 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4 border-t border-border pt-5">
+          {[
+            { t: '같은 자료, 같은 결론', d: '누가 검토해도 같은 기준으로 일관된 결론' },
+            { t: '근거를 남깁니다', d: '모든 계산 근거를 기록해 추적할 수 있게' },
+            { t: '보수적으로 봅니다', d: '불확실한 구간은 안전하게 반영합니다' },
+          ].map((p) => (
+            <div key={p.t} className="flex flex-col gap-1 border-t-2 border-t-steel/40 pt-3">
+              <h4 className="text-[14px] font-black text-navy">{p.t}</h4>
+              <p className="text-[12.5px] text-gray font-semibold leading-snug">{p.d}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA — 단일 신청 버튼 */}
+        <div className="bg-gradient-to-r from-[#1A365D] to-[#2E5E8A] text-bg rounded-custom p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+          <span className="text-[14.5px] font-black tracking-tight">도면과 제원서를 올리면 AI 검증이 바로 시작됩니다.</span>
+          <div className="w-full sm:w-64 shrink-0 flex flex-col justify-center">
+            <button
+              onClick={() => setActiveTabAtTop('request')}
+              className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 motion-reduce:active:scale-100 whitespace-nowrap cursor-pointer text-center"
+            >
+              무료 견적 검토 의뢰하기
+            </button>
+          </div>
+        </div>
+
       </div>
     );
   };
@@ -1013,8 +755,9 @@ export default function Home() {
       <RequestWizard
         initialChannel={pendingRequestChannel.current}
         onChannelConsumed={() => { pendingRequestChannel.current = null; }}
-        onComplete={(newEst) => {
-          router.push(`/request/complete?no=${newEst.estimate_no}&cat=${newEst.estimate_category}&name=${encodeURIComponent(newEst.customer_name)}&email=${encodeURIComponent(newEst.email)}`);
+        onComplete={() => {
+          // 완료 화면은 위저드 내부 '등록완료 탭'에서 처리(관리 페이지 이동 링크 포함).
+          // 별도 라우팅 없이 위저드가 직접 완료 UI를 노출한다.
         }}
       />
     </div>

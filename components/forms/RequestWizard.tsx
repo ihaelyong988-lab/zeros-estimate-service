@@ -9,12 +9,12 @@ import { useShell } from '@/lib/context/ShellContext';
 import { PhoneVerifyGate } from './PhoneVerifyGate';
 import { Estimate, FileMeta, WorkType, SiteType, ExpectedBudgetRange } from '@/types/estimate';
 import {
-  User,
   Building,
   Phone,
   Mail,
   MapPin,
   MessageSquare,
+  Briefcase,
   Send,
   AlertCircle,
   Upload,
@@ -22,7 +22,9 @@ import {
   Truck,
   Zap,
   CalendarClock,
-  ChevronRight,
+  Coins,
+  CheckCircle2,
+  ArrowRight,
   ArrowLeft
 } from 'lucide-react';
 
@@ -30,13 +32,8 @@ import {
 //  visit: 견적·출장요청 자료등록(자료 + 예약방문 신청)  ·  quick: 무료 견적 신청(100만원 이하 · AI Native 자동 등록)
 export type RequestChannel = 'visit' | 'quick';
 
-interface RequestWizardProps {
-  onComplete: (estimate: Estimate) => void;
-  // 홈 카드/CTA에서 채널을 지정해 진입하면 선택 화면을 건너뛰고 해당 폼으로 바로 연다.
-  initialChannel?: RequestChannel | null;
-  // 위 initialChannel을 1회 소비했음을 부모에 알려 ref를 비운다(탭바로 재진입 시 선택 화면 노출).
-  onChannelConsumed?: () => void;
-}
+// 업종 — 꼭 필요한 선택값(드롭다운). 가입정보 외 최소 식별용.
+const INDUSTRY_OPTIONS = ['식품 제조', '제약·바이오', '화학·정밀', '기계·금속', '전자·반도체', '물류·유통', '일반 제조', '상업·건물', '기타'];
 
 const defaultFormData = {
   customer_name: '',
@@ -44,6 +41,7 @@ const defaultFormData = {
   phone: '',
   email: '',
   site_address: '',
+  industry: '',
   customer_type: '일반',
   work_type: '배관공사' as WorkType,
   site_type: '공장' as SiteType,
@@ -102,16 +100,27 @@ const getInitialVerified = () => {
   }
 };
 
-// 고객 간단 등록 — 단일 화면 폼.
-// 고객 기본정보 + 요청사항(200자) + 사진/도면 첨부 + 개인정보 동의 → [등록] 시 관리자 대시보드에 이력 기록.
+interface RequestWizardProps {
+  onComplete: (estimate: Estimate) => void;
+  // 홈 카드/CTA에서 채널을 지정해 진입하면 선택 화면을 건너뛰고 해당 폼으로 바로 연다.
+  initialChannel?: RequestChannel | null;
+  // 위 initialChannel을 1회 소비했음을 부모에 알려 ref를 비운다(탭바로 재진입 시 선택 화면 노출).
+  onChannelConsumed?: () => void;
+}
+
+// 고객 간단 등록 — 채널 선택 → 선택형 단계 탭 폼 → 등록완료 탭(관리 페이지 이동).
+// 가입(로그인)정보는 자동입력하고, 채널별로 꼭 필요한 칸만 단계로 나눠 간결하게 받는다.
 export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initialChannel = null, onChannelConsumed }) => {
-  const { customerAuth, setCustomerAuth } = useShell();
+  const { customerAuth, setCustomerAuth, setShowMyRequests, setActiveTab } = useShell();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // 자료등록 채널 선택 — null이면 2채널 선택 화면, 값이 있으면 해당 폼.
-  // 홈 카드/CTA로 지정 진입(initialChannel)하면 선택 화면을 건너뛴다.
+  // 자료등록 채널 선택 — null이면 2채널 선택 화면, 값이 있으면 단계 폼.
   const [channel, setChannel] = useState<RequestChannel | null>(initialChannel);
+  // 단계 진행 — 1: 사업·현장 / 2: 방문·연락(또는 견적·연락) / 3: 참조·자료
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  // 등록완료 — 접수된 견적이 담기면 완료 탭을 보여준다.
+  const [submitted, setSubmitted] = useState<Estimate | null>(null);
 
   // 지정 진입값은 1회만 소비 — 부모 ref를 비워, 이후 탭바로 재진입하면 선택 화면이 다시 보인다.
   useEffect(() => {
@@ -119,15 +128,12 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 휴대폰 본인인증 상태 (의뢰 전 필수)
-  // 로그인(customerAuth)은 휴대폰 OTP 인증을 거친 상태이므로 본인확인 완료로 간주한다(파생값).
+  // 휴대폰 본인인증 상태 (의뢰 전 필수). 로그인(customerAuth)은 OTP 인증을 거쳤으므로 본인확인 완료로 간주(파생값).
   const [phoneVerified, setPhoneVerified] = useState<boolean>(() => getInitialVerified());
   const verified = phoneVerified || !!customerAuth;
   // SMS(Solapi) 설정 여부: null=확인중, true=인증 필요, false=설정 전이라 인증 생략
-  // 프리페치 캐시가 있으면 첫 렌더부터 폼을 바로 보여준다.
   const [verifyEnabled, setVerifyEnabled] = useState<boolean | null>(otpEnabledCache);
 
-  // SMS 설정 여부 확인 — 미설정이면 인증 게이트를 건너뛴다(테스트 코드 노출 방지)
   useEffect(() => {
     let active = true;
     prefetchOtpEnabled().then((enabled) => { if (active) setVerifyEnabled(enabled); });
@@ -139,7 +145,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('zeros_phone_verified', JSON.stringify({ phone }));
     }
-    // 처음 사용자도 본인인증을 마치면 로그인으로 영속화한다 — 다음 방문 시 바로 자료등록 화면으로(②③).
+    // 처음 사용자도 본인인증을 마치면 로그인으로 영속화한다 — 다음 방문 시 바로 자료등록 화면으로.
     setCustomerAuth({ name: name.trim(), phone, verifiedAt: new Date().toISOString() });
     setFormData(prev => {
       const updated = { ...prev, phone, customer_name: prev.customer_name || name };
@@ -170,10 +176,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     }
   });
 
-  // 사전 로그인 고객: 기본 사항 자동 입력.
-  // 로그인은 휴대폰 OTP 인증이므로 본인확인 게이트도 통과 처리한다.
-  // 이름·연락처는 로그인 정보로, 회사·이메일·주소는 최근 접수건이 있으면 그 값으로 채운다.
-  // 이미 입력(임시저장)된 칸은 덮어쓰지 않고, 빈 칸만 채워 사용자가 미기입분을 보완 후 등록한다.
+  // 사전 로그인 고객: 기본 사항 자동 입력. 이름·연락처는 로그인 정보로, 회사·이메일·주소는 최근 접수건이 있으면 그 값으로.
   useEffect(() => {
     if (!customerAuth) return;
     let cancelled = false;
@@ -213,8 +216,6 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
     const updated = { ...formData, [name]: val };
     setFormData(updated);
-
-    // 임시저장
     localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
   };
 
@@ -223,22 +224,17 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
   const [uploadCategory, setUploadCategory] = useState<string>('도면');
   const [uploading, setUploading] = useState(false);
 
-  // 업로드 버튼 클릭 → 파일 선택창 열기
   const openFilePicker = (category: string) => {
     setUploadCategory(category);
     setErrorMsg(null);
-    // ref 가 카테고리 state 반영 후 클릭되도록 한 틱 뒤에 실행
     setTimeout(() => fileInputRef.current?.click(), 0);
   };
 
-  // 파일이 선택되면 실제 Storage 로 업로드
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files ? Array.from(e.target.files) : [];
-    // 같은 파일 다시 선택 가능하도록 input 초기화
     e.target.value = '';
     if (selected.length === 0) return;
 
-    // 형식·개수·용량 한도 검사 (탭별 5개 / 총 15개·100MB / 개당 50MB / 허용 형식)
     const limitError = validateUpload(formData.files, selected, uploadCategory);
     if (limitError) {
       setErrorMsg(limitError);
@@ -250,10 +246,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     try {
       let uploaded: FileMeta[];
       if (isSupabaseEnabled) {
-        // 실제 클라우드 업로드
         uploaded = await uploadEstimateFiles(selected, uploadCategory);
       } else {
-        // Supabase 미설정 시 로컬 폴백 (메타데이터만 기록)
         uploaded = selected.map((f, i) => ({
           id: `file-local-${Date.now()}-${i}`,
           estimate_id: '',
@@ -279,7 +273,6 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     }
   };
 
-  // 파일 제거
   const handleRemoveFile = (idx: number) => {
     setFormData(prev => {
       const updatedFiles = prev.files.filter((_, i) => i !== idx);
@@ -294,38 +287,55 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     return false;
   };
 
-  // 필수값 유효성 검사 (단일 화면)
-  const validate = (): boolean => {
+  const isPhoneValid = () => /^01[0-9]{8,9}$/.test(formData.phone.replace(/[^0-9]/g, ''));
+
+  // 단계별 유효성 — '다음'으로 넘어갈 때만 해당 단계 필수값을 검사한다.
+  const validateStep = (s: 1 | 2 | 3): boolean => {
     setErrorMsg(null);
-    if (!formData.customer_name.trim()) return failValidation('성함을 입력해 주세요.');
-    if (!formData.phone.trim()) return failValidation('연락처를 입력해 주세요.');
-    // 휴대폰 번호 검증 — 하이픈 유무와 무관하게 숫자만 정규화하여 11자리 휴대폰을 인식
-    const phoneDigits = formData.phone.replace(/[^0-9]/g, '');
-    if (!/^01[0-9]{8,9}$/.test(phoneDigits)) {
-      return failValidation('연락처는 휴대폰 번호로 입력해 주세요. (하이픈 없이 숫자만 입력해도 됩니다)');
+    if (s === 1) {
+      if (!formData.site_address.trim()) return failValidation(channel === 'visit' ? '출장 지역(현장 주소)을 입력해 주세요.' : '지역(현장 주소)을 입력해 주세요.');
     }
-    if (!formData.email.trim()) return failValidation('이메일 주소를 입력해 주세요.');
-    if (!formData.site_address.trim()) return failValidation('현장 주소를 입력해 주세요.');
-    // 출장요청 채널은 희망 방문일이 필수
+    if (s === 2) {
+      if (!formData.phone.trim()) return failValidation('담당자 연락처를 입력해 주세요.');
+      if (!isPhoneValid()) return failValidation('연락처는 휴대폰 번호로 입력해 주세요. (하이픈 없이 숫자만 입력해도 됩니다)');
+      if (!formData.email.trim()) return failValidation('이메일 회신처를 입력해 주세요.');
+      if (channel === 'visit' && !formData.visit_date) return failValidation('희망 방문일을 선택해 주세요.');
+    }
+    return true;
+  };
+
+  const goNext = () => { if (validateStep(step)) setStep((s) => (s < 3 ? ((s + 1) as 1 | 2 | 3) : s)); };
+  const goBack = () => {
+    setErrorMsg(null);
+    if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3);
+    else { setChannel(null); }
+  };
+
+  // 최종 제출 유효성(3단계 등록 직전)
+  const validateAll = (): boolean => {
+    setErrorMsg(null);
+    if (!formData.phone.trim() || !isPhoneValid()) return failValidation('담당자 연락처를 휴대폰 번호로 입력해 주세요.');
+    if (!formData.email.trim()) return failValidation('이메일 회신처를 입력해 주세요.');
+    if (!formData.site_address.trim()) return failValidation('현장(지역) 주소를 입력해 주세요.');
     if (channel === 'visit' && !formData.visit_date) return failValidation('희망 방문일을 선택해 주세요.');
     if (!formData.agreePrivacy) return failValidation('개인정보 수집 및 이용에 동의해 주세요.');
     return true;
   };
 
-  // 폼 제출 — 고객 간단 등록 → 관리자 대시보드 이력 기록(createEstimate)
+  // 폼 제출 — 고객 간단 등록 → 관리자 대시보드 이력 기록(createEstimate) → 등록완료 탭 노출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validateAll()) return;
 
     setLoading(true);
     try {
-      // 채널별 메타 — quick: 100만원 이하 소규모 AI 자동등록 / visit: 출장 예약방문 동반
+      const industryTag = formData.industry ? ` · 업종: ${formData.industry}` : '';
       const channelTag = channel === 'quick'
-        ? '[무료견적·총 공사비 100만원 이하] AI Native 자동 등록'
-        : `[출장요청·예약방문] 희망 방문: ${formData.visit_date || '미지정'} ${formData.visit_time}`;
+        ? `[무료견적·총 공사비 100만원 이하] AI Native 자동 등록${industryTag}`
+        : `[출장요청·예약방문] 희망 방문: ${formData.visit_date || '미지정'} ${formData.visit_time}${industryTag}`;
 
       const newEst = await ZerosService.createEstimate({
-        customer_name: formData.customer_name,
+        customer_name: formData.customer_name || customerAuth?.name || '고객',
         company_name: formData.company_name,
         phone: formData.phone,
         email: formData.email,
@@ -337,15 +347,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         expected_budget_range: channel === 'quick' ? '≤1,000만' : formData.expected_budget_range,
         desired_schedule: channel === 'visit' && formData.visit_date ? formData.visit_date : formData.desired_schedule,
         urgency: formData.urgency,
-        description: formData.description,        // 고객 요청 사항
+        description: formData.description,
         request_detail: channelTag,
-        // 100만원 이하 간편 신청은 small, 출장요청은 관리자 방문 후 분류(unknown).
         estimate_category: channel === 'quick' ? 'small' : 'unknown',
         payment_required: false,
         submitted_files: formData.files
       });
 
-      // 출장요청 채널: 예약방문을 이력관리(현장방문 테이블)에 함께 기록(⑦)
+      // 출장요청 채널: 예약방문을 이력관리(현장방문 테이블)에 함께 기록
       if (channel === 'visit' && formData.visit_date) {
         try {
           await ZerosService.createSiteVisit({
@@ -356,16 +365,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
             site_memo: `고객 희망 방문일 ${formData.visit_date} ${formData.visit_time}`,
           });
         } catch (vErr) {
-          // 예약방문 기록 실패는 접수 자체를 막지 않는다(관리자가 수기 보완).
           console.error('예약방문 기록 실패', vErr);
         }
       }
 
-      // 임시저장 청소
       localStorage.removeItem('zeros_draft_request');
-
-      // 완료 액션 기동
-      onComplete(newEst);
+      onComplete?.(newEst);
+      // 등록완료 탭으로 전환 — 관리 페이지로 이동해 확인할 수 있게 한다.
+      setSubmitted(newEst);
     } catch (err: unknown) {
       console.error(err);
       setErrorMsg('등록 도중 오류가 발생했습니다. 다시 시도해 주세요.');
@@ -374,392 +381,492 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     }
   };
 
-  // 인증 게이트 표시 여부
+  // 새 등록 — 완료 후 다시 채널 선택부터.
+  const resetWizard = () => {
+    setSubmitted(null);
+    setChannel(null);
+    setStep(1);
+    setErrorMsg(null);
+  };
+
+  // 화면 분기
   const checkingVerify = verifyEnabled === null;
   const verifyRequired = verifyEnabled === true && !verified;
   const showForm = !checkingVerify && !verifyRequired;
-  // 자료등록 화면 단계: 채널 미선택=선택 화면, 선택 후=등록 폼
-  const channelView = showForm && !channel;
-  const formView = showForm && !!channel;
+  const completed = showForm && !!submitted;
+  const channelView = showForm && !channel && !completed;
+  const formView = showForm && !!channel && !completed;
 
-  const headerTitle = verifyRequired
-    ? '본인확인'
-    : checkingVerify
-      ? '준비 중'
-      : channelView
-        ? '자료 등록'
-        : channel === 'visit'
-          ? '견적·출장요청 자료등록'
-          : '무료 견적 신청';
+  const channelLabel = channel === 'visit' ? '견적 자료등록' : '무료 견적 신청';
+  // 단계 라벨(진행 표시) — 채널별로 2단계 명칭만 다르다.
+  const stepLabels = channel === 'visit'
+    ? ['사업·현장', '방문·연락', '참조·자료', '완료']
+    : ['사업·현장', '견적·연락', '참조 사항', '완료'];
+  const activeStepIdx = completed ? 3 : step - 1;
+
+  // 공통 입력 클래스 — 16px 이상 본문, focus-visible 가시.
+  const inputCls = 'w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all';
+  const labelCls = 'text-[14.5px] font-bold text-navy flex items-center gap-1.5';
 
   return (
-    <div className="w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-5xl mx-auto overflow-hidden">
+    <div className="w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-3xl mx-auto overflow-hidden">
 
-      {/* 헤더 바 — 설명 박스 제거(단순화). 폼 단계에선 ← 로 채널 선택으로 복귀. */}
-      <div className="bg-bg-subtle border-b border-border px-7 py-5 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          {formView && (
-            <button
-              type="button"
-              onClick={() => { setChannel(null); setErrorMsg(null); }}
-              aria-label="등록 방법 다시 선택"
-              style={{ touchAction: 'manipulation' }}
-              className="shrink-0 w-11 h-11 flex items-center justify-center rounded-custom border border-border bg-bg text-steel hover:text-navy hover:border-steel transition-all active:scale-95 motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+      {/* 헤더 바 — 채널 선택 화면에선 숨김(제목·부제 제거). 폼/완료 단계에서만 ← + 단계명 표시. */}
+      {(verifyRequired || formView || completed) && (
+        <div className="bg-bg-subtle border-b border-border px-6 md:px-7 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            {formView && (
+              <button
+                type="button"
+                onClick={goBack}
+                aria-label={step > 1 ? '이전 단계로' : '등록 방법 다시 선택'}
+                style={{ touchAction: 'manipulation' }}
+                className="shrink-0 w-11 h-11 flex items-center justify-center rounded-custom border border-border bg-bg text-steel hover:text-navy hover:border-steel transition-all active:scale-95 motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+            <h3 className="text-[20px] font-black text-navy leading-tight tracking-tight truncate">
+              {verifyRequired ? '본인확인' : completed ? '등록 완료' : channelLabel}
+            </h3>
+          </div>
+          {customerAuth && showForm && !completed && (
+            <span className="text-[12.5px] font-bold text-success shrink-0">{customerAuth.name}님 · 자동입력됨</span>
           )}
-          <h3 className="text-[22px] font-black text-navy leading-tight tracking-tight truncate">
-            {headerTitle}
-          </h3>
         </div>
-        {customerAuth && showForm && (
-          <span className="text-[12.5px] font-bold text-success shrink-0">{customerAuth.name}님 · 자동입력됨</span>
-        )}
-      </div>
+      )}
 
-      {/* 인증 상태 확인 중 */}
+      {/* 진행 표시(단계 탭) — 폼/완료에서 노출 */}
+      {(formView || completed) && (
+        <div className="flex gap-2 px-6 md:px-7 pt-4">
+          {stepLabels.map((lbl, i) => {
+            const done = i < activeStepIdx;
+            const active = i === activeStepIdx;
+            return (
+              <div key={lbl} className="flex-1 flex flex-col gap-1.5">
+                <div className={`h-1 rounded-full ${active ? 'bg-accent' : done ? 'bg-steel' : 'bg-border'}`} />
+                <span className={`text-[11.5px] font-bold tabular-nums ${active ? 'text-navy' : done ? 'text-steel' : 'text-gray-light'}`}>
+                  {i < 3 ? `${i + 1} · ` : ''}{lbl}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 본문 */}
       {checkingVerify ? (
         <div className="p-10 text-center text-[14px] text-gray font-bold">불러오는 중...</div>
       ) : verifyRequired ? (
-        /* 본인인증 전: 휴대폰 인증 게이트 */
         <div className="p-7">
           <PhoneVerifyGate onVerified={handleVerified} />
         </div>
-      ) : channelView ? (
-        /* 로그인 후 첫 화면 — 2채널 등록 방법 선택(자료등록 화면) */
-        <div className="p-7 md:p-8 flex flex-col gap-5">
-          <span className="text-[14.5px] font-bold text-gray">등록 방법을 선택하세요</span>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* A. 출장요청 + 예약방문 */}
+      ) : completed ? (
+        /* 등록완료 탭 — 관리 페이지로 이동해 확인 */
+        <div className="p-7 md:p-9 flex flex-col items-center text-center gap-4">
+          <span className="w-16 h-16 rounded-full bg-success/10 border border-success/20 flex items-center justify-center text-success">
+            <CheckCircle2 className="w-9 h-9" />
+          </span>
+          <div className="flex flex-col gap-1.5">
+            <h4 className="text-[20px] font-black text-navy tracking-tight">등록이 접수되었습니다</h4>
+            <p className="text-[14px] text-gray font-semibold leading-relaxed">
+              접수하신 자료{channel === 'visit' ? '·예약' : ''}은 이력관리에 저장되었습니다.<br />관리 페이지에서 진행 상황을 확인하세요.
+            </p>
+          </div>
+          <div className="w-full max-w-xs bg-bg-subtle border border-border rounded-custom px-4 py-3 flex items-center justify-between">
+            <span className="text-[12.5px] font-bold text-gray-light">접수 번호</span>
+            <span className="text-[14px] font-black text-navy tracking-wide tabular-nums">{submitted?.estimate_no}</span>
+          </div>
+          <div className="w-full max-w-xs flex flex-col gap-2.5 pt-1">
             <button
               type="button"
-              onClick={() => { setChannel('visit'); setErrorMsg(null); }}
+              onClick={() => { setShowMyRequests(true); }}
               style={{ touchAction: 'manipulation' }}
-              className="group text-left flex items-start gap-4 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
+              className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-[#c95f12] text-white py-3.5 min-h-[44px] rounded-custom text-[16px] font-black shadow-md transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
             >
-              <span className="shrink-0 w-12 h-12 rounded-full bg-steel/10 flex items-center justify-center">
+              관리 페이지에서 확인 <ArrowRight className="w-5 h-5" />
+            </button>
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={resetWizard}
+                style={{ touchAction: 'manipulation' }}
+                className="flex-1 py-3 min-h-[44px] rounded-custom text-[14.5px] font-bold border border-border bg-bg text-navy hover:border-steel transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40"
+              >
+                새 등록하기
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('home')}
+                style={{ touchAction: 'manipulation' }}
+                className="flex-1 py-3 min-h-[44px] rounded-custom text-[14.5px] font-bold border border-border bg-bg text-gray hover:border-steel hover:text-navy transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40"
+              >
+                홈으로
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : channelView ? (
+        /* 화면 1 — 정리된 2채널 선택(제목·부제·하단문구 제거) */
+        <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* A. 견적·출장요청 자료등록 */}
+          <button
+            type="button"
+            onClick={() => { setChannel('visit'); setStep(1); setErrorMsg(null); }}
+            style={{ touchAction: 'manipulation' }}
+            className="group text-left flex flex-col gap-3.5 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
+          >
+            <span className="flex items-center gap-3">
+              <span className="shrink-0 w-11 h-11 rounded-full bg-steel/10 flex items-center justify-center">
                 <Truck className="w-6 h-6 text-steel" />
               </span>
-              <span className="flex flex-col gap-1.5 min-w-0 flex-1">
-                <span className="text-[17px] font-black text-navy leading-tight">견적·출장요청 자료등록</span>
-                <span className="text-[13.5px] text-gray font-semibold leading-relaxed">자료 등록 + 예약방문 신청<br />출장·컨설팅 요청 창구</span>
-              </span>
-              <ChevronRight className="w-5 h-5 text-gray shrink-0 mt-2.5 group-hover:text-steel transition-colors" />
-            </button>
+              <span className="text-[17px] font-black text-navy leading-tight">견적·출장요청 자료등록</span>
+            </span>
+            <span className="text-[13.5px] text-gray font-semibold leading-relaxed">
+              자료 등록 + 예약방문 신청<br />출장·컨설팅 요청 창구
+            </span>
+            <span className="mt-1 w-full text-center bg-navy text-white py-3 min-h-[44px] flex items-center justify-center rounded-custom text-[15px] font-black group-hover:bg-steel transition-colors">
+              견적 자료등록
+            </span>
+          </button>
 
-            {/* B. 무료 견적(100만원 이하 · AI Native 자동) */}
-            <button
-              type="button"
-              onClick={() => { setChannel('quick'); setErrorMsg(null); }}
-              style={{ touchAction: 'manipulation' }}
-              className="group text-left flex items-start gap-4 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
-            >
-              <span className="shrink-0 w-12 h-12 rounded-full bg-steel/10 flex items-center justify-center">
+          {/* B. 무료 견적(100만원 이하 · AI Native 자동) */}
+          <button
+            type="button"
+            onClick={() => { setChannel('quick'); setStep(1); setErrorMsg(null); }}
+            style={{ touchAction: 'manipulation' }}
+            className="group text-left flex flex-col gap-3.5 p-5 rounded-custom border border-border bg-bg hover:border-steel hover:bg-bg-subtle/40 transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
+          >
+            <span className="flex items-center gap-3">
+              <span className="shrink-0 w-11 h-11 rounded-full bg-steel/10 flex items-center justify-center">
                 <Zap className="w-6 h-6 text-steel" />
               </span>
-              <span className="flex flex-col gap-1.5 min-w-0 flex-1">
-                <span className="text-[17px] font-black text-navy leading-tight">무료 견적 신청</span>
-                <span className="text-[13.5px] text-gray font-semibold leading-relaxed">총 공사비 100만원 이하<br />AI Native 기반 자동 등록</span>
-              </span>
-              <ChevronRight className="w-5 h-5 text-gray shrink-0 mt-2.5 group-hover:text-steel transition-colors" />
-            </button>
-          </div>
-          <div className="flex items-center gap-2 text-[13px] text-gray font-bold pt-1">
-            <CalendarClock className="w-4 h-4 text-steel shrink-0" />
-            접수하신 모든 자료·예약은 이력관리에 자동 저장됩니다.
-          </div>
+              <span className="text-[17px] font-black text-navy leading-tight">무료 견적 신청</span>
+            </span>
+            <span className="text-[13.5px] text-gray font-semibold leading-relaxed">
+              총 공사비 100만원 이하<br />AI Native 기반 자동 등록
+            </span>
+            <span className="mt-1 w-full text-center bg-navy text-white py-3 min-h-[44px] flex items-center justify-center rounded-custom text-[15px] font-black group-hover:bg-steel transition-colors">
+              무료 견적 신청
+            </span>
+          </button>
         </div>
       ) : (
-      /* 단일 등록 폼 */
-      <form onSubmit={handleSubmit} className="p-7 md:p-8 flex flex-col gap-7">
+        /* 화면 2 — 선택형 단계 탭 폼 */
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 pt-5 flex flex-col gap-6">
 
-        {/* 에러 피드백 */}
-        {errorMsg && (
-          <div role="alert" aria-live="assertive" className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold flex items-start gap-2 animate-in fade-in duration-200 motion-reduce:animate-none">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
+          {/* 에러 피드백 */}
+          {errorMsg && (
+            <div role="alert" aria-live="assertive" className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold flex items-start gap-2 animate-in fade-in duration-200 motion-reduce:animate-none">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
-        {/* ===== 3분할: ① 기본 정보(필수) / ② 현장 정보(필수) / ③ 견적 자료(선택) ===== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 lg:gap-8 items-start">
+          {/* ===== STEP 1 — 사업·현장 ===== */}
+          {step === 1 && (
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="site_address" className={labelCls}>
+                  <MapPin className="w-4.5 h-4.5 text-steel" />
+                  {channel === 'visit' ? '출장 지역 (현장 주소) · 필수' : '지역 (현장 주소) · 필수'}
+                </label>
+                <input
+                  id="site_address"
+                  name="site_address"
+                  type="text"
+                  value={formData.site_address}
+                  onChange={handleChange}
+                  style={{ touchAction: 'manipulation' }}
+                  placeholder="경기도 화성시 향남읍 식품공단로 42"
+                  className={inputCls}
+                />
+              </div>
 
-        {/* ① 기본 정보 (필수) */}
-        <div className="flex flex-col gap-5">
-          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-steel/30">
-            <span className="w-7 h-7 rounded-md bg-steel text-white text-[14px] font-black flex items-center justify-center shrink-0">1</span>
-            <span className="text-[17px] font-black text-navy">기본 정보</span>
-            <span className="text-[12px] font-bold text-steel bg-steel/10 px-2 py-0.5 rounded">필수</span>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="customer_name" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-              <User className="w-4.5 h-4.5 text-steel" />
-              의뢰 주체 성함 (필수)
-            </label>
-            <input
-              id="customer_name"
-              name="customer_name"
-              type="text"
-              value={formData.customer_name}
-              onChange={handleChange}
-              style={{ touchAction: 'manipulation' }}
-              placeholder="홍길동"
-              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="company_name" className={labelCls}>
+                  <Building className="w-4.5 h-4.5 text-steel" />
+                  사업체 (선택)
+                </label>
+                <input
+                  id="company_name"
+                  name="company_name"
+                  type="text"
+                  value={formData.company_name}
+                  onChange={handleChange}
+                  style={{ touchAction: 'manipulation' }}
+                  placeholder="ABC식품 (주)"
+                  className={inputCls}
+                />
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="company_name" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-              <Building className="w-4.5 h-4.5 text-steel" />
-              회사명 / 소속 기관 (선택)
-            </label>
-            <input
-              id="company_name"
-              name="company_name"
-              type="text"
-              value={formData.company_name}
-              onChange={handleChange}
-              style={{ touchAction: 'manipulation' }}
-              placeholder="ABC식품 (주)"
-              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
-            />
-          </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="industry" className={labelCls}>
+                  <Briefcase className="w-4.5 h-4.5 text-steel" />
+                  업종 (선택)
+                </label>
+                <select
+                  id="industry"
+                  name="industry"
+                  value={formData.industry}
+                  onChange={handleChange}
+                  style={{ touchAction: 'manipulation' }}
+                  className={`${inputCls} ${formData.industry ? 'text-navy' : 'text-gray-light'}`}
+                >
+                  <option value="">업종을 선택하세요</option>
+                  {INDUSTRY_OPTIONS.map((o) => <option key={o} value={o} className="text-navy">{o}</option>)}
+                </select>
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="phone" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-              <Phone className="w-4.5 h-4.5 text-steel" />
-              연락처 (필수)
-              {verified && <span className="text-[12.5px] text-success font-bold">· 본인인증 완료</span>}
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleChange}
-              readOnly={verified}
-              style={{ touchAction: 'manipulation' }}
-              placeholder="010-0000-0000"
-              className={`w-full border border-border p-3.5 rounded-custom text-[16.5px] transition-all ${
-                verified ? 'bg-bg-subtle text-gray focus:outline-none' : 'focus:outline-none focus:border-steel'
-              }`}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-              <Mail className="w-4.5 h-4.5 text-steel" />
-              이메일 (필수)
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              style={{ touchAction: 'manipulation' }}
-              placeholder="name@example.com"
-              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
-            />
-          </div>
-        </div>
-
-        {/* ② 현장 정보 (필수) */}
-        <div className="flex flex-col gap-5">
-          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-steel/30">
-            <span className="w-7 h-7 rounded-md bg-steel text-white text-[14px] font-black flex items-center justify-center shrink-0">2</span>
-            <span className="text-[17px] font-black text-navy">현장 정보</span>
-            <span className="text-[12px] font-bold text-steel bg-steel/10 px-2 py-0.5 rounded">필수</span>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="site_address" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-              <MapPin className="w-4.5 h-4.5 text-steel" />
-              공사 현장 주소 (필수)
-            </label>
-            <input
-              id="site_address"
-              name="site_address"
-              type="text"
-              value={formData.site_address}
-              onChange={handleChange}
-              style={{ touchAction: 'manipulation' }}
-              placeholder="경기도 화성시 향남읍 식품공단로 42"
-              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all"
-            />
-          </div>
-
-          {/* 고객 요청 사항 — 200자 이내 텍스트 */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="description" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-              <MessageSquare className="w-4.5 h-4.5 text-steel" />
-              고객 요청 사항 (선택 · 200자 이내)
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              maxLength={200}
-              rows={7}
-              style={{ touchAction: 'manipulation' }}
-              placeholder="예) 80A 배관 신규 설치 및 기존 라인 분기 검토를 요청드립니다."
-              className="w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all resize-none"
-            />
-            <span className="text-[12.5px] text-gray font-bold self-end tabular-nums">{formData.description.length}/200</span>
-          </div>
-
-          {/* 예약방문 신청 — 출장요청(visit) 채널 전용 */}
-          {channel === 'visit' && (
-            <div className="flex flex-col gap-2.5 pt-1">
-              <label htmlFor="visit_date" className="text-[14.5px] font-bold text-navy flex items-center gap-1.5">
-                <CalendarClock className="w-4.5 h-4.5 text-steel" />
-                희망 방문일 · 시간대 (필수)
-              </label>
-              <input
-                id="visit_date"
-                name="visit_date"
-                type="date"
-                value={formData.visit_date}
-                onChange={handleChange}
+              <button
+                type="button"
+                onClick={goNext}
                 style={{ touchAction: 'manipulation' }}
-                className="w-full border border-border p-3.5 rounded-custom text-[16.5px] text-navy focus:outline-none focus:border-steel transition-all"
-              />
-              <div className="grid grid-cols-2 gap-2.5">
-                {(['오전', '오후'] as const).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setFormData((f) => ({ ...f, visit_time: t }))}
+                className="self-end flex items-center gap-2 bg-navy hover:bg-steel text-white py-3 px-9 min-h-[44px] rounded-custom text-[15.5px] font-black transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
+              >
+                다음 <ArrowRight className="w-4.5 h-4.5" />
+              </button>
+            </div>
+          )}
+
+          {/* ===== STEP 2 — 방문·연락 / 견적·연락 ===== */}
+          {step === 2 && (
+            <div className="flex flex-col gap-5">
+              {channel === 'visit' ? (
+                <div className="flex flex-col gap-2.5">
+                  <label htmlFor="visit_date" className={labelCls}>
+                    <CalendarClock className="w-4.5 h-4.5 text-steel" />
+                    방문 가능 날짜 · 시간 (필수)
+                  </label>
+                  <input
+                    id="visit_date"
+                    name="visit_date"
+                    type="date"
+                    value={formData.visit_date}
+                    onChange={handleChange}
                     style={{ touchAction: 'manipulation' }}
-                    className={`p-3 min-h-[44px] rounded-custom text-[15px] font-bold border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer ${
-                      formData.visit_time === t
-                        ? 'border-steel bg-steel/10 text-navy'
-                        : 'border-border bg-bg text-gray hover:border-steel/60'
-                    }`}
+                    className={`${inputCls} text-navy`}
+                  />
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {(['오전', '오후'] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setFormData((f) => ({ ...f, visit_time: t }))}
+                        style={{ touchAction: 'manipulation' }}
+                        className={`p-3 min-h-[44px] rounded-custom text-[15px] font-bold border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40 ${
+                          formData.visit_time === t
+                            ? 'border-steel bg-steel/10 text-navy'
+                            : 'border-border bg-bg text-gray hover:border-steel/60'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="expected_budget_range" className={labelCls}>
+                    <Coins className="w-4.5 h-4.5 text-steel" />
+                    예상 공사금액 (선택)
+                  </label>
+                  <select
+                    id="expected_budget_range"
+                    name="expected_budget_range"
+                    value={formData.expected_budget_range}
+                    onChange={handleChange}
+                    style={{ touchAction: 'manipulation' }}
+                    className={`${inputCls} text-navy`}
                   >
-                    {t}
-                  </button>
-                ))}
+                    <option value="≤1,000만">100만원 이하</option>
+                    <option value="1,000만~1억">1,000만 ~ 1억</option>
+                    <option value="모름">아직 모름</option>
+                  </select>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="phone" className={labelCls}>
+                  <Phone className="w-4.5 h-4.5 text-steel" />
+                  담당자 연락처 (필수)
+                  {verified && <span className="text-[12.5px] text-success font-bold">· 본인인증 완료</span>}
+                </label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  readOnly={verified}
+                  style={{ touchAction: 'manipulation' }}
+                  placeholder="010-0000-0000"
+                  className={`${inputCls} ${verified ? 'bg-bg-subtle text-gray' : ''}`}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="email" className={labelCls}>
+                  <Mail className="w-4.5 h-4.5 text-steel" />
+                  이메일 회신처 (필수)
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  style={{ touchAction: 'manipulation' }}
+                  placeholder="name@example.com"
+                  className={inputCls}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={goNext}
+                style={{ touchAction: 'manipulation' }}
+                className="self-end flex items-center gap-2 bg-navy hover:bg-steel text-white py-3 px-9 min-h-[44px] rounded-custom text-[15.5px] font-black transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
+              >
+                다음 <ArrowRight className="w-4.5 h-4.5" />
+              </button>
+            </div>
+          )}
+
+          {/* ===== STEP 3 — 참조 사항 · 자료 ===== */}
+          {step === 3 && (
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="description" className={labelCls}>
+                  <MessageSquare className="w-4.5 h-4.5 text-steel" />
+                  간단한 참조 사항 (선택 · 200자 이내)
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  maxLength={200}
+                  rows={4}
+                  style={{ touchAction: 'manipulation' }}
+                  placeholder="예) 80A 배관 신규 설치 및 기존 라인 분기 검토를 요청드립니다."
+                  className={`${inputCls} resize-none`}
+                />
+                <span className="text-[12.5px] text-gray font-bold self-end tabular-nums">{formData.description.length}/200</span>
+              </div>
+
+              {/* 자료 첨부 — 출장요청(visit) 채널만 */}
+              {channel === 'visit' && (
+                <div className="flex flex-col gap-3">
+                  <label className={labelCls}>
+                    <Upload className="w-4.5 h-4.5 text-steel" />
+                    자료 첨부 (선택)
+                  </label>
+                  <span className="text-[12.5px] text-gray leading-relaxed">
+                    지금 자료가 없어도 접수되고, 방문 실측으로 보완합니다. · 항목별 최대 {MAX_PER_CATEGORY}개, 전체 최대 {MAX_TOTAL_FILES}개 · 허용: {ALLOWED_LABEL}
+                  </span>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept={ACCEPT_ATTR}
+                    onChange={handleFileSelected}
+                    className="hidden"
+                  />
+
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {[
+                      { cat: '도면', label: '도면' },
+                      { cat: '사진', label: '사진' },
+                      { cat: '기타', label: '기타' },
+                    ].map((u) => (
+                      <button
+                        key={u.cat}
+                        type="button"
+                        disabled={uploading}
+                        onClick={() => openFilePicker(u.cat)}
+                        style={{ touchAction: 'manipulation' }}
+                        className="flex items-center justify-center gap-2 w-full p-3.5 min-h-[44px] border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40"
+                      >
+                        <Upload className="w-4.5 h-4.5 text-steel" />
+                        <span className="text-[14px] font-bold text-navy">{u.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {uploading && (
+                    <div className="flex items-center justify-center gap-2 text-[13.5px] font-bold text-steel py-1">
+                      <Upload className="w-4 h-4 animate-pulse motion-reduce:animate-none" />
+                      파일 업로드 중입니다... 잠시만 기다려 주세요.
+                    </div>
+                  )}
+
+                  {formData.files.length > 0 && (
+                    <div className="flex flex-col gap-1.5 max-h-44 overflow-y-auto border border-border rounded-custom p-3 bg-bg-subtle/30">
+                      <span className="text-[13px] text-gray font-bold">첨부된 자료 ({formData.files.length}건)</span>
+                      {formData.files.map((file, idx) => (
+                        <div key={file.id || idx} className="flex items-center justify-between bg-bg border border-border p-2.5 rounded-custom shadow-sm text-[13px] font-medium">
+                          <div className="flex items-center gap-2 text-gray min-w-0">
+                            <span className="bg-steel/15 text-steel px-1.5 py-0.5 rounded-custom text-[12.5px] font-bold shrink-0">{file.file_category}</span>
+                            <span className="truncate text-navy font-bold text-[13px]">{file.file_name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFile(idx)}
+                            aria-label="첨부 파일 삭제"
+                            style={{ touchAction: 'manipulation' }}
+                            className="w-11 h-11 flex items-center justify-center hover:bg-bg-subtle rounded-custom text-danger hover:text-danger-active transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/40"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 개인정보 동의 + 등록 — 풀-블리드 푸터 */}
+              <div className="-mx-6 md:-mx-8 -mb-6 md:-mb-8 mt-1 px-6 md:px-8 py-5 bg-bg-subtle border-t-2 border-border flex flex-col gap-4">
+                <label htmlFor="agreePrivacy" style={{ touchAction: 'manipulation' }} className="flex items-start gap-3 select-none cursor-pointer">
+                  <input
+                    id="agreePrivacy"
+                    name="agreePrivacy"
+                    type="checkbox"
+                    checked={formData.agreePrivacy}
+                    onChange={handleChange}
+                    style={{ touchAction: 'manipulation' }}
+                    className="w-5 h-5 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
+                  />
+                  <span className="flex flex-col gap-0.5">
+                    <span className="text-[14.5px] font-black text-navy">개인정보 수집 및 이용 동의 (필수)</span>
+                    <span className="text-[13px] text-gray leading-normal">
+                      ZEROS 예상견적 서비스 제공 및 연락을 위한 성함·연락처·이메일 저장을 승인합니다.
+                    </span>
+                  </span>
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={loading || uploading}
+                  style={{ touchAction: 'manipulation' }}
+                  className="flex items-center justify-center gap-2 bg-accent hover:bg-[#c95f12] text-white py-3.5 min-h-[44px] rounded-custom text-[17px] font-black shadow-md transition-all select-none active:scale-[0.99] motion-reduce:active:scale-100 disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                >
+                  {loading ? (
+                    <span>등록 중...</span>
+                  ) : (
+                    <>
+                      {channel === 'visit' ? '출장요청·예약 접수하기' : '무료 견적 신청하기'}
+                      <Send className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           )}
-        </div>
 
-        {/* ③ 견적 자료 (선택) */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-border">
-            <span className="w-7 h-7 rounded-md bg-gray-light text-white text-[14px] font-black flex items-center justify-center shrink-0">3</span>
-            <span className="text-[17px] font-black text-navy">견적 자료</span>
-            <span className="text-[12px] font-bold text-gray bg-bg-subtle px-2 py-0.5 rounded">선택</span>
-          </div>
-          <span className="text-[13px] text-gray leading-relaxed">
-            지금 자료가 없어도 접수되고, 방문 실측으로 보완합니다. · 항목별 최대 {MAX_PER_CATEGORY}개, 전체 최대 {MAX_TOTAL_FILES}개 · 허용: {ALLOWED_LABEL}
-          </span>
-
-          {/* 실제 파일 선택 input (숨김) */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept={ACCEPT_ATTR}
-            onChange={handleFileSelected}
-            className="hidden"
-          />
-
-          {/* 업로드 존 — 좁은 컬럼에 맞춰 세로 스택(가로 버튼) */}
-          <div className="flex flex-col gap-3">
-            {[
-              { cat: '도면', label: '도면 업로드' },
-              { cat: '사진', label: '사진 업로드' },
-              { cat: '기타', label: '기타 첨부' },
-            ].map((u) => (
-              <button
-                key={u.cat}
-                type="button"
-                disabled={uploading}
-                onClick={() => openFilePicker(u.cat)}
-                style={{ touchAction: 'manipulation' }}
-                className="flex items-center justify-center gap-2.5 w-full p-4 border border-dashed border-border bg-bg-subtle hover:bg-border/20 rounded-custom transition-all disabled:opacity-50"
-              >
-                <Upload className="w-5 h-5 text-steel" />
-                <span className="text-[14.5px] font-bold text-navy">{u.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* 업로드 진행 표시 */}
-          {uploading && (
-            <div className="flex items-center justify-center gap-2 text-[13.5px] font-bold text-steel py-1">
-              <Upload className="w-4 h-4 animate-pulse" />
-              파일 업로드 중입니다... 잠시만 기다려 주세요.
-            </div>
-          )}
-
-          {/* 첨부된 파일 목록 */}
-          {formData.files.length > 0 && (
-            <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto border border-border rounded-custom p-3 bg-bg-subtle/30">
-              <span className="text-[13px] text-gray font-bold">첨부된 자료 ({formData.files.length}건)</span>
-              {formData.files.map((file, idx) => (
-                <div key={file.id || idx} className="flex items-center justify-between bg-bg border border-border p-2.5 rounded-custom shadow-sm text-[13px] font-medium">
-                  <div className="flex items-center gap-2 text-gray min-w-0">
-                    <span className="bg-steel/15 text-steel px-1.5 py-0.5 rounded-custom text-[12.5px] font-bold shrink-0">{file.file_category}</span>
-                    <span className="truncate text-navy font-bold text-[13px]">{file.file_name}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFile(idx)}
-                    style={{ touchAction: 'manipulation' }}
-                    className="p-1 hover:bg-bg-subtle rounded-custom text-danger hover:text-danger-active transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        </div>
-
-        {/* ===== 하단 등록란 — 카드 폭 전체로 확장한 풀-블리드 푸터 바로 확실히 강조 ===== */}
-        <div className="-mx-7 md:-mx-8 -mb-7 md:-mb-8 mt-1 px-7 md:px-8 py-6 bg-bg-subtle border-t-2 border-border flex flex-col sm:flex-row sm:items-center gap-5">
-          <label htmlFor="agreePrivacy" style={{ touchAction: 'manipulation' }} className="flex items-start gap-3 select-none cursor-pointer flex-1">
-            <input
-              id="agreePrivacy"
-              name="agreePrivacy"
-              type="checkbox"
-              checked={formData.agreePrivacy}
-              onChange={handleChange}
-              style={{ touchAction: 'manipulation' }}
-              className="w-5 h-5 text-steel border-border focus:ring-steel shrink-0 mt-0.5 cursor-pointer"
-            />
-            <span className="flex flex-col gap-0.5">
-              <span className="text-[14.5px] font-black text-navy">개인정보 수집 및 이용 동의 (필수)</span>
-              <span className="text-[13px] text-gray leading-normal">
-                ZEROS 예상견적 서비스 제공 및 연락을 위한 성함·연락처·이메일 저장을 승인합니다.
-              </span>
-            </span>
-          </label>
-
-          <button
-            type="submit"
-            disabled={loading || uploading}
-            style={{ touchAction: 'manipulation' }}
-            className="flex items-center justify-center gap-2 bg-accent hover:bg-[#c95f12] text-white py-4 px-12 sm:px-16 shrink-0 rounded-custom text-[18px] font-black shadow-md transition-all select-none active:scale-[0.99] disabled:opacity-50"
-          >
-            {loading ? (
-              <span>등록 중...</span>
-            ) : (
-              <>
-                {channel === 'visit' ? '출장요청·예약 접수하기' : '무료 견적 신청하기'}
-                <Send className="w-5 h-5" />
-              </>
-            )}
-          </button>
-        </div>
-
-      </form>
+        </form>
       )}
     </div>
   );
