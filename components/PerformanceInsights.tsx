@@ -5,7 +5,7 @@ import { ZerosService } from '@/lib/supabase/client';
 import { Estimate, WorkType, EstimateCategory } from '@/types/estimate';
 import { calculatePerformanceMetrics } from '@/lib/calculations';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList,
 } from 'recharts';
 import { LayoutGrid, Grid3x3, BarChart3, Activity } from 'lucide-react';
 
@@ -29,21 +29,42 @@ const BUDGET_COLS: { key: EstimateCategory; label: string; range: string }[] = [
   { key: 'unknown', label: '공사규모·금액 미정', range: '온라인 컨설팅' },
 ];
 
-// 분포 막대 색 = 히트맵과 동일한 단일 스틸블루(#1E4D8C)로 통일 —
-// 두 시각화가 하나의 색 언어로 읽히게(디자인 원칙: 색은 핵심 하나에만). 건수 차이는 막대 길이로 구분.
+// 공종별 색 = '작업 특성'에 맞춘 의미 기반 팔레트(색상심리) —
+//   물/유체 배관=블루 · 유틸리티=스틸블루 · 기계실/HVAC=틸 · 금속 장비=그래파이트
+//   · 건설/증설=앰버 · 노후·부식 교체=러스트 · 라인 연결·통합=인디고 · 자본 검토=딥네이비.
+//   딥·뮤트 톤으로 통일해 8색이 함께 있어도 정돈되고 전문적. 막대·히트맵이 같은 체계를 공유한다.
+const TRADE_COLORS: Record<string, string> = {
+  '배관공사': '#1D6E93',           // 블루 — 배관/유체
+  'Utility 배관': '#3B7CA8',       // 스틸블루 — 유틸리티 배관
+  '기계실개선': '#1E7A72',         // 틸 — 기계실·HVAC
+  '장비설치': '#566270',           // 그래파이트 — 금속 장비
+  '공장증설': '#B5762A',           // 앰버/오커 — 건설·증설
+  '노후배관교체': '#9E4B2C',       // 러스트 — 노후·부식 교체
+  '생산설비 배관 연결': '#4A56A6', // 인디고 — 라인 연결·통합
+  'CAPEX 개·증설 검토': '#1E3A5F', // 딥네이비 — 자본·검토
+};
 
 const REVIEW_DONE: ReadonlySet<string> = new Set([
   '견적서 송부완료', '수주성공', '수주실패',
 ]);
 
-// 단일 색상(스틸블루) 순차 스케일 — 정직한 데이터 시각화
-const heatCellStyle = (v: number, max: number): React.CSSProperties => {
+const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
+  const h = hex.replace('#', '');
+  return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16) };
+};
+
+// 공종별 색을 건수에 따라 농도(alpha)로 채운 순차 스케일 — 각 행이 자기 공종 색을 입어 히트맵이 막대와 코디된다.
+// 글자색은 흰 배경과 alpha 블렌딩한 '실제 셀 색'의 밝기로 정한다 → 어떤 공종 색(밝은 앰버·어두운 네이비)이든 대비 확보.
+const heatCellStyle = (v: number, max: number, baseHex: string): React.CSSProperties => {
   if (v === 0) return { backgroundColor: 'transparent', color: '#9AA3AF' };
   const t = max > 0 ? v / max : 0;
-  const alpha = 0.14 + 0.78 * t;
+  const alpha = 0.16 + 0.78 * t;
+  const { r, g, b } = hexToRgb(baseHex);
+  const blend = (c: number) => c * alpha + 255 * (1 - alpha);
+  const lum = 0.299 * blend(r) + 0.587 * blend(g) + 0.114 * blend(b);
   return {
-    backgroundColor: `rgba(30, 77, 140, ${alpha.toFixed(2)})`,
-    color: alpha > 0.55 ? '#FFFFFF' : '#0F1E35',
+    backgroundColor: `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(2)})`,
+    color: lum < 150 ? '#FFFFFF' : '#0F1E35',
   };
 };
 
@@ -195,17 +216,18 @@ export const PerformanceInsights: React.FC = () => {
               <BarChart
                 data={distribution}
                 layout="vertical"
-                margin={{ top: 4, right: 24, left: 8, bottom: 4 }}
-                barCategoryGap={6}
+                margin={{ top: 4, right: 40, left: 8, bottom: 4 }}
+                barCategoryGap={7}
               >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={132} />
-                <Tooltip formatter={(v) => [`${v}건`, '진단 건수']} wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} name="진단 건수">
+                {/* 축·격자 정리 — 값은 막대 끝 라벨로 직접 표기(에디토리얼 데이터 시각화) */}
+                <XAxis type="number" hide />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#5B6573' }} width={132} tickLine={false} axisLine={false} />
+                <Tooltip formatter={(v) => [`${v}건`, '진단 건수']} wrapperStyle={{ fontSize: 11 }} cursor={{ fill: 'rgba(91,101,115,0.06)' }} />
+                <Bar dataKey="value" radius={[0, 5, 5, 0]} name="진단 건수">
                   {distribution.map((d) => (
-                    <Cell key={d.name} fill="#1E4D8C" fillOpacity={0.9} />
+                    <Cell key={d.name} fill={TRADE_COLORS[d.name] || '#1E4D8C'} fillOpacity={0.92} />
                   ))}
+                  <LabelList dataKey="value" position="right" offset={8} style={{ fontSize: 11, fontWeight: 800, fill: '#0F1E35' }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -236,16 +258,23 @@ export const PerformanceInsights: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {WORK_TYPES.map((w) => (
+              {WORK_TYPES.map((w) => {
+                const rowHex = TRADE_COLORS[w] || '#1E4D8C';
+                return (
                 <tr key={w}>
-                  <td className="sticky left-0 bg-bg p-2 font-bold text-navy whitespace-nowrap border-t border-border/50">{w}</td>
+                  <td
+                    className="sticky left-0 bg-bg p-2 pl-3 font-bold text-navy whitespace-nowrap border-t border-border/50"
+                    style={{ borderLeft: `3px solid ${rowHex}` }}
+                  >
+                    {w}
+                  </td>
                   {BUDGET_COLS.map((c) => {
                     const v = matrix[w][c.key];
                     return (
                       <td
                         key={c.key}
                         className="p-0 text-center border border-bg-subtle"
-                        style={heatCellStyle(v, matrixMax)}
+                        style={heatCellStyle(v, matrixMax, rowHex)}
                         title={`${w} · ${c.label}: ${v}건`}
                       >
                         <div className="py-2.5 font-black tabular-nums">{v > 0 ? v : '·'}</div>
@@ -254,7 +283,8 @@ export const PerformanceInsights: React.FC = () => {
                   })}
                   <td className="p-2 text-center font-black text-steel tabular-nums border-t border-border/50">{rowTotal[w]}</td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-border">
@@ -267,15 +297,15 @@ export const PerformanceInsights: React.FC = () => {
             </tfoot>
           </table>
         </div>
-        {/* 범례 */}
-        <div className="flex items-center gap-2 text-[12px] text-gray-light font-semibold">
-          <span>적음</span>
-          <div className="flex h-2.5 w-32 rounded-full overflow-hidden border border-border/60">
-            {[0.14, 0.32, 0.5, 0.68, 0.86, 0.92].map((a) => (
-              <div key={a} className="flex-1" style={{ backgroundColor: `rgba(30,77,140,${a})` }} />
+        {/* 범례 — 셀 색 = 공종별 시그니처, 진할수록 건수 많음(막대그래프와 동일 색 체계) */}
+        <div className="flex items-center gap-2 text-[12px] text-gray font-semibold">
+          <span className="text-gray-light">셀 색 = 공종별 · 적음</span>
+          <div className="flex h-2.5 w-24 rounded-full overflow-hidden border border-border/60">
+            {[0.16, 0.35, 0.54, 0.72, 0.9].map((a) => (
+              <div key={a} className="flex-1" style={{ backgroundColor: `rgba(91,101,115,${a})` }} />
             ))}
           </div>
-          <span>많음</span>
+          <span className="text-gray-light">많음</span>
         </div>
       </div>
 
@@ -286,11 +316,16 @@ export const PerformanceInsights: React.FC = () => {
           공종별 세부 실적 <span className="text-gray-light font-bold">(건수 · 비중 · 평균 검토일 · 대표 현장)</span>
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {cards.map((card) => (
-            <div key={card.name} className="border-t-2 border-border/70 pt-3 flex flex-col gap-2">
+          {cards.map((card) => {
+            const cardHex = TRADE_COLORS[card.name] || '#1E4D8C';
+            return (
+            <div key={card.name} className="border-t-2 pt-3 flex flex-col gap-2" style={{ borderTopColor: cardHex }}>
               <div className="flex items-start justify-between gap-2">
-                <span className="text-[13px] font-black text-navy leading-tight">{card.name}</span>
-                <span className="shrink-0 text-[12px] font-black text-steel bg-steel/10 border border-steel/20 px-1.5 py-0.5 rounded-full tabular-nums">{card.share}%</span>
+                <span className="text-[13px] font-black text-navy leading-tight flex items-start gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: cardHex }} />
+                  {card.name}
+                </span>
+                <span className="shrink-0 text-[12px] font-black text-navy tabular-nums px-1.5 py-0.5 rounded-full border" style={{ backgroundColor: `${cardHex}1A`, borderColor: `${cardHex}45` }}>{card.share}%</span>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-black text-navy tabular-nums tracking-tight">{card.count}</span>
@@ -307,7 +342,8 @@ export const PerformanceInsights: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
