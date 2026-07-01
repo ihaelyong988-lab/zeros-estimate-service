@@ -249,8 +249,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   // 견적 검토(review)·사업 소개(business) 탭 진입 시 우측 결과 패널을 접어 작업 공간을 넓게 —
   // 숨긴 상태로 들어가고, 필요 시 우측 가장자리 '검토' 엣지 탭으로 펼친다.
   useEffect(() => {
-    if (activeTab === 'review' || activeTab === 'business') setShowDecisionPanel(false);
-  }, [activeTab, setShowDecisionPanel]);
+    // 견적검토·사업소개 탭, 그리고 공종/규모 상세 진입 시엔 우측 '예상 견적범위' 패널을
+    // 자동으로 열지 않는다 — 접힌 상태로 두고, 우측 '검토' 엣지 탭을 눌러야만 펼친다.
+    if (activeTab === 'review' || activeTab === 'business' || selectedMenu || selectedBudget) {
+      setShowDecisionPanel(false);
+    }
+  }, [activeTab, selectedMenu, selectedBudget, setShowDecisionPanel]);
 
   // 모바일 하단 탭과 activeTab 연동 동기화
   useEffect(() => {

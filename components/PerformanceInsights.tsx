@@ -29,18 +29,8 @@ const BUDGET_COLS: { key: EstimateCategory; label: string; range: string }[] = [
   { key: 'unknown', label: '공사규모·금액 미정', range: '온라인 컨설팅' },
 ];
 
-// 공종별 시그니처 색 — 좌측 메뉴·견적 검토 히어로(LANDING_SIGNATURE_HEX)와 동일 체계.
-// 분포 막대를 공종마다 다른 색으로 칠해 가독성·식별성을 준다(무지개 남발 아님 — 의미 있는 색).
-const TRADE_COLORS: Record<string, string> = {
-  '배관공사': '#0891B2',
-  '장비설치': '#D97706',
-  'Utility 배관': '#0284C7',
-  '공장증설': '#D2691E',
-  '노후배관교체': '#059669',
-  '기계실개선': '#0D9488',
-  '생산설비 배관 연결': '#4F46E5',
-  'CAPEX 개·증설 검토': '#16365F',
-};
+// 분포 막대 색 = 히트맵과 동일한 단일 스틸블루(#1E4D8C)로 통일 —
+// 두 시각화가 하나의 색 언어로 읽히게(디자인 원칙: 색은 핵심 하나에만). 건수 차이는 막대 길이로 구분.
 
 const REVIEW_DONE: ReadonlySet<string> = new Set([
   '견적서 송부완료', '수주성공', '수주실패',
@@ -214,7 +204,7 @@ export const PerformanceInsights: React.FC = () => {
                 <Tooltip formatter={(v) => [`${v}건`, '진단 건수']} wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]} name="진단 건수">
                   {distribution.map((d) => (
-                    <Cell key={d.name} fill={TRADE_COLORS[d.name] || '#1E4D8C'} fillOpacity={0.9} />
+                    <Cell key={d.name} fill="#1E4D8C" fillOpacity={0.9} />
                   ))}
                 </Bar>
               </BarChart>
