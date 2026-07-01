@@ -415,95 +415,103 @@ export default function Home() {
 
   // AI Native 검증 — 데이터 사이언스 표준 작업 절차(SOP)
   const renderSopTab = () => {
-    // 6단계 절차 — 전문용어 0, 중학생도 읽는 한글 동사 + 8자 이내 함축.
-    //   size = 폰트 리듬(핵심 단계만 키움) · accent/strong = 하이라이트.
+    // AI Native 데이터 분석 파이프라인 — 원천 데이터가 5단계를 거쳐 '검증된 예산 검토서'로.
+    //   각 단계에 분석 방법(Vision AI·Feature·Z-score 이상치·신뢰구간)과 데이터 변환(io)을 함께 노출.
+    //   tone: steel=분석 단계 · accent=핵심(실거래 대조·거품 탐지) · output=최종 산출물.
+    const toneStyle: Record<string, { card: string; border: string; circle: string; circleFg: string; title: string; desc: string; chipBg: string; chipBorder: string; chipFg: string; icon: string; inset: string | null }> = {
+      steel:  { card: '#F5F8FC', border: '#E4EAF2', circle: '#1E4D8C', circleFg: '#FFFFFF', title: '#0F1E35', desc: '#5B6573', chipBg: '#EAF2FB', chipBorder: '#D3E2F3', chipFg: '#1E4D8C', icon: '#1E4D8C', inset: null },
+      accent: { card: '#FBEBD9', border: '#F0CFA6', circle: '#E0701A', circleFg: '#FFFFFF', title: '#B5570F', desc: '#6B4A16', chipBg: '#F7DDBE', chipBorder: '#E8C79C', chipFg: '#8A4310', icon: '#B5570F', inset: '#E0701A' },
+      output: { card: '#163A66', border: '#163A66', circle: '#1D9E75', circleFg: '#FFFFFF', title: '#FFFFFF', desc: '#C7D6E8', chipBg: '#EAF2FB', chipBorder: '#EAF2FB', chipFg: '#0F1E35', icon: '#FFFFFF', inset: null },
+    };
     const pipeline = [
-      { no: '1', title: '자료 받기', desc: '도면·사진 모으기', size: 'text-[18px]' },
-      { no: '2', title: '자동 판독', desc: '자재·물량 추출', size: 'text-[18px]' },
-      { no: '3', title: '거품 탐지', desc: '비싼 단가 표시', size: 'text-[22px]', accent: true },
-      { no: '4', title: '예산 산출', desc: '적정 대역 계산', size: 'text-[18px]' },
-      { no: '5', title: '전문가 확인', desc: '30년 PM 보정', size: 'text-[18px]' },
-      { no: '6', title: '검토서 발행', desc: '검토서 한 장', size: 'text-[22px]', strong: true },
-    ];
-    // 내림차순 깔때기 — 위는 넓게, 아래로 좁아져 '검토서 한 장'으로 수렴.
-    //   모바일은 완만(100→82%)·데스크톱은 강하게(100→60%) 좁힌다.
-    const funnelW = [
-      'w-full',
-      'w-[97%] md:w-[92%]',
-      'w-[94%] md:w-[84%]',
-      'w-[90%] md:w-[76%]',
-      'w-[86%] md:w-[68%]',
-      'w-[82%] md:w-[60%]',
+      { no: '1', Icon: FileText,     title: '데이터 수집', chips: ['Multi-source Ingest'], io: '원천 데이터',
+        desc: '도면(DWG·PDF)·현장 사진·장비 제원서를 원천 자료로 수집합니다.', tone: 'steel' },
+      { no: '2', Icon: ShieldCheck,  title: '데이터 검증·정제', chips: ['적합성·품질 검증', 'Gap 보완'], io: '→ 검증된 원천',
+        desc: '해상도·누락·규격 정합성을 품질 기준으로 점검하고, 결측 요건은 확인·보완해 분석 가능한 데이터로 정제합니다.', tone: 'steel' },
+      { no: '3', Icon: Search,       title: 'AI 도면 판독·정형화', chips: ['Vision AI', 'OCR'], io: '→ 정형 데이터',
+        desc: '도면을 판독해 자재·물량을 정형 데이터로 자동 추출·구조화합니다.', tone: 'steel' },
+      { no: '4', Icon: Database,     title: '데이터 모델링', chips: ['Feature Engineering'], io: '→ 분석 데이터셋',
+        desc: '공종·규모·현장 환경을 정량 변수로 구조화해 견적 추론 모델 입력을 확정합니다.', tone: 'steel' },
+      { no: '5', Icon: Cpu,          title: 'AI 실거래 벤치마킹 · 이상치 검증', chips: ['실거래 DB 대조', 'Z-score 이상치'], io: '→ 정제 단가·물량',
+        desc: '1군 실거래 DB·표준품셈과 교차대조하고 통계적 이상치를 판별해 고단가 거품·허위 할증을 제거합니다.', tone: 'accent' },
+      { no: '6', Icon: FileCheck,    title: '결과 검증 · 검토서 발행', chips: ['신뢰구간 ±5%', '전문가 검증'], io: '→ 검토서 1부',
+        desc: '적정 예산 밴드를 신뢰구간으로 교차검증하고 30년 PM이 보정해 근거 추적 100% 검토서로 발행합니다.', tone: 'output' },
     ];
 
     return (
-      <div className="flex flex-col gap-7 max-w-4xl mx-auto py-3 select-none">
+      <div className="flex flex-col gap-5 max-w-3xl mx-auto py-3 select-none">
 
-        {/* 주제 — 헤드라인 + 한 줄 흐름 */}
-        <div className="flex flex-col gap-2 border-b border-border pb-5">
-          <span className="text-[12px] font-black text-steel uppercase tracking-wider">AI Native 검증 절차</span>
-          <h2 className="text-[clamp(22px,4vw,30px)] font-extrabold text-navy tracking-tight leading-[1.3]">
-            AI가 <span className="text-accent">6단계</span>로 걸러, 거품 없는 <span className="text-accent">적정 예산</span>까지
+        {/* 주제 — 헤드라인 + 한 줄 데이터 흐름 */}
+        <div className="flex flex-col gap-2 border-b border-border pb-4">
+          <span className="text-[12px] font-black text-steel uppercase tracking-wider">AI Native · 데이터 분석 파이프라인</span>
+          <h2 className="text-[clamp(21px,4vw,29px)] font-extrabold text-navy tracking-tight leading-[1.25]">
+            도면 한 장이 <span className="text-accent">검증된 예산 검토서</span>가 되기까지
           </h2>
-          <p className="text-[14px] text-gray font-bold leading-snug">
-            도면 한 장 → 자동 분석 → 전문가 확인 → 검토서
+          <p className="text-[13px] text-gray font-bold leading-snug break-keep">
+            수집 → <span className="text-navy">데이터 검증</span> → AI 판독 → 실거래 대조·이상치 검증 → <span className="text-navy">결과 검증·검토서</span>
           </p>
         </div>
 
-        {/* 절차 — 내림차순 깔때기(폭 수렴 + 폰트·하이라이트 리듬) */}
-        <div className="flex flex-col items-center gap-2">
-          {pipeline.map((s, idx) => (
-            <div
-              key={s.no}
-              className={`${funnelW[idx]} flex items-center gap-3 rounded-custom border px-4 py-3 ${
-                s.accent
-                  ? 'border-accent/45 bg-accent/[0.05]'
-                  : s.strong
-                    ? 'border-navy/30 bg-navy/[0.04]'
-                    : 'border-border bg-bg'
-              }`}
-            >
-              <span className="shrink-0 w-5 text-[13px] font-black text-gray tabular-nums">{s.no}</span>
-              <span className={`flex-1 font-black leading-tight tracking-tight ${s.size} ${s.accent ? 'text-accent' : 'text-navy'}`}>
-                {s.title}
-              </span>
-              <span className="shrink-0 text-[12.5px] font-bold text-gray leading-snug text-right whitespace-nowrap">
-                {s.desc}
-              </span>
-            </div>
-          ))}
+        {/* 파이프라인 — 5단계 수직 데이터 흐름(방법론 칩 + 데이터 변환) */}
+        <div className="relative pl-7 flex flex-col gap-2.5">
+          {/* 수직 스파인 — 분석(steel) → 핵심(accent) → 산출(success) */}
+          <div className="absolute left-[13px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-steel via-accent to-success pointer-events-none" />
+
+          {pipeline.map((s) => {
+            const t = toneStyle[s.tone];
+            const Icon = s.Icon;
+            return (
+              <div key={s.no} className="relative">
+                <span
+                  className="absolute -left-7 top-2.5 w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-black tabular-nums z-10"
+                  style={{ background: t.circle, color: t.circleFg }}
+                >
+                  {s.no}
+                </span>
+                <div
+                  className="flex flex-col gap-1.5 rounded-[10px] px-3.5 py-3 border"
+                  style={{ background: t.card, borderColor: t.border, ...(t.inset ? { boxShadow: `inset 4px 0 0 ${t.inset}` } : {}) }}
+                >
+                  <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+                    <Icon className="w-[18px] h-[18px] shrink-0" style={{ color: t.icon }} strokeWidth={2.2} />
+                    <span className="font-black tracking-tight text-[15px] md:text-[16px]" style={{ color: t.title }}>{s.title}</span>
+                    {s.chips.map((c) => (
+                      <span
+                        key={c}
+                        className="text-[11px] font-bold px-2 py-0.5 rounded-full border tabular-nums whitespace-nowrap"
+                        style={{ background: t.chipBg, borderColor: t.chipBorder, color: t.chipFg }}
+                      >
+                        {c}
+                      </span>
+                    ))}
+                    <span className="ml-auto text-[11px] font-bold whitespace-nowrap" style={{ color: t.desc }}>{s.io}</span>
+                  </div>
+                  <p className="text-[12.5px] font-semibold leading-snug break-keep" style={{ color: t.desc }}>{s.desc}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* 결과 지표 — 검증의 최종 산출물 한 줄 */}
-        <div className="flex flex-col gap-3 border-t border-border pt-5">
-          <span className="text-[12px] font-black text-steel uppercase tracking-wider">검증 결과 · 검토서 한 장</span>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4">
+        {/* 결과 지표 — 검증 신뢰도 + 산출물 지표 */}
+        <div className="flex flex-col gap-3 border-t border-border pt-4">
+          <div className="flex flex-wrap items-end gap-x-7 gap-y-3">
             {[
-              { l: '적정 예산 밴드', v: '₩18M~22M', accent: false },
+              { l: '실거래 표본', v: '246건', accent: false },
+              { l: 'AI 신뢰도', v: '98.4%', accent: false },
+              { l: '예산 밴드', v: '±5%', accent: false },
               { l: '리스크 등급', v: 'LOW', accent: false },
-              { l: '공사 범위', v: '고정', accent: false },
               { l: '근거 추적', v: '100%', accent: true },
             ].map((m) => (
-              <div key={m.l} className="flex flex-col gap-1 px-1">
-                <span className="text-[11.5px] text-gray-light font-bold">{m.l}</span>
-                <span className={`text-[22px] font-black tracking-tight tabular-nums ${m.accent ? 'text-accent' : 'text-navy'}`}>{m.v}</span>
+              <div key={m.l} className="flex flex-col gap-0.5">
+                <span className="text-[11.5px] text-gray font-bold">{m.l}</span>
+                <span className={`text-[21px] font-black tracking-tight tabular-nums ${m.accent ? 'text-accent' : 'text-navy'}`}>{m.v}</span>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* 검토 원칙 — 아이콘 없이 3가지 신뢰 약속 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4 border-t border-border pt-5">
-          {[
-            { t: '같은 자료, 같은 결론', d: '누가 검토해도 같은 기준으로 일관된 결론' },
-            { t: '근거를 남깁니다', d: '모든 계산 근거를 기록해 추적할 수 있게' },
-            { t: '보수적으로 봅니다', d: '불확실한 구간은 안전하게 반영합니다' },
-          ].map((p) => (
-            <div key={p.t} className="flex flex-col gap-1 border-t-2 border-t-steel/40 pt-3">
-              <h4 className="text-[14px] font-black text-navy">{p.t}</h4>
-              <p className="text-[12.5px] text-gray font-semibold leading-snug">{p.d}</p>
-            </div>
-          ))}
+          <p className="text-[12.5px] text-gray font-semibold leading-snug break-keep">
+            같은 자료 → 같은 결론 · 모든 계산 근거 기록 · 불확실 구간은 보수적으로 반영
+          </p>
         </div>
 
         {/* CTA — 단일 신청 버튼 */}
@@ -1463,40 +1471,44 @@ export default function Home() {
     const mobileVsMedian = ((mobileEstimateAmount - MOBILE_MEDIAN) / MOBILE_MEDIAN) * 100;
 
     return (
-      <div className="lg:hidden h-full flex flex-col bg-[#041B33] text-white">
+      <div className="lg:hidden h-full flex flex-col bg-white text-[#0F1E35]">
         {/* ── 1페이지: 히어로 (풀스크린 스냅) ── */}
-        <section className="snap-start snap-always min-h-full flex flex-col px-5 pt-5 pb-4 bg-[linear-gradient(180deg,#0A2D56_0%,#06213F_52%,#041B33_100%)]">
+        <section className="snap-start snap-always min-h-full flex flex-col px-5 pt-5 pb-4 bg-white">
           {/* 상단 영역 — 타이틀·핵심 3대 역량 (역량 칩이 히어로 카피를 겸한다) */}
           <div className="flex-1 flex flex-col justify-center gap-7 min-h-0">
-            <h1 className="text-[28px] leading-[1.16] font-black text-white text-center">
-              데이터 분석으로 증명하는
-              <br />
-              최적의 견적, ZEROS
-            </h1>
+            {/* 좌측 정렬 축 — 섹션 2·3과 동일하게 eyebrow + 제목 구조로 통일 */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-gray-light">AI NATIVE 견적 검증</span>
+              <h1 className="text-[28px] leading-[1.16] font-black text-[#0F1E35]">
+                데이터 분석으로 증명하는
+                <br />
+                최적의 견적, <span className="text-[#1E4D8C]">ZEROS</span>
+              </h1>
+            </div>
 
             {/* 핵심 3대 역량 아이콘 칩 — 탭화하여 각 탭으로 링크 연결 */}
-            <div className="flex flex-col gap-4 pl-1 select-none">
+            <div className="flex flex-col gap-4 select-none">
               {[
-                { icon: Truck, label: '견적.출장요청 자료 등록하기', sub: '고객 자료등록 및 예약방문 요청', color: 'text-sky-400', targetTab: 'request', channel: 'visit' as RequestChannel | undefined },
-                { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-indigo-400', targetTab: 'sop', channel: undefined as RequestChannel | undefined },
-                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-emerald-400', targetTab: 'business', channel: undefined as RequestChannel | undefined },
+                { icon: Truck, label: '견적.출장요청 자료 등록하기', sub: '고객 자료등록 및 예약방문 요청', color: 'text-[#1E4D8C]', targetTab: 'request', channel: 'visit' as RequestChannel | undefined },
+                { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-[#1E4D8C]', targetTab: 'sop', channel: undefined as RequestChannel | undefined },
+                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-[#1E4D8C]', targetTab: 'business', channel: undefined as RequestChannel | undefined },
               ].map(({ icon: Icon, label, sub, color, targetTab, channel }) => (
                 <button
                   key={label}
                   onClick={() => channel ? openRequestChannel(channel) : setActiveTabAtTop(targetTab as any)}
-                  className="flex items-start gap-4 text-left w-full p-3.5 rounded-[16px] bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                  className="flex items-start gap-4 text-left w-full p-3.5 rounded-[16px] bg-white border border-[#E4EAF2] hover:bg-[#F5F8FC] hover:border-[#D3E2F3] active:scale-[0.98] transition-all duration-200 cursor-pointer"
                 >
-                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                  <div className="w-10 h-10 rounded-[12px] bg-[#EAF2FB] border border-[#D3E2F3] flex items-center justify-center shrink-0 mt-0.5">
                     <Icon className={`w-5 h-5 ${color}`} />
                   </div>
                   <div className="flex-1 flex flex-col gap-1 leading-tight min-w-0 pt-0.5">
-                    <span className="text-[16px] font-black text-white tracking-tight flex items-center justify-between gap-1.5">
+                    <span className="text-[16px] font-black text-[#0F1E35] tracking-tight flex items-center justify-between gap-1.5">
                       {label}
-                      <span className="text-[11px] text-white/45 font-bold uppercase tracking-wider shrink-0 flex items-center gap-0.5">
+                      <span className="text-[11px] text-[#9AA3AF] font-bold uppercase tracking-wider shrink-0 flex items-center gap-0.5">
                         이동 <ArrowRight className="w-3 h-3" />
                       </span>
                     </span>
-                    <span className="text-[13px] font-semibold text-white/50 break-keep">{sub}</span>
+                    <span className="text-[13px] font-semibold text-[#5B6573] break-keep">{sub}</span>
                   </div>
                 </button>
               ))}
@@ -1507,13 +1519,13 @@ export default function Home() {
           <div className="flex flex-col gap-3 pt-4 shrink-0">
             <button
               onClick={() => openRequestChannel('quick')}
-              className="bg-surface min-h-12 rounded-lg border border-border text-[#EA4F18] text-[18px] font-black active:scale-[0.98] transition-transform"
+              className="bg-[#E0701A] min-h-12 rounded-lg text-white text-[18px] font-black active:scale-[0.98] transition-transform"
             >
               무료 견적 신청하기
             </button>
             <button
               onClick={() => setActiveTabAtTop('process')}
-              className="min-h-12 rounded-lg border-2 border-[#2D73C8] bg-[#0B2B50]/70 text-white text-[18px] font-black active:scale-[0.98] transition-transform"
+              className="min-h-12 rounded-lg border-[1.5px] border-[#1E4D8C] bg-white text-[#1E4D8C] text-[18px] font-black active:scale-[0.98] transition-transform"
             >
               서비스 프로세스 보기
             </button>
@@ -1521,7 +1533,7 @@ export default function Home() {
               type="button"
               onClick={() => document.getElementById('m-landing-2')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
               aria-label="현재 프로젝트 분석 보기"
-              className="flex flex-col items-center gap-0.5 pt-2 text-white/55 active:text-white/80 transition-colors select-none"
+              className="flex flex-col items-center gap-0.5 pt-2 text-[#5B6573] active:text-[#0F1E35] transition-colors select-none"
             >
               <span className="text-[12.5px] font-semibold">현재 프로젝트 분석</span>
               <ChevronDown className="w-5 h-5 animate-bounce" />
@@ -1530,12 +1542,12 @@ export default function Home() {
         </section>
 
         {/* ── 2페이지: 공종별 견적 분석 (풀스크린 스냅 · 좌우 스와이프 캐러셀) ── */}
-        <section id="m-landing-2" className="snap-start snap-always min-h-full flex flex-col justify-center gap-5 px-5 py-6 bg-[#041B33]">
+        <section id="m-landing-2" className="snap-start snap-always min-h-full flex flex-col justify-center gap-5 px-5 py-6 bg-white">
           {/* 헤더 + 공종 칩 탭 */}
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-white/45">AI NATIVE 정량 분석</span>
-              <span className="text-[22px] text-white font-black tracking-tight">공종별 견적 분석</span>
+              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-gray-light">AI NATIVE 정량 분석</span>
+              <span className="text-[22px] text-navy font-black tracking-tight">공종별 견적 분석</span>
             </div>
             <div ref={mobileChipsRef} className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5">
               {LANDING_TRADES.map((t, i) => (
@@ -1544,7 +1556,7 @@ export default function Home() {
                   type="button"
                   data-active={i === mobileTradeIdx}
                   onClick={() => selectMobileTrade(i)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-bold border transition-colors ${i === mobileTradeIdx ? LANDING_CHIP_CLASS[t] : 'bg-white/[0.06] border-white/15 text-white/55'}`}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-bold border transition-colors ${i === mobileTradeIdx ? LANDING_CHIP_CLASS[t] : 'bg-[#F5F8FC] border-[#E4EAF2] text-[#5B6573]'}`}
                 >
                   {t}
                 </button>
@@ -1563,7 +1575,7 @@ export default function Home() {
               const v = getCategoryVisuals(t);
               return (
                 <div key={t} className="shrink-0 basis-full snap-start">
-                  <div className="rounded-2xl bg-[#092B50] border border-white/10 p-5 flex flex-col gap-4 overflow-hidden h-full">
+                  <div className="rounded-2xl bg-[#F5F8FC] border border-[#E4EAF2] p-5 flex flex-col gap-4 overflow-hidden h-full">
                     <div className="rounded-xl bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-4">
                       {/* 공종명 + 분석 상태 배지 */}
                       <div className="flex items-start gap-3">
@@ -1628,7 +1640,7 @@ export default function Home() {
             type="button"
             onClick={() => document.getElementById('m-landing-3')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
             aria-label="실시간 분석 현황 보기"
-            className="flex flex-col items-center gap-0.5 text-white/55 active:text-white/80 transition-colors select-none"
+            className="flex flex-col items-center gap-0.5 text-[#5B6573] active:text-[#0F1E35] transition-colors select-none"
           >
             <span className="text-[12.5px] font-semibold">실시간 분석 현황</span>
             <ChevronDown className="w-5 h-5 animate-bounce" />
@@ -1636,15 +1648,15 @@ export default function Home() {
         </section>
 
         {/* ── 3페이지: 실시간 분석 현황 (풀스크린 스냅) ── */}
-        <section id="m-landing-3" className="snap-start snap-always min-h-full flex flex-col justify-center gap-6 px-5 py-6 bg-[#041B33]">
+        <section id="m-landing-3" className="snap-start snap-always min-h-full flex flex-col justify-center gap-6 px-5 py-6 bg-white">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-white/45">AI 실시간 정량 분석</span>
-              <span className="text-[22px] text-white font-black tracking-tight">실시간 분석 현황</span>
+              <span className="text-[12px] font-black uppercase tracking-[0.12em] text-gray-light">AI 실시간 정량 분석</span>
+              <span className="text-[22px] text-navy font-black tracking-tight">실시간 분석 현황</span>
             </div>
-            <div className="rounded-2xl bg-[#173B61] border border-white/10 p-5 flex flex-col gap-5">
+            <div className="rounded-2xl bg-[#F5F8FC] border border-[#E4EAF2] p-5 flex flex-col gap-5">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-[19px] font-black text-white">총 공사 견적금액</h3>
+                <h3 className="text-[19px] font-black text-navy">총 공사 견적금액</h3>
                 <span className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black border ${LANDING_CHIP_CLASS[mobileTradeName]}`}>{mobileTradeName}</span>
               </div>
 
@@ -1654,12 +1666,12 @@ export default function Home() {
                     <div className="absolute left-0 right-0 top-3 h-1.5 rounded-full bg-[linear-gradient(90deg,#55D886_0%,#FFB134_52%,#E84F58_100%)] pointer-events-none" />
                     {/* 핸들 — 상태값 위치로 이동 */}
                     <div
-                      className="absolute top-[5px] -translate-x-1/2 w-5 h-5 rounded-full border-2 border-white bg-[#FF6A00] shadow-md pointer-events-none transition-[left] duration-75"
+                      className="absolute top-[5px] -translate-x-1/2 w-5 h-5 rounded-full border-2 border-white bg-[#E0701A] shadow-md pointer-events-none transition-[left] duration-75"
                       style={{ left: `${mobilePct}%` }}
                     />
                     {/* '예상 견적' 라벨 — 핸들 따라 이동 */}
                     <span
-                      className="absolute -top-1 -translate-x-1/2 text-[12px] text-white/80 font-semibold whitespace-nowrap pointer-events-none transition-[left] duration-75"
+                      className="absolute -top-1 -translate-x-1/2 text-[12px] text-gray font-semibold whitespace-nowrap pointer-events-none transition-[left] duration-75"
                       style={{ left: `${Math.min(Math.max(mobilePct, 12), 88)}%` }}
                     >
                       예상 견적
@@ -1676,7 +1688,7 @@ export default function Home() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[14px] text-white/62 font-semibold">
+                  <div className="flex items-center justify-between text-[14px] text-gray font-semibold">
                     <span>최소 {Math.round(MOBILE_MIN / 1000000)}M 원</span>
                     <span>최대 {Math.round(MOBILE_MAX / 1000000)}M 원</span>
                   </div>
@@ -1684,15 +1696,15 @@ export default function Home() {
 
                 <div className="flex flex-col gap-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[14px] text-white/80 font-semibold whitespace-nowrap shrink-0">예상 견적</span>
-                    <span className="text-[23px] text-white font-black tabular-nums whitespace-nowrap tracking-tight">{mobileEstimateAmount.toLocaleString()} 원</span>
+                    <span className="text-[14px] text-gray font-semibold whitespace-nowrap shrink-0">예상 견적</span>
+                    <span className="text-[23px] text-navy font-black tabular-nums whitespace-nowrap tracking-tight">{mobileEstimateAmount.toLocaleString()} 원</span>
                   </div>
-                  <span className="self-end text-[12px] text-white/60 font-semibold whitespace-nowrap">(중앙값 {Math.round(MOBILE_MEDIAN / 1000000)}M 대비 {mobileVsMedian >= 0 ? '+' : ''}{mobileVsMedian.toFixed(1)}%)</span>
+                  <span className="self-end text-[12px] text-gray font-semibold whitespace-nowrap">(중앙값 {Math.round(MOBILE_MEDIAN / 1000000)}M 대비 {mobileVsMedian >= 0 ? '+' : ''}{mobileVsMedian.toFixed(1)}%)</span>
                 </div>
 
-                <div className="border-t border-white/12 pt-4 flex items-center justify-between gap-2">
-                  <span className="text-[14px] text-white font-semibold whitespace-nowrap shrink-0">서비스 수수료 (2%)</span>
-                  <span className="text-[16px] text-white font-black tabular-nums whitespace-nowrap">{mobileFeeAmount.toLocaleString()} 원</span>
+                <div className="border-t border-border pt-4 flex items-center justify-between gap-2">
+                  <span className="text-[14px] text-navy font-semibold whitespace-nowrap shrink-0">서비스 수수료 (2%)</span>
+                  <span className="text-[16px] text-navy font-black tabular-nums whitespace-nowrap">{mobileFeeAmount.toLocaleString()} 원</span>
                 </div>
               </div>
             </div>
@@ -1701,13 +1713,13 @@ export default function Home() {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setActiveTabAtTop('sop')}
-              className="min-h-12 rounded-lg bg-[#1E73D8] text-white text-[17px] font-black"
+              className="min-h-12 rounded-lg border-[1.5px] border-[#1E4D8C] bg-white text-[#1E4D8C] text-[17px] font-black active:scale-[0.98] transition-transform"
             >
               AI Native 검증 절차
             </button>
             <button
               onClick={() => openRequestChannel('quick')}
-              className="min-h-12 rounded-lg bg-[#FF6A00] text-white text-[17px] font-black"
+              className="min-h-12 rounded-lg bg-[#E0701A] text-white text-[17px] font-black active:scale-[0.98] transition-transform"
             >
               무료 견적 신청
             </button>
