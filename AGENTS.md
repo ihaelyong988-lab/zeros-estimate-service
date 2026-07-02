@@ -151,3 +151,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `node .claude/hooks/ui-quality-gate.mjs --check` → 위반 수정 → `node .claude/hooks/ui-quality-gate.mjs --pass`(차단룰 0건일 때만 마커 기록). 미통과면 Stop 게이트가 마감을 막는다.
 - 차단/경고 룰은 §10 가독성 체크리스트와 동기화(role=alert · 대비 4.5:1 · 터치 44px · focus-visible · no-emoji · reduced-motion · tabular-nums).
 - 마감 자기점검에 **"이번 산출물이 검증 루프(--pass)를 통과했는가"** 포함.
+- **성장 게이트(2026-07-02 신설)**: `.claude/hooks/growth-gate.mjs`(Stop) — 오늘 커밋이 있는데 worklog/결정로그/state 기록이 갱신되지 않았으면 마감 차단(세션 2회 cap, `--check` 점검). "작업 후 자동 업데이트"의 기계 강제 — 동일 게이트를 개인용 PMIS·꽁아코스 `scripts/`에도 이식. 표준 절차·개선 프롬프트(자동 견적서 P1 등)는 `docs/OPTIMIZE.md`.

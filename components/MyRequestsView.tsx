@@ -4,9 +4,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
 import { ZerosService } from '@/lib/supabase/client';
 import { Estimate, NotificationLog } from '@/types/estimate';
-import { 
+import {
   History, LogOut, ListChecks, FileText, Clock, Inbox, ArrowRight,
-  ShieldCheck, Phone, MessageSquare, CheckCircle2, UserCheck
+  ShieldCheck, Phone, MessageSquare, CheckCircle2, UserCheck, Download
 } from 'lucide-react';
 
 type Tone = 'steel' | 'warning' | 'accent' | 'info' | 'success' | 'navy' | 'gray';
@@ -478,9 +478,22 @@ export const MyRequestsView: React.FC = () => {
 
                   {(e.estimate_sent_at || e.expected_budget_range) && (
                     <div className="flex items-center justify-between border-t border-border/60 pt-2.5 text-[11.5px]">
-                      <span className="text-gray-light font-semibold">예상 규모</span>
+                      <span className="text-gray font-semibold">예상 규모</span>
                       <span className="font-black text-navy">{e.expected_budget_range}</span>
                     </div>
+                  )}
+
+                  {e.estimate_pdf_url && (
+                    <a
+                      href={e.estimate_pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ touchAction: 'manipulation' }}
+                      className="min-h-11 flex items-center justify-center gap-1.5 bg-steel hover:bg-navy text-bg rounded-custom text-[12.5px] font-black transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-navy"
+                    >
+                      <Download className="w-4 h-4" />
+                      견적서 다운로드 (엑셀)
+                    </a>
                   )}
                 </div>
               );

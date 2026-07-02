@@ -35,6 +35,11 @@
             "type": "command",
             "command": "node .claude/hooks/stop-graphify.mjs",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/growth-gate.mjs",
+            "timeout": 10
           }
         ]
       }

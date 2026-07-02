@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Estimate, EstimateStatus, AccuracyGrade, Payment, SiteVisit } from '@/types/estimate';
+import { Estimate, EstimateStatus, AccuracyGrade, Payment, SiteVisit, EstimateLineItem } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
-import { uploadEstimateFiles } from '@/lib/supabase/storage';
+import { uploadEstimateFiles, uploadEstimateFile } from '@/lib/supabase/storage';
+import { draftLineItems, lineAmount, sumSubtotal } from '@/lib/quote/quoteDraft';
+import { buildQuoteXlsxBlob, quoteFileName, downloadBlob } from '@/lib/quote/quoteXlsx';
 import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { validateFileFormat, ACCEPT_ATTR } from '@/lib/constants/uploadLimits';
 import { TossPaymentModal } from './TossPaymentModal';
@@ -19,7 +21,12 @@ import {
   Plus,
   FolderOpen,
   Printer,
-  Cpu
+  Cpu,
+  FileSpreadsheet,
+  Sparkles,
+  Send,
+  Trash2,
+  Download
 } from 'lucide-react';
 
 interface EstimateDetailModalProps {
@@ -62,6 +69,11 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [showAiAnalyzer, setShowAiAnalyzer] = useState(false);
 
+  // AI 견적 초안 · 발송 상태
+  const [quoteItems, setQuoteItems] = useState<EstimateLineItem[]>([]);
+  const [quoteBusy, setQuoteBusy] = useState<'' | 'preview' | 'send'>('');
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+
   // 관리자 파일 업로드 - 실제 파일 선택 후 Storage 업로드
   const adminFileInputRef = useRef<HTMLInputElement | null>(null);
   const [adminUploadCategory, setAdminUploadCategory] = useState<string>('도면');
@@ -97,8 +109,9 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
           setAdminMemo(est.admin_memo || '');
           setEstimatedAmount(est.estimated_amount || '');
           setConfirmedContractAmount(est.confirmed_contract_amount || '');
+          setQuoteItems(est.line_items || []);
         }
-        
+
         // 결제 정보 적재
         const pays = await ZerosService.getPayments();
         setPayments(pays.filter(p => p.estimate_id === estimateId));
@@ -296,6 +309,90 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     } catch (e) {
       console.error(e);
       alert('파일 삭제 도중 오류가 발생했습니다.');
+    }
+  };
+
+  // ── AI 견적 초안 · 발송 핸들러 ──
+  const quoteSubtotal = sumSubtotal(quoteItems);
+  const quoteVat = Math.round(quoteSubtotal * 0.1);
+  const quoteTotal = quoteSubtotal + quoteVat;
+
+  const handleGenerateDraft = () => {
+    if (!estimate) return;
+    if (quoteItems.length > 0 && !confirm('기존 품목표를 AI 초안으로 다시 채우시겠습니까?')) return;
+    setQuoteItems(draftLineItems(estimate));
+    setQuoteError(null);
+  };
+
+  const updateQuoteItem = (idx: number, patch: Partial<EstimateLineItem>) => {
+    setQuoteItems(prev => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
+    setQuoteError(null);
+  };
+
+  const addQuoteItem = () => {
+    setQuoteItems(prev => [
+      ...prev,
+      { id: `li-${Date.now()}-${prev.length}`, name: '', spec: '', qty: 1, unit: '식', unit_price: 0 },
+    ]);
+  };
+
+  const removeQuoteItem = (idx: number) => {
+    setQuoteItems(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const validateQuote = (): string | null => {
+    if (quoteItems.length === 0) return '품목이 없습니다. 먼저 "AI 초안 생성" 또는 "품목 추가"로 품목표를 구성해 주세요.';
+    if (quoteItems.some(it => !it.name.trim())) return '품명이 비어 있는 행이 있습니다.';
+    if (quoteItems.some(it => !(it.qty > 0))) return '수량은 1 이상이어야 합니다.';
+    if (quoteItems.some(it => it.unit_price < 0)) return '단가는 0 이상이어야 합니다.';
+    return null;
+  };
+
+  const handleQuotePreview = async () => {
+    if (!estimate) return;
+    const err = validateQuote();
+    if (err) { setQuoteError(err); return; }
+    setQuoteBusy('preview');
+    try {
+      const blob = await buildQuoteXlsxBlob(estimate, quoteItems);
+      downloadBlob(blob, quoteFileName(estimate));
+    } catch (e) {
+      console.error(e);
+      setQuoteError(e instanceof Error ? e.message : '엑셀 생성 도중 오류가 발생했습니다.');
+    } finally {
+      setQuoteBusy('');
+    }
+  };
+
+  const handleQuoteSend = async () => {
+    if (!estimate) return;
+    const err = validateQuote();
+    if (err) { setQuoteError(err); return; }
+    if (!confirm(`합계 ₩${quoteTotal.toLocaleString()} (VAT 포함) 견적서를 승인하고 고객에게 제공하시겠습니까?\n발송 후 고객 마이페이지에서 다운로드할 수 있습니다.`)) return;
+    setQuoteBusy('send');
+    try {
+      const blob = await buildQuoteXlsxBlob(estimate, quoteItems);
+      const file = new File([blob], quoteFileName(estimate), { type: blob.type });
+      if (!isSupabaseEnabled) throw new Error('Supabase 연결이 없어 견적서를 업로드할 수 없습니다.');
+      const meta = await uploadEstimateFile(file, '견적서', estimate.id);
+      const sentAt = new Date().toISOString();
+      await ZerosService.updateEstimate(estimate.id, {
+        line_items: quoteItems,
+        estimated_amount: quoteTotal,
+        estimate_pdf_url: meta.file_url,
+        estimate_sent_at: sentAt,
+        status: '견적서 송부완료',
+      });
+      setStatus('견적서 송부완료');
+      setEstimatedAmount(quoteTotal);
+      alert('견적서가 승인·발송되었습니다. 고객 마이페이지에 다운로드 버튼이 노출됩니다.');
+      await refreshDetailData();
+      onSaved();
+    } catch (e) {
+      console.error(e);
+      setQuoteError(e instanceof Error ? e.message : '견적서 발송 도중 오류가 발생했습니다.');
+    } finally {
+      setQuoteBusy('');
     }
   };
 
@@ -626,7 +723,180 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
 
           </div>
 
-          {/* 2. 하단 탭 세션: [현장 실측 스케줄 | 결제 매핑] */}
+          {/* 2. AI 견적 초안 · 견적서 발송 (승인 게이트 — 승인 전 고객 미노출) */}
+          <div className="bg-bg border border-border p-5 rounded-custom shadow-sm flex flex-col gap-4">
+            <div className="flex justify-between items-center border-b border-border/80 pb-2">
+              <h4 className="text-xs font-bold text-navy flex items-center gap-1.5">
+                <FileSpreadsheet className="w-4 h-4 text-steel" />
+                AI 견적 초안 · 견적서 발송
+              </h4>
+              <button
+                type="button"
+                onClick={handleGenerateDraft}
+                style={{ touchAction: 'manipulation' }}
+                className="flex items-center gap-1 text-steel hover:text-navy text-[10.5px] font-black border border-steel/25 rounded-custom px-2.5 py-1.5 bg-bg transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-steel"
+              >
+                <Sparkles className="w-3 h-3" />
+                AI 초안 생성 (공종·규모·실적 기반)
+              </button>
+            </div>
+
+            {quoteItems.length === 0 ? (
+              <div className="border border-border border-dashed p-4 text-center rounded-custom text-[11.5px] text-gray font-bold bg-bg-subtle/10">
+                &quot;AI 초안 생성&quot;을 누르면 {estimate.work_type} 표준 품목 구성과 예산 규모를 근거로 품목표 초안이 채워집니다. 초안은 편집 후 승인해야 발송됩니다.
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[11.5px] border-collapse min-w-[560px]">
+                    <thead>
+                      <tr className="text-gray text-left border-b border-border">
+                        <th className="py-1.5 pr-2 font-bold w-[26%]">품명</th>
+                        <th className="py-1.5 pr-2 font-bold w-[20%]">규격</th>
+                        <th className="py-1.5 pr-2 font-bold w-[9%]">수량</th>
+                        <th className="py-1.5 pr-2 font-bold w-[9%]">단위</th>
+                        <th className="py-1.5 pr-2 font-bold w-[15%] text-right">단가(원)</th>
+                        <th className="py-1.5 pr-2 font-bold w-[15%] text-right">금액(원)</th>
+                        <th className="py-1.5 w-[6%]"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {quoteItems.map((it, idx) => (
+                        <tr key={it.id} className="border-b border-border/50">
+                          <td className="py-1 pr-2">
+                            <input
+                              type="text"
+                              aria-label={`품명 ${idx + 1}`}
+                              value={it.name}
+                              onChange={(e) => updateQuoteItem(idx, { name: e.target.value })}
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-semibold text-navy focus:outline-none focus:border-steel"
+                            />
+                          </td>
+                          <td className="py-1 pr-2">
+                            <input
+                              type="text"
+                              aria-label={`규격 ${idx + 1}`}
+                              value={it.spec}
+                              onChange={(e) => updateQuoteItem(idx, { spec: e.target.value })}
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] text-gray focus:outline-none focus:border-steel"
+                            />
+                          </td>
+                          <td className="py-1 pr-2">
+                            <input
+                              type="number"
+                              min={1}
+                              aria-label={`수량 ${idx + 1}`}
+                              value={it.qty}
+                              onChange={(e) => updateQuoteItem(idx, { qty: e.target.value ? Number(e.target.value) : 0 })}
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-bold text-navy tabular-nums focus:outline-none focus:border-steel"
+                            />
+                          </td>
+                          <td className="py-1 pr-2">
+                            <input
+                              type="text"
+                              aria-label={`단위 ${idx + 1}`}
+                              value={it.unit}
+                              onChange={(e) => updateQuoteItem(idx, { unit: e.target.value })}
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] text-center text-gray focus:outline-none focus:border-steel"
+                            />
+                          </td>
+                          <td className="py-1 pr-2">
+                            <input
+                              type="number"
+                              min={0}
+                              step={10000}
+                              aria-label={`단가 ${idx + 1}`}
+                              value={it.unit_price}
+                              onChange={(e) => updateQuoteItem(idx, { unit_price: e.target.value ? Number(e.target.value) : 0 })}
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-bold text-navy text-right tabular-nums focus:outline-none focus:border-steel"
+                            />
+                          </td>
+                          <td className="py-1 pr-2 text-right font-extrabold text-navy tabular-nums">
+                            {lineAmount(it).toLocaleString()}
+                          </td>
+                          <td className="py-1 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removeQuoteItem(idx)}
+                              aria-label={`${it.name || '품목'} 행 삭제`}
+                              style={{ touchAction: 'manipulation' }}
+                              className="p-2 hover:bg-border/35 rounded-custom text-gray hover:text-danger transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-steel"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={addQuoteItem}
+                    style={{ touchAction: 'manipulation' }}
+                    className="flex items-center gap-1 border border-dashed border-border text-gray hover:text-navy hover:border-steel/50 rounded-custom px-3 py-2 text-[11px] font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-steel"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    품목 추가
+                  </button>
+                  <div className="min-w-[240px] text-[11.5px] tabular-nums flex flex-col gap-0.5 ml-auto">
+                    <div className="flex justify-between text-gray"><span>소계</span><span>{quoteSubtotal.toLocaleString()}</span></div>
+                    <div className="flex justify-between text-gray"><span>부가세 (10%)</span><span>{quoteVat.toLocaleString()}</span></div>
+                    <div className="flex justify-between border-t border-border pt-1 mt-0.5 text-navy font-extrabold text-[13px]">
+                      <span>합계 (VAT 포함)</span><span>{quoteTotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-steel text-[10.5px] font-bold">
+                      <span>안심 예산 대역 ±5%</span>
+                      <span>{Math.round(quoteTotal * 0.95).toLocaleString()} ~ {Math.round(quoteTotal * 1.05).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {quoteError && (
+              <div role="alert" className="bg-danger/5 border border-danger/20 rounded-custom px-3 py-2 text-[11.5px] font-bold text-danger">
+                {quoteError}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 justify-end flex-wrap border-t border-border/60 pt-3">
+              <span className="text-[10.5px] text-gray font-semibold mr-auto">
+                {estimate.estimate_pdf_url ? (
+                  <>
+                    발송 완료{estimate.estimate_sent_at ? ` · ${new Date(estimate.estimate_sent_at).toLocaleString('ko-KR')}` : ''} —{' '}
+                    <a href={estimate.estimate_pdf_url} target="_blank" rel="noopener noreferrer" className="text-steel underline decoration-steel/40 hover:decoration-steel">발송본 열기</a>
+                  </>
+                ) : (
+                  '승인 전에는 고객에게 발송되지 않습니다.'
+                )}
+              </span>
+              <button
+                type="button"
+                onClick={handleQuotePreview}
+                disabled={quoteBusy !== ''}
+                style={{ touchAction: 'manipulation' }}
+                className="flex items-center gap-1.5 border border-steel hover:bg-steel/5 text-steel px-3.5 py-2.5 rounded-custom text-xs font-black transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-steel"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {quoteBusy === 'preview' ? '생성 중...' : '엑셀 미리보기'}
+              </button>
+              <button
+                type="button"
+                onClick={handleQuoteSend}
+                disabled={quoteBusy !== ''}
+                style={{ touchAction: 'manipulation' }}
+                className="flex items-center gap-1.5 bg-accent hover:bg-[#c95f12] text-bg px-4 py-2.5 rounded-custom text-xs font-black transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-navy"
+              >
+                <Send className="w-3.5 h-3.5" />
+                {quoteBusy === 'send' ? '발송 중...' : '승인·견적서 발송'}
+              </button>
+            </div>
+          </div>
+
+          {/* 3. 하단 탭 세션: [현장 실측 스케줄 | 결제 매핑] */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-border">
             
             {/* 왼쪽: 현장방문 스케줄 추가 및 리스트 */}

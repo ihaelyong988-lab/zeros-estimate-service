@@ -25,6 +25,7 @@ function categoryFolder(category: string): string {
     '도면': 'drawings',
     '사진': 'photos',
     '기타': 'etc',
+    '견적서': 'quotes',
   };
   return map[category] || 'etc';
 }
