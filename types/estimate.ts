@@ -45,6 +45,17 @@ export type EstimateStatus =
   | '보류'
   | '취소';
 
+// 견적서 품목 한 줄 — 금액은 qty * unit_price로 파생 계산(저장 시점 값 고정 아님)
+export interface EstimateLineItem {
+  id: string;
+  name: string; // 품명
+  spec: string; // 규격
+  qty: number;
+  unit: string; // 식 · 공수 · m 등
+  unit_price: number; // 원
+  note?: string;
+}
+
 export interface FileMeta {
   id: string;
   estimate_id: string;
@@ -88,6 +99,7 @@ export interface Estimate {
   contract_lost_reason?: string;
   estimate_pdf_url?: string;
   submitted_files?: FileMeta[];
+  line_items?: EstimateLineItem[];
 }
 
 export interface Payment {
