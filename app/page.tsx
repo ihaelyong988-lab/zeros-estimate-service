@@ -1681,35 +1681,29 @@ export default function Home() {
           <div className="h-px bg-border my-5 shrink-0" />
 
           {/* 히어로 — 좌 공종·최적화 / 세로 헤어라인 / 우 검증 신뢰 */}
-          <div className="grid grid-cols-[1.5fr_1px_1fr] gap-7 flex-1 min-h-0">
+          <div className="grid grid-cols-[1fr_1px_1fr] gap-8 flex-1 min-h-0">
 
-            {/* 좌 — 상단: 검토 공종·키워드 / 하단: 관련 이미지 자리(향후 공종별 현장 이미지) */}
+            {/* 좌 — 공종 세분화(타이틀+키워드 절제) / 실사 이미지 자리. 지시①②: 세분화 + 이미지 전달 */}
             <div className="flex flex-col min-w-0">
               <span className="flex items-center gap-1.5 select-none">
                 <span className="w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-500" style={{ backgroundColor: sigHex }} />
                 <span className="text-[11px] font-black tracking-[0.14em] transition-colors duration-500" style={{ color: sigHex }}>현재 검토 공종</span>
               </span>
-              <h1 className="text-[22px] leading-[1.18] font-black text-navy tracking-tight mt-1 pb-2 border-b-2 inline-block self-start transition-colors duration-500" style={{ borderColor: sigHex }}>{activeManual.title}</h1>
+              <h1 className="text-[26px] leading-[1.15] font-black text-navy tracking-tight mt-1.5 break-keep">{activeManual.title}</h1>
               {keywords.length > 0 && (
-                <div className="flex items-center flex-wrap gap-y-1.5 mt-3 select-none">
-                  {keywords.map((k, i) => (
-                    <span key={k} className="flex items-center">
-                      <span className="text-[15px] font-bold text-navy tracking-tight">{k}</span>
-                      {i < keywords.length - 1 && <span className="w-px h-3.5 bg-border mx-3.5 shrink-0" />}
-                    </span>
-                  ))}
-                </div>
+                /* 키워드는 지표가 아니라 보조 정보 — 나열 대신 한 줄 · 구분으로 절제 */
+                <p className="text-[13px] font-semibold text-gray mt-2 leading-snug select-none">{keywords.join('  ·  ')}</p>
               )}
 
-              {/* 하단 — 관련 이미지 자리(플레이스홀더). 차후 공종별 현장 이미지로 교체 */}
-              <div className="mt-auto pt-4">
+              {/* 실사 이미지 자리 — 지시②: 공종 실사 이미지로 방문자 이해를 돕는다. 크게 확보(플레이스홀더) */}
+              <div className="mt-auto pt-4 flex-1 flex min-h-0">
                 <div
-                  className="relative rounded-custom border border-dashed bg-bg-subtle/50 min-h-[150px] flex flex-col items-center justify-center gap-1.5 select-none transition-colors duration-500"
-                  style={{ borderColor: `${sigHex}55` }}
+                  className="relative w-full rounded-custom bg-bg-subtle flex flex-col items-center justify-center gap-1.5 select-none min-h-[130px] transition-colors duration-500"
+                  style={{ boxShadow: `inset 0 0 0 1px ${sigHex}26` }}
                 >
                   <ImageIcon className="w-6 h-6" style={{ color: sigHex }} />
-                  <span className="text-[12.5px] font-bold text-gray">관련 이미지 영역</span>
-                  <span className="text-[11px] font-semibold text-gray-light">공종별 현장 이미지 추가 예정</span>
+                  <span className="text-[12.5px] font-bold text-gray">공종 실사 이미지</span>
+                  <span className="text-[11px] font-semibold text-gray">현장 이미지 추가 예정</span>
                 </div>
               </div>
             </div>
@@ -1717,60 +1711,49 @@ export default function Home() {
             {/* 세로 헤어라인 — 우측 영역을 박스 없이 분리 */}
             <div className="bg-border" />
 
-            {/* 우 — 상단: 작업 과정(ZEROS 검증 절차) / 하단: 결과 지표 */}
-            <div className="flex flex-col min-w-0">
-              {/* 상단: 작업 과정 설명 — AI Native 검증 절차 3단 요약 */}
-              <div className="flex items-center gap-1.5 mb-3 select-none">
-                <Cpu className="w-4 h-4 text-steel shrink-0" />
-                <span className="text-[13px] font-black text-navy">작업 과정</span>
-                <span className="text-[11px] font-bold text-gray-light">ZEROS 검증 절차</span>
+            {/* 우 — Benefit 단일 주인공: 검토 후 최적화율(대형) + before→after 시각화. 지시③: 결과 지표·고객 benefit 그래프 */}
+            <div className="flex flex-col min-w-0 justify-center">
+              {/* 주인공 지표 — 즉시 보이는 절감 효과 */}
+              <div className="flex items-center gap-1.5 select-none">
+                <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: sigHex }} />
+                <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
               </div>
-              <div className="flex flex-col gap-2.5">
-                {[
-                  { n: '01', t: '제공자료 정합 · 이상치 탐지' },
-                  { n: '02', t: '실거래 DB · 표준 품셈 교차대조' },
-                  { n: '03', t: 'AI 추론 + 30년 PM 교차검증' },
-                ].map((s) => (
-                  <div key={s.n} className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-custom bg-navy/5 text-navy text-[11px] font-black font-mono flex items-center justify-center shrink-0 border border-navy/10">{s.n}</span>
-                    <span className="text-[13px] font-bold text-navy leading-snug">{s.t}</span>
-                  </div>
-                ))}
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-[54px] leading-[0.9] font-black tracking-tight tabular-nums transition-colors duration-500" style={{ color: sigHex }}>-{activeMetrics.bubbleRate}</span>
+                <span className="text-[26px] font-black transition-colors duration-500" style={{ color: sigHex }}>%</span>
               </div>
 
-              {/* 하단: 결과 지표 — 검토 후 평균 견적 최적화 + 검증 지표 */}
-              <div className="mt-auto pt-4 border-t border-border/60">
-                <div className="flex items-center gap-1.5 mb-2.5 select-none">
-                  <ShieldCheck className="w-4 h-4 text-success shrink-0" />
-                  <span className="text-[13px] font-black text-navy">결과 지표</span>
+              {/* before → after 그래프 — 검토 전 100 대비 최적합 지수 */}
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11.5px] font-bold text-gray">검토 전 견적</span>
+                  <span className="text-[11.5px] font-bold text-gray tabular-nums">100</span>
                 </div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
-                  <span className="text-[30px] leading-none font-black tracking-tight tabular-nums transition-colors duration-500" style={{ color: sigHex }}>-{activeMetrics.bubbleRate}<span className="text-[18px]">%</span></span>
+                <div className="h-2.5 rounded-full bg-[#E7EBF1] overflow-hidden"><div className="h-full w-full bg-[#D3DAE4]" /></div>
+                <div className="flex items-center justify-between mb-1.5 mt-3.5">
+                  <span className="text-[11.5px] font-black transition-colors duration-500" style={{ color: sigHex }}>ZEROS 최적합</span>
+                  <span className="text-[11.5px] font-black tabular-nums transition-colors duration-500" style={{ color: sigHex }}>{optimizedIndex}</span>
                 </div>
-                <div className="flex flex-col gap-2 mt-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-[84px] text-right text-[11.5px] font-bold text-gray-light shrink-0 whitespace-nowrap">검토 전 견적</span>
-                    <div className="flex-1 h-3 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full w-full bg-[#D8DEE7]" /></div>
-                    <span className="w-9 text-[11.5px] font-bold text-gray tabular-nums">100</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-[84px] text-right text-[11.5px] font-black shrink-0 whitespace-nowrap transition-colors duration-500" style={{ color: sigHex }}>ZEROS 최적합</span>
-                    <div className="flex-1 h-3 bg-bg-subtle rounded-[3px] overflow-hidden"><div className="h-full transition-all duration-500" style={{ width: `${optimizedIndex}%`, backgroundColor: sigHex }} /></div>
-                    <span className="w-9 text-[11.5px] font-black tabular-nums transition-colors duration-500" style={{ color: sigHex }}>{optimizedIndex}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
-                  <span className="flex items-baseline gap-1.5">
-                    <span className="text-[11.5px] font-semibold text-gray">AI 분석 신뢰도</span>
-                    <span className="text-[14px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span>
-                  </span>
-                  <span className="w-px h-3.5 bg-border shrink-0" />
-                  <span className="flex items-baseline gap-1.5">
-                    <span className="text-[11.5px] font-semibold text-gray">검토 표본</span>
-                    <span className="text-[14px] font-black text-navy tabular-nums">{activeMetrics.sampleCount}건</span>
-                  </span>
-                </div>
+                <div className="h-2.5 rounded-full bg-[#E7EBF1] overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${optimizedIndex}%`, backgroundColor: sigHex }} /></div>
+              </div>
+
+              {/* 신뢰 지표 — 인라인(나열 대신 한 줄) */}
+              <div className="flex items-center gap-4 mt-6">
+                <span className="flex items-baseline gap-1.5">
+                  <span className="text-[11.5px] font-semibold text-gray">AI 분석 신뢰도</span>
+                  <span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span>
+                </span>
+                <span className="w-px h-3.5 bg-border shrink-0" />
+                <span className="flex items-baseline gap-1.5">
+                  <span className="text-[11.5px] font-semibold text-gray">검토 표본</span>
+                  <span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.sampleCount}건</span>
+                </span>
+              </div>
+
+              {/* 작업 과정 — 01·02·03 리스트를 한 줄 절차 캡션으로 압축(나열 제거) */}
+              <div className="flex items-center gap-2 mt-5 pt-3.5 border-t border-border/60 select-none">
+                <Cpu className="w-3.5 h-3.5 shrink-0 text-gray" />
+                <span className="text-[11.5px] font-semibold text-gray leading-snug break-keep">자료 정합 <span className="text-border">→</span> 실거래 DB 교차대조 <span className="text-border">→</span> AI·30년 PM 검증</span>
               </div>
             </div>
           </div>
@@ -1778,22 +1761,26 @@ export default function Home() {
 
         {/* 하단 — 신뢰 앵커 밴드: 세련된 딥 블루(--color-band).
             헤드라인 + 지표를 한 행으로 합쳐 높이를 약 1/2로 축소(지표 4개 유지). 아래 여백은 차후 사진 자리. */}
-        <section className="bg-[var(--color-band)] rounded-custom shadow-custom-lg px-6 py-2.5 flex items-center gap-6">
+        <section className="bg-[var(--color-band)] rounded-custom shadow-custom-lg px-6 py-3 flex items-center gap-6">
           <div className="flex items-center gap-2.5 select-none shrink-0">
             <span className="w-1.5 h-6 bg-accent rounded-full shrink-0" />
-            <h2 className="text-[22px] font-black text-white tracking-tight leading-tight break-keep">공사 전, 견적부터 검증하십시오</h2>
+            <h2 className="text-[21px] font-black text-white tracking-tight leading-tight break-keep">공사 전, 견적부터 검증하십시오</h2>
           </div>
-          <div className="flex-1 grid grid-cols-4 gap-px bg-white/10 rounded-custom overflow-hidden">
-            {HOME_STATS.map((s) => {
+          {/* 지표 — 박스 그리드 제거, 얇은 헤어라인 구분의 인라인 정렬 */}
+          <div className="flex-1 flex items-center justify-end select-none">
+            {HOME_STATS.map((s, i) => {
               const Icon = s.icon;
               const down = s.value.startsWith('-');
               return (
-                <div key={s.label} className="bg-[var(--color-band)] px-3 py-2 flex flex-col items-center text-center gap-0.5">
-                  <span className={`text-[22px] leading-none font-black tracking-tight tabular-nums whitespace-nowrap ${down ? 'text-[#F2A24E]' : 'text-white'}`}>{s.value}</span>
-                  <span className="flex items-center gap-1.5 text-[11.5px] font-bold text-white/70 break-keep">
-                    <Icon className="w-3.5 h-3.5 text-white/40 shrink-0" />
-                    {s.label}
-                  </span>
+                <div key={s.label} className="flex items-center">
+                  <div className="px-5 flex flex-col items-center text-center gap-1">
+                    <span className={`text-[21px] leading-none font-black tracking-tight tabular-nums whitespace-nowrap ${down ? 'text-[#F2A24E]' : 'text-white'}`}>{s.value}</span>
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-white/65 break-keep whitespace-nowrap">
+                      <Icon className="w-3.5 h-3.5 text-white/40 shrink-0" />
+                      {s.label}
+                    </span>
+                  </div>
+                  {i < HOME_STATS.length - 1 && <span className="w-px h-8 bg-white/15 shrink-0" />}
                 </div>
               );
             })}
