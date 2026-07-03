@@ -160,21 +160,19 @@ export const PerformanceInsights: React.FC = () => {
   return (
     <div className="flex flex-col gap-3 max-w-5xl mx-auto py-1">
 
-      {/* KPI 하이라이트 — 상단 제목 헤더·헤어라인 제거(그래프를 첫 화면 상단으로 끌어올림).
-          좌=지배지표(누적 건수, 유일한 컬러), 우=보조 3종은 라벨 단축·컴팩트(검토 비율/평균 소요/공종 수).
+      {/* KPI 하이라이트 — 좌=누적 건수(유일한 컬러)도 보조 3종과 동일 폰트(라벨 12px·숫자 23px)로
+          한 줄 가로배치(2026-07-04 지시: 타원 내용만 압축, 절약된 높이만큼 페이지 상향).
           하단 헤어라인 1줄만 유지해 분포 차트와 구분. 색은 누적 건수에만 */}
       <section className="border-b border-border pb-3 flex flex-wrap items-end gap-x-8 gap-y-3">
-        {/* 누적 진단 건수 — 유일한 컬러 하이라이트. 수치 폰트는 절반(52~72px→26~36px)으로 압축 */}
-        <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
-          <span className="flex items-center gap-2 text-[12.5px] font-bold text-gray tracking-tight">
+        {/* 누적 진단 건수 — 라벨·숫자 한 줄, 크기는 보조 KPI와 통일. 오렌지는 이 숫자에만 */}
+        <div className="flex items-baseline gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
+          <span className="flex items-center gap-2 text-[12px] font-bold text-gray tracking-tight whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 animate-pulse motion-reduce:animate-none" title="실시간 집계" />
             누적 진단 건수
           </span>
-          <span className="flex items-baseline gap-1.5">
-            <span className="text-[clamp(26px,3.4vw,36px)] font-black text-accent tabular-nums leading-[0.85] tracking-[-0.04em]">{metrics.totalCount}</span>
-            <span className="text-[14px] font-black text-navy">건</span>
+          <span className="text-[23px] font-black text-accent tabular-nums leading-none tracking-[-0.02em]">
+            {metrics.totalCount}<span className="text-[13px] font-extrabold text-navy ml-0.5">건</span>
           </span>
-          <span className="h-[2.5px] w-11 bg-accent rounded-full" />
         </div>
 
         {/* 보조 3종 — 라벨 단축·숫자/여백 축소로 컴팩트하게. 무채색, 우측 클러스터 */}
@@ -198,14 +196,15 @@ export const PerformanceInsights: React.FC = () => {
         </div>
       </section>
 
-      {/* 분포 차트 — 라이브러리 막대 대신 레일형 에디토리얼 막대(규격 224px 유지, 2026-07-03 지시).
+      {/* 분포 차트 — 라이브러리 막대 대신 레일형 에디토리얼 막대.
+          높이 296px = 8행 × 히트맵 행 pitch(≈37px) 동기화(2026-07-04 지시: 상·하 행간 통일로 가독성 확보, 224px 규격 대체).
           각 행 = 공종 라벨(우정렬) · 연회색 레일 위 공종 시그니처색 막대 · 값+비중 직접 표기 → 축·격자 없이 즉시 읽힌다 */}
       <div className="flex flex-col gap-2.5">
         <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-2.5">
           <BarChart3 className="w-4 h-4 text-steel" />
           공종별 진단 실적 분포 <span className="text-gray font-bold">(건수 · 비중)</span>
         </h3>
-        <div className="h-[224px] min-w-0 flex flex-col justify-between py-1.5">
+        <div className="h-[296px] min-w-0 flex flex-col justify-between py-1.5">
           {distribution.map((d) => {
             const hex = TRADE_COLORS[d.name] || '#1E4D8C';
             const maxCount = distribution[0]?.value ?? 0;
