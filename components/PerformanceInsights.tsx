@@ -4,9 +4,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
 import { Estimate, WorkType, EstimateCategory } from '@/types/estimate';
 import { calculatePerformanceMetrics } from '@/lib/calculations';
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList,
-} from 'recharts';
 import { LayoutGrid, Grid3x3, BarChart3, Activity } from 'lucide-react';
 
 // 좌측 메뉴와 동일한 8대 공종 순서 (LeftSidebar workCategories와 일치)
@@ -71,10 +68,8 @@ const heatCellStyle = (v: number, max: number, baseHex: string): React.CSSProper
 export const PerformanceInsights: React.FC = () => {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false); // recharts SSR 미스매치 방지
 
   useEffect(() => {
-    const frameId = window.requestAnimationFrame(() => setMounted(true));
     const load = async () => {
       try {
         setEstimates(await ZerosService.getEstimates());
@@ -85,7 +80,6 @@ export const PerformanceInsights: React.FC = () => {
       }
     };
     load();
-    return () => window.cancelAnimationFrame(frameId);
   }, []);
 
   const agg = useMemo(() => {
@@ -204,36 +198,36 @@ export const PerformanceInsights: React.FC = () => {
         </div>
       </section>
 
-      {/* 분포 차트 박스 — 첫 화면에 8공종 막대 하단까지 노출되도록 높이 압축(300→224) */}
+      {/* 분포 차트 — 라이브러리 막대 대신 레일형 에디토리얼 막대(규격 224px 유지, 2026-07-03 지시).
+          각 행 = 공종 라벨(우정렬) · 연회색 레일 위 공종 시그니처색 막대 · 값+비중 직접 표기 → 축·격자 없이 즉시 읽힌다 */}
       <div className="flex flex-col gap-2.5">
         <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-2.5">
           <BarChart3 className="w-4 h-4 text-steel" />
-          공종별 진단 실적 분포 <span className="text-gray-light font-bold">(건수)</span>
+          공종별 진단 실적 분포 <span className="text-gray font-bold">(건수 · 비중)</span>
         </h3>
-        <div className="min-w-0">
-          {mounted ? (
-            <ResponsiveContainer width="100%" height={224}>
-              <BarChart
-                data={distribution}
-                layout="vertical"
-                margin={{ top: 4, right: 40, left: 8, bottom: 4 }}
-                barCategoryGap={7}
-              >
-                {/* 축·격자 정리 — 값은 막대 끝 라벨로 직접 표기(에디토리얼 데이터 시각화) */}
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#5B6573' }} width={132} tickLine={false} axisLine={false} />
-                <Tooltip formatter={(v) => [`${v}건`, '진단 건수']} wrapperStyle={{ fontSize: 11 }} cursor={{ fill: 'rgba(91,101,115,0.06)' }} />
-                <Bar dataKey="value" radius={[0, 5, 5, 0]} name="진단 건수">
-                  {distribution.map((d) => (
-                    <Cell key={d.name} fill={TRADE_COLORS[d.name] || '#1E4D8C'} fillOpacity={0.92} />
-                  ))}
-                  <LabelList dataKey="value" position="right" offset={8} style={{ fontSize: 11, fontWeight: 800, fill: '#0F1E35' }} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[224px] flex items-center justify-center text-[12px] text-gray-light font-bold">차트 준비 중…</div>
-          )}
+        <div className="h-[224px] min-w-0 flex flex-col justify-between py-1.5">
+          {distribution.map((d) => {
+            const hex = TRADE_COLORS[d.name] || '#1E4D8C';
+            const maxCount = distribution[0]?.value ?? 0;
+            const widthPct = maxCount > 0 ? Math.max((d.value / maxCount) * 100, d.value > 0 ? 3 : 0) : 0;
+            const share = grandTotal > 0 ? Math.round((d.value / grandTotal) * 1000) / 10 : 0;
+            return (
+              <div key={d.name} className="grid grid-cols-[132px_1fr_92px] items-center gap-2.5" title={`${d.name} · ${d.value}건 (${share}%)`}>
+                <span className="text-[12px] font-bold text-navy text-right leading-tight whitespace-nowrap truncate pr-0.5">{d.name}</span>
+                <div className="relative h-[14px] rounded-[3px] bg-[#EFF3F8] overflow-hidden">
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-[3px] transition-[width] duration-500 motion-reduce:transition-none"
+                    style={{ width: `${widthPct}%`, backgroundColor: hex, opacity: 0.92 }}
+                  />
+                </div>
+                <span className="flex items-baseline gap-1 whitespace-nowrap tabular-nums">
+                  <span className="text-[13px] font-black text-navy">{d.value}</span>
+                  <span className="text-[11px] font-bold text-gray">건</span>
+                  <span className="text-[11px] font-semibold text-gray">· {share}%</span>
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -251,7 +245,7 @@ export const PerformanceInsights: React.FC = () => {
                 {BUDGET_COLS.map((c) => (
                   <th key={c.key} className="p-2 text-center font-bold text-navy whitespace-nowrap">
                     <div className="text-[12px] font-black">{c.label}</div>
-                    <div className="text-[12px] text-gray-light font-semibold tabular-nums">{c.range}</div>
+                    <div className="text-[12px] text-gray font-semibold tabular-nums">{c.range}</div>
                   </th>
                 ))}
                 <th className="p-2 text-center font-black text-navy whitespace-nowrap">합계</th>
@@ -299,13 +293,13 @@ export const PerformanceInsights: React.FC = () => {
         </div>
         {/* 범례 — 셀 색 = 공종별 시그니처, 진할수록 건수 많음(막대그래프와 동일 색 체계) */}
         <div className="flex items-center gap-2 text-[12px] text-gray font-semibold">
-          <span className="text-gray-light">셀 색 = 공종별 · 적음</span>
+          <span>셀 색 = 공종별 · 적음</span>
           <div className="flex h-2.5 w-24 rounded-full overflow-hidden border border-border/60">
             {[0.16, 0.35, 0.54, 0.72, 0.9].map((a) => (
               <div key={a} className="flex-1" style={{ backgroundColor: `rgba(91,101,115,${a})` }} />
             ))}
           </div>
-          <span className="text-gray-light">많음</span>
+          <span>많음</span>
         </div>
       </div>
 

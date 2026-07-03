@@ -436,11 +436,12 @@ export default function Home() {
     ];
 
     return (
-      <div className="flex flex-col gap-5 max-w-3xl mx-auto py-3 select-none">
+      /* 한 화면 정돈(2026-07-03 지시): eyebrow 삭제(§10-A 필요 이상 라벨 금지) + 상단 밀착 +
+         데스크톱 폭 확장·간격 압축으로 스크롤 이동 없이 전체 노출 */
+      <div className="flex flex-col gap-4 max-w-3xl lg:max-w-4xl mx-auto pb-2 select-none">
 
-        {/* 주제 — 헤드라인 + 한 줄 데이터 흐름 */}
-        <div className="flex flex-col gap-2 border-b border-border pb-4">
-          <span className="text-[12px] font-black text-steel uppercase tracking-wider">AI Native · 데이터 분석 파이프라인</span>
+        {/* 주제 — 라벨 없이 헤드라인부터 시작 + 한 줄 데이터 흐름 */}
+        <div className="flex flex-col gap-1.5 border-b border-border pb-3">
           <h2 className="text-[clamp(21px,4vw,29px)] font-extrabold text-navy tracking-tight leading-[1.25]">
             도면 한 장이 <span className="text-accent">검증된 예산 검토서</span>가 되기까지
           </h2>
@@ -450,7 +451,7 @@ export default function Home() {
         </div>
 
         {/* 파이프라인 — 5단계 수직 데이터 흐름(방법론 칩 + 데이터 변환) */}
-        <div className="relative pl-7 flex flex-col gap-2.5">
+        <div className="relative pl-7 flex flex-col gap-2">
           {/* 수직 스파인 — 분석(steel) → 핵심(accent) → 산출(success) */}
           <div className="absolute left-[13px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-steel via-accent to-success pointer-events-none" />
 
@@ -466,7 +467,7 @@ export default function Home() {
                   {s.no}
                 </span>
                 <div
-                  className="flex flex-col gap-1.5 rounded-[10px] px-3.5 py-3 border"
+                  className="flex flex-col gap-1.5 rounded-[10px] px-3.5 py-2.5 border"
                   style={{ background: t.card, borderColor: t.border, ...(t.inset ? { boxShadow: `inset 4px 0 0 ${t.inset}` } : {}) }}
                 >
                   <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
@@ -491,7 +492,7 @@ export default function Home() {
         </div>
 
         {/* 결과 지표 — 검증 신뢰도 + 산출물 지표 */}
-        <div className="flex flex-col gap-3 border-t border-border pt-4">
+        <div className="flex flex-col gap-2 border-t border-border pt-3">
           <div className="flex flex-wrap items-end gap-x-7 gap-y-3">
             {[
               { l: '실거래 표본', v: '246건', accent: false },
@@ -512,7 +513,7 @@ export default function Home() {
         </div>
 
         {/* CTA — 단일 신청 버튼 */}
-        <div className="bg-gradient-to-r from-[#1A365D] to-[#2E5E8A] text-bg rounded-custom p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+        <div className="bg-gradient-to-r from-[#1A365D] to-[#2E5E8A] text-bg rounded-custom p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
           <span className="text-[14.5px] font-black tracking-tight">도면과 제원서를 올리면 AI 검증이 바로 시작됩니다.</span>
           <div className="w-full sm:w-64 shrink-0 flex flex-col justify-center">
             <button
@@ -1695,16 +1696,19 @@ export default function Home() {
                 <p className="text-[13px] font-semibold text-gray mt-2 leading-snug select-none">{keywords.join('  ·  ')}</p>
               )}
 
-              {/* 실사 이미지 자리 — 지시②: 공종 실사 이미지로 방문자 이해를 돕는다. 크게 확보(플레이스홀더) */}
-              <div className="mt-auto pt-4 flex-1 flex min-h-0">
-                <div
-                  className="relative w-full rounded-custom bg-bg-subtle flex flex-col items-center justify-center gap-1.5 select-none min-h-[130px] transition-colors duration-500"
-                  style={{ boxShadow: `inset 0 0 0 1px ${sigHex}26` }}
-                >
-                  <ImageIcon className="w-6 h-6" style={{ color: sigHex }} />
-                  <span className="text-[12.5px] font-bold text-gray">공종 실사 이미지</span>
-                  <span className="text-[11px] font-semibold text-gray">현장 이미지 추가 예정</span>
-                </div>
+              {/* 실사 사진 자리 — 지시(2026-07-03 캡쳐): 상·하 2분할(현장 전경/작업 상세) 플레이스홀더 */}
+              <div className="mt-auto pt-4 flex-1 flex flex-col gap-3 min-h-0">
+                {['현장 전경', '작업 상세'].map((slot) => (
+                  <div
+                    key={slot}
+                    className="relative flex-1 w-full rounded-custom bg-bg-subtle flex flex-col items-center justify-center gap-1 select-none min-h-[110px] transition-colors duration-500"
+                    style={{ boxShadow: `inset 0 0 0 1px ${sigHex}26` }}
+                  >
+                    <ImageIcon className="w-5 h-5" style={{ color: sigHex }} />
+                    <span className="text-[12.5px] font-bold text-gray">공종 실사 사진 · {slot}</span>
+                    <span className="text-[11px] font-semibold text-gray">현장 이미지 추가 예정</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1713,8 +1717,23 @@ export default function Home() {
 
             {/* 우 — Benefit 단일 주인공: 검토 후 최적화율(대형) + before→after 시각화. 지시③: 결과 지표·고객 benefit 그래프 */}
             <div className="flex flex-col min-w-0 justify-center">
+              {/* 패널 제목 + 고객 benefit 3줄 — 지시(2026-07-03 캡쳐): '사전 견적 후 결과 지표' */}
+              <h2 className="text-[20px] font-black text-navy tracking-tight leading-tight break-keep">사전 견적 후 결과 지표</h2>
+              <ul className="mt-2.5 flex flex-col gap-1.5">
+                {[
+                  '사전 견적을 통한 공사 이해도 향상',
+                  '유스케이스 검토에 의한 안심 예산 책정',
+                  '공사비 버블에 대한 불안감 해소',
+                ].map((benefit) => (
+                  <li key={benefit} className="flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full shrink-0 transition-colors duration-500" style={{ backgroundColor: sigHex }} />
+                    <span className="text-[13px] font-semibold text-gray leading-snug break-keep">{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+
               {/* 주인공 지표 — 즉시 보이는 절감 효과 */}
-              <div className="flex items-center gap-1.5 select-none">
+              <div className="flex items-center gap-1.5 select-none mt-4 pt-3.5 border-t border-border/60">
                 <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: sigHex }} />
                 <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
               </div>
@@ -1724,7 +1743,7 @@ export default function Home() {
               </div>
 
               {/* before → after 그래프 — 검토 전 100 대비 최적합 지수 */}
-              <div className="mt-6">
+              <div className="mt-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[11.5px] font-bold text-gray">검토 전 견적</span>
                   <span className="text-[11.5px] font-bold text-gray tabular-nums">100</span>
@@ -1738,7 +1757,7 @@ export default function Home() {
               </div>
 
               {/* 신뢰 지표 — 인라인(나열 대신 한 줄) */}
-              <div className="flex items-center gap-4 mt-6">
+              <div className="flex items-center gap-4 mt-4">
                 <span className="flex items-baseline gap-1.5">
                   <span className="text-[11.5px] font-semibold text-gray">AI 분석 신뢰도</span>
                   <span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span>
@@ -1751,7 +1770,7 @@ export default function Home() {
               </div>
 
               {/* 작업 과정 — 01·02·03 리스트를 한 줄 절차 캡션으로 압축(나열 제거) */}
-              <div className="flex items-center gap-2 mt-5 pt-3.5 border-t border-border/60 select-none">
+              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/60 select-none">
                 <Cpu className="w-3.5 h-3.5 shrink-0 text-gray" />
                 <span className="text-[11.5px] font-semibold text-gray leading-snug break-keep">자료 정합 <span className="text-border">→</span> 실거래 DB 교차대조 <span className="text-border">→</span> AI·30년 PM 검증</span>
               </div>
