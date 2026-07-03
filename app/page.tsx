@@ -56,6 +56,20 @@ const LANDING_TRADES = [
   'CAPEX 개·증설 검토',
 ];
 
+// 공종별 실사 사진 [현장 전경, 작업 상세] — 견적 검토 히어로 좌측 2분할 슬롯용.
+// Pexels 무료 라이선스(상업 이용 가능·출처표기 불요), public/images/trades/ 자체 호스팅.
+// 자사 현장 사진 확보 시 파일만 교체하면 된다(경로 유지).
+const TRADE_PHOTOS: Record<string, [string, string]> = {
+  '배관공사': ['/images/trades/pipe-1.jpg', '/images/trades/pipe-2.jpg'],
+  '장비설치': ['/images/trades/equip-1.jpg', '/images/trades/equip-2.jpg'],
+  'Utility 배관': ['/images/trades/utility-1.jpg', '/images/trades/utility-2.jpg'],
+  '공장증설': ['/images/trades/expansion-1.jpg', '/images/trades/expansion-2.jpg'],
+  '노후배관교체': ['/images/trades/renewal-1.jpg', '/images/trades/renewal-2.jpg'],
+  '기계실개선': ['/images/trades/mechroom-1.jpg', '/images/trades/mechroom-2.jpg'],
+  '생산설비 배관 연결': ['/images/trades/hookup-1.jpg', '/images/trades/hookup-2.jpg'],
+  'CAPEX 개·증설 검토': ['/images/trades/capex-1.jpg', '/images/trades/capex-2.jpg'],
+};
+
 // 공종별 활성 칩 시그니처 색 — 쇼케이스 eyebrow 텍스트 색(-600 계열)과 동일 색상으로 묶어 시선 연결
 // (Tailwind JIT가 스캔하도록 완전한 클래스 문자열을 직접 명시)
 const LANDING_CHIP_CLASS: Record<string, string> = {
@@ -1663,7 +1677,7 @@ export default function Home() {
     const activeTradeName = LANDING_TRADES[activeTradeIdx];
     const activeManual = manualData[activeTradeName];
     const activeMetrics = getDynamicMetrics(activeTradeName);
-    const keywords = TRADE_KEYWORDS[activeTradeName] || [];
+    const photos = TRADE_PHOTOS[activeTradeName];
     // 공종별 시그니처 색 — 회전하는 공종마다 히어로 테마를 바꿔 상단 칩바와 시선 연결·차별화
     const sigHex = LANDING_SIGNATURE_HEX[activeTradeName] || '#D2691E';
     // ZEROS 최적합 지수 = 검토 전 견적(100) 대비 (단가 부풀림 없이 적정화한 비율)
@@ -1684,31 +1698,42 @@ export default function Home() {
           {/* 히어로 — 좌 공종·최적화 / 세로 헤어라인 / 우 검증 신뢰 */}
           <div className="grid grid-cols-[1fr_1px_1fr] gap-8 flex-1 min-h-0">
 
-            {/* 좌 — 공종 세분화(타이틀+키워드 절제) / 실사 이미지 자리. 지시①②: 세분화 + 이미지 전달 */}
+            {/* 좌 — 공종 타이틀 단독(eyebrow·키워드 삭제, 2026-07-03 X 지시) + 실사 사진 상·하 2분할 */}
             <div className="flex flex-col min-w-0">
-              <span className="flex items-center gap-1.5 select-none">
-                <span className="w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-500" style={{ backgroundColor: sigHex }} />
-                <span className="text-[11px] font-black tracking-[0.14em] transition-colors duration-500" style={{ color: sigHex }}>현재 검토 공종</span>
-              </span>
-              <h1 className="text-[26px] leading-[1.15] font-black text-navy tracking-tight mt-1.5 break-keep">{activeManual.title}</h1>
-              {keywords.length > 0 && (
-                /* 키워드는 지표가 아니라 보조 정보 — 나열 대신 한 줄 · 구분으로 절제 */
-                <p className="text-[13px] font-semibold text-gray mt-2 leading-snug select-none">{keywords.join('  ·  ')}</p>
-              )}
+              <h1 className="text-[26px] leading-[1.15] font-black text-navy tracking-tight break-keep">{activeManual.title}</h1>
 
-              {/* 실사 사진 자리 — 지시(2026-07-03 캡쳐): 상·하 2분할(현장 전경/작업 상세) 플레이스홀더 */}
-              <div className="mt-auto pt-4 flex-1 flex flex-col gap-3 min-h-0">
-                {['현장 전경', '작업 상세'].map((slot) => (
-                  <div
-                    key={slot}
-                    className="relative flex-1 w-full rounded-custom bg-bg-subtle flex flex-col items-center justify-center gap-1 select-none min-h-[110px] transition-colors duration-500"
-                    style={{ boxShadow: `inset 0 0 0 1px ${sigHex}26` }}
-                  >
-                    <ImageIcon className="w-5 h-5" style={{ color: sigHex }} />
-                    <span className="text-[12.5px] font-bold text-gray">공종 실사 사진 · {slot}</span>
-                    <span className="text-[11px] font-semibold text-gray">현장 이미지 추가 예정</span>
-                  </div>
-                ))}
+              {/* 실사 사진 — 상·하 2분할(현장 전경/작업 상세). TRADE_PHOTOS 연결, 없으면 플레이스홀더 폴백 */}
+              <div className="pt-4 flex-1 flex flex-col gap-3 min-h-0">
+                {(['현장 전경', '작업 상세'] as const).map((slot, slotIdx) => {
+                  const photoSrc = photos?.[slotIdx];
+                  return (
+                    <div
+                      key={slot}
+                      className="relative flex-1 w-full rounded-custom bg-bg-subtle overflow-hidden flex flex-col items-center justify-center gap-1 select-none min-h-[110px] transition-colors duration-500"
+                    >
+                      {photoSrc ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={photoSrc}
+                            alt={`${activeManual.title} ${slot} 실사 사진`}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <span className="absolute left-2.5 bottom-2.5 text-[11px] font-bold text-white bg-[#0F1E35]/60 px-2 py-0.5 rounded-[4px]">{slot}</span>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="w-5 h-5" style={{ color: sigHex }} />
+                          <span className="text-[12.5px] font-bold text-gray">공종 실사 사진 · {slot}</span>
+                          <span className="text-[11px] font-semibold text-gray">현장 이미지 추가 예정</span>
+                        </>
+                      )}
+                      {/* 시그니처색 인셋 링 — 이미지 위에 유지 */}
+                      <span className="absolute inset-0 rounded-custom pointer-events-none" style={{ boxShadow: `inset 0 0 0 1px ${sigHex}26` }} />
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -1716,8 +1741,8 @@ export default function Home() {
             <div className="bg-border" />
 
             {/* 우 — Benefit 단일 주인공: 검토 후 최적화율(대형) + before→after 시각화. 지시③: 결과 지표·고객 benefit 그래프 */}
-            <div className="flex flex-col min-w-0 justify-center">
-              {/* 패널 제목 + 고객 benefit 3줄 — 지시(2026-07-03 캡쳐): '사전 견적 후 결과 지표' */}
+            <div className="flex flex-col min-w-0">
+              {/* 패널 제목 + 고객 benefit 3줄 — 좌측 타이틀과 같은 상단 기준선(균형 리디자인, 2026-07-03) */}
               <h2 className="text-[20px] font-black text-navy tracking-tight leading-tight break-keep">사전 견적 후 결과 지표</h2>
               <ul className="mt-2.5 flex flex-col gap-1.5">
                 {[
@@ -1732,8 +1757,9 @@ export default function Home() {
                 ))}
               </ul>
 
-              {/* 주인공 지표 — 즉시 보이는 절감 효과 */}
-              <div className="flex items-center gap-1.5 select-none mt-4 pt-3.5 border-t border-border/60">
+              {/* 주인공 지표 — 남은 세로 공간 중앙 배치(좌측 사진 2칸과 세로 균형) */}
+              <div className="flex-1 flex flex-col justify-center min-h-0 py-3 mt-3 border-t border-border/60">
+              <div className="flex items-center gap-1.5 select-none">
                 <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: sigHex }} />
                 <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
               </div>
@@ -1755,9 +1781,10 @@ export default function Home() {
                 </div>
                 <div className="h-2.5 rounded-full bg-[#E7EBF1] overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${optimizedIndex}%`, backgroundColor: sigHex }} /></div>
               </div>
+              </div>
 
-              {/* 신뢰 지표 — 인라인(나열 대신 한 줄) */}
-              <div className="flex items-center gap-4 mt-4">
+              {/* 하단 앵커 — 신뢰 지표 인라인(좌측 사진 하단과 라인 맞춤) */}
+              <div className="flex items-center gap-4 pt-3 border-t border-border/60">
                 <span className="flex items-baseline gap-1.5">
                   <span className="text-[11.5px] font-semibold text-gray">AI 분석 신뢰도</span>
                   <span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span>
@@ -1769,8 +1796,8 @@ export default function Home() {
                 </span>
               </div>
 
-              {/* 작업 과정 — 01·02·03 리스트를 한 줄 절차 캡션으로 압축(나열 제거) */}
-              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/60 select-none">
+              {/* 작업 과정 — 한 줄 절차 캡션(하단 앵커 이어붙임) */}
+              <div className="flex items-center gap-2 mt-2.5 select-none">
                 <Cpu className="w-3.5 h-3.5 shrink-0 text-gray" />
                 <span className="text-[11.5px] font-semibold text-gray leading-snug break-keep">자료 정합 <span className="text-border">→</span> 실거래 DB 교차대조 <span className="text-border">→</span> AI·30년 PM 검증</span>
               </div>

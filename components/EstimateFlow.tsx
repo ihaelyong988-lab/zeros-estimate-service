@@ -20,11 +20,11 @@ export const EstimateFlow: React.FC = () => {
 
   return (
     <div className="select-none shrink-0">
-      {/* 헤드라인 + 안내 */}
-      <div className="flex items-center gap-2.5">
-        <span className="w-1.5 h-5 bg-accent rounded-full shrink-0" />
-        <h2 className="text-[16px] font-black text-navy tracking-tight">견적 작업 FLOW</h2>
-        <span className="text-[12.5px] font-semibold text-gray-light">단계를 누르면 내용이 펼쳐집니다</span>
+      {/* 헤드라인 + 안내 — 폰트 위계 상향(2026-07-03 지시: 박스 내부 가독성) */}
+      <div className="flex items-baseline gap-2.5">
+        <span className="w-1.5 h-5 bg-accent rounded-full shrink-0 self-center" />
+        <h2 className="text-[17px] font-black text-navy tracking-tight">견적 작업 FLOW</h2>
+        <span className="text-[13px] font-semibold text-gray">단계를 누르면 내용이 펼쳐집니다</span>
       </div>
 
       {/* 밑줄 탭 — 박스 대신 인터랙션이 또렷한 탭 레일. 활성=네이비 + 주황 밑줄 */}
@@ -35,7 +35,7 @@ export const EstimateFlow: React.FC = () => {
             type="button"
             onClick={() => setActive(i)}
             style={{ touchAction: 'manipulation' }}
-            className={`flex-1 whitespace-nowrap px-1 py-2 text-[13px] -mb-px border-b-[2.5px] transition-colors duration-150 cursor-pointer ${
+            className={`flex-1 whitespace-nowrap px-1 py-2.5 text-[14px] -mb-px border-b-[2.5px] transition-colors duration-150 cursor-pointer ${
               i === active
                 ? 'text-navy font-extrabold border-accent'
                 : 'text-gray font-semibold border-transparent hover:text-navy'
@@ -46,12 +46,12 @@ export const EstimateFlow: React.FC = () => {
         ))}
       </div>
 
-      {/* 선택 단계 설명 — 박스 없이 번호 + 제목 + 설명 */}
+      {/* 선택 단계 설명 — 박스 없이 번호 + 제목 + 설명. 제목 18px·설명 14.5px로 본문 위계 확보 */}
       <div className="flex gap-3 pt-3.5">
-        <span className="text-[13px] font-black font-mono text-accent pt-0.5 shrink-0">{String(active + 1).padStart(2, '0')}</span>
+        <span className="text-[14px] font-black font-mono text-accent pt-0.5 shrink-0 tabular-nums">{String(active + 1).padStart(2, '0')}</span>
         <div className="min-w-0">
-          <div className="text-[16px] font-black text-navy tracking-tight">{step.t}</div>
-          <p className="text-[13.5px] font-semibold text-gray leading-relaxed mt-1">{step.d}</p>
+          <div className="text-[18px] font-black text-navy tracking-tight">{step.t}</div>
+          <p className="text-[14.5px] font-semibold text-gray leading-relaxed mt-1 break-keep">{step.d}</p>
         </div>
       </div>
     </div>
