@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
 import { ZerosService } from '@/lib/supabase/client';
+import { openSecureFile } from '@/lib/files/secureFile';
 import { Estimate, NotificationLog } from '@/types/estimate';
 import {
   History, LogOut, ListChecks, FileText, Clock, Inbox, ArrowRight,
@@ -177,6 +178,7 @@ export const MyRequestsView: React.FC = () => {
         name: '',
         phone: formatPhone(digits),
         verifiedAt: new Date().toISOString(),
+        sessionToken: data.sessionToken, // 본인 견적서 파일 열람용(서버 재검증)
       });
       // clear local states
       setPhone('');
@@ -484,16 +486,20 @@ export const MyRequestsView: React.FC = () => {
                   )}
 
                   {e.estimate_pdf_url && (
-                    <a
-                      href={e.estimate_pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openSecureFile(e.estimate_pdf_url!, {
+                          phone: phoneDigits,
+                          sessionToken: customerAuth?.sessionToken,
+                        }).catch(err => alert(err instanceof Error ? err.message : '다운로드에 실패했습니다.'))
+                      }
                       style={{ touchAction: 'manipulation' }}
-                      className="min-h-11 flex items-center justify-center gap-1.5 bg-steel hover:bg-navy text-bg rounded-custom text-[12.5px] font-black transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-navy"
+                      className="min-h-11 w-full flex items-center justify-center gap-1.5 bg-steel hover:bg-navy text-bg rounded-custom text-[12.5px] font-black transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-navy"
                     >
                       <Download className="w-4 h-4" />
                       견적서 다운로드 (엑셀)
-                    </a>
+                    </button>
                   )}
                 </div>
               );

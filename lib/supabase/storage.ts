@@ -6,8 +6,9 @@ import { getSupabase, STORAGE_BUCKET, isSupabaseEnabled } from './supabaseBrowse
 // ==========================================
 // 실제 파일 업로드 (Supabase Storage)
 // ==========================================
-// 고객/관리자가 선택한 실제 파일을 estimate-files 버킷에 업로드하고
-// 공개 열람 URL을 포함한 FileMeta 메타데이터를 반환한다.
+// 고객/관리자가 선택한 실제 파일을 estimate-files 버킷(비공개)에 업로드하고
+// Storage 경로(file_path)를 포함한 FileMeta 메타데이터를 반환한다.
+// 열람·다운로드는 공개 URL이 아니라 /api/files/sign 서명 URL(관리자·본인만)로 한다.
 
 // 파일명에서 한글/공백/특수문자를 안전한 형태로 정리 (Storage key 호환)
 function sanitizeName(name: string): string {
@@ -64,14 +65,13 @@ export async function uploadEstimateFile(
     throw new Error(`업로드 실패: ${error.message}`);
   }
 
-  const { data: pub } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-
   return {
     id: `file-${Date.now()}-${rand}`,
     estimate_id: estimateId,
     file_name: file.name,
     file_type: file.type || 'application/octet-stream',
-    file_url: pub.publicUrl,
+    file_url: '', // 공개 URL 발급 금지 — 열람은 서명 URL로만
+    file_path: path,
     file_category: category,
     file_size: file.size,
     uploaded_at: new Date().toISOString(),

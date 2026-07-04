@@ -98,7 +98,36 @@ create policy "anon_modify_estimate_files"
   for update to anon
   using (bucket_id = 'estimate-files');
 
+-- ------------------------------------------------------------
+-- 5. 파일 보안 잠금 (2026-07-05 — 관리자·본인만 열람)
+--    버킷을 비공개로 전환한다. 이후 파일 열람은 서버 서명 URL
+--    (/api/files/sign, 관리자 토큰·고객 본인 인증 필수)로만 가능.
+--    방문자 업로드(insert)는 계속 허용, 수정/삭제/읽기는 차단.
+-- ------------------------------------------------------------
+-- 5-1. estimate-files 관련 기존 스토리지 정책 전부 정리
+do $$
+declare p record;
+begin
+  for p in
+    select policyname from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and (coalesce(qual, '') like '%estimate-files%'
+           or coalesce(with_check, '') like '%estimate-files%')
+  loop
+    execute format('drop policy if exists %I on storage.objects', p.policyname);
+  end loop;
+end $$;
+
+-- 5-2. 업로드(insert)만 익명 허용 (신청서 첨부가 계속 작동해야 함)
+create policy "anon_upload_estimate_files"
+  on storage.objects
+  for insert to anon
+  with check (bucket_id = 'estimate-files');
+
+-- 5-3. 버킷 비공개 전환 — 기존 공개 URL 전부 무효화
+update storage.buckets set public = false where id = 'estimate-files';
+
 -- ============================================================
--- 완료. 이제 웹앱에서 고객이 첨부한 파일이 클라우드에 저장되고,
--- 관리자 화면에서 다운로드/미리보기가 가능합니다.
+-- 완료. 파일은 비공개로 저장되며, 관리자 로그인 또는 고객 본인
+-- 인증을 거친 경우에만 서명 URL(10분)로 열람·다운로드됩니다.
 -- ============================================================

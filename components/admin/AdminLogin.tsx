@@ -2,27 +2,44 @@
 
 import React, { useState } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
+import { saveAdminToken } from '@/lib/files/secureFile';
 import { ShieldCheck, Lock, ArrowLeft } from 'lucide-react';
 
 // ==========================================
 // 관리자 비밀번호 잠금 화면
 // ==========================================
-// 비밀번호를 바꾸려면 아래 ADMIN_PASSWORD 값만 수정하면 된다.
-const ADMIN_PASSWORD = 'zeros1234!';
+// 비밀번호는 서버(/api/admin/login)에서만 검증한다 — 클라이언트 번들에 노출 금지.
+// 비밀번호 변경: 환경변수 ZEROS_ADMIN_PASSWORD (로컬 .env.local + Vercel).
+// 성공 시 발급되는 관리자 토큰은 첨부파일 서명 URL(/api/files/sign) 열람에 쓰인다.
 
 export const AdminLogin: React.FC = () => {
   const { setAdminAuthed, setIsUserMode } = useShell();
   const [pw, setPw] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pw === ADMIN_PASSWORD) {
-      setError(null);
+    if (!pw || loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.adminToken) {
+        throw new Error(data.error || '비밀번호가 올바르지 않습니다.');
+      }
+      saveAdminToken(data.adminToken);
       setAdminAuthed(true);
-    } else {
-      setError('비밀번호가 올바르지 않습니다.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '로그인 처리 중 오류가 발생했습니다.');
       setPw('');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,14 +82,15 @@ export const AdminLogin: React.FC = () => {
           </label>
 
           {error && (
-            <span className="text-[12px] font-bold text-red-300">{error}</span>
+            <span role="alert" className="text-[12px] font-bold text-red-300">{error}</span>
           )}
 
           <button
             type="submit"
-            className="w-full bg-accent hover:bg-bg hover:text-navy text-bg font-black text-[13px] py-3 rounded-custom transition-all active:scale-[0.98]"
+            disabled={loading}
+            className="w-full bg-accent hover:bg-bg hover:text-navy text-bg font-black text-[13px] py-3 rounded-custom transition-all active:scale-[0.98] disabled:opacity-60"
           >
-            관리자 로그인
+            {loading ? '확인 중...' : '관리자 로그인'}
           </button>
         </form>
 

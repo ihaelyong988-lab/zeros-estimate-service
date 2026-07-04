@@ -61,7 +61,8 @@ export interface FileMeta {
   estimate_id: string;
   file_name: string;
   file_type: string;
-  file_url: string;
+  file_url: string;      // (구버전 호환) 과거 공개 URL — 신규 업로드는 빈 문자열
+  file_path?: string;    // Storage 내부 경로 — 열람은 서명 URL API(/api/files/sign)로만
   file_category: string;
   file_size?: number; // 바이트 단위 (총량 한도 계산용)
   uploaded_at: string;
