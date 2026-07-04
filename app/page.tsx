@@ -327,17 +327,18 @@ export default function Home() {
 
     return (
       <div className="flex flex-col gap-5 max-w-5xl mx-auto py-5 min-h-[calc(100vh-128px)] select-none">
-        {/* 1. 히어로 헤드라인 — 문제→해결 핵심 메시지(2줄 고정, 보조문장 제거로 세로폭 압축) */}
+        {/* 1. 히어로 헤드라인 — 데스크톱=한 줄(프레임 맞춤 축소, 2026-07-04 지시), 모바일=2줄 고정(O-6 확정) */}
         <section className="flex flex-col">
-          <h1 className="text-[clamp(30px,4.4vw,50px)] font-extrabold text-navy leading-[1.14] tracking-[-0.035em]">
-            흔들리는 견적을 <span className="text-[#155EEF]">데이터로</span><br /> 최적의 예산을 책정합니다
+          <h1 className="text-[clamp(30px,3vw,38px)] font-extrabold text-navy leading-[1.14] tracking-[-0.035em] md:whitespace-nowrap">
+            흔들리는 견적을 <span className="text-[#155EEF]">데이터로</span><br className="md:hidden" /> 최적의 예산을 책정합니다
           </h1>
         </section>
 
-        {/* 2. 3단계 흐름 — 문제→분석→안심 수직 타임라인(개편안 B). ±5%는 마지막 단계 지표 1곳. */}
-        <section className="flex flex-col gap-4 border-t border-b border-border py-5">
-          <span className="text-[12px] font-black text-navy uppercase tracking-wide">견적을 바로잡는 3단계</span>
-          <div className="relative flex flex-col gap-5">
+        {/* 2. 3단계 흐름 — 문제→분석→안심 수직 타임라인(개편안 B). ±5%는 마지막 단계 지표 1곳.
+            헤드라인 한 줄 압축으로 생긴 여백만큼 폰트·간격 확대(2026-07-04 지시) */}
+        <section className="flex flex-col gap-5 border-t border-b border-border py-7">
+          <span className="text-[13px] font-black text-navy uppercase tracking-wide">견적을 바로잡는 3단계</span>
+          <div className="relative flex flex-col gap-7">
             {/* 수직 연결선 — 분석(steel)→안심(blue)으로 흐름 강조 */}
             <div className="absolute top-5 bottom-5 left-[17px] w-0.5 bg-gradient-to-b from-gray-light via-steel to-[#155EEF] pointer-events-none" />
             {flowSteps.map((s, i) => {
@@ -353,15 +354,15 @@ export default function Home() {
                   </span>
                   <div className="flex-1 flex items-start justify-between gap-4">
                     <div className="flex flex-col gap-1">
-                      <span className="flex items-center gap-2 text-[12px] font-black tracking-wide">
+                      <span className="flex items-center gap-2 text-[13px] font-black tracking-wide">
                         <span className="text-gray-light tabular-nums">{s.no}</span>
                         <span className={isLast ? 'text-[#155EEF]' : 'text-gray'}>{s.tag}</span>
                       </span>
-                      <span className="text-[17px] font-black text-navy leading-snug">{s.title}</span>
-                      <span className="text-[14px] font-semibold text-gray leading-relaxed max-w-[460px]">{s.desc}</span>
+                      <span className="text-[19px] font-black text-navy leading-snug">{s.title}</span>
+                      <span className="text-[15.5px] font-semibold text-gray leading-relaxed max-w-[520px]">{s.desc}</span>
                     </div>
                     {s.metric && (
-                      <span className="text-[clamp(30px,5vw,44px)] font-black text-[#155EEF] tabular-nums leading-none tracking-[-0.03em] shrink-0">
+                      <span className="text-[clamp(34px,5.5vw,52px)] font-black text-[#155EEF] tabular-nums leading-none tracking-[-0.03em] shrink-0">
                         {s.metric}
                       </span>
                     )}
@@ -464,8 +465,8 @@ export default function Home() {
           </p>
         </div>
 
-        {/* 파이프라인 — 5단계 수직 데이터 흐름(방법론 칩 + 데이터 변환) */}
-        <div className="relative pl-7 flex flex-col gap-2">
+        {/* 파이프라인 — 수직 데이터 흐름(방법론 칩 + 데이터 변환). 카드 간 여백 8→14px로 답답함 해소(2026-07-04 지시) */}
+        <div className="relative pl-7 flex flex-col gap-3.5">
           {/* 수직 스파인 — 분석(steel) → 핵심(accent) → 산출(success) */}
           <div className="absolute left-[13px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-steel via-accent to-success pointer-events-none" />
 
@@ -481,7 +482,7 @@ export default function Home() {
                   {s.no}
                 </span>
                 <div
-                  className="flex flex-col gap-1.5 rounded-[10px] px-3.5 py-2.5 border"
+                  className="flex flex-col gap-1.5 rounded-[10px] px-4 py-3 border"
                   style={{ background: t.card, borderColor: t.border, ...(t.inset ? { boxShadow: `inset 4px 0 0 ${t.inset}` } : {}) }}
                 >
                   <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
@@ -506,7 +507,7 @@ export default function Home() {
         </div>
 
         {/* 결과 지표 — 검증 신뢰도 + 산출물 지표 */}
-        <div className="flex flex-col gap-2 border-t border-border pt-3">
+        <div className="flex flex-col gap-2 border-t border-border pt-4">
           <div className="flex flex-wrap items-end gap-x-7 gap-y-3">
             {[
               { l: '실거래 표본', v: '246건', accent: false },
@@ -1742,64 +1743,64 @@ export default function Home() {
 
             {/* 우 — Benefit 단일 주인공: 검토 후 최적화율(대형) + before→after 시각화. 지시③: 결과 지표·고객 benefit 그래프 */}
             <div className="flex flex-col min-w-0">
-              {/* 패널 제목 + 고객 benefit 3줄 — 좌측 타이틀과 같은 상단 기준선(균형 리디자인, 2026-07-03) */}
-              <h2 className="text-[20px] font-black text-navy tracking-tight leading-tight break-keep">사전 견적 후 결과 지표</h2>
-              <ul className="mt-2.5 flex flex-col gap-1.5">
+              {/* 패널 제목 + 고객 benefit 3줄 — 좌측 타이틀(26px)과 대칭 폰트 + 세로 호흡 확대·전체 살짝 하향(2026-07-04 지시) */}
+              <h2 className="pt-2 text-[26px] font-black text-navy tracking-tight leading-tight break-keep">사전 견적 후 결과 지표</h2>
+              <ul className="mt-3.5 flex flex-col gap-2.5">
                 {[
                   '사전 견적을 통한 공사 이해도 향상',
                   '유스케이스 검토에 의한 안심 예산 책정',
                   '공사비 버블에 대한 불안감 해소',
                 ].map((benefit) => (
                   <li key={benefit} className="flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full shrink-0 transition-colors duration-500" style={{ backgroundColor: sigHex }} />
-                    <span className="text-[13px] font-semibold text-gray leading-snug break-keep">{benefit}</span>
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-500" style={{ backgroundColor: sigHex }} />
+                    <span className="text-[15px] font-semibold text-gray leading-snug break-keep">{benefit}</span>
                   </li>
                 ))}
               </ul>
 
               {/* 주인공 지표 — 남은 세로 공간 중앙 배치(좌측 사진 2칸과 세로 균형) */}
-              <div className="flex-1 flex flex-col justify-center min-h-0 py-3 mt-3 border-t border-border/60">
+              <div className="flex-1 flex flex-col justify-center min-h-0 py-4 mt-4 border-t border-border/60">
               <div className="flex items-center gap-1.5 select-none">
-                <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: sigHex }} />
-                <span className="text-[13px] font-bold text-gray">검토 후 평균 견적 최적화</span>
+                <ShieldCheck className="w-[18px] h-[18px] shrink-0" style={{ color: sigHex }} />
+                <span className="text-[15px] font-bold text-gray">검토 후 평균 견적 최적화</span>
               </div>
-              <div className="flex items-baseline gap-1 mt-1">
+              <div className="flex items-baseline gap-1 mt-1.5">
                 <span className="text-[54px] leading-[0.9] font-black tracking-tight tabular-nums transition-colors duration-500" style={{ color: sigHex }}>-{activeMetrics.bubbleRate}</span>
                 <span className="text-[26px] font-black transition-colors duration-500" style={{ color: sigHex }}>%</span>
               </div>
 
               {/* before → after 그래프 — 검토 전 100 대비 최적합 지수 */}
-              <div className="mt-4">
+              <div className="mt-5">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11.5px] font-bold text-gray">검토 전 견적</span>
-                  <span className="text-[11.5px] font-bold text-gray tabular-nums">100</span>
+                  <span className="text-[13px] font-bold text-gray">검토 전 견적</span>
+                  <span className="text-[13px] font-bold text-gray tabular-nums">100</span>
                 </div>
-                <div className="h-2.5 rounded-full bg-[#E7EBF1] overflow-hidden"><div className="h-full w-full bg-[#D3DAE4]" /></div>
-                <div className="flex items-center justify-between mb-1.5 mt-3.5">
-                  <span className="text-[11.5px] font-black transition-colors duration-500" style={{ color: sigHex }}>ZEROS 최적합</span>
-                  <span className="text-[11.5px] font-black tabular-nums transition-colors duration-500" style={{ color: sigHex }}>{optimizedIndex}</span>
+                <div className="h-3 rounded-full bg-[#E7EBF1] overflow-hidden"><div className="h-full w-full bg-[#D3DAE4]" /></div>
+                <div className="flex items-center justify-between mb-1.5 mt-4">
+                  <span className="text-[13px] font-black transition-colors duration-500" style={{ color: sigHex }}>ZEROS 최적합</span>
+                  <span className="text-[13px] font-black tabular-nums transition-colors duration-500" style={{ color: sigHex }}>{optimizedIndex}</span>
                 </div>
-                <div className="h-2.5 rounded-full bg-[#E7EBF1] overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${optimizedIndex}%`, backgroundColor: sigHex }} /></div>
+                <div className="h-3 rounded-full bg-[#E7EBF1] overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${optimizedIndex}%`, backgroundColor: sigHex }} /></div>
               </div>
               </div>
 
-              {/* 하단 앵커 — 신뢰 지표 인라인(좌측 사진 하단과 라인 맞춤) */}
-              <div className="flex items-center gap-4 pt-3 border-t border-border/60">
+              {/* 하단 앵커 — 신뢰 지표 인라인(좌측 사진 하단과 라인 맞춤). 세부 폰트 확대·세로폭 확장(2026-07-04 지시) */}
+              <div className="flex items-center gap-5 pt-5 border-t border-border/60">
                 <span className="flex items-baseline gap-1.5">
-                  <span className="text-[11.5px] font-semibold text-gray">AI 분석 신뢰도</span>
-                  <span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span>
+                  <span className="text-[13px] font-semibold text-gray">AI 분석 신뢰도</span>
+                  <span className="text-[17.5px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span>
                 </span>
-                <span className="w-px h-3.5 bg-border shrink-0" />
+                <span className="w-px h-4 bg-border shrink-0" />
                 <span className="flex items-baseline gap-1.5">
-                  <span className="text-[11.5px] font-semibold text-gray">검토 표본</span>
-                  <span className="text-[15px] font-black text-navy tabular-nums">{activeMetrics.sampleCount}건</span>
+                  <span className="text-[13px] font-semibold text-gray">검토 표본</span>
+                  <span className="text-[17.5px] font-black text-navy tabular-nums">{activeMetrics.sampleCount}건</span>
                 </span>
               </div>
 
               {/* 작업 과정 — 한 줄 절차 캡션(하단 앵커 이어붙임) */}
-              <div className="flex items-center gap-2 mt-2.5 select-none">
-                <Cpu className="w-3.5 h-3.5 shrink-0 text-gray" />
-                <span className="text-[11.5px] font-semibold text-gray leading-snug break-keep">자료 정합 <span className="text-border">→</span> 실거래 DB 교차대조 <span className="text-border">→</span> AI·30년 PM 검증</span>
+              <div className="flex items-center gap-2 mt-4 select-none">
+                <Cpu className="w-4 h-4 shrink-0 text-gray" />
+                <span className="text-[13px] font-semibold text-gray leading-snug break-keep">자료 정합 <span className="text-border">→</span> 실거래 DB 교차대조 <span className="text-border">→</span> AI·30년 PM 검증</span>
               </div>
             </div>
           </div>

@@ -160,18 +160,17 @@ export const PerformanceInsights: React.FC = () => {
   return (
     <div className="flex flex-col gap-3 max-w-5xl mx-auto py-1">
 
-      {/* KPI 하이라이트 — 좌=누적 건수(유일한 컬러)도 보조 3종과 동일 폰트(라벨 12px·숫자 23px)로
-          한 줄 가로배치(2026-07-04 지시: 타원 내용만 압축, 절약된 높이만큼 페이지 상향).
-          하단 헤어라인 1줄만 유지해 분포 차트와 구분. 색은 누적 건수에만 */}
+      {/* KPI 하이라이트 — 좌=누적 건수는 지배지표: 한 줄 가로배치 유지하되 라벨 15px·숫자 30px로
+          보조 3종보다 크게(2026-07-04 재교정: 헤드라인급 축소 금지). 색은 누적 건수에만 */}
       <section className="border-b border-border pb-3 flex flex-wrap items-end gap-x-8 gap-y-3">
-        {/* 누적 진단 건수 — 라벨·숫자 한 줄, 크기는 보조 KPI와 통일. 오렌지는 이 숫자에만 */}
-        <div className="flex items-baseline gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
-          <span className="flex items-center gap-2 text-[12px] font-bold text-gray tracking-tight whitespace-nowrap">
+        {/* 누적 진단 건수 — 라벨·숫자 한 줄, 지배지표 크기. 오렌지는 이 숫자에만 */}
+        <div className="flex items-baseline gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
+          <span className="flex items-center gap-2 text-[15px] font-bold text-gray tracking-tight whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 animate-pulse motion-reduce:animate-none" title="실시간 집계" />
             누적 진단 건수
           </span>
-          <span className="text-[23px] font-black text-accent tabular-nums leading-none tracking-[-0.02em]">
-            {metrics.totalCount}<span className="text-[13px] font-extrabold text-navy ml-0.5">건</span>
+          <span className="text-[30px] font-black text-accent tabular-nums leading-none tracking-[-0.02em]">
+            {metrics.totalCount}<span className="text-[15px] font-extrabold text-navy ml-1">건</span>
           </span>
         </div>
 
