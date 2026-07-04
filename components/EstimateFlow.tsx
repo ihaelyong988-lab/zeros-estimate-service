@@ -20,11 +20,11 @@ export const EstimateFlow: React.FC = () => {
 
   return (
     <div className="select-none shrink-0">
-      {/* 헤드라인 + 안내 — 폰트 위계 상향(2026-07-03 지시: 박스 내부 가독성) */}
+      {/* 헤드라인 + 안내 — 하단 다크 밴드(제목·지표값 21px)와 폰트 동기화로 상·하 균형(2026-07-04 지시) */}
       <div className="flex items-baseline gap-2.5">
         <span className="w-1.5 h-5 bg-accent rounded-full shrink-0 self-center" />
-        <h2 className="text-[17px] font-black text-navy tracking-tight">견적 작업 FLOW</h2>
-        <span className="text-[13px] font-semibold text-gray">단계를 누르면 내용이 펼쳐집니다</span>
+        <h2 className="text-[21px] font-black text-navy tracking-tight">견적 작업 FLOW</h2>
+        <span className="text-[13.5px] font-semibold text-gray">단계를 누르면 내용이 펼쳐집니다</span>
       </div>
 
       {/* 밑줄 탭 — 박스 대신 인터랙션이 또렷한 탭 레일. 활성=네이비 + 주황 밑줄 */}
@@ -35,7 +35,7 @@ export const EstimateFlow: React.FC = () => {
             type="button"
             onClick={() => setActive(i)}
             style={{ touchAction: 'manipulation' }}
-            className={`flex-1 whitespace-nowrap px-1 py-2.5 text-[14px] -mb-px border-b-[2.5px] transition-colors duration-150 cursor-pointer ${
+            className={`flex-1 whitespace-nowrap px-1 py-2.5 text-[15.5px] -mb-px border-b-[2.5px] transition-colors duration-150 cursor-pointer ${
               i === active
                 ? 'text-navy font-extrabold border-accent'
                 : 'text-gray font-semibold border-transparent hover:text-navy'
