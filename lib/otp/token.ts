@@ -65,3 +65,29 @@ export function checkVerified(token: string, phone: string): boolean {
   const obj = unsign(token);
   return !!(obj && obj.t === 'ok' && obj.phone === phone);
 }
+
+// ==========================================
+// 로그인 세션 토큰 (파일 열람 등 보호 자원 접근용)
+// ==========================================
+// verified 토큰(30분)과 별개로, 로그인 유지 기간 동안 유효한 세션 토큰.
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30일
+
+// 고객 세션 토큰 — OTP 인증 성공 시 발급, 본인 견적서 다운로드에 사용
+export function createSession(phone: string): string {
+  return sign({ t: 'sess', phone, exp: Date.now() + SESSION_TTL_MS });
+}
+
+export function checkSession(token: string, phone: string): boolean {
+  const obj = unsign(token);
+  return !!(obj && obj.t === 'sess' && obj.phone === phone);
+}
+
+// 관리자 세션 토큰 — 비밀번호 검증 성공 시 발급, 전체 파일 열람에 사용
+export function createAdminSession(): string {
+  return sign({ t: 'adm', exp: Date.now() + SESSION_TTL_MS });
+}
+
+export function checkAdminSession(token: string): boolean {
+  const obj = unsign(token);
+  return !!(obj && obj.t === 'adm');
+}

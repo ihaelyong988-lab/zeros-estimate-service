@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
+import { clearAdminToken } from '@/lib/files/secureFile';
 
 export type ActiveTab = 'business' | 'performance' | 'request' | 'home' | 'sop' | 'review' | 'process';
 
@@ -63,6 +64,7 @@ export interface CustomerAuth {
   name: string;
   phone: string;        // 표시용 포맷 (010-0000-0000)
   verifiedAt: string;   // 인증 시각(ISO)
+  sessionToken?: string; // 서버 발급 세션 토큰(30일) — 본인 견적서 파일 열람에 사용
 }
 
 const ShellContext = createContext<ShellContextType | undefined>(undefined);
@@ -91,6 +93,7 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const logoutAdmin = () => {
     setAdminAuthed(false);
+    clearAdminToken(); // 파일 열람용 관리자 토큰도 함께 폐기
     setIsUserMode(true);
   };
   const [activeTab, setActiveTabState] = useState<ActiveTab>('home');

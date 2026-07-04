@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { checkChallenge, createVerified } from '@/lib/otp/token';
+import { checkChallenge, createVerified, createSession } from '@/lib/otp/token';
 
 // POST /api/otp/verify  { phone, code, token }
 // 입력한 인증번호를 검증하고, 성공 시 verified 토큰을 반환한다.
@@ -26,5 +26,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return Response.json({ verifiedToken: createVerified(phone) });
+  // sessionToken: 로그인 유지용(30일) — 본인 견적서 파일 열람 시 서버가 재검증한다.
+  return Response.json({ verifiedToken: createVerified(phone), sessionToken: createSession(phone) });
 }

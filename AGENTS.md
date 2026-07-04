@@ -169,3 +169,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 차단/경고 룰은 §10 가독성 체크리스트와 동기화(role=alert · 대비 4.5:1 · 터치 44px · focus-visible · no-emoji · reduced-motion · tabular-nums).
 - 마감 자기점검에 **"이번 산출물이 검증 루프(--pass)를 통과했는가"** 포함.
 - **성장 게이트(2026-07-02 신설)**: `.claude/hooks/growth-gate.mjs`(Stop) — 오늘 커밋이 있는데 worklog/결정로그/state 기록이 갱신되지 않았으면 마감 차단(세션 2회 cap, `--check` 점검). "작업 후 자동 업데이트"의 기계 강제 — 동일 게이트를 개인용 PMIS·꽁아코스 `scripts/`에도 이식. 표준 절차·개선 프롬프트(자동 견적서 P1 등)는 `docs/OPTIMIZE.md`.
+
+## 12. 파일 업로드·다운로드 데이터 흐름 (2026-07-05 전수 판독 — 재조사 불필요)
+- **업로드는 제출 전 즉시 실행**: `RequestWizard` 파일 선택 → `uploadEstimateFiles`(`lib/supabase/storage.ts`) → Storage 버킷 `estimate-files`의 `drawings|photos|etc|quotes/<ts>-<rand>-<safe>` 경로 + `getPublicUrl` 공개 URL → `FileMeta`. 한도 = `lib/constants/uploadLimits.ts`(카테고리 5·총 15·개당 50MB·합계 100MB).
+- **제출**: `createEstimate`가 `submitted_files` 포함 `zeros_estimates`(id+data jsonb) upsert + 자동 연쇄(`zeros_customers` CRM 누적 · `zeros_notification_logs` 알림 이력 · visit 채널은 `zeros_site_visits`).
+- **관리자 다운로드 가능**: `EstimateDetailModal` 첨부 카드에서 `file_url` 새 창 열람/다운로드 + 관리자 업로드·견적서 xlsx 발송(`estimate_pdf_url` → 고객 마이페이지 노출).
+- **파일 보안(2026-07-05 잠금 완료)**: 버킷 비공개 + 열람은 `/api/files/sign` 서명 URL(10분)로만. 관리자=`/api/admin/login` 서버 검증(비밀번호 env `ZEROS_ADMIN_PASSWORD`, 클라이언트 하드코딩 금지) 후 관리자 토큰 / 고객=OTP `sessionToken`(30일)으로 **본인 건 파일만**. 신규 업로드는 `file_path`만 저장(`file_url`은 레거시 호환 — sign API가 공개 URL에서 경로 추출). 서명에 `SUPABASE_SERVICE_ROLE_KEY`(서버 전용, .env.local+Vercel) 필수. 잠금 SQL = `supabase/supabase-setup.sql` §5(버킷 private + insert만 익명 허용). **새 파일 링크 UI를 만들 때 `<a href={file_url}>` 직결 금지 — `openSecureFile()`(`lib/files/secureFile.ts`) 사용.**
+- **잔여 유의**: 관리자 "삭제"는 `submitted_files` 메타만 제거, Storage 실물은 안 지움(`storage.remove` 미사용) — 비공개 전환 후엔 접근 불가라 위험도 낮음.
+- **오류 원장(2026-07-05)**: `@supabase/supabase-js` 서버 라우트에서 ①클라이언트를 `ReturnType<typeof createClient>`로 타이핑하면 row가 `never` 추론 → 처방: 파라미터는 `SupabaseClient` 타입 임포트로, select 결과는 `as { data: T }[]` 캐스팅. ②제네릭 불일치(`"public"` vs `never`)도 동일 처방.

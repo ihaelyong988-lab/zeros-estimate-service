@@ -74,6 +74,7 @@ export const CustomerLoginModal: React.FC = () => {
         name: name.trim(),
         phone: formatPhone(digits),
         verifiedAt: new Date().toISOString(),
+        sessionToken: data.sessionToken, // 본인 견적서 파일 열람용(서버 재검증)
       });
       reset();
       setShowLogin(false);

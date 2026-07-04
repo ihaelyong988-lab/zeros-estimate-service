@@ -7,6 +7,7 @@ import { uploadEstimateFiles, uploadEstimateFile } from '@/lib/supabase/storage'
 import { draftLineItems, lineAmount, sumSubtotal } from '@/lib/quote/quoteDraft';
 import { buildQuoteXlsxBlob, quoteFileName, downloadBlob } from '@/lib/quote/quoteXlsx';
 import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
+import { openSecureFile } from '@/lib/files/secureFile';
 import { validateFileFormat, ACCEPT_ATTR } from '@/lib/constants/uploadLimits';
 import { TossPaymentModal } from './TossPaymentModal';
 import { PrintableScopeSheet } from './PrintableScopeSheet';
@@ -379,7 +380,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
       await ZerosService.updateEstimate(estimate.id, {
         line_items: quoteItems,
         estimated_amount: quoteTotal,
-        estimate_pdf_url: meta.file_url,
+        estimate_pdf_url: meta.file_path || meta.file_url,
         estimate_sent_at: sentAt,
         status: '견적서 송부완료',
       });
@@ -530,33 +531,31 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                           }`}>
                             {file.file_category}
                           </span>
-                          {file.file_url ? (
-                            <a
-                              href={file.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="truncate text-steel font-bold text-[11px] underline decoration-steel/40 hover:decoration-steel"
-                              title="새 창에서 열기 / 다운로드"
+                          {(file.file_path || file.file_url) ? (
+                            <button
+                              type="button"
+                              onClick={() => openSecureFile(file.file_path || file.file_url).catch(err => alert(err instanceof Error ? err.message : '파일 열람에 실패했습니다.'))}
+                              className="truncate text-steel font-bold text-[11px] underline decoration-steel/40 hover:decoration-steel cursor-pointer text-left"
+                              title="새 창에서 열기 / 다운로드 (관리자 전용)"
                             >
                               {file.file_name}
-                            </a>
+                            </button>
                           ) : (
                             <span className="truncate text-navy font-bold text-[11px]">{file.file_name}</span>
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0 text-gray-light text-[10px] select-none">
                           <span className="mr-1">{new Date(file.uploaded_at).toLocaleDateString()}</span>
-                          {file.file_url && (
-                            <a
-                              href={file.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                          {(file.file_path || file.file_url) && (
+                            <button
+                              type="button"
+                              onClick={() => openSecureFile(file.file_path || file.file_url).catch(err => alert(err instanceof Error ? err.message : '파일 열람에 실패했습니다.'))}
                               style={{ touchAction: 'manipulation' }}
                               className="p-1 hover:bg-border/35 rounded-custom text-steel hover:text-navy transition-colors cursor-pointer"
-                              title="열기 / 다운로드"
+                              title="열기 / 다운로드 (관리자 전용)"
                             >
                               보기
-                            </a>
+                            </button>
                           )}
                           <button
                             type="button"
@@ -867,7 +866,11 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                 {estimate.estimate_pdf_url ? (
                   <>
                     발송 완료{estimate.estimate_sent_at ? ` · ${new Date(estimate.estimate_sent_at).toLocaleString('ko-KR')}` : ''} —{' '}
-                    <a href={estimate.estimate_pdf_url} target="_blank" rel="noopener noreferrer" className="text-steel underline decoration-steel/40 hover:decoration-steel">발송본 열기</a>
+                    <button
+                      type="button"
+                      onClick={() => openSecureFile(estimate.estimate_pdf_url!).catch(err => alert(err instanceof Error ? err.message : '파일 열람에 실패했습니다.'))}
+                      className="text-steel underline decoration-steel/40 hover:decoration-steel cursor-pointer"
+                    >발송본 열기</button>
                   </>
                 ) : (
                   '승인 전에는 고객에게 발송되지 않습니다.'
