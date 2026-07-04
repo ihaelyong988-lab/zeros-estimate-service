@@ -65,6 +65,16 @@ const heatCellStyle = (v: number, max: number, baseHex: string): React.CSSProper
   };
 };
 
+// 섹션 분리선용 공종 8색 미니 스트립 — 헤어라인 좌측에 얹어 "다음 섹션의 색 체계"를 예고하는 미니 범례.
+// 분리선이 전부 같은 회색이라 직관적이지 않다는 지시(2026-07-04)의 처방: 분리선이 다음 내용을 상징한다.
+const TradeStrip: React.FC<{ colors: string[] }> = ({ colors }) => (
+  <span aria-hidden="true" className="absolute -bottom-px left-0 flex h-[2px] w-24 overflow-hidden rounded-full">
+    {colors.map((c, i) => (
+      <span key={i} className="flex-1" style={{ backgroundColor: c }} />
+    ))}
+  </span>
+);
+
 export const PerformanceInsights: React.FC = () => {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -157,17 +167,22 @@ export const PerformanceInsights: React.FC = () => {
   const { metrics, matrix, rowTotal, colTotal, matrixMax, grandTotal, distribution, cards, reviewDoneCount } = agg;
   const reviewDoneRate = grandTotal > 0 ? Math.round((reviewDoneCount / grandTotal) * 100) : 0;
 
+  // 분리선 스트립 색 = 각 섹션에 실제 등장하는 순서 그대로(스트립이 곧 미니 범례가 되도록)
+  const distColors = distribution.map((d) => TRADE_COLORS[d.name] || '#1E4D8C');
+  const workTypeColors = WORK_TYPES.map((w) => TRADE_COLORS[w] || '#1E4D8C');
+  const cardColors = cards.map((c) => TRADE_COLORS[c.name] || '#1E4D8C');
+
   return (
     <div className="flex flex-col gap-3 max-w-5xl mx-auto py-1">
 
       {/* KPI 하이라이트 — 좌=누적 건수는 지배지표: 한 줄 가로배치 유지하되 라벨 15px·숫자 30px로
           보조 3종보다 크게(2026-07-04 재교정: 헤드라인급 축소 금지). 색은 누적 건수에만 */}
-      <section className="border-b border-border pb-3 flex flex-wrap items-end gap-x-8 gap-y-3">
-        {/* 누적 진단 건수 — 라벨·숫자 한 줄, 지배지표 크기. 오렌지는 이 숫자에만 */}
+      <section className="relative border-b border-border pb-3 flex flex-wrap items-end gap-x-8 gap-y-3">
+        {/* 누적 견적 건수 — 라벨·숫자 한 줄, 지배지표 크기. 오렌지는 이 숫자에만 */}
         <div className="flex items-baseline gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
           <span className="flex items-center gap-2 text-[15px] font-bold text-gray tracking-tight whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 animate-pulse motion-reduce:animate-none" title="실시간 집계" />
-            누적 진단 건수
+            누적 견적 건수
           </span>
           <span className="text-[30px] font-black text-accent tabular-nums leading-none tracking-[-0.02em]">
             {metrics.totalCount}<span className="text-[15px] font-extrabold text-navy ml-1">건</span>
@@ -193,15 +208,17 @@ export const PerformanceInsights: React.FC = () => {
             </div>
           ))}
         </div>
+        <TradeStrip colors={distColors} />
       </section>
 
       {/* 분포 차트 — 라이브러리 막대 대신 레일형 에디토리얼 막대.
           높이 296px = 8행 × 히트맵 행 pitch(≈37px) 동기화(2026-07-04 지시: 상·하 행간 통일로 가독성 확보, 224px 규격 대체).
           각 행 = 공종 라벨(우정렬) · 연회색 레일 위 공종 시그니처색 막대 · 값+비중 직접 표기 → 축·격자 없이 즉시 읽힌다 */}
       <div className="flex flex-col gap-2.5">
-        <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-2.5">
+        <h3 className="relative text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-2.5">
           <BarChart3 className="w-4 h-4 text-steel" />
-          공종별 진단 실적 분포 <span className="text-gray font-bold">(건수 · 비중)</span>
+          공종별 견적 실적 분포 <span className="text-gray font-bold">(건수 · 비중)</span>
+          <TradeStrip colors={distColors} />
         </h3>
         <div className="h-[296px] min-w-0 flex flex-col justify-between py-1.5">
           {distribution.map((d) => {
@@ -229,17 +246,23 @@ export const PerformanceInsights: React.FC = () => {
         </div>
       </div>
 
-      {/* 히트맵 박스 — 공종 × 견적규모 */}
-      <div className="flex flex-col gap-4">
-        <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
-          <Grid3x3 className="w-4 h-4 text-steel" />
-          공종 × 견적규모 실적 히트맵 <span className="text-gray-light font-bold">(셀 = 진단 건수)</span>
-        </h3>
+      {/* 히트맵 박스 — 공종 × 견적규모. 제목은 표 좌상단 코너 셀 내장(2026-07-04 지시):
+          제목 행을 없애 세로폭을 절약 → 하단 합계 행이 스크롤 없이 바로 보인다. 섹션 경계는 헤어라인+스트립만 */}
+      <div className="flex flex-col gap-3">
+        <div className="relative border-b border-border/60">
+          <TradeStrip colors={workTypeColors} />
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-[12px]">
             <thead>
               <tr>
-                <th className="sticky left-0 bg-bg p-2 text-left font-bold text-gray-light min-w-[120px]" />
+                <th className="sticky left-0 bg-bg p-2 pr-3 text-left align-middle min-w-[132px]">
+                  <div className="flex items-center gap-1.5 text-[12px] font-extrabold text-navy leading-snug">
+                    <Grid3x3 className="w-4 h-4 text-steel shrink-0" />
+                    <span>공종 × 견적규모<br />실적 히트맵</span>
+                  </div>
+                  <div className="text-[11px] font-bold text-gray mt-1">(셀 = 견적 건수)</div>
+                </th>
                 {BUDGET_COLS.map((c) => (
                   <th key={c.key} className="p-2 text-center font-bold text-navy whitespace-nowrap">
                     <div className="text-[12px] font-black">{c.label}</div>
@@ -303,9 +326,10 @@ export const PerformanceInsights: React.FC = () => {
 
       {/* 하위 세부 박스 — 공종별 세부 항목 */}
       <div className="flex flex-col gap-4">
-        <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
+        <h3 className="relative text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
           <LayoutGrid className="w-4 h-4 text-steel" />
-          공종별 세부 실적 <span className="text-gray-light font-bold">(건수 · 비중 · 평균 검토일 · 대표 현장)</span>
+          공종별 세부 실적 <span className="text-gray font-bold">(건수 · 비중 · 평균 검토일 · 대표 현장)</span>
+          <TradeStrip colors={cardColors} />
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {cards.map((card) => {
