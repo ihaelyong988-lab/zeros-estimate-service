@@ -62,9 +62,10 @@
 - **최신 반영(2026-07-05, 세션 연장):** **PHASE O-21** — **첨부파일 보안 잠금**(사용자: "아무나 열어보면 안 됨, 이력만 노출·관리자만 열람"). ①버킷 비공개 SQL(`supabase-setup.sql` §5) ②서명 URL API `/api/files/sign`(관리자 토큰=전체 / 고객 세션 토큰=본인 건만, 10분 만료, 레거시 공개 URL 호환) ③관리자 비밀번호 서버 이전(`/api/admin/login`, env `ZEROS_ADMIN_PASSWORD`) ④업로드는 `file_path`만 저장(공개 URL 발급 중단) ⑤열람 UI 전부 `openSecureFile()` 경유(관리자 모달·마이페이지). 빌드 0에러·게이트 --pass. **발효 조건(사용자 3단계): Vercel `SUPABASE_SERVICE_ROLE_KEY` 등록 → 배포 → SQL §5 실행.** 커밋 `37f7f9e`. 상세: `docs/_worklog/2026-07-05_작업정리.md` PHASE O-21.
 
 ## 📝 다음 이어서 할 일 (Next Steps)
-0-A. **(발효 대기) 파일 보안 잠금 활성화** — 사용자: ①Supabase service_role 키를 Vercel+`.env.local`의 `SUPABASE_SERVICE_ROLE_KEY`에 등록 ②배포 확인 ③Supabase SQL Editor에서 `supabase-setup.sql` §5 실행(버킷 비공개). 실행 전까지 기존 공개 URL은 계속 열림. 잠금 후 관리자 재로그인 1회 필요.
+0-A. **파일 보안 잠금 = 발효 완료(2026-07-05)** — Vercel `SUPABASE_SERVICE_ROLE_KEY` 등록 확인(실서버 sign API 403 응답으로 증명) + 버킷 비공개 전환을 Storage API로 원격 실행(`public: false` 확인) + 실서버 관리자 로그인→서명 파이프라인 검증 통과·공개 URL 400 차단 확인. **잔여(선택) 1건**: 구 `anon_modify_estimate_files`(익명 update 허용) 정책 제거 — Supabase SQL Editor에서 `drop policy if exists "anon_modify_estimate_files" on storage.objects;` 1줄 실행 권장(REST로 불가, 정책 변경은 SQL만 가능).
+0-B. (구) **(발효 대기) 파일 보안 잠금 활성화** — 사용자: ①Supabase service_role 키를 Vercel+`.env.local`의 `SUPABASE_SERVICE_ROLE_KEY`에 등록 ②배포 확인 ③Supabase SQL Editor에서 `supabase-setup.sql` §5 실행(버킷 비공개). 실행 전까지 기존 공개 URL은 계속 열림. 잠금 후 관리자 재로그인 1회 필요.
 0. **(보류 중) 휴대폰 앱 — 긴 프로젝트 제목 2줄 분리 이슈**: 제목 길이 무관 최상단 1줄 노출 요청. 대상 화면(검토 패널/공종 상세 본문/관리자 상세 모달/마이페이지 카드)과 동작 방식(말줄임 vs 상단고정 2줄허용) 사용자 확인 대기.
-1. **(우선) 사용자 시크릿 창 확인** — 배포 후 "똑같다"는 대부분 PWA 캐시. 확인 결과에 따라 미세조정(AGENTS.md §8). 최신 배포분 = **O-20 실적 화면(견적 용어 통일·8색 스트립 분리선·히트맵 코너 제목·합계 노출)**. 그 외 **PHASE O-8 견적문의 새 동선**(2채널 선택→예약방문) 실기기 확인 + OTP 서버 설정 여부(③ 로그인 게이트 작동 조건) 점검.
+1. **(우선) 사용자 기기 캐시 해소 확인** — **2026-07-05 원격 판정 완료: 배포 정상**(라이브 청크에 O-20 신규 문구 존재·구 문구 0건, AGENTS §8 원격 판정법). "변화 없음"의 원인 = 기기 캐시. 조치: 시크릿 창(Ctrl+Shift+R) 또는 설치형 PWA **완전 종료 후 2회 실행**(1회차 kill-switch SW가 캐시 정리 → 2회차 새 화면). 그래도 구화면이면 보이는 헤드라인 문구 1줄+주소 확인(§8). 그 외 **PHASE O-8 견적문의 새 동선**(2채널 선택→예약방문) 실기기 확인 + OTP 서버 설정 여부(③ 로그인 게이트 작동 조건) 점검.
 2. est-test-* 테스트행 실런칭 전 일괄 삭제: `delete from zeros_estimates where id like 'est-test-%'`.
 3. ~~견적검토 실사 사진 연결~~ → **완료(2026-07-04 O-17, Pexels 16장)**. 남은 후속: 자사 현장 사진 확보 시 `public/images/trades/` 파일 교체(경로 유지).
 4. 2차 Toss Payments 실서버 연동 / 알림톡 SMTP 실서버 연동.
