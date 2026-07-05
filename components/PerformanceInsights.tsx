@@ -175,23 +175,16 @@ export const PerformanceInsights: React.FC = () => {
   return (
     <div className="flex flex-col gap-3 max-w-5xl mx-auto py-1">
 
-      {/* KPI 하이라이트 — 좌=누적 건수는 지배지표: 한 줄 가로배치 유지하되 라벨 15px·숫자 30px로
-          보조 3종보다 크게(2026-07-04 재교정: 헤드라인급 축소 금지). 색은 누적 건수에만 */}
-      <section className="relative border-b border-border pb-3 flex flex-wrap items-end gap-x-8 gap-y-3">
-        {/* 누적 견적 건수 — 라벨·숫자 한 줄, 지배지표 크기. 오렌지는 이 숫자에만 */}
-        <div className="flex items-baseline gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
-          <span className="flex items-center gap-2 text-[15px] font-bold text-gray tracking-tight whitespace-nowrap">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 animate-pulse motion-reduce:animate-none" title="실시간 집계" />
-            누적 견적 건수
-          </span>
-          <span className="text-[30px] font-black text-accent tabular-nums leading-none tracking-[-0.02em]">
-            {metrics.totalCount}<span className="text-[15px] font-extrabold text-navy ml-1">건</span>
-          </span>
-        </div>
-
-        {/* 보조 3종 — 라벨 단축·숫자/여백 축소로 컴팩트하게. 무채색, 우측 클러스터 */}
+      {/* 최상단 한 행 — 좌=분포 헤더(상단 이동, 2026-07-05 지시) / 우=KPI 4종 균일 클러스터
+          (좌측 지배 KPI 블록 삭제 → "견적 건수"를 보조와 동일 스타일로 편입, 세로폭 확보) */}
+      <section className="relative border-b border-border pb-2.5 flex flex-wrap items-end gap-x-8 gap-y-3">
+        <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5">
+          <BarChart3 className="w-4 h-4 text-steel" />
+          공종별 견적 실적 분포 <span className="text-gray font-bold">(건수 · 비중)</span>
+        </h3>
         <div className="flex items-end gap-x-6 gap-y-3 ml-auto">
           {[
+            { label: '견적 건수', value: metrics.totalCount, unit: '건' },
             { label: '검토 비율', value: reviewDoneRate, unit: '%' },
             { label: '평균 소요', value: metrics.averageProcessDays, unit: '일' },
             { label: '공종 수', value: WORK_TYPES.length, unit: '종' },
@@ -211,16 +204,10 @@ export const PerformanceInsights: React.FC = () => {
         <TradeStrip colors={distColors} />
       </section>
 
-      {/* 분포 차트 — 라이브러리 막대 대신 레일형 에디토리얼 막대.
-          높이 296px = 8행 × 히트맵 행 pitch(≈37px) 동기화(2026-07-04 지시: 상·하 행간 통일로 가독성 확보, 224px 규격 대체).
-          각 행 = 공종 라벨(우정렬) · 연회색 레일 위 공종 시그니처색 막대 · 값+비중 직접 표기 → 축·격자 없이 즉시 읽힌다 */}
+      {/* 분포 차트 — 레일형 에디토리얼 막대. 높이 240px = 8행 × 히트맵 축소 행 pitch(≈30px) 동기화
+          (2026-07-05 지시: 헤더 상단 이동 + 행 압축으로 히트맵 합계 행 첫 화면 노출) */}
       <div className="flex flex-col gap-2.5">
-        <h3 className="relative text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-2.5">
-          <BarChart3 className="w-4 h-4 text-steel" />
-          공종별 견적 실적 분포 <span className="text-gray font-bold">(건수 · 비중)</span>
-          <TradeStrip colors={distColors} />
-        </h3>
-        <div className="h-[296px] min-w-0 flex flex-col justify-between py-1.5">
+        <div className="h-[240px] min-w-0 flex flex-col justify-between py-1.5">
           {distribution.map((d) => {
             const hex = TRADE_COLORS[d.name] || '#1E4D8C';
             const maxCount = distribution[0]?.value ?? 0;
@@ -257,11 +244,11 @@ export const PerformanceInsights: React.FC = () => {
             <thead>
               <tr>
                 <th className="sticky left-0 bg-bg p-2 pr-3 text-left align-middle min-w-[132px]">
-                  <div className="flex items-center gap-1.5 text-[12px] font-extrabold text-navy leading-snug">
+                  {/* 코너 제목 — "실적 히트맵"만 크게(2026-07-05 지시: 부제·캡션 삭제) */}
+                  <div className="flex items-center gap-1.5 text-[14px] font-extrabold text-navy leading-snug whitespace-nowrap">
                     <Grid3x3 className="w-4 h-4 text-steel shrink-0" />
-                    <span>공종 × 견적규모<br />실적 히트맵</span>
+                    실적 히트맵
                   </div>
-                  <div className="text-[11px] font-bold text-gray mt-1">(셀 = 견적 건수)</div>
                 </th>
                 {BUDGET_COLS.map((c) => (
                   <th key={c.key} className="p-2 text-center font-bold text-navy whitespace-nowrap">
@@ -278,7 +265,7 @@ export const PerformanceInsights: React.FC = () => {
                 return (
                 <tr key={w}>
                   <td
-                    className="sticky left-0 bg-bg p-2 pl-3 font-bold text-navy whitespace-nowrap border-t border-border/50"
+                    className="sticky left-0 bg-bg py-1.5 px-2 pl-3 font-bold text-navy whitespace-nowrap border-t border-border/50"
                     style={{ borderLeft: `3px solid ${rowHex}` }}
                   >
                     {w}
@@ -292,22 +279,22 @@ export const PerformanceInsights: React.FC = () => {
                         style={heatCellStyle(v, matrixMax, rowHex)}
                         title={`${w} · ${c.label}: ${v}건`}
                       >
-                        <div className="py-2.5 font-black tabular-nums">{v > 0 ? v : '·'}</div>
+                        <div className="py-1.5 font-black tabular-nums">{v > 0 ? v : '·'}</div>
                       </td>
                     );
                   })}
-                  <td className="p-2 text-center font-black text-steel tabular-nums border-t border-border/50">{rowTotal[w]}</td>
+                  <td className="py-1.5 px-2 text-center font-black text-steel tabular-nums border-t border-border/50">{rowTotal[w]}</td>
                 </tr>
                 );
               })}
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-border">
-                <td className="sticky left-0 bg-bg p-2 font-black text-navy">합계</td>
+                <td className="sticky left-0 bg-bg py-1.5 px-2 font-black text-navy">합계</td>
                 {BUDGET_COLS.map((c) => (
-                  <td key={c.key} className="p-2 text-center font-black text-navy tabular-nums">{colTotal[c.key]}</td>
+                  <td key={c.key} className="py-1.5 px-2 text-center font-black text-navy tabular-nums">{colTotal[c.key]}</td>
                 ))}
-                <td className="p-2 text-center font-black text-accent tabular-nums">{grandTotal}</td>
+                <td className="py-1.5 px-2 text-center font-black text-accent tabular-nums">{grandTotal}</td>
               </tr>
             </tfoot>
           </table>
