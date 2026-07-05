@@ -121,6 +121,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **헤드리스 프리뷰(`preview_*`)는 신뢰 불가**: 이 앱은 `AppShell`이 `layoutReady`(rAF)까지 스플래시를 띄우는데, 헤드리스 탭은 백그라운드 rAF 스로틀로 **스플래시에서 멈춘다**(스크린샷 타임아웃). → 시각 검증은 **(a) `npm run build` 0에러 + (b) `show_widget` 시안**으로 대체한다. 프리뷰 스크린샷에 매달리지 말 것.
 - **배포 후 "똑같다" 1순위 원인 = PWA/브라우저 캐시.** 코드·배포는 정상인데(커밋 해시로 증명) 캐시가 옛 화면을 보여준다. → 사용자에게 **시크릿(incognito) 창 / 하드리프레시(Ctrl+Shift+R)** 로 확인 요청. 설치형 PWA면 완전 종료 후 재실행.
 - **"똑같다" 보고가 오면 코드부터 고치지 않는다.** 먼저 **(1) 지금 보이는 헤드라인 문구 한 줄, (2) 보는 주소(`zerospipe.co.kr` vs localhost)** 를 확인해 **캐시인지 기대 불일치인지** 가린 뒤 움직인다.
+- **원격 판정법(2026-07-05 확정 — "전부 변화 없음" 보고를 1회에 격리):** `curl -s https://zerospipe.co.kr` → HTML 속 `/_next/static/chunks/*.js` 전부 내려받아 **이번 변경의 마커 문자열 grep**(신규 문구 존재 + 구 문구 0건). ①마커 있음 = 배포 정상 → 원인은 기기 캐시(시크릿 창·Ctrl+Shift+R·설치형 PWA는 완전 종료 후 **2회** 실행 — 1회차에 kill-switch SW가 캐시를 지우고 2회차에 새 화면) ②마커 없음 = 배포 실패 → Vercel/원격 조사로 전환. 코드 수정은 항상 그 다음이다. (git 동기는 `git log origin/master -1`로 별도 확인.)
 - **라이브 도메인**: `zerospipe.co.kr`(프로젝트 폴더명과 동일). 배포 = master 푸시 → 호스팅 자동.
 - **마감처리 git은 단계별 출력을 확인**한다. 여러 명령을 한 줄로 묶을 때 도구 호출이 깨져 **푸시가 안 나가는 일**이 있었음(2026-06-27) → `push`/`merge` 결과(`xxx..yyy master -> master`)를 **눈으로 확인**하고 보고.
 
@@ -177,3 +178,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **파일 보안(2026-07-05 잠금 완료)**: 버킷 비공개 + 열람은 `/api/files/sign` 서명 URL(10분)로만. 관리자=`/api/admin/login` 서버 검증(비밀번호 env `ZEROS_ADMIN_PASSWORD`, 클라이언트 하드코딩 금지) 후 관리자 토큰 / 고객=OTP `sessionToken`(30일)으로 **본인 건 파일만**. 신규 업로드는 `file_path`만 저장(`file_url`은 레거시 호환 — sign API가 공개 URL에서 경로 추출). 서명에 `SUPABASE_SERVICE_ROLE_KEY`(서버 전용, .env.local+Vercel) 필수. 잠금 SQL = `supabase/supabase-setup.sql` §5(버킷 private + insert만 익명 허용). **새 파일 링크 UI를 만들 때 `<a href={file_url}>` 직결 금지 — `openSecureFile()`(`lib/files/secureFile.ts`) 사용.**
 - **잔여 유의**: 관리자 "삭제"는 `submitted_files` 메타만 제거, Storage 실물은 안 지움(`storage.remove` 미사용) — 비공개 전환 후엔 접근 불가라 위험도 낮음.
 - **오류 원장(2026-07-05)**: `@supabase/supabase-js` 서버 라우트에서 ①클라이언트를 `ReturnType<typeof createClient>`로 타이핑하면 row가 `never` 추론 → 처방: 파라미터는 `SupabaseClient` 타입 임포트로, select 결과는 `as { data: T }[]` 캐스팅. ②제네릭 불일치(`"public"` vs `never`)도 동일 처방.
+- **오류 원장(2026-07-05 ②)**: 신형 Supabase 키(`sb_secret_*`)로 REST 직접 호출 시 `Authorization: Bearer` 단독은 `Invalid Compact JWS` 403 → 처방: **`apikey: <sb_secret_키>` 헤더로 호출**. supabase-js `createClient(url, key)`는 자동 처리되므로 앱 코드는 수정 불필요.
