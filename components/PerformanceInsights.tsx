@@ -170,7 +170,6 @@ export const PerformanceInsights: React.FC = () => {
   // 분리선 스트립 색 = 각 섹션에 실제 등장하는 순서 그대로(스트립이 곧 미니 범례가 되도록)
   const distColors = distribution.map((d) => TRADE_COLORS[d.name] || '#1E4D8C');
   const workTypeColors = WORK_TYPES.map((w) => TRADE_COLORS[w] || '#1E4D8C');
-  const cardColors = cards.map((c) => TRADE_COLORS[c.name] || '#1E4D8C');
 
   return (
     <div className="flex flex-col gap-3 max-w-5xl mx-auto py-1">
@@ -178,9 +177,9 @@ export const PerformanceInsights: React.FC = () => {
       {/* 최상단 한 행 — 좌=분포 헤더(상단 이동, 2026-07-05 지시) / 우=KPI 4종 균일 클러스터
           (좌측 지배 KPI 블록 삭제 → "견적 건수"를 보조와 동일 스타일로 편입, 세로폭 확보) */}
       <section className="relative border-b border-border pb-2.5 flex flex-wrap items-end gap-x-8 gap-y-3">
-        <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5">
-          <BarChart3 className="w-4 h-4 text-steel" />
-          공종별 견적 실적 분포 <span className="text-gray font-bold">(건수 · 비중)</span>
+        <h3 className="text-[23px] font-extrabold text-navy flex items-center gap-2 leading-none tracking-[-0.01em]">
+          <BarChart3 className="w-5 h-5 text-steel" />
+          실적 분포
         </h3>
         <div className="flex items-end gap-x-6 gap-y-3 ml-auto">
           {[
@@ -245,8 +244,8 @@ export const PerformanceInsights: React.FC = () => {
               <tr>
                 <th className="sticky left-0 bg-bg p-2 pr-3 text-left align-middle min-w-[132px]">
                   {/* 코너 제목 — "실적 히트맵"만 크게(2026-07-05 지시: 부제·캡션 삭제) */}
-                  <div className="flex items-center gap-1.5 text-[14px] font-extrabold text-navy leading-snug whitespace-nowrap">
-                    <Grid3x3 className="w-4 h-4 text-steel shrink-0" />
+                  <div className="flex items-center gap-2 text-[23px] font-extrabold text-navy leading-none tracking-[-0.01em] whitespace-nowrap">
+                    <Grid3x3 className="w-5 h-5 text-steel shrink-0" />
                     실적 히트맵
                   </div>
                 </th>
@@ -313,16 +312,15 @@ export const PerformanceInsights: React.FC = () => {
 
       {/* 하위 세부 박스 — 공종별 세부 항목 */}
       <div className="flex flex-col gap-4">
-        <h3 className="relative text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
+        <h3 className="text-[14px] font-extrabold text-navy flex items-center gap-1.5 border-b border-border/60 pb-3">
           <LayoutGrid className="w-4 h-4 text-steel" />
           공종별 세부 실적 <span className="text-gray font-bold">(건수 · 비중 · 평균 검토일 · 대표 현장)</span>
-          <TradeStrip colors={cardColors} />
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {cards.map((card) => {
             const cardHex = TRADE_COLORS[card.name] || '#1E4D8C';
             return (
-            <div key={card.name} className="border-t-2 pt-3 flex flex-col gap-2" style={{ borderTopColor: cardHex }}>
+            <div key={card.name} className="pt-1 flex flex-col gap-2">
               <div className="flex items-start justify-between gap-2">
                 <span className="text-[13px] font-black text-navy leading-tight flex items-start gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: cardHex }} />
