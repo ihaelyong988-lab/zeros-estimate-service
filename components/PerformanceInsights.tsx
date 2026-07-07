@@ -206,14 +206,16 @@ export const PerformanceInsights: React.FC = () => {
       {/* 분포 차트 — 레일형 에디토리얼 막대. 높이 240px = 8행 × 히트맵 축소 행 pitch(≈30px) 동기화
           (2026-07-05 지시: 헤더 상단 이동 + 행 압축으로 히트맵 합계 행 첫 화면 노출) */}
       <div className="flex flex-col gap-2.5">
-        <div className="h-[240px] min-w-0 flex flex-col justify-between py-1.5">
+        <div className="h-[240px] min-w-0 flex flex-col py-1.5">
           {distribution.map((d) => {
             const hex = TRADE_COLORS[d.name] || '#1E4D8C';
             const maxCount = distribution[0]?.value ?? 0;
             const widthPct = maxCount > 0 ? Math.max((d.value / maxCount) * 100, d.value > 0 ? 3 : 0) : 0;
             const share = grandTotal > 0 ? Math.round((d.value / grandTotal) * 1000) / 10 : 0;
             return (
-              <div key={d.name} className="grid grid-cols-[132px_1fr_92px] items-center gap-2.5" title={`${d.name} · ${d.value}건 (${share}%)`}>
+              <div key={d.name} className="grid grid-cols-[3px_121px_1fr_92px] items-center gap-2.5 flex-1 min-h-0" title={`${d.name} · ${d.value}건 (${share}%)`}>
+                {/* 좌측 색선 — 히트맵 행 좌측 보더처럼 행 전체 높이로 맞닿아 하나의 수직 일직선(2026-07-07 지시) */}
+                <span className="w-[3px] self-stretch" style={{ background: hex }} />
                 <span className="text-[12px] font-bold text-navy text-right leading-tight whitespace-nowrap truncate pr-0.5">{d.name}</span>
                 <div className="relative h-[14px] rounded-[3px] bg-[#EFF3F8] overflow-hidden">
                   <div
@@ -229,6 +231,10 @@ export const PerformanceInsights: React.FC = () => {
               </div>
             );
           })}
+        </div>
+        {/* 막대 하단 스트립 — 상단 헤더(L203)와 대칭, 분포 순서 8색 (2026-07-07 지시) */}
+        <div className="relative border-b border-border/60">
+          <TradeStrip colors={distColors} />
         </div>
       </div>
 
@@ -298,15 +304,9 @@ export const PerformanceInsights: React.FC = () => {
             </tfoot>
           </table>
         </div>
-        {/* 범례 — 셀 색 = 공종별 시그니처, 진할수록 건수 많음(막대그래프와 동일 색 체계) */}
-        <div className="flex items-center gap-2 text-[12px] text-gray font-semibold">
-          <span>셀 색 = 공종별 · 적음</span>
-          <div className="flex h-2.5 w-24 rounded-full overflow-hidden border border-border/60">
-            {[0.16, 0.35, 0.54, 0.72, 0.9].map((a) => (
-              <div key={a} className="flex-1" style={{ backgroundColor: `rgba(91,101,115,${a})` }} />
-            ))}
-          </div>
-          <span>많음</span>
+        {/* 히트맵 하단 스트립 — 상단(L239)과 대칭, 공종 8색. 밀도 범례는 삭제(2026-07-07 "X표시 삭제") */}
+        <div className="relative border-b border-border/60">
+          <TradeStrip colors={workTypeColors} />
         </div>
       </div>
 
