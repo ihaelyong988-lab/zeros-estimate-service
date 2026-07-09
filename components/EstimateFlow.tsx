@@ -20,15 +20,14 @@ export const EstimateFlow: React.FC = () => {
 
   return (
     <div className="select-none shrink-0">
-      {/* 헤드라인 + 안내 — 하단 다크 밴드(제목·지표값 21px)와 폰트 동기화로 상·하 균형(2026-07-04 지시) */}
+      {/* 헤드라인 — 좌측 CAPEX 타이틀(26px)과 폰트 동기화, 부제 삭제(2026-07-09 캡쳐 지시) */}
       <div className="flex items-baseline gap-2.5">
-        <span className="w-1.5 h-5 bg-accent rounded-full shrink-0 self-center" />
-        <h2 className="text-[21px] font-black text-navy tracking-tight">견적 작업 FLOW</h2>
-        <span className="text-[13.5px] font-semibold text-gray">단계를 누르면 내용이 펼쳐집니다</span>
+        <span className="w-1.5 h-6 bg-accent rounded-full shrink-0 self-center" />
+        <h2 className="text-[26px] font-black text-navy tracking-tight">견적 작업 FLOW</h2>
       </div>
 
-      {/* 밑줄 탭 — 박스 대신 인터랙션이 또렷한 탭 레일. 활성=네이비 + 주황 밑줄 */}
-      <div className="flex gap-0.5 mt-3.5 border-b border-border">
+      {/* 밑줄 탭 — 박스 대신 인터랙션이 또렷한 탭 레일. 활성=네이비 + 주황 밑줄 (제목 26px에 맞춰 mt-4 호흡) */}
+      <div className="flex gap-0.5 mt-4 border-b border-border">
         {FLOW_STEPS.map((s, i) => (
           <button
             key={s.k}
