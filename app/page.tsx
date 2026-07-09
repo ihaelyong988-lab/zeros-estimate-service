@@ -1743,9 +1743,9 @@ export default function Home() {
 
             {/* 우 — Benefit 단일 주인공: 검토 후 최적화율(대형) + before→after 시각화. 지시③: 결과 지표·고객 benefit 그래프 */}
             <div className="flex flex-col min-w-0">
-              {/* 패널 제목 + 고객 benefit 3줄 — 좌측 타이틀(26px)과 대칭 폰트 + 세로 호흡 확대·전체 살짝 하향(2026-07-04 지시) */}
-              <h2 className="pt-2 text-[26px] font-black text-navy tracking-tight leading-tight break-keep">사전 견적 후 결과 지표</h2>
-              <ul className="mt-3.5 flex flex-col gap-2.5">
+              {/* 패널 제목 + 고객 benefit 3줄 — 좌측 CAPEX 타이틀과 상단선 정렬(pt 제거, 2026-07-09 캡쳐 지시) + 대칭 폰트(26px) */}
+              <h2 className="text-[26px] font-black text-navy tracking-tight leading-tight break-keep">사전 견적 후 결과 지표</h2>
+              <ul className="mt-4 flex flex-col gap-2.5">
                 {[
                   '사전 견적을 통한 공사 이해도 향상',
                   '유스케이스 검토에 의한 안심 예산 책정',
@@ -1753,7 +1753,7 @@ export default function Home() {
                 ].map((benefit) => (
                   <li key={benefit} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-500" style={{ backgroundColor: sigHex }} />
-                    <span className="text-[15px] font-semibold text-gray leading-snug break-keep">{benefit}</span>
+                    <span className="text-[16px] font-semibold text-gray leading-snug break-keep">{benefit}</span>
                   </li>
                 ))}
               </ul>
