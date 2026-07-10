@@ -1,8 +1,8 @@
 'use client';
 
 import { Estimate, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
-import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits, testEstimates } from './mock-data';
-import { getSupabase, isSupabaseEnabled } from './supabaseBrowser';
+import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits } from './mock-data';
+import { isSupabaseEnabled } from './supabaseBrowser';
 
 // ==========================================
 // 1. ZEROS 사전진단 데이터 서비스 표준 인터페이스
@@ -11,8 +11,9 @@ export interface ZerosDataService {
   // 견적 관련
   getEstimates: () => Promise<Estimate[]>;
   getEstimateById: (id: string) => Promise<Estimate | null>;
-  createEstimate: (estimate: Partial<Estimate>) => Promise<Estimate>;
+  createEstimate: (estimate: Partial<Estimate>, opts?: { visit?: Partial<SiteVisit> }) => Promise<Estimate>;
   updateEstimate: (id: string, updates: Partial<Estimate>) => Promise<Estimate>;
+  deleteEstimate: (id: string) => Promise<void>;
 
   // 결제 관련
   getPayments: () => Promise<Payment[]>;
@@ -71,7 +72,7 @@ abstract class BaseZerosService implements ZerosDataService {
     return list.find(e => e.id === id) || null;
   }
 
-  async createEstimate(estimate: Partial<Estimate>): Promise<Estimate> {
+  async createEstimate(estimate: Partial<Estimate>, opts?: { visit?: Partial<SiteVisit> }): Promise<Estimate> {
     // 연락처 검증: 폼에서 필수·인증되지만, 누락/형식오류 시 가짜번호(010-0000-0000) 저장을 방지한다.
     const phone = (estimate.phone || '').trim();
     if (!/^01[0-9]{8,9}$/.test(phone.replace(/[^0-9]/g, ''))) {
@@ -120,6 +121,11 @@ abstract class BaseZerosService implements ZerosDataService {
 
     // 가상 접수 알림 로그 발송 처리
     await this.triggerNotification(newEstimate, '접수완료');
+
+    // 예약방문 신청(출장 채널)이 함께 오면 방문 이력을 기록한다.
+    if (opts?.visit && opts.visit.visit_date) {
+      await this.createSiteVisit({ ...opts.visit, estimate_id: newEstimate.id });
+    }
 
     return newEstimate;
   }
@@ -183,8 +189,9 @@ abstract class BaseZerosService implements ZerosDataService {
     list[idx] = updated;
     await this.persistTable(TABLES.estimates, list);
 
-    // 고객 통계 리액티브 동기화
-    await this.syncCustomerForEstimate(updated);
+    // 고객 통계 동기화 — 수주성공 상태 '전이'가 있을 때만 won 지표를 갱신한다.
+    // (과거엔 매 저장마다 total_requests·total_won 을 무조건 +1 해 CRM 수치가 오염됐다.)
+    await this.syncCustomerOnStatusChange(original, updated);
 
     // 상태 변경 시 알림 로그 자동 트리거
     if (updates.status && original.status !== updates.status) {
@@ -192,6 +199,48 @@ abstract class BaseZerosService implements ZerosDataService {
     }
 
     return updated;
+  }
+
+  // 견적 상태 변경 시 고객 수주 통계를 멱등하게 반영한다(의뢰 건수는 접수 시에만 증가).
+  private async syncCustomerOnStatusChange(original: Estimate, updated: Estimate) {
+    const wonBefore = original.status === '수주성공';
+    const wonNow = updated.status === '수주성공';
+    if (wonBefore === wonNow) return; // 수주 상태 전이가 없으면 통계 변화 없음
+
+    const customers = await this.loadTable<Customer>(TABLES.customers);
+    const existing = customers.find(c => c.phone === updated.phone);
+    if (!existing) return;
+
+    const amount = updated.confirmed_contract_amount || 0;
+    if (wonNow && !wonBefore) {
+      existing.total_won += 1;
+      existing.total_revenue += amount;
+      existing.customer_grade = '수주고객';
+    } else if (!wonNow && wonBefore) {
+      // 수주성공 → 다른 상태로 되돌림: 앞서 더한 값을 상쇄
+      existing.total_won = Math.max(0, existing.total_won - 1);
+      existing.total_revenue = Math.max(0, existing.total_revenue - amount);
+    }
+    existing.last_contact_at = new Date().toISOString();
+    await this.persistTable(TABLES.customers, customers);
+  }
+
+  // ---------- 견적 삭제 ----------
+  // Mock(localStorage)에서는 전체 배열을 다시 저장하므로 필터링만으로 삭제가 반영된다.
+  // Supabase 서비스는 이 메서드를 오버라이드해 서버 delete op 를 호출한다.
+  async deleteEstimate(id: string): Promise<void> {
+    const [ests, pays, visits, logs] = await Promise.all([
+      this.getEstimates(),
+      this.getPayments(),
+      this.getSiteVisits(),
+      this.getNotificationLogs(),
+    ]);
+    await Promise.all([
+      this.persistTable(TABLES.estimates, ests.filter(e => e.id !== id)),
+      this.persistTable(TABLES.payments, pays.filter(p => p.estimate_id !== id)),
+      this.persistTable(TABLES.siteVisits, visits.filter(v => v.estimate_id !== id)),
+      this.persistTable(TABLES.notificationLogs, logs.filter(l => l.estimate_id !== id)),
+    ]);
   }
 
   private async triggerNotification(est: Estimate, status: string) {
@@ -454,62 +503,74 @@ class MockZerosService extends BaseZerosService {
 }
 
 // ==========================================
-// 4. Supabase 기반 영속 서비스 (실제 클라우드 저장)
+// 4. Supabase 기반 영속 서비스 (서버 게이트웨이 경유)
 // ==========================================
-// 각 테이블은 { id text PK, data jsonb, created_at timestamptz } 스키마를 사용한다.
-// 전체 배열을 upsert(onConflict: id) 하여 메모리 상태를 클라우드에 반영한다.
+// 브라우저에서 anon 키로 테이블을 직접 읽고 쓰던 구조(전 고객 PII 공개 노출)를 폐기하고,
+// 모든 데이터 입출력을 /api/data(service_role + 신원 검증)로 우회한다.
+//  - 읽기: 관리자=전체 / 고객=본인 건 / 익명=개인정보 제거 분석 행
+//  - 쓰기: 관리자 전용 (upsert)
+//  - 공개 접수: OTP 토큰 검증 후 서버가 단건 생성(createEstimate)
 class SupabaseZerosService extends BaseZerosService {
-  private seededAdmins = false;
-  private seededTestData = false;
+  // 브라우저에 저장된 신원 토큰을 요청 본문에 실어 서버가 권한을 판정하게 한다.
+  private authBody(): { adminToken?: string; sessionToken?: string; phone?: string } {
+    if (typeof window === 'undefined') return {};
+    const adminToken = localStorage.getItem('zeros_admin_token') || undefined;
+    let sessionToken: string | undefined;
+    let phone: string | undefined;
+    try {
+      const raw = localStorage.getItem('zeros_customer_auth');
+      if (raw) {
+        const a = JSON.parse(raw) as { sessionToken?: string; phone?: string };
+        sessionToken = a.sessionToken || undefined;
+        phone = a.phone || undefined;
+      }
+    } catch {
+      // 저장값 파싱 실패는 비인증으로 간주
+    }
+    return { adminToken, sessionToken, phone };
+  }
+
+  private async postData<R>(payload: Record<string, unknown>): Promise<R> {
+    const res = await fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, ...this.authBody() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error((data as { error?: string }).error || '데이터 요청에 실패했습니다.');
+    }
+    return data as R;
+  }
 
   protected async loadTable<T>(key: string): Promise<T[]> {
-    const supabase = getSupabase();
-    if (!supabase) return [];
-
-    // 관리자 계정은 최초 1회 시드 (없으면 기본 계정 주입)
-    if (key === TABLES.adminUsers && !this.seededAdmins) {
-      this.seededAdmins = true;
-      const { data } = await supabase.from(key).select('id').limit(1);
-      if (!data || data.length === 0) {
-        await this.persistTable(TABLES.adminUsers, mockAdminUsers);
-      }
-    }
-
-    // 실적 시각화용 테스트 표본(공종별 10~15건) — 클라우드에 없을 때만 최초 1회 시드.
-    // 고정 id(est-test-*)라 멱등하며, 실제 접수 건(다른 id)은 건드리지 않는다. 추후 접두어로 일괄 삭제 가능.
-    if (key === TABLES.estimates && !this.seededTestData) {
-      this.seededTestData = true;
-      const { data: existing } = await supabase.from(key).select('id').like('id', 'est-test-%').limit(1);
-      if (!existing || existing.length === 0) {
-        await this.persistTable(TABLES.estimates, testEstimates);
-      }
-    }
-
-    const { data, error } = await supabase
-      .from(key)
-      .select('data, created_at')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error(`[Supabase] ${key} 로드 실패:`, error.message);
+    try {
+      const { rows } = await this.postData<{ rows: T[] }>({ op: 'list', table: key });
+      return rows || [];
+    } catch (e) {
+      console.error(`[Data] ${key} 로드 실패:`, e instanceof Error ? e.message : e);
       return [];
     }
-    return (data || []).map(row => row.data as T);
   }
 
   protected async persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void> {
-    const supabase = getSupabase();
-    if (!supabase) return;
-
     if (rows.length === 0) return;
+    await this.postData<{ ok: boolean }>({ op: 'upsert', table: key, rows });
+  }
 
-    const payload = rows.map(r => ({ id: r.id, data: r }));
-    const { error } = await supabase.from(key).upsert(payload, { onConflict: 'id' });
+  // 공개 접수는 서버가 인증 검증 + 접수번호 채번 + 단건 생성을 수행한다.
+  async createEstimate(estimate: Partial<Estimate>, opts?: { visit?: Partial<SiteVisit> }): Promise<Estimate> {
+    const { estimate: created } = await this.postData<{ estimate: Estimate }>({
+      op: 'createEstimate',
+      estimate,
+      visit: opts?.visit,
+    });
+    return created;
+  }
 
-    if (error) {
-      console.error(`[Supabase] ${key} 저장 실패:`, error.message);
-      throw new Error(`데이터 저장 실패(${key}): ${error.message}`);
-    }
+  // 삭제는 upsert 로 표현할 수 없으므로 서버 delete op(관리자 전용)로 위임한다.
+  async deleteEstimate(id: string): Promise<void> {
+    await this.postData<{ ok: boolean }>({ op: 'deleteEstimate', id });
   }
 }
 

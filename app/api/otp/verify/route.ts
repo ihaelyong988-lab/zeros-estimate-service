@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { checkChallenge, createVerified, createSession } from '@/lib/otp/token';
+import { rateLimit, clientIp } from '@/lib/otp/rateLimit';
 
 // POST /api/otp/verify  { phone, code, token }
 // 입력한 인증번호를 검증하고, 성공 시 verified 토큰을 반환한다.
@@ -17,6 +18,17 @@ export async function POST(req: NextRequest) {
 
   if (!token || code.length < 6) {
     return Response.json({ error: '인증번호 6자리를 입력해 주세요.' }, { status: 400 });
+  }
+
+  // 브루트포스 완화 — 번호·IP별 시도 횟수 제한(10분 내 번호당 5회, IP당 30회)
+  const ip = clientIp(req);
+  const byPhone = rateLimit(`verify:phone:${phone}`, 5, 10 * 60 * 1000);
+  const byIp = rateLimit(`verify:ip:${ip}`, 30, 10 * 60 * 1000);
+  if (!byPhone.ok || !byIp.ok) {
+    return Response.json(
+      { error: '인증 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.' },
+      { status: 429, headers: { 'Retry-After': String(Math.max(byPhone.retryAfterSec, byIp.retryAfterSec)) } }
+    );
   }
 
   if (!checkChallenge(token, phone, code)) {
