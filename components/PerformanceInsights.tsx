@@ -176,12 +176,14 @@ export const PerformanceInsights: React.FC = () => {
 
       {/* 최상단 한 행 — 좌=분포 헤더(상단 이동, 2026-07-05 지시) / 우=KPI 4종 균일 클러스터
           (좌측 지배 KPI 블록 삭제 → "견적 건수"를 보조와 동일 스타일로 편입, 세로폭 확보) */}
-      <section className="relative border-b border-border pb-2.5 flex flex-wrap items-end gap-x-8 gap-y-3">
-        <h3 className="text-[23px] font-extrabold text-navy flex items-center gap-2 leading-none tracking-[-0.01em]">
+      <section className="relative border-b border-border pb-2.5">
+        <div className="overflow-x-auto no-scrollbar">
+          <div className="flex min-w-full w-max items-end gap-x-8">
+            <h3 className="shrink-0 whitespace-nowrap text-[23px] font-extrabold text-navy flex items-center gap-2 leading-none tracking-[-0.01em]">
           <BarChart3 className="w-5 h-5 text-steel" />
           실적 분포
         </h3>
-        <div className="flex items-end gap-x-6 gap-y-3 ml-auto">
+            <div className="flex shrink-0 items-end gap-x-6 ml-auto">
           {[
             { label: '견적 건수', value: metrics.totalCount, unit: '건' },
             { label: '검토 비율', value: reviewDoneRate, unit: '%' },
@@ -199,6 +201,8 @@ export const PerformanceInsights: React.FC = () => {
               </span>
             </div>
           ))}
+        </div>
+          </div>
         </div>
         <TradeStrip colors={distColors} />
       </section>
