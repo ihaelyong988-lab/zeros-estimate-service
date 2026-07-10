@@ -5,6 +5,7 @@ import { useShell } from '@/lib/context/ShellContext';
 import { ZerosService } from '@/lib/supabase/client';
 import { Estimate, SiteVisit, Customer, NotificationLog } from '@/types/estimate';
 import { menuDisplayName } from '@/lib/constants/menu';
+import { kstToday, kstDateStr } from '@/lib/utils/date';
 import {
   ArrowRight,
   LayoutGrid,
@@ -445,7 +446,9 @@ const wonShort = (n: number): string => {
 
 const isInThisWeek = (dateStr: string): boolean => {
   if (!dateStr) return false;
-  const d = new Date(dateStr);
+  // 'YYYY-MM-DD'(날짜만) 값은 UTC 자정으로 파싱돼 KST 기준 하루 밀린다 → KST 자정으로 해석.
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? `${dateStr}T00:00:00+09:00` : dateStr;
+  const d = new Date(normalized);
   if (isNaN(d.getTime())) return false;
   const now = new Date();
   const start = new Date(now);
@@ -477,7 +480,7 @@ interface AdminContextPanelProps {
 const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
   adminView, setAdminView, estimates, visits, customers, logs,
 }) => {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = kstToday();
   const closed = ['수주성공', '수주실패', '취소', '보류'];
 
   // ── 견적 파생 지표 ──
@@ -511,7 +514,7 @@ const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
 
   // ── 알림 파생 지표 ──
   const lTotal = logs.length;
-  const lToday = logs.filter(l => (l.sent_at || '').slice(0, 10) === today).length;
+  const lToday = logs.filter(l => kstDateStr(l.sent_at) === today).length;
   const lOk = logs.filter(l => l.status === '발송완료').length;
   const lErr = logs.filter(l => l.status === '발송오류').length;
 

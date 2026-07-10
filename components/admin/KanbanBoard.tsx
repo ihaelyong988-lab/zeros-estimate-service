@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Estimate, EstimateStatus, EstimateCategory } from '@/types/estimate';
 import { Calendar } from 'lucide-react';
+import { kstMonthDay } from '@/lib/utils/date';
 
 interface KanbanBoardProps {
   estimates: Estimate[];
@@ -171,7 +172,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                           </span>
                           <span className="flex items-center gap-0.5 text-[9.5px]">
                             <Calendar className="w-3 h-3 text-gray-light" />
-                            {new Date(est.created_at).toISOString().slice(5, 10)}
+                            {kstMonthDay(est.created_at)}
                           </span>
                         </div>
                       </div>

@@ -11,6 +11,16 @@ export interface SendResult {
   testMode: boolean;
 }
 
+// SMS(Solapi) 키가 모두 설정되어 실제 발송이 가능한 상태인지 여부.
+// OTP 게이트(활성/생략)와 서버측 접수 인증 필요 여부 판정에 공통으로 쓴다.
+export function isSmsConfigured(): boolean {
+  return !!(
+    process.env.SOLAPI_API_KEY &&
+    process.env.SOLAPI_API_SECRET &&
+    process.env.SOLAPI_SENDER
+  );
+}
+
 export async function sendSms(toPhone: string, text: string): Promise<SendResult> {
   const apiKey = process.env.SOLAPI_API_KEY;
   const apiSecret = process.env.SOLAPI_API_SECRET;

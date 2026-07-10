@@ -140,13 +140,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     return () => { active = false; };
   }, []);
 
-  const handleVerified = ({ name, phone }: { name: string; phone: string; verifiedToken: string }) => {
+  const handleVerified = ({ name, phone, sessionToken }: { name: string; phone: string; verifiedToken: string; sessionToken: string }) => {
     setPhoneVerified(true);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('zeros_phone_verified', JSON.stringify({ phone }));
     }
     // 처음 사용자도 본인인증을 마치면 로그인으로 영속화한다 — 다음 방문 시 바로 자료등록 화면으로.
-    setCustomerAuth({ name: name.trim(), phone, verifiedAt: new Date().toISOString() });
+    // sessionToken(30일)을 함께 저장해야 접수·본인 견적서 다운로드 시 서버 재검증을 통과한다.
+    setCustomerAuth({ name: name.trim(), phone, verifiedAt: new Date().toISOString(), sessionToken });
     setFormData(prev => {
       const updated = { ...prev, phone, customer_name: prev.customer_name || name };
       if (typeof window !== 'undefined') {
@@ -334,6 +335,15 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         ? `[무료견적·총 공사비 100만원 이하] AI Native 자동 등록${industryTag}`
         : `[출장요청·예약방문] 희망 방문: ${formData.visit_date || '미지정'} ${formData.visit_time}${industryTag}`;
 
+      // 출장요청 채널이면 예약방문 정보를 함께 넘겨, 서버가 접수와 방문 이력을 한 번에 기록한다.
+      const visitPayload = channel === 'visit' && formData.visit_date
+        ? {
+            visit_date: formData.visit_date,
+            visit_purpose: `고객 예약방문 신청 (${formData.visit_time})`,
+            site_memo: `고객 희망 방문일 ${formData.visit_date} ${formData.visit_time}`,
+          }
+        : undefined;
+
       const newEst = await ZerosService.createEstimate({
         customer_name: formData.customer_name || customerAuth?.name || '고객',
         company_name: formData.company_name,
@@ -352,22 +362,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         estimate_category: channel === 'quick' ? 'small' : 'unknown',
         payment_required: false,
         submitted_files: formData.files
-      });
-
-      // 출장요청 채널: 예약방문을 이력관리(현장방문 테이블)에 함께 기록
-      if (channel === 'visit' && formData.visit_date) {
-        try {
-          await ZerosService.createSiteVisit({
-            estimate_id: newEst.id,
-            visit_date: formData.visit_date,
-            visit_purpose: `고객 예약방문 신청 (${formData.visit_time})`,
-            visit_status: '예정',
-            site_memo: `고객 희망 방문일 ${formData.visit_date} ${formData.visit_time}`,
-          });
-        } catch (vErr) {
-          console.error('예약방문 기록 실패', vErr);
-        }
-      }
+      }, { visit: visitPayload });
 
       localStorage.removeItem('zeros_draft_request');
       onComplete?.(newEst);

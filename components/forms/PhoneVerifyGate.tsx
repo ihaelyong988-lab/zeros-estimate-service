@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { User, Phone, ShieldCheck, MessageSquare, CheckCircle2 } from 'lucide-react';
 
 interface PhoneVerifyGateProps {
-  onVerified: (data: { name: string; phone: string; verifiedToken: string }) => void;
+  onVerified: (data: { name: string; phone: string; verifiedToken: string; sessionToken: string }) => void;
 }
 
 // 휴대폰 번호를 010-0000-0000 형태로 표시 포맷팅
@@ -65,7 +65,7 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified }) 
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '인증에 실패했습니다.');
-      onVerified({ name: name.trim(), phone: formatPhone(digits), verifiedToken: data.verifiedToken });
+      onVerified({ name: name.trim(), phone: formatPhone(digits), verifiedToken: data.verifiedToken, sessionToken: data.sessionToken });
     } catch (e) {
       setError(e instanceof Error ? e.message : '인증 처리 중 오류가 발생했습니다.');
     } finally {

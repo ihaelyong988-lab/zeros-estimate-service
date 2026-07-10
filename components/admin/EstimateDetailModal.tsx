@@ -219,22 +219,11 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     if (!estimate) return;
     if (!confirm(`[경고] 접수번호 ${estimate.estimate_no} 의뢰 건을 영구히 삭제하시겠습니까?\n이 작업은 방문 일정, 결제 내역을 포함한 모든 이력이 유실되며 복구할 수 없습니다.`)) return;
     try {
-      // 1. 견적서 삭제
-      const list = await ZerosService.getEstimates();
-      const updatedList = list.filter(e => e.id !== estimate.id);
-      localStorage.setItem('zeros_estimates', JSON.stringify(updatedList));
+      // 실 DB(Supabase)에서 견적과 연관 결제·방문·알림 이력을 서버 delete op 로 제거한다.
+      // (과거엔 localStorage 만 지워 클라우드에는 그대로 남아, 새로고침 시 되살아났다.)
+      await ZerosService.deleteEstimate(estimate.id);
 
-      // 2. 관련 결제 내역 삭제
-      const pays = await ZerosService.getPayments();
-      const updatedPays = pays.filter(p => p.estimate_id !== estimate.id);
-      localStorage.setItem('zeros_payments', JSON.stringify(updatedPays));
-
-      // 3. 관련 현장방문 내역 삭제
-      const visits = await ZerosService.getSiteVisits();
-      const updatedVisits = visits.filter(v => v.estimate_id !== estimate.id);
-      localStorage.setItem('zeros_site_visits', JSON.stringify(updatedVisits));
-
-      alert(`접수번호 ${estimate.estimate_no} 의뢰 건이 성공적으로 영구 삭제되었습니다.`);
+      alert(`접수번호 ${estimate.estimate_no} 의뢰 건이 영구 삭제되었습니다.`);
       onSaved();
       onClose();
     } catch (e) {

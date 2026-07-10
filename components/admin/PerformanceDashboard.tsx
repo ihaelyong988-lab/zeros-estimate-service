@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
 import { Estimate } from '@/types/estimate';
 import { calculatePerformanceMetrics } from '@/lib/calculations';
+import { kstMonthStr } from '@/lib/utils/date';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -46,15 +47,20 @@ export const PerformanceDashboard: React.FC = () => {
   // 1. 월별 접수 및 매출 추이 동적 가공
   const getMonthlyData = () => {
     const monthlyMap: Record<string, { month: string; count: number; revenue: number }> = {};
-    
-    // 최근 6개월 뼈대 생성
-    const months = ['2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06'];
+
+    // 현재(KST) 기준 최근 7개월 뼈대를 매번 동적 생성 — 하드코딩 시 이후 달이 통째 누락된다.
+    const now = new Date();
+    const months: string[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    }
     months.forEach(m => {
       monthlyMap[m] = { month: m, count: 0, revenue: 0 };
     });
 
     estimates.forEach(e => {
-      const m = e.created_at.slice(0, 7);
+      const m = kstMonthStr(e.created_at);
       if (monthlyMap[m]) {
         monthlyMap[m].count += 1;
         if (e.status === '수주성공') {

@@ -59,10 +59,15 @@ alter table zeros_admin_users       enable row level security;
 alter table zeros_notification_logs enable row level security;
 
 -- ------------------------------------------------------------
--- 3. 접근 정책
---    ⚠️ 주의: 현재 관리자 로그인 기능이 없으므로, 우선 anon(공개) 키로
---    읽기/쓰기를 허용한다. (MVP 단계)
---    추후 관리자 인증을 붙이면 SELECT 정책을 인증 사용자로 제한할 것.
+-- 3. 접근 정책 (2026-07-11 보안 잠금)
+--    ⚠️ 과거에는 anon(공개) 키로 전 테이블 읽기/쓰기를 허용했으나(MVP), 이는 공개
+--    번들의 anon 키만으로 전 고객 개인정보(이름·전화·주소·견적)를 조회·수정·삭제할 수
+--    있는 심각한 노출이었다. 이제 모든 데이터 접근은 서버 라우트(/api/data,
+--    service_role 키 + 신원 검증)로만 수행한다. service_role 은 RLS 를 우회하므로
+--    테이블에는 어떤 anon 정책도 두지 않는다(= anon 전면 차단).
+--    ▶ 반드시 앱 배포(서버 게이트웨이 코드) 후 이 SQL 을 실행할 것.
+--      순서: (1) master 배포 → (2) 이 SQL 실행. 코드가 먼저 올라가 있어야 화면이
+--      끊기지 않는다(코드는 이미 anon 을 쓰지 않으므로 SQL 실행 즉시 누출이 닫힌다).
 -- ------------------------------------------------------------
 do $$
 declare t text;
@@ -72,11 +77,8 @@ begin
     'zeros_site_visits','zeros_admin_users','zeros_notification_logs'
   ]
   loop
+    -- 과거 anon 전체 허용 정책 제거 (재생성하지 않음 → anon 접근 없음)
     execute format('drop policy if exists "anon_all_%1$s" on %1$I;', t);
-    execute format(
-      'create policy "anon_all_%1$s" on %1$I
-         for all to anon
-         using (true) with check (true);', t);
   end loop;
 end $$;
 

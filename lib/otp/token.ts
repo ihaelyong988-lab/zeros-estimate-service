@@ -7,7 +7,15 @@ import crypto from 'crypto';
 // - challenge 토큰: 발급 시 클라이언트에 전달(인증번호 자체는 들어있지 않고 해시만 포함)
 // - verified 토큰: 인증 성공 시 발급, "이 번호는 인증됨"을 증명
 
-const SECRET = process.env.OTP_SERVER_SECRET || 'dev-insecure-secret-please-set-OTP_SERVER_SECRET';
+// OTP_SERVER_SECRET 미설정 시 추측 가능한 상수로 폴백하면 토큰(관리자·세션·OTP) 위조가
+// 가능해진다. 따라서 미설정이면 프로세스마다 무작위 키로 폴백한다 — 서명 자체는 되지만
+// 인스턴스 간 검증이 성립하지 않아 어떤 토큰도 신뢰되지 않는다(fail-closed). 즉 env를
+// 반드시 설정해야 로그인·인증이 동작하며, 상수 시크릿 유출로 인한 위조는 원천 차단된다.
+const SECRET = process.env.OTP_SERVER_SECRET || crypto.randomBytes(32).toString('base64');
+
+if (!process.env.OTP_SERVER_SECRET) {
+  console.error('[보안] OTP_SERVER_SECRET 미설정 — 무작위 임시 키로 폴백합니다. 프로덕션에서는 반드시 환경변수를 설정하세요.');
+}
 
 const CHALLENGE_TTL_MS = 3 * 60 * 1000;   // 인증번호 유효 3분
 const VERIFIED_TTL_MS = 30 * 60 * 1000;   // 인증 완료 상태 유효 30분
