@@ -207,10 +207,10 @@ export const PerformanceInsights: React.FC = () => {
         <TradeStrip colors={distColors} />
       </section>
 
-      {/* 분포 차트 — 레일형 에디토리얼 막대. 높이 240px = 8행 × 히트맵 축소 행 pitch(≈30px) 동기화
-          (2026-07-05 지시: 헤더 상단 이동 + 행 압축으로 히트맵 합계 행 첫 화면 노출) */}
-      <div className="flex flex-col gap-2.5">
-        <div className="h-[240px] min-w-0 flex flex-col py-1.5">
+      {/* 분포 차트 — 레일형 에디토리얼 막대. 높이 296px(행 pitch 37px)·레일 18px
+          = 히트맵 가로셀 폭의 덩어리감과 좌우·상하 균형(2026-07-11 지시, 구 240px/14px 압축 대체) */}
+      <div className="flex flex-col gap-2">
+        <div className="h-[296px] min-w-0 flex flex-col py-1.5">
           {distribution.map((d) => {
             const hex = TRADE_COLORS[d.name] || '#1E4D8C';
             const maxCount = distribution[0]?.value ?? 0;
@@ -221,7 +221,7 @@ export const PerformanceInsights: React.FC = () => {
                 {/* 좌측 색선 — 히트맵 행 좌측 보더처럼 행 전체 높이로 맞닿아 하나의 수직 일직선(2026-07-07 지시) */}
                 <span className="w-[3px] self-stretch" style={{ background: hex }} />
                 <span className="text-[12px] font-bold text-navy text-right leading-tight whitespace-nowrap truncate pr-0.5">{d.name}</span>
-                <div className="relative h-[14px] rounded-[3px] bg-[#EFF3F8] overflow-hidden">
+                <div className="relative h-[18px] rounded-[3px] bg-[#EFF3F8] overflow-hidden">
                   <div
                     className="absolute inset-y-0 left-0 rounded-[3px] transition-[width] duration-500 motion-reduce:transition-none"
                     style={{ width: `${widthPct}%`, backgroundColor: hex, opacity: 0.92 }}
