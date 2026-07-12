@@ -100,6 +100,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   // 모바일 하단 전용 액티브 탭 상태 ('home' | 'request' | 'decision' | 'admin')
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileActiveTab>('home');
+  // 휴대폰 뒤로가기 앱 닫기 확인 팝업 (2026-07-12 지시 — 홈에서 뒤로가기 시 소리 없이 닫히지 않게)
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const isSyncingFromHistoryRef = useRef(false);
   const lastShellUrlRef = useRef('');
   // 최상단 공종 칩 가로 스크롤 컨테이너 — 랜딩 쇼케이스 순회에 맞춰 활성 칩으로 자동 이동
@@ -174,9 +176,42 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     };
 
     applyUrlState();
-    window.addEventListener('popstate', applyUrlState);
-    return () => window.removeEventListener('popstate', applyUrlState);
+    const onPopState = (e: PopStateEvent) => {
+      // 종료 가드 엔트리(스택 바닥)에 닿음 — 화면 상태는 그대로 두고 앱 닫기 확인 팝업만 띄운다
+      if ((e.state as { zerosExitGuard?: boolean } | null)?.zerosExitGuard) {
+        setShowExitConfirm(true);
+        return;
+      }
+      applyUrlState();
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, [setActiveTab, setAdminView, setIsUserMode, setSelectedBudget, setSelectedMenu]);
+
+  // 휴대폰(모바일 레이아웃) 뒤로가기 종료 가드 — 최초 진입 엔트리를 가드로 치환하고 같은 URL을 한 층 더 쌓는다.
+  // 홈에서 시스템 뒤로가기를 누르면 앱이 즉시 닫히는 대신 가드 popstate가 잡혀 "앱 닫기" 확인 팝업이 뜬다.
+  useEffect(() => {
+    if (!isMobileLayout) return;
+    const state = window.history.state as { zerosShell?: boolean; zerosExitGuard?: boolean } | null;
+    if (state?.zerosShell || state?.zerosExitGuard) return;
+    const url = `${window.location.pathname}${window.location.search}`;
+    window.history.replaceState({ zerosExitGuard: true }, '', url);
+    window.history.pushState({ zerosShell: true }, '', url);
+    lastShellUrlRef.current = url;
+  }, [isMobileLayout]);
+
+  // "계속 사용" — 가드를 다시 쌓아 원상 복귀 / "닫기" — 가드 소진 상태 유지 + window.close 베스트에포트
+  // (close가 차단되는 브라우저에선 다음 뒤로가기에서 OS가 앱을 종료한다 — 스택 바닥이므로)
+  const handleExitContinue = () => {
+    const url = `${window.location.pathname}${window.location.search}`;
+    window.history.pushState({ zerosShell: true }, '', url);
+    lastShellUrlRef.current = url;
+    setShowExitConfirm(false);
+  };
+  const handleExitClose = () => {
+    setShowExitConfirm(false);
+    window.close();
+  };
 
   useEffect(() => {
     if (!layoutReady) return;
@@ -400,7 +435,39 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
     return (
       <div className={`overflow-hidden flex flex-col text-text font-sans pb-safe ${isMobileLanding ? 'h-[100svh] bg-[#041B33]' : 'h-[100dvh] bg-bg-subtle'}`}>
-        
+
+        {/* 뒤로가기 앱 닫기 확인 팝업 — 진입 스택 바닥(종료 가드)에 닿으면 표시(2026-07-12 지시) */}
+        {showExitConfirm && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="exit-confirm-title"
+            className="fixed inset-0 z-[999] flex items-end justify-center bg-navy/60 animate-in fade-in duration-200 motion-reduce:animate-none"
+          >
+            <div className="w-full max-w-sm mx-4 mb-8 bg-bg rounded-custom border border-border shadow-custom-md p-6 animate-in slide-in-from-bottom-4 duration-200 motion-reduce:animate-none">
+              <h2 id="exit-confirm-title" className="text-[18px] font-black text-navy">앱을 닫으시겠습니까?</h2>
+              <p className="mt-1.5 text-[14px] font-semibold text-gray leading-relaxed">닫기를 누르면 ZEROS 앱이 종료됩니다.</p>
+              <div className="mt-5 grid grid-cols-2 gap-2.5">
+                <button
+                  onClick={handleExitClose}
+                  style={{ touchAction: 'manipulation' }}
+                  className="min-h-[48px] rounded-custom border border-border bg-bg-subtle text-[15px] font-black text-gray active:scale-[0.98] transition-transform cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-steel"
+                >
+                  닫기
+                </button>
+                <button
+                  onClick={handleExitContinue}
+                  autoFocus
+                  style={{ touchAction: 'manipulation' }}
+                  className="min-h-[48px] rounded-custom bg-accent text-white text-[15px] font-black active:scale-[0.98] transition-transform cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-navy"
+                >
+                  계속 사용
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 모바일 상단 네이티브 로고 헤더 */}
         <div className={`${isMobileLanding ? 'bg-[#061F3C] border-white/10 px-5 py-4' : 'bg-navy border-white/5 px-5 py-4.5'} shrink-0 text-bg flex items-center justify-between select-none shadow-md border-b relative z-40`}>
           <button
