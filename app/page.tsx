@@ -113,6 +113,7 @@ const TRADE_KEYWORDS: Record<string, string[]> = {
   'small': ['소규모 분기', '펌프·밸브 교체', '단가 검토'],
   'medium': ['현장 실측', '중규모 배관', '계통 검토'],
   'large': ['대규모 설비', 'CAPEX', '공법·예산'],
+  'unknown': ['규모 산정', '예산 방향', '전문가 상담'],
 };
 
 // 공종별 대표 견적 밴드(원) — 모바일 랜딩 2↔3페이지 연동용. min/max=슬라이더 범위, median=중앙값, base=기본 표시값
@@ -303,6 +304,45 @@ export default function Home() {
   // ==========================================
   // 1. 고객 모드 탭 렌더러
   // ==========================================
+  // FOOTER 소개란 — 사업소개에서 예상견적 의뢰 탭 하단으로 이동(2026-07-12 지시). 공용 렌더로 분리.
+  const renderBrandFooter = () => (
+    <footer className="border-t-2 border-navy pt-5">
+      <div className="flex justify-between gap-6 flex-wrap">
+        <div className="max-w-[460px]">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[22px] font-black text-navy tracking-tight">ZEROS</span>
+            <span className="text-[12.5px] font-bold text-[#155EEF] tracking-wider">최적합 견적 검증</span>
+          </div>
+          <p className="text-[16px] leading-[1.7] font-semibold text-gray m-0">
+            현장 경험과 데이터로 <strong className="text-navy font-black">적정 예산을 검증</strong>합니다. 시공이 아닌, 결정을 돕는 견적 파트너입니다.
+          </p>
+        </div>
+        <div className="min-w-[190px]">
+          <div className="text-[12px] font-bold text-gray uppercase tracking-[0.1em] mb-2">핵심 영역</div>
+          <div className="text-[14.5px] font-semibold text-navy leading-[1.85]">
+            공정설비 CAPEX 견적 검증<br />
+            배관·기계설비 물량 분석<br />
+            외주제작(SPOOL·SKID) 검토
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-border/60 mt-4 pt-3 flex justify-between items-center gap-4 flex-wrap">
+        <span className="text-[13px] font-medium text-gray">© 2025 ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
+        <div className="flex items-center gap-4 text-[13.5px] font-bold">
+          <span className="text-gray hover:text-navy transition-colors cursor-pointer">개인정보처리방침</span>
+          <span className="text-gray-light/40">|</span>
+          <button
+            onClick={() => setActiveTabAtTop('request')}
+            style={{ touchAction: 'manipulation' }}
+            className="inline-flex items-center gap-1 text-steel hover:text-navy transition-colors cursor-pointer"
+          >
+            문의하기 <ArrowRight className="w-3 h-3 shrink-0" />
+          </button>
+        </div>
+      </div>
+    </footer>
+  );
+
   const renderBusinessTab = () => {
     // 3단계 흐름(문제→분석→안심) — 서비스 작동 방식을 이야기처럼 보여주는 골격.
     // 콘텐츠는 데이터로 분리(추후 교체 용이). ±5%는 마지막 '안심' 단계의 시각화 지표 1곳에만.
@@ -325,8 +365,10 @@ export default function Home() {
       },
     ];
 
+    // Footer 삭제(→ 의뢰 탭 이동)로 생긴 하단 여백을 언더라인 이하 콘텐츠에 배분(2026-07-12 지시):
+    // 타임라인 섹션이 flex-1로 남는 세로폭을 받아 justify-center + 행간 확대로 균형 배치
     return (
-      <div className="flex flex-col gap-5 max-w-5xl mx-auto py-5 min-h-[calc(100vh-128px)] select-none">
+      <div className="flex flex-col gap-6 max-w-5xl mx-auto py-6 min-h-[calc(100vh-128px)] select-none">
         {/* 1. 히어로 헤드라인 — 데스크톱=한 줄(프레임 맞춤 축소, 2026-07-04 지시), 모바일=2줄 고정(O-6 확정) */}
         <section className="flex flex-col">
           <h1 className="text-[clamp(30px,3vw,38px)] font-extrabold text-navy leading-[1.14] tracking-[-0.035em] md:whitespace-nowrap">
@@ -336,9 +378,9 @@ export default function Home() {
 
         {/* 2. 3단계 흐름 — 문제→분석→안심 수직 타임라인(개편안 B). ±5%는 마지막 단계 지표 1곳.
             헤드라인 한 줄 압축으로 생긴 여백만큼 폰트·간격 확대(2026-07-04 지시) */}
-        <section className="flex flex-col gap-5 border-t border-b border-border py-7">
+        <section className="flex-1 flex flex-col justify-center gap-6 border-t border-b border-border py-8">
           <span className="text-[13px] font-black text-navy uppercase tracking-wide">견적을 바로잡는 3단계</span>
-          <div className="relative flex flex-col gap-7">
+          <div className="relative flex flex-col gap-9">
             {/* 수직 연결선 — 분석(steel)→안심(blue)으로 흐름 강조 */}
             <div className="absolute top-5 bottom-5 left-[17px] w-0.5 bg-gradient-to-b from-gray-light via-steel to-[#155EEF] pointer-events-none" />
             {flowSteps.map((s, i) => {
@@ -373,8 +415,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. 단일 CTA + 신뢰 근거(스킬 권고: Single CTA focus) */}
-        <section className="flex flex-wrap items-center gap-x-5 gap-y-3">
+        {/* 3. 단일 CTA + 신뢰 근거(스킬 권고: Single CTA focus) — 하단 여백으로 상·하 균형 마감 */}
+        <section className="flex flex-wrap items-center gap-x-5 gap-y-3 pb-5">
           <button
             onClick={() => setActiveTabAtTop('request')}
             style={{ touchAction: 'manipulation' }}
@@ -385,42 +427,6 @@ export default function Home() {
           <span className="text-[13.5px] font-bold text-gray">현장 실무 30년 · 누적 검증 246건 · 준수율 98.4%</span>
         </section>
 
-        {/* 4. FOOTER 소개란 — 화면 하단 앵커(mt-auto). 잔글씨 개선: 폰트 한 단계 상향 */}
-        <footer className="mt-auto border-t-2 border-navy pt-5">
-          <div className="flex justify-between gap-6 flex-wrap">
-            <div className="max-w-[460px]">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[22px] font-black text-navy tracking-tight">ZEROS</span>
-                <span className="text-[12.5px] font-bold text-[#155EEF] tracking-wider">최적합 견적 검증</span>
-              </div>
-              <p className="text-[16px] leading-[1.7] font-semibold text-gray m-0">
-                현장 경험과 데이터로 <strong className="text-navy font-black">적정 예산을 검증</strong>합니다. 시공이 아닌, 결정을 돕는 견적 파트너입니다.
-              </p>
-            </div>
-            <div className="min-w-[190px]">
-              <div className="text-[12px] font-bold text-gray uppercase tracking-[0.1em] mb-2">핵심 영역</div>
-              <div className="text-[14.5px] font-semibold text-navy leading-[1.85]">
-                공정설비 CAPEX 견적 검증<br />
-                배관·기계설비 물량 분석<br />
-                외주제작(SPOOL·SKID) 검토
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-border/60 mt-4 pt-3 flex justify-between items-center gap-4 flex-wrap">
-            <span className="text-[13px] font-medium text-gray">© 2025 ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
-            <div className="flex items-center gap-4 text-[13.5px] font-bold">
-              <span className="text-gray hover:text-navy transition-colors cursor-pointer">개인정보처리방침</span>
-              <span className="text-gray-light/40">|</span>
-              <button
-                onClick={() => setActiveTabAtTop('request')}
-                style={{ touchAction: 'manipulation' }}
-                className="inline-flex items-center gap-1 text-steel hover:text-navy transition-colors cursor-pointer"
-              >
-                문의하기 <ArrowRight className="w-3 h-3 shrink-0" />
-              </button>
-            </div>
-          </div>
-        </footer>
       </div>
     );
   };
@@ -458,7 +464,7 @@ export default function Home() {
         {/* 주제 — 라벨 없이 헤드라인부터 시작 + 한 줄 데이터 흐름 */}
         <div className="flex flex-col gap-1.5 border-b border-border pb-3">
           <h2 className="text-[clamp(21px,4vw,29px)] font-extrabold text-navy tracking-tight leading-[1.25]">
-            도면 한 장이 <span className="text-accent">검증된 예산 검토서</span>가 되기까지
+            DATA가 도면으로, <span className="text-accent">검증된 예산안</span>이 되기까지
           </h2>
           <p className="text-[13px] text-gray font-bold leading-snug break-keep">
             수집 → <span className="text-navy">데이터 검증</span> → AI 판독 → 실거래 대조·이상치 검증 → <span className="text-navy">결과 검증·검토서</span>
@@ -491,13 +497,13 @@ export default function Home() {
                     {s.chips.map((c) => (
                       <span
                         key={c}
-                        className="text-[11px] font-bold px-2 py-0.5 rounded-full border tabular-nums whitespace-nowrap"
+                        className="text-[12px] font-bold px-2 py-0.5 rounded-full border tabular-nums whitespace-nowrap"
                         style={{ background: t.chipBg, borderColor: t.chipBorder, color: t.chipFg }}
                       >
                         {c}
                       </span>
                     ))}
-                    <span className="ml-auto text-[11px] font-bold whitespace-nowrap" style={{ color: t.desc }}>{s.io}</span>
+                    <span className="ml-auto text-[12px] font-bold whitespace-nowrap" style={{ color: t.desc }}>{s.io}</span>
                   </div>
                   <p className="text-[12.5px] font-semibold leading-snug break-keep" style={{ color: t.desc }}>{s.desc}</p>
                 </div>
@@ -709,7 +715,7 @@ export default function Home() {
   const renderPerformanceTab = () => <PerformanceInsights />;
 
   const renderRequestTab = () => (
-    <div className="py-4">
+    <div className="py-4 flex flex-col min-h-[calc(100vh-128px)]">
       <RequestWizard
         initialChannel={pendingRequestChannel.current}
         onChannelConsumed={() => { pendingRequestChannel.current = null; }}
@@ -718,6 +724,10 @@ export default function Home() {
           // 별도 라우팅 없이 위저드가 직접 완료 UI를 노출한다.
         }}
       />
+      {/* FOOTER 소개란 — 사업소개에서 이동(2026-07-12 지시). 위저드 폭에 맞춰 중앙패널 하단 앵커 */}
+      <div className="mt-auto pt-12 w-full max-w-3xl mx-auto">
+        {renderBrandFooter()}
+      </div>
     </div>
   );
 

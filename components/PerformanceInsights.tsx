@@ -134,10 +134,8 @@ export const PerformanceInsights: React.FC = () => {
       if (e.site_type) d.sites[e.site_type] = (d.sites[e.site_type] || 0) + 1;
     });
 
-    // 분포 차트용 (공종별 건수 내림차순)
-    const distribution = WORK_TYPES
-      .map((w) => ({ name: w, value: rowTotal[w] }))
-      .sort((a, b) => b.value - a.value);
+    // 분포 차트용 — 순서는 히트맵(WORK_TYPES)과 동일 고정(2026-07-12 캡쳐 지시: 행렬 직관 일치, 내림차순 폐지)
+    const distribution = WORK_TYPES.map((w) => ({ name: w, value: rowTotal[w] }));
 
     // 세부 카드용
     const cards = WORK_TYPES.map((w) => {
@@ -207,34 +205,40 @@ export const PerformanceInsights: React.FC = () => {
         <TradeStrip colors={distColors} />
       </section>
 
-      {/* 분포 차트 — 레일형 에디토리얼 막대. 높이 296px(행 pitch 37px)·레일 18px
-          = 히트맵 가로셀 폭의 덩어리감과 좌우·상하 균형(2026-07-11 지시, 구 240px/14px 압축 대체) */}
+      {/* 분포 차트 — 레일형 에디토리얼 막대. 높이 296px(행 pitch 37px)·레일 18px.
+          열 그리드 = 히트맵과 공유(2026-07-12 캡쳐 지시: 라벨 176px 좌측 정렬 · 레일 시작 = 셀 시작 · 건수 104px = 합계 열) */}
       <div className="flex flex-col gap-2">
         <div className="h-[296px] min-w-0 flex flex-col py-1.5">
-          {distribution.map((d) => {
+          {(() => {
+            const maxCount = Math.max(0, ...distribution.map((x) => x.value));
+            return distribution.map((d) => {
             const hex = TRADE_COLORS[d.name] || '#1E4D8C';
-            const maxCount = distribution[0]?.value ?? 0;
             const widthPct = maxCount > 0 ? Math.max((d.value / maxCount) * 100, d.value > 0 ? 3 : 0) : 0;
             const share = grandTotal > 0 ? Math.round((d.value / grandTotal) * 1000) / 10 : 0;
             return (
-              <div key={d.name} className="grid grid-cols-[3px_121px_1fr_92px] items-center gap-2.5 flex-1 min-h-0" title={`${d.name} · ${d.value}건 (${share}%)`}>
-                {/* 좌측 색선 — 히트맵 행 좌측 보더처럼 행 전체 높이로 맞닿아 하나의 수직 일직선(2026-07-07 지시) */}
-                <span className="w-[3px] self-stretch" style={{ background: hex }} />
-                <span className="text-[12px] font-bold text-navy text-right leading-tight whitespace-nowrap truncate pr-0.5">{d.name}</span>
+              <div key={d.name} className="grid grid-cols-[176px_1fr_104px] items-center flex-1 min-h-0" title={`${d.name} · ${d.value}건 (${share}%)`}>
+                {/* 라벨 셀 — 히트맵 행 라벨(td) 미러: 3px 공종색 보더 + pl-3 좌측 정렬로 하나의 수직 일직선 */}
+                <span
+                  className="self-stretch flex items-center pl-3 pr-2 text-[13px] font-bold text-navy text-left leading-tight whitespace-nowrap truncate"
+                  style={{ borderLeft: `3px solid ${hex}` }}
+                >
+                  {d.name}
+                </span>
                 <div className="relative h-[18px] rounded-[3px] bg-[#EFF3F8] overflow-hidden">
                   <div
                     className="absolute inset-y-0 left-0 rounded-[3px] transition-[width] duration-500 motion-reduce:transition-none"
                     style={{ width: `${widthPct}%`, backgroundColor: hex, opacity: 0.92 }}
                   />
                 </div>
-                <span className="flex items-baseline gap-1 whitespace-nowrap tabular-nums">
-                  <span className="text-[13px] font-black text-navy">{d.value}</span>
-                  <span className="text-[11px] font-bold text-gray">건</span>
-                  <span className="text-[11px] font-semibold text-gray">· {share}%</span>
+                <span className="flex items-baseline gap-1 pl-2 whitespace-nowrap tabular-nums">
+                  <span className="text-[14px] font-black text-navy">{d.value}</span>
+                  <span className="text-[12px] font-bold text-gray">건</span>
+                  <span className="text-[12px] font-semibold text-gray">· {share}%</span>
                 </span>
               </div>
             );
-          })}
+            });
+          })()}
         </div>
         {/* 막대 하단 스트립 — 상단 헤더(L203)와 대칭, 분포 순서 8색 (2026-07-07 지시) */}
         <div className="relative border-b border-border/60">
@@ -249,10 +253,11 @@ export const PerformanceInsights: React.FC = () => {
           <TradeStrip colors={workTypeColors} />
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-[12px]">
+          {/* 표 기본 13px(2026-07-12 한 단계 업) · 라벨 열 176px/합계 열 104px = 분포 차트와 공유 세로 그리드 */}
+          <table className="w-full border-collapse text-[13px]">
             <thead>
               <tr>
-                <th className="sticky left-0 bg-bg p-2 pr-3 text-left align-middle min-w-[132px]">
+                <th className="sticky left-0 bg-bg p-2 pr-3 text-left align-middle w-[176px] min-w-[176px]">
                   {/* 코너 제목 — "실적 히트맵"만 크게(2026-07-05 지시: 부제·캡션 삭제) */}
                   <div className="flex items-center gap-2 text-[23px] font-extrabold text-navy leading-none tracking-[-0.01em] whitespace-nowrap">
                     <Grid3x3 className="w-5 h-5 text-steel shrink-0" />
@@ -261,11 +266,11 @@ export const PerformanceInsights: React.FC = () => {
                 </th>
                 {BUDGET_COLS.map((c) => (
                   <th key={c.key} className="p-2 text-center font-bold text-navy whitespace-nowrap">
-                    <div className="text-[12px] font-black">{c.label}</div>
-                    <div className="text-[12px] text-gray font-semibold tabular-nums">{c.range}</div>
+                    <div className="text-[13px] font-black">{c.label}</div>
+                    <div className="text-[13px] text-gray font-semibold tabular-nums">{c.range}</div>
                   </th>
                 ))}
-                <th className="p-2 text-center font-black text-navy whitespace-nowrap">합계</th>
+                <th className="p-2 text-center font-black text-navy whitespace-nowrap w-[104px]">합계</th>
               </tr>
             </thead>
             <tbody>
