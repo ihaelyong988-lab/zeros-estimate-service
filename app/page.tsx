@@ -344,87 +344,117 @@ export default function Home() {
   );
 
   const renderBusinessTab = () => {
-    // 3단계 흐름(문제→분석→안심) — 서비스 작동 방식을 이야기처럼 보여주는 골격.
-    // 콘텐츠는 데이터로 분리(추후 교체 용이). ±5%는 마지막 '안심' 단계의 시각화 지표 1곳에만.
-    const flowSteps = [
+    // 사업모델 중심 재구성(2026-07-13 확정, 사용자 캡쳐 지시):
+    //  목적(안심 견적) → 무료/유료 2단 제공 모델 → 지금·목표 성장 축 → 단일 CTA.
+    //  헤드라인은 현행 유지, 오렌지는 최종 CTA 1곳만. 콘텐츠는 데이터로 분리(추후 교체 용이).
+    // 제공 모델 2단 — 무료(소액)=블루 강조 / 소정 수수료(초과분)=스틸 중립
+    const serviceTiers = [
       {
-        no: '01', tag: '문제', Icon: AlertTriangle,
-        title: '들쑥날쑥한 견적과 숨은 단가 거품',
-        desc: '적정가를 가늠하기 어렵고 분쟁 위험이 큽니다.',
+        badge: '무료', badgeCls: 'bg-[#E6F1FB] text-[#0C447C]',
+        title: '소액 예산 공사',
+        desc: '자동화 견적 툴로 실적기반 자료를 ', em: '무료 제공', emCls: 'text-[#155EEF]', tail: '합니다.',
       },
       {
-        no: '02', tag: '분석', Icon: Database,
-        title: '실거래 DB로 교차검증',
-        desc: '표준 품셈과 실거래 데이터로 대조 검증합니다.',
-      },
-      {
-        no: '03', tag: '안심', Icon: ShieldCheck,
-        title: '안심 예산 대역 확정',
-        desc: '과다·과소 없는 예산으로 결정을 돕습니다.',
-        metric: '±5%',
+        badge: '소정 수수료', badgeCls: 'bg-bg-subtle text-steel border border-border',
+        title: '일정 금액 초과 공사',
+        desc: '신뢰할 수 있는 예산을 ', em: '책정·검증', emCls: 'text-steel', tail: '해 안심 발주를 돕습니다.',
       },
     ];
 
-    // Footer 삭제(→ 의뢰 탭 이동)로 생긴 하단 여백을 언더라인 이하 콘텐츠에 배분(2026-07-12 지시):
-    // 타임라인 섹션이 flex-1로 남는 세로폭을 받아 justify-center + 행간 확대로 균형 배치
+    // 신뢰 지표(social proof) — 스킬 권고: 사회적 증거를 CTA 직전에 배치. 검증 건수만 블루로 데이터 강조
+    const proofStats = [
+      { v: '30년', l: '현장 실무', hl: false },
+      { v: '246건', l: '누적 검증', hl: true },
+      { v: '98.4%', l: '준수율', hl: false },
+    ];
+
+    // Footer 삭제(→ 의뢰 탭 이동)로 생긴 하단 여백은 본문(flex-1) justify-center로 흡수해 상·하 균형 유지
     return (
       <div className="flex flex-col gap-6 max-w-5xl mx-auto py-6 min-h-[calc(100vh-128px)] select-none">
-        {/* 1. 히어로 헤드라인 — 데스크톱=한 줄(프레임 맞춤 축소, 2026-07-04 지시), 모바일=2줄 고정(O-6 확정) */}
-        <section className="flex flex-col">
+        {/* 1. 히어로 — 헤드라인(현행 유지) + 목적 한 줄 서브카피(안심 견적) */}
+        <section className="flex flex-col gap-3">
           <h1 className="text-[clamp(30px,3vw,38px)] font-extrabold text-navy leading-[1.14] tracking-[-0.035em] md:whitespace-nowrap">
             흔들리는 견적을 <span className="text-[#155EEF]">데이터로</span><br className="md:hidden" /> 최적의 예산을 책정합니다
           </h1>
+          <p className="text-[16px] font-semibold text-gray leading-relaxed max-w-[560px]">
+            공사 지식이 부족해도, 실적 데이터로 교차검증한 최적합 예산으로 확신을 가지고 발주하도록 돕습니다.
+          </p>
         </section>
 
-        {/* 2. 3단계 흐름 — 문제→분석→안심 수직 타임라인(개편안 B). ±5%는 마지막 단계 지표 1곳.
-            헤드라인 한 줄 압축으로 생긴 여백만큼 폰트·간격 확대(2026-07-04 지시) */}
-        <section className="flex-1 flex flex-col justify-center gap-6 border-t border-b border-border py-8">
-          <span className="text-[13px] font-black text-navy uppercase tracking-wide">견적을 바로잡는 3단계</span>
-          <div className="relative flex flex-col gap-9">
-            {/* 수직 연결선 — 분석(steel)→안심(blue)으로 흐름 강조 */}
-            <div className="absolute top-5 bottom-5 left-[17px] w-0.5 bg-gradient-to-b from-gray-light via-steel to-[#155EEF] pointer-events-none" />
-            {flowSteps.map((s, i) => {
-              const isLast = i === flowSteps.length - 1;
-              return (
-                <div key={s.no} className="relative pl-12 flex items-start">
-                  <span
-                    className={`absolute left-0 top-0 w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0 z-10 ${
-                      isLast ? 'bg-[#155EEF] border-[#155EEF] text-white' : 'bg-white border-steel text-steel'
-                    }`}
-                  >
-                    <s.Icon className="w-4 h-4" />
-                  </span>
-                  <div className="flex-1 flex items-start justify-between gap-4">
-                    <div className="flex flex-col gap-1">
-                      <span className="flex items-center gap-2 text-[13px] font-black tracking-wide">
-                        <span className="text-gray-light tabular-nums">{s.no}</span>
-                        <span className={isLast ? 'text-[#155EEF]' : 'text-gray'}>{s.tag}</span>
-                      </span>
-                      <span className="text-[19px] font-black text-navy leading-snug">{s.title}</span>
-                      <span className="text-[15.5px] font-semibold text-gray leading-relaxed max-w-[520px]">{s.desc}</span>
-                    </div>
-                    {s.metric && (
-                      <span className="text-[clamp(34px,5.5vw,52px)] font-black text-[#155EEF] tabular-nums leading-none tracking-[-0.03em] shrink-0">
-                        {s.metric}
-                      </span>
-                    )}
+        {/* 2. 본문(flex-1) — 제공 모델 2단 + 지금·목표 축, 상·하 헤어라인 프레임으로 다른 페이지와 통일 */}
+        <section className="flex-1 flex flex-col justify-center gap-7 border-t border-b border-border py-8">
+          {/* 2-1. 이렇게 제공합니다 — 무료 / 소정 수수료 2단 대비(핵심) */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <span className="w-1 h-4 bg-[#155EEF] rounded-full" />
+              <span className="text-[15px] font-black text-navy">이렇게 제공합니다</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {serviceTiers.map((t, i) => (
+                <div key={t.title} className="border border-border rounded-[10px] p-4 sm:p-[18px] bg-surface transition-colors duration-200 motion-reduce:transition-none hover:border-steel/50 hover:bg-bg-subtle">
+                  <div className="flex items-center justify-between">
+                    <span className={`inline-block text-[12px] font-black px-3 py-1 rounded-full ${t.badgeCls}`}>{t.badge}</span>
+                    <span className="text-[13px] font-black text-gray/40 tabular-nums">{`0${i + 1}`}</span>
                   </div>
+                  <div className="mt-3 text-[17px] font-black text-navy">{t.title}</div>
+                  <p className="mt-1 text-[15px] font-semibold text-gray leading-relaxed">
+                    {t.desc}<b className={`font-black ${t.emCls}`}>{t.em}</b>{t.tail}
+                  </p>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+
+          {/* 2-2. 내부 헤어라인 */}
+          <div className="h-px bg-border" />
+
+          {/* 2-3. 여기서, 여기로 — 지금(인력 컨설팅) → 목표(AI Native 의사결정서비스) */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <span className="w-1 h-4 bg-steel rounded-full" />
+              <span className="text-[15px] font-black text-navy">여기서, 여기로</span>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-2">
+              <div className="min-w-0">
+                <div className="text-[12px] font-black tracking-wide text-gray uppercase">지금</div>
+                <div className="mt-1.5 text-[16.5px] font-black text-navy leading-snug">요청사항별 전문가 컨설팅</div>
+                <div className="mt-0.5 text-[14px] font-semibold text-gray leading-relaxed">AI 견적 DB·실적을 축적하는 단계입니다.</div>
+              </div>
+              <div className="flex justify-center py-1 sm:py-0">
+                <ArrowRight className="w-5 h-5 text-[#155EEF] rotate-90 sm:rotate-0" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[12px] font-black tracking-wide text-[#155EEF] uppercase">목표</div>
+                <div className="mt-1.5 flex items-baseline justify-between gap-3">
+                  <div className="text-[16.5px] font-black text-navy leading-snug">AI Native 무료출장견적</div>
+                  <span className="text-[22px] font-black text-[#155EEF] tabular-nums leading-none tracking-[-0.02em] shrink-0">±5%</span>
+                </div>
+                <div className="mt-0.5 text-[14px] font-semibold text-gray leading-relaxed">고객 맞춤형 의사결정 서비스 · 예산 정확도 목표</div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* 3. 단일 CTA + 신뢰 근거(스킬 권고: Single CTA focus) — 하단 여백으로 상·하 균형 마감 */}
-        <section className="flex flex-wrap items-center gap-x-5 gap-y-3 pb-5">
+        {/* 3. 신뢰 지표 클러스터(social proof) → 단일 CTA — 스킬 권고: 사회적 증거를 CTA 직전에 */}
+        <section className="flex flex-col gap-5 pb-5">
+          <div className="flex items-stretch gap-6 sm:gap-9">
+            {proofStats.map((s, i) => (
+              <React.Fragment key={s.l}>
+                {i > 0 && <span className="w-px self-stretch bg-border shrink-0" aria-hidden="true" />}
+                <div className="flex flex-col gap-0.5">
+                  <span className={`text-[24px] font-black tabular-nums leading-none tracking-[-0.02em] ${s.hl ? 'text-[#155EEF]' : 'text-navy'}`}>{s.v}</span>
+                  <span className="text-[12.5px] font-bold text-gray">{s.l}</span>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
           <button
             onClick={() => setActiveTabAtTop('request')}
             style={{ touchAction: 'manipulation' }}
-            className="inline-flex items-center gap-2 bg-accent hover:bg-[#c95f12] text-white px-7 py-3.5 rounded-custom text-[16px] font-black shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+            className="inline-flex items-center gap-2 self-start bg-accent hover:bg-[#c95f12] text-white px-8 py-3.5 rounded-custom text-[16px] font-black shadow-sm transition-all active:scale-[0.99] motion-reduce:transition-none cursor-pointer"
           >
             무료 견적 검토 신청 <ArrowRight className="w-4 h-4" />
           </button>
-          <span className="text-[13.5px] font-bold text-gray">현장 실무 30년 · 누적 검증 246건 · 준수율 98.4%</span>
         </section>
 
       </div>
