@@ -49,7 +49,7 @@ const mobileMenuItems: MobileMenuItem[] = [
   { type: 'menu', label: '노후배관교체', value: '노후배관교체' },
   { type: 'menu', label: '기계실개선', value: '기계실개선' },
   { type: 'menu', label: '공정 배관공사', value: '생산설비 배관 연결' },
-  { type: 'menu', label: 'CAPEX개선,증설 검토', value: 'CAPEX 개·증설 검토' },
+  { type: 'menu', label: 'CAPEX개선,증설', value: 'CAPEX 개·증설 검토' },
   { type: 'budget', label: '간편검토(≤1천)', value: 'small' },
   { type: 'budget', label: '출장견적(~1억)', value: 'medium' },
   { type: 'budget', label: '사전진단(>1억)', value: 'large' },

@@ -44,9 +44,9 @@ export const LeftSidebar: React.FC = () => {
 
   // 외주 제작 카테고리 (사전제작 / 모듈화 공급)
   const fabricationCategories: { key: string; label: string; desc: string }[] = [
-    { key: 'spool', label: '배관 SPOOL Module 검토', desc: 'ISO 도면 기반 스풀 사전제작' },
-    { key: 'skid', label: 'SKID 제작설치 검토', desc: '단일 프레임 패키지 모듈화' },
-    { key: 'structure', label: 'Structure제작,설치 검토', desc: '가대·플랫폼 철구조물 가공' },
+    { key: 'spool', label: '배관 SPOOL Module', desc: 'ISO 도면 기반 스풀 사전제작' },
+    { key: 'skid', label: 'SKID 제작설치', desc: '단일 프레임 패키지 모듈화' },
+    { key: 'structure', label: 'Structure제작,설치', desc: '가대·플랫폼 철구조물 가공' },
   ];
 
   // 견적규모별 카테고리
@@ -54,7 +54,7 @@ export const LeftSidebar: React.FC = () => {
     { value: 'small', label: '온라인 간편검토', range: '≤1,000만' },
     { value: 'medium', label: '출장견적', range: '1,000만~1억' },
     { value: 'large', label: '프로젝트 사전진단', range: '>1억' },
-    { value: 'unknown', label: '공사규모·금액 미정', range: '온라인 컨설팅' },
+    { value: 'unknown', label: '공사규모·금액', range: '온라인 컨설팅' },
   ];
 
   const scrollMainPanelToTop = () => {

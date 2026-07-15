@@ -13,16 +13,16 @@ export const MENU_DISPLAY_NAMES: Record<string, string> = {
   '노후배관교체': '노후배관교체',
   '기계실개선': '기계실 개선공사',
   '생산설비 배관 연결': '공정 배관공사',
-  'CAPEX 개·증설 검토': 'CAPEX개선,증설 검토',
+  'CAPEX 개·증설 검토': 'CAPEX개선,증설',
   // 외주 제작 (selectedMenu = fab key)
-  'spool': '배관 SPOOL Module 검토',
-  'skid': 'SKID 제작설치 검토',
-  'structure': 'Structure제작,설치 검토',
+  'spool': '배관 SPOOL Module',
+  'skid': 'SKID 제작설치',
+  'structure': 'Structure제작,설치',
   // 견적 규모 (selectedBudget = budget value)
   'small': '온라인 간편검토',
   'medium': '출장견적',
   'large': '프로젝트 사전진단',
-  'unknown': '공사규모·금액 미정',
+  'unknown': '공사규모·금액',
 };
 
 // 선택 키 → 메뉴 제목. 매핑이 없으면 키 자체를 반환(안전 폴백).
