@@ -1888,15 +1888,15 @@ export default function Home() {
       menu: '생산설비 배관 연결',
     },
     {
-      title: 'CAPEX개선,증설 검토',
+      title: 'CAPEX개선,증설',
       desc: '도면 및 견적 검토',
       colorClass: 'bg-[#10B981]',
       color: '#10B981',
       menu: 'CAPEX 개·증설 검토',
     },
     {
-      title: 'SKID 제작설치 검토',
-      desc: '배관 SPOOL Module 검토',
+      title: 'SKID 제작설치',
+      desc: '배관 SPOOL Module',
       colorClass: 'bg-[#3B82F6]',
       color: '#3B82F6',
       menu: 'skid',

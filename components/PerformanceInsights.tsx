@@ -23,7 +23,7 @@ const BUDGET_COLS: { key: EstimateCategory; label: string; range: string }[] = [
   { key: 'small', label: '온라인 간편검토', range: '≤1,000만' },
   { key: 'medium', label: '출장견적', range: '1,000만~1억' },
   { key: 'large', label: '프로젝트 사전진단', range: '>1억' },
-  { key: 'unknown', label: '공사규모·금액 미정', range: '온라인 컨설팅' },
+  { key: 'unknown', label: '공사규모·금액', range: '온라인 컨설팅' },
 ];
 
 // 공종별 색 = '작업 특성'에 맞춘 의미 기반 팔레트(색상심리) —
