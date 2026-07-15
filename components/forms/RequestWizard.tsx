@@ -35,6 +35,53 @@ export type RequestChannel = 'visit' | 'quick';
 // 업종 — 꼭 필요한 선택값(드롭다운). 가입정보 외 최소 식별용.
 const INDUSTRY_OPTIONS = ['식품 제조', '제약·바이오', '화학·정밀', '기계·금속', '전자·반도체', '물류·유통', '일반 제조', '상업·건물', '기타'];
 
+// 채널별 견적 절차 방법론(2026-07-15 캡쳐 지시) — 채널 선택 카드 아래 정보 영역.
+//  visit=Crisp-DM 7단계 · quick=KDD 6단계. 콘텐츠는 데이터로 분리(문구 교체 용이).
+const CHANNEL_METHODOLOGY: Record<RequestChannel, { title: string; steps: { term: string; desc: string }[] }> = {
+  visit: {
+    title: '견적·출장요청 자료등록 - 견적 절차 Crisp-DM 방법론',
+    steps: [
+      { term: '작업 이해', desc: '고객 요구·공사 범위 파악 및 견적 목표 정의' },
+      { term: '데이터 이해', desc: '도면·시방서·실적 DB 탐색 및 데이터 품질 진단' },
+      { term: '데이터 준비', desc: '결측·이상치 처리, 자재/공종 정규화 및 학습 데이터셋 구성' },
+      { term: 'AI모델링', desc: '물량·단가 예측 모델 학습(회귀/앙상블) 및 견적 자동 산출' },
+      { term: '평가', desc: '예측 성능(MAE·신뢰구간) 검증 및 실적 대비 교차검증' },
+      { term: '전개', desc: '검증 모델을 견적 시스템에 배포·자동화 파이프라인 연결' },
+      { term: '고객 제공', desc: '예상 견적서·산출근거 리포트 제공' },
+    ],
+  },
+  quick: {
+    title: '무료 견적 신청 - 견적 절차 KDD 방법론',
+    steps: [
+      { term: '데이터', desc: 'RAW Data와 DB에서 필요한 데이터 수집' },
+      { term: '전처리', desc: '이상값·결측치 분류 및 데이터 가공' },
+      { term: '변환', desc: '단위·규격 표준화, 자재/공종 코드 매핑 및 파생변수 생성' },
+      { term: '마이닝', desc: '유사 실적 견적 패턴 탐색 및 단가·물량 상관 분석' },
+      { term: '평가', desc: '산출 견적의 정확도·신뢰구간 검증, 실적 대비 오차 평가' },
+      { term: '고객 제공', desc: '최종 견적서·근거자료 산출 및 고객 전달' },
+    ],
+  },
+};
+
+// 방법론 목록 렌더 — 카드 버튼 바깥의 비인터랙티브 정보 영역(거대 클릭영역·중첩 인터랙션 방지)
+const MethodologyList = ({ channel }: { channel: RequestChannel }) => {
+  const m = CHANNEL_METHODOLOGY[channel];
+  return (
+    <div className="mt-5 flex flex-col gap-3">
+      <div className="h-[3px] w-full rounded-full bg-border/80" aria-hidden="true" />
+      <h3 className="mt-1 text-[15px] font-black text-navy leading-snug">{m.title}</h3>
+      <ol className="flex flex-col gap-2">
+        {m.steps.map((s, i) => (
+          <li key={s.term} className="text-[14px] leading-relaxed">
+            <span className="font-black text-navy tabular-nums">{i + 1}. {s.term}:</span>{' '}
+            <span className="font-semibold text-gray">{s.desc}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+};
+
 const defaultFormData = {
   customer_name: '',
   company_name: '',
@@ -502,9 +549,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
           </div>
         </div>
       ) : channelView ? (
-        /* 화면 1 — 정리된 2채널 선택(제목·부제·하단문구 제거) */
-        <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* A. 견적·출장요청 자료등록 */}
+        /* 화면 1 — 정리된 2채널 선택(제목·부제·하단문구 제거) + 카드 하단 견적 절차 방법론(2026-07-15) */
+        <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+          {/* A. 견적·출장요청 자료등록 + Crisp-DM 절차 */}
+          <div className="flex flex-col">
           <button
             type="button"
             onClick={() => { setChannel('visit'); setStep(1); setErrorMsg(null); }}
@@ -524,8 +572,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
               견적 자료등록
             </span>
           </button>
+          <MethodologyList channel="visit" />
+          </div>
 
-          {/* B. 무료 견적(100만원 이하 · AI Native 자동) */}
+          {/* B. 무료 견적(100만원 이하 · AI Native 자동) + KDD 절차 */}
+          <div className="flex flex-col">
           <button
             type="button"
             onClick={() => { setChannel('quick'); setStep(1); setErrorMsg(null); }}
@@ -545,6 +596,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
               무료 견적 신청
             </span>
           </button>
+          <MethodologyList channel="quick" />
+          </div>
         </div>
       ) : (
         /* 화면 2 — 선택형 단계 탭 폼 */
