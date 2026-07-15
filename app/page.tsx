@@ -304,41 +304,20 @@ export default function Home() {
   // ==========================================
   // 1. 고객 모드 탭 렌더러
   // ==========================================
-  // FOOTER 소개란 — 사업소개에서 예상견적 의뢰 탭 하단으로 이동(2026-07-12 지시). 공용 렌더로 분리.
+  // FOOTER — 브랜드 소개·핵심영역 삭제, © 저작권 바만 유지(2026-07-16 PHASE O-32 지시). 공용 렌더로 분리.
   const renderBrandFooter = () => (
-    <footer className="border-t-2 border-navy pt-5">
-      <div className="flex justify-between gap-6 flex-wrap">
-        <div className="max-w-[460px]">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[22px] font-black text-navy tracking-tight">ZEROS</span>
-            <span className="text-[12.5px] font-bold text-[#155EEF] tracking-wider">최적합 견적 검증</span>
-          </div>
-          <p className="text-[16px] leading-[1.7] font-semibold text-gray m-0">
-            현장 경험과 데이터로 <strong className="text-navy font-black">적정 예산을 검증</strong>합니다. 시공이 아닌, 결정을 돕는 견적 파트너입니다.
-          </p>
-        </div>
-        <div className="min-w-[190px]">
-          <div className="text-[12px] font-bold text-gray uppercase tracking-[0.1em] mb-2">핵심 영역</div>
-          <div className="text-[14.5px] font-semibold text-navy leading-[1.85]">
-            공정설비 CAPEX 견적 검증<br />
-            배관·기계설비 물량 분석<br />
-            외주제작(SPOOL·SKID) 검토
-          </div>
-        </div>
-      </div>
-      <div className="border-t border-border/60 mt-4 pt-3 flex justify-between items-center gap-4 flex-wrap">
-        <span className="text-[13px] font-medium text-gray">© 2025 ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
-        <div className="flex items-center gap-4 text-[13.5px] font-bold">
-          <span className="text-gray hover:text-navy transition-colors cursor-pointer">개인정보처리방침</span>
-          <span className="text-gray-light/40">|</span>
-          <button
-            onClick={() => setActiveTabAtTop('request')}
-            style={{ touchAction: 'manipulation' }}
-            className="inline-flex items-center gap-1 text-steel hover:text-navy transition-colors cursor-pointer"
-          >
-            문의하기 <ArrowRight className="w-3 h-3 shrink-0" />
-          </button>
-        </div>
+    <footer className="border-t-2 border-navy pt-4 flex justify-between items-center gap-4 flex-wrap">
+      <span className="text-[13px] font-medium text-gray">© 2025 ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
+      <div className="flex items-center gap-4 text-[13.5px] font-bold">
+        <span className="text-gray hover:text-navy transition-colors cursor-pointer">개인정보처리방침</span>
+        <span className="text-gray-light/40">|</span>
+        <button
+          onClick={() => setActiveTabAtTop('request')}
+          style={{ touchAction: 'manipulation' }}
+          className="inline-flex items-center gap-1 text-steel hover:text-navy transition-colors cursor-pointer"
+        >
+          문의하기 <ArrowRight className="w-3 h-3 shrink-0" />
+        </button>
       </div>
     </footer>
   );
@@ -754,8 +733,8 @@ export default function Home() {
           // 별도 라우팅 없이 위저드가 직접 완료 UI를 노출한다.
         }}
       />
-      {/* FOOTER 소개란 — 사업소개에서 이동(2026-07-12 지시). 위저드 폭에 맞춰 중앙패널 하단 앵커 */}
-      <div className="mt-auto pt-12 w-full max-w-3xl mx-auto">
+      {/* FOOTER(© 바) — 하단 앵커(mt-auto)로 좌측 사이드바 하단 레벨에 맞춤 + AI Native(SOP) 패널과 동일 폭(2026-07-16 PHASE O-32) */}
+      <div className="mt-auto pt-6 w-full max-w-3xl lg:max-w-4xl mx-auto">
         {renderBrandFooter()}
       </div>
     </div>
