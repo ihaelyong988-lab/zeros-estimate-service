@@ -142,7 +142,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **가독성 체크리스트(ui-ux-pro-max)**: 본문 **≥16px**, 대비 **4.5:1**(→ `gray-light`#9AA3AF는 본문 금지, `gray`#5B6573 이상) · `prefers-reduced-motion` 존중(`motion-reduce:animate-none`) · `tabular-nums`로 숫자 정렬.
 
 ### 10-A. 확정 패턴 — 화면별 현행 규칙 (2026-07-16 현행화)
-> 근거: `ui-ux-pro-max`(Trust & Authority · Executive/Data-Dense Dashboard). **반복 교정 방지용 확정 규칙** — 재추론·재질문 없이 따른다. 각 조문의 날짜 = 최종 확정일. **개정 이력·구 조문(폐지된 값)은 `docs/00_orchestration/agents-archive.md`** — 구 패턴을 복원하기 전 반드시 아카이브에서 폐지 여부를 확인한다.
+> 근거: `ui-ux-pro-max`(Trust & Authority · Executive/Data-Dense Dashboard). **반복 교정 방지용 확정 규칙** — 재추론·재질문 없이 따른다. 각 조문의 날짜 = 최종 확정일. **개정 이력·구 조문(폐지된 값)은 `docs/00_orchestration/agents-archive.md`** — 구 패턴을 복원하기 전 반드시 아카이브에서 폐지 여부를 확인한다. **개정 방식(고정)**: 조문 개정 시 본문은 최종값으로 갱신만 하고, 폐지되는 구 값은 아카이브 연대기에 1행 추가 — 본문에 "구 X 대체" 식 개정 서사를 누적하지 않는다(재비대화 방지).
 
 #### 공통 (전 화면)
 - **모바일 메인화면 = 화이트 배경(고정).** 다크 네이비 배경(`#041B33` 등)·네온 아이콘색(sky/indigo/emerald)은 **"AI 도구 느낌" → 금지.** 배경 `#FFFFFF` · 헤드라인/본문 네이비 `#0F1E35`/그레이 `#5B6573` · 아이콘 **스틸블루 `#1E4D8C` 단색** · 카드 화이트+헤어라인 `#E4EAF2` · 주 CTA **오렌지 솔리드 `#E0701A` 하나만**. (템플릿·레이아웃은 유지, 컬러만 교체.)
