@@ -25,8 +25,14 @@
 - 새 시크릿이 필요하면 생성: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
 - `SUPABASE_SERVICE_ROLE_KEY`는 이미 라이브에서 동작 확인됨(2026-07-11 §13) — 재등록 불필요.
 
-## 3. Vercel 등록 절차 (공통)
+## 3. Vercel 등록 절차 (둘 중 하나)
 
+**방법 A — 원클릭 스크립트(권장, 2026-07-16 추가)**: 키 값을 `.env.local`에 붙여넣은 뒤 아래 실행 — 값이 화면·채팅을 거치지 않고 로컬에서 Vercel로 바로 전송된다.
+1. 최초 1회: `npm i -g vercel`(설치됨, v56) → `vercel login`(브라우저 인증) → 프로젝트 폴더에서 `vercel link`(프로젝트 선택)
+2. `.\scripts\push-env-vercel.ps1` 실행 → 5개 키 중 값이 있는 것만 Production에 등록(빈 키는 건너뜀 표시)
+3. Claude에게 "재배포하고 검증해" 지시 → 빈 커밋 푸시로 재배포 + `prod-probe` 3/3 PASS 확인
+
+**방법 B — 대시보드 수동**:
 1. [vercel.com](https://vercel.com) 대시보드 → 해당 프로젝트 → **Settings → Environment Variables**
 2. 키 이름을 위 표와 **철자 그대로** 입력, Environment는 **Production**(Preview까지 체크해도 무방)
 3. 저장 후 **Redeploy**(Deployments → 최신 배포 → Redeploy) — env는 재배포 시점에 반영된다.
