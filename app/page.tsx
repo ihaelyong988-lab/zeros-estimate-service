@@ -379,6 +379,12 @@ export default function Home() {
                   <p className="mt-1 text-[15px] font-semibold text-gray leading-relaxed">
                     {t.desc}<b className={`font-black ${t.emCls}`}>{t.em}</b>{t.tail}
                   </p>
+                  {/* 박스 3색 언더라인(2026-07-17 지시) — 딥·뮤트 시그니처 3색만, 오렌지는 CTA 전용 유지 */}
+                  <div className="mt-4 flex items-center gap-1" aria-hidden="true">
+                    <span className="h-[3px] flex-[3] rounded-full bg-[#155EEF]" />
+                    <span className="h-[3px] flex-[2] rounded-full bg-[#1E7A72]" />
+                    <span className="h-[3px] flex-1 rounded-full bg-[#B5762A]" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -1910,17 +1916,17 @@ export default function Home() {
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(224,112,26,0.04),transparent_70%)] pointer-events-none" />
 
       {/* ── 히어로 및 핵심 영역 카테고리 (수직 정렬 및 상하 여백 균형 매칭) ── */}
-      <section className="flex-1 flex items-center justify-center min-h-0 py-6 xl:py-8 z-10">
+      <section className="flex-1 flex items-center justify-center min-h-0 py-3 xl:py-5 z-10">
         <div className="w-full max-w-[1480px] mx-auto px-6 xl:px-8">
-          {/* 히어로 카드 (5대 카테고리까지 내부로 통합해 감싸도록 세로폭 확장) */}
-          <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] py-10 md:py-12 xl:py-14 px-10 md:px-12 xl:px-16 flex flex-col gap-10 relative overflow-hidden">
+          {/* 히어로 카드 (5대 카테고리까지 내부로 통합해 감싸도록 세로폭 확장) — 카피 3문장 확장분만큼 상하 여백 동반 축소(768px 높이에서도 한 화면) */}
+          <div className="bg-surface border border-border/40 rounded-[32px] shadow-[0_20px_50px_rgba(15,30,53,0.04)] pt-8 pb-6 md:pt-10 md:pb-8 xl:pt-11 xl:pb-9 px-10 md:px-12 xl:px-16 flex flex-col gap-6 relative overflow-hidden">
             {/* 은은한 내부 데코레이션 그라데이션 */}
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(245,247,250,0.5),rgba(255,255,255,0)_65%)] pointer-events-none" />
 
             {/* 상단: 카피 + 이미지 (2열 레이아웃) */}
             <div className="grid grid-cols-[1.16fr_0.84fr] gap-12 xl:gap-16 items-center z-10 relative">
               {/* 좌: 카피 + CTA */}
-              <div className="flex flex-col gap-6 xl:gap-8 relative">
+              <div className="flex flex-col gap-5 xl:gap-6 relative">
                 {/* 신뢰 표기 — 도형(알약) 제거, 헤어라인 언더라인으로 정리(탭 오인 방지) */}
                 <span className="self-start inline-flex items-center gap-2 pb-1.5 border-b-[1.5px] border-[#155EEF]/35 text-[14.5px] font-black select-none">
                   <Sparkles className="w-4 h-4 text-[#155EEF] shrink-0" />
@@ -1930,7 +1936,7 @@ export default function Home() {
                 </span>
 
                 {/* 헤드라인 */}
-                <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.25] tracking-tight text-[#0F1E35] break-keep">
+                <h1 className="text-[clamp(32px,2.8vw,40px)] font-black leading-[1.2] tracking-tight text-[#0F1E35] break-keep">
                   공정설비 CAPEX 개선·증설 <span className="whitespace-nowrap">배관공사,</span>
                   <br />
                   <span className="text-[#155EEF]">AI 분석</span>
@@ -1938,13 +1944,13 @@ export default function Home() {
                 </h1>
 
                 {/* 본문 */}
-                <p className="text-[14.5px] leading-relaxed font-semibold text-[#5B6573] max-w-xl">
+                <p className="text-[14.5px] leading-normal font-semibold text-[#5B6573] max-w-xl">
                   ZEROS는 현장 실무 경험과 <strong className="text-[#0F1E35] font-black">AI 데이터 분석</strong>을 결합해,
                   비용과 리스크까지 고려한 가장 합리적인 견적을 제안합니다.
                 </p>
 
                 {/* CTA */}
-                <div className="flex flex-wrap items-center gap-3 mt-2">
+                <div className="flex flex-wrap items-center gap-3">
                   <button
                     onClick={() => setActiveTabAtTop('request')}
                     style={{ touchAction: 'manipulation' }}
@@ -1964,14 +1970,14 @@ export default function Home() {
                 </div>
 
                 {/* 신뢰 배지 대체: 핵심 가치 피처 라인 */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3 pt-4 border-t border-border/50 select-none">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-1.5 pt-3 border-t border-border/50 select-none">
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
                       <span className="text-[14.5px] font-black text-[#0F1E35]">도면·사진 정밀 분석</span>
                     </div>
-                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
-                      도면·사진의 치수와 연결 규격을 분석하여 물량 누락을 방지합니다.
+                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-normal break-keep">
+                      제출하신 도면과 현장 사진의 치수·연결 규격을 항목 단위로 판독합니다. 배관 경로와 접속부를 교차 대조해 견적에서 빠지기 쉬운 물량을 확인합니다. 물량 누락으로 인한 시공 중 추가 비용을 견적 단계에서 예방합니다.
                     </span>
                   </div>
                   <div className="flex flex-col gap-0.5">
@@ -1979,8 +1985,8 @@ export default function Home() {
                       <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
                       <span className="text-[14.5px] font-black text-[#0F1E35]">공사 범위 사전 조율</span>
                     </div>
-                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
-                      모호한 범위를 명확히 고정하여 시공사 비교 견적의 동일 기준을 수립합니다.
+                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-normal break-keep">
+                      공사 범위와 제외 항목을 착수 전에 명확히 확정합니다. 시공사별 견적을 동일 기준·동일 조건에서 비교하도록 정렬합니다. 범위 해석 차이에서 생기는 정산 분쟁과 재견적 비용을 예방합니다.
                     </span>
                   </div>
                   <div className="flex flex-col gap-0.5">
@@ -1988,8 +1994,8 @@ export default function Home() {
                       <div className="w-1.5 h-1.5 rounded-full bg-steel shrink-0" />
                       <span className="text-[14.5px] font-black text-[#0F1E35]">실거래 공량 검토</span>
                     </div>
-                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-relaxed break-keep">
-                      표준 품셈 및 1군 실거래 표본 대조로 과도하게 부풀려진 노무 단가를 교정합니다.
+                    <span className="text-[11.5px] font-medium text-[#5B6573] pl-3 leading-normal break-keep">
+                      표준 품셈과 1군 실거래 표본을 기준으로 노무 공량과 단가를 대조합니다. 통계 범위를 벗어난 항목은 근거와 함께 적정 수준으로 보정합니다. 발주 전 예산의 적정 범위를 수치 근거로 제시합니다.
                     </span>
                   </div>
                 </div>
@@ -2023,7 +2029,7 @@ export default function Home() {
             </div>
 
             {/* ── 5대 공정/서비스 영역 카테고리 (하얀 바탕 카드 내부 하단 배치) ── */}
-            <div className="grid grid-cols-5 gap-6 xl:gap-8 border-t border-border/40 pt-8 z-10 relative">
+            <div className="grid grid-cols-5 gap-6 xl:gap-8 border-t border-border/40 pt-3.5 z-10 relative">
               {HOME_CATEGORIES.map((cat) => (
                 <button
                   key={cat.title}
