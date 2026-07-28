@@ -691,7 +691,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         {/* 모바일 전용 메인 스크롤 콘텐츠 뷰포트 */}
         <div
           data-main-scroll="true"
-          className={`flex-1 overflow-y-auto min-w-0 relative ${isMobileLanding ? 'bg-[#041B33] p-0 snap-y snap-mandatory' : 'bg-bg p-4 pb-28'}`}
+          /* 사업소개(business)만 pb-4 — 하단 탭바는 fixed가 아닌 flex 형제라 클리어런스 불필요, 한 화면 수납 지시(2026-07-28 O-38). 다른 탭은 pb-28 유지. */
+          className={`flex-1 overflow-y-auto min-w-0 relative ${isMobileLanding ? 'bg-[#041B33] p-0 snap-y snap-mandatory' : `bg-bg ${activeTab === 'business' ? 'px-4 py-3' : 'p-4 pb-28'}`}`}
         >
           {mobileActiveTab === 'account' ? (
             <MyRequestsView />
