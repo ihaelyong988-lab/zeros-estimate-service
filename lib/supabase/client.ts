@@ -1,6 +1,6 @@
 'use client';
 
-import { Estimate, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
+import { Estimate, EstimateStatus, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
 import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits } from './mock-data';
 import { isSupabaseEnabled } from './supabaseBrowser';
 
@@ -51,6 +51,21 @@ const TABLES = {
 // 저장된 버전과 다르면 견적 테이블을 새 시드로 1회 재적재해, 기존 localStorage가 옛 표본을 들고 있어도 반영된다.
 const SEED_VERSION = '2026-06-27-perf-testdata';
 const SEED_VERSION_KEY = 'zeros_seed_version';
+
+// 방문 이력으로 견적 상태를 덮어써도 되는 단계(방문 이전 ~ 방문 단계) 화이트리스트.
+// 여기에 없는 단계(견적서 작성중·견적서 송부완료·수주성공·수주실패·보류·취소)는
+// 이미 방문 이후로 진행·종결된 건이므로 방문 이력을 나중에 넣어도 상태를 되돌리지 않는다.
+// 특히 '수주성공' 건의 상태를 되돌리면 updateEstimate → syncCustomerOnStatusChange 가
+// 수주 취소로 판정해 고객의 total_won·total_revenue 를 실제 DB에서 차감한다.
+const VISIT_SYNCABLE_STATUSES: readonly EstimateStatus[] = [
+  '접수완료',
+  '검토중',
+  '추가자료요청',
+  '출장견적 결제대기',
+  '방문일정 조율중',
+  '현장방문 예정',
+  '현장방문 완료',
+];
 
 // ==========================================
 // 2. 공통 비즈니스 로직 베이스 (저장소 비의존)
@@ -382,6 +397,27 @@ abstract class BaseZerosService implements ZerosDataService {
     return this.loadTable<SiteVisit>(TABLES.siteVisits);
   }
 
+  // 방문 이력 → 견적 상태 동기화(가드 포함). 방문 레코드 저장 자체와는 분리돼 있어,
+  // 상태를 바꾸지 않는 경우에도 방문 이력은 그대로 남는다.
+  private async syncEstimateStatusForVisit(estimateId: string, visitStatus: SiteVisit['visit_status']) {
+    if (!estimateId) return;
+
+    // 방문 취소는 견적 상태를 건드리지 않는다(과거엔 '현장방문 예정'으로 잘못 매핑됐다).
+    if (visitStatus === '취소') return;
+
+    const nextStatus: EstimateStatus = visitStatus === '완료' ? '현장방문 완료' : '현장방문 예정';
+
+    // 판정용 조회는 기존 getEstimateById(= getEstimates 1회) 경로만 사용한다.
+    // 대부분의 호출은 아래 세 가드에서 걸러져 updateEstimate 의 재조회·전체 저장까지 가지 않으므로
+    // 기존(무조건 updateEstimate) 대비 오히려 왕복이 줄어든다.
+    const current = await this.getEstimateById(estimateId);
+    if (!current) return;
+    if (current.status === nextStatus) return; // 이미 같은 상태면 저장·알림 불필요
+    if (!VISIT_SYNCABLE_STATUSES.includes(current.status)) return; // 방문 이후 단계는 보존
+
+    await this.updateEstimate(estimateId, { status: nextStatus });
+  }
+
   async createSiteVisit(visit: Partial<SiteVisit>): Promise<SiteVisit> {
     const list = await this.getSiteVisits();
     const newVisit: SiteVisit = {
@@ -401,12 +437,8 @@ abstract class BaseZerosService implements ZerosDataService {
     list.unshift(newVisit);
     await this.persistTable(TABLES.siteVisits, list);
 
-    // 견적서 테이블의 상태도 '현장방문 예정' 등으로 자동 동기화
-    if (newVisit.estimate_id) {
-      await this.updateEstimate(newVisit.estimate_id, {
-        status: newVisit.visit_status === '완료' ? '현장방문 완료' : '현장방문 예정'
-      });
-    }
+    // 견적 상태 동기화는 방문 이전 단계일 때만(가드는 syncEstimateStatusForVisit).
+    await this.syncEstimateStatusForVisit(newVisit.estimate_id, newVisit.visit_status);
 
     return newVisit;
   }
@@ -420,11 +452,7 @@ abstract class BaseZerosService implements ZerosDataService {
     list[idx] = updated;
     await this.persistTable(TABLES.siteVisits, list);
 
-    if (updated.estimate_id) {
-      await this.updateEstimate(updated.estimate_id, {
-        status: updated.visit_status === '완료' ? '현장방문 완료' : '현장방문 예정'
-      });
-    }
+    await this.syncEstimateStatusForVisit(updated.estimate_id, updated.visit_status);
 
     return updated;
   }
