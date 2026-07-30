@@ -197,7 +197,7 @@ export const CustomerLoginModal: React.FC = () => {
           )}
 
           {error && (
-            <div className="bg-danger/5 border border-danger/20 rounded-custom px-3 py-2 text-[12px] font-bold text-danger">
+            <div role="alert" aria-live="assertive" className="bg-danger/5 border border-danger/20 rounded-custom px-3 py-2 text-[12px] font-bold text-danger">
               {error}
             </div>
           )}

@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/* Pretendard — 한글 동적 서브셋(가변 폰트).
+   unicode-range로 쪼갠 92개 조각 중 화면에 실제 쓰인 글자 조각만 내려받는다.
+   가변 축(45~920)이라 400·500·600·700·800·900을 조각 1벌로 함께 감당한다
+   (정적 굵기별 서브셋은 굵기마다 같은 조각을 중복 수신). font-display: swap 포함. */
+@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
 :root {
   --color-bg:          #FFFFFF;   /* 기본 배경 */
@@ -22,6 +27,10 @@
   /* 간격 스케일 */
   --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
   --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+
+  /* 본문 서체 — Pretendard 우선, 미로드 시 기존 시스템 폰트 체인으로 폴백.
+     정의는 이 한 곳뿐이다(body + Tailwind --font-sans가 동일 값을 참조). */
+  --font-stack: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
 
   /* 라운드/그림자 */
   --radius:    6px;
@@ -47,6 +56,10 @@
   --color-danger: var(--color-danger);
   --color-info: var(--color-info);
   
+  /* Tailwind 기본 sans 토큰을 덮어쓴다 — AppShell 루트의 font-sans 유틸리티가
+     ui-sans-serif 기본 스택으로 body 설정을 덮어써 Pretendard가 무시되던 문제. */
+  --font-sans: var(--font-stack);
+
   --radius-custom: var(--radius);
   --shadow-custom-sm: var(--shadow-sm);
   --shadow-custom-md: var(--shadow-md);
@@ -55,7 +68,7 @@
 body {
   background: var(--color-bg-subtle);
   color: var(--color-text);
-  font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  font-family: var(--font-stack);
   margin: 0;
   padding: 0;
   overflow-x: hidden;

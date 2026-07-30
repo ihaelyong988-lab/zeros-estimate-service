@@ -36,6 +36,8 @@ interface MobileAdminMenuItem {
 }
 
 type MobileActiveTab = 'home' | 'service' | 'request' | 'history' | 'account' | 'decision' | 'admin';
+// activeTab === 'home' 위에 겹쳐 뜨는 모바일 전용 화면(마이페이지·의사결정). 나머지 하단 탭은 activeTab에서 파생된다.
+type HomeSubView = 'home' | 'account' | 'decision';
 type AdminView = MobileAdminMenuItem['value'];
 
 const activeTabValues: ActiveTab[] = ['home', 'business', 'performance', 'request', 'sop', 'review', 'process'];
@@ -98,14 +100,35 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   // 기본값(데스크톱)을 먼저 그렸다가 모바일로 다시 그리는 깜빡임(깨진 화면)을 차단.
   const [layoutReady, setLayoutReady] = useState(false);
 
-  // 모바일 하단 전용 액티브 탭 상태 ('home' | 'request' | 'decision' | 'admin')
-  const [mobileActiveTab, setMobileActiveTab] = useState<MobileActiveTab>('home');
+  // 모바일 홈 위에 겹쳐 뜨는 화면(마이페이지·의사결정)만 상태로 둔다.
+  const [homeSubView, setHomeSubView] = useState<HomeSubView>('home');
   // 휴대폰 뒤로가기 앱 닫기 확인 팝업 (2026-07-12 지시 — 홈에서 뒤로가기 시 소리 없이 닫히지 않게)
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const isSyncingFromHistoryRef = useRef(false);
   const lastShellUrlRef = useRef('');
   // 최상단 공종 칩 가로 스크롤 컨테이너 — 랜딩 쇼케이스 순회에 맞춰 활성 칩으로 자동 이동
   const quickMenuScrollRef = useRef<HTMLDivElement>(null);
+
+  // 홈을 벗어나면 겹침 화면(마이페이지·의사결정)은 해제한다 — 다시 홈으로 돌아왔을 때 홈이 보이게.
+  // (이전 값과 비교하는 렌더 중 상태 조정 패턴. 홈→홈 이동인 겹침 화면 진입은 건드리지 않는다.)
+  const isHomeTab = activeTab === 'home';
+  const [prevIsHomeTab, setPrevIsHomeTab] = useState(isHomeTab);
+  if (prevIsHomeTab !== isHomeTab) {
+    setPrevIsHomeTab(isHomeTab);
+    if (!isHomeTab) setHomeSubView('home');
+  }
+
+  // 모바일 하단 액티브 탭 = activeTab·모드에서 렌더 중 계산하는 파생값.
+  // (별도 state로 두고 effect에서 동기화하면 연쇄 렌더가 생긴다 — react-hooks/set-state-in-effect)
+  const mobileActiveTab: MobileActiveTab = !isUserMode
+    ? 'admin'
+    : activeTab === 'request'
+      ? 'request'
+      : activeTab === 'business' || activeTab === 'sop' || activeTab === 'process'
+        ? 'service'
+        : activeTab === 'performance'
+          ? 'history'
+          : homeSubView;
 
   useEffect(() => {
     const handleResize = () => {
@@ -136,7 +159,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       if (mode === 'admin') {
         setIsUserMode(false);
         setActiveTab('home');
-        setMobileActiveTab('admin');
+        setHomeSubView('home');
         setAdminView(adminViewParam && adminViewValues.includes(adminViewParam) ? adminViewParam : 'dashboard');
         return;
       }
@@ -145,32 +168,25 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
       if (tab === 'decision') {
         setActiveTab('home');
-        setMobileActiveTab('decision');
+        setHomeSubView('decision');
         return;
       }
 
       if (tab === 'account') {
         setActiveTab('home');
-        setMobileActiveTab('account');
+        setHomeSubView('account');
         return;
       }
 
       if (tab && activeTabValues.includes(tab as ActiveTab) && tab !== 'home') {
+        // 하단 탭은 activeTab에서 파생되므로 겹침 화면만 되돌린다.
         setActiveTab(tab as ActiveTab);
-        setMobileActiveTab(
-          tab === 'request'
-            ? 'request'
-            : tab === 'business' || tab === 'sop' || tab === 'process'
-              ? 'service'
-              : tab === 'performance'
-                ? 'history'
-                : 'home'
-        );
+        setHomeSubView('home');
         return;
       }
 
       setActiveTab('home');
-      setMobileActiveTab('home');
+      setHomeSubView('home');
       setSelectedMenu(menu);
       setSelectedBudget(menu ? '' : budget);
     };
@@ -293,22 +309,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     }
   }, [activeTab, selectedMenu, selectedBudget, setShowDecisionPanel]);
 
-  // 모바일 하단 탭과 activeTab 연동 동기화
-  useEffect(() => {
-    if (!layoutReady || !isMobileLayout) return;
-    if (activeTab === 'request') {
-      setMobileActiveTab('request');
-    } else if (activeTab === 'business' || activeTab === 'sop' || activeTab === 'process') {
-      setMobileActiveTab('service');
-    } else if (activeTab === 'performance') {
-      setMobileActiveTab('history');
-    } else if (activeTab === 'home') {
-      if (mobileActiveTab !== 'account' && mobileActiveTab !== 'decision') {
-        setMobileActiveTab('home');
-      }
-    }
-  }, [activeTab, layoutReady, isMobileLayout]);
-
   // 레이아웃 확정 전: 브랜드 스플래시 (깨진 헤더 대신 깔끔한 첫 화면)
   if (!layoutReady) {
     return (
@@ -345,7 +345,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   // 모바일 하단 탭 변경 시, 상위 context 상태와 정교하게 매핑하여 화면 전환 동기화
   const handleMobileTabChange = (tab: MobileActiveTab) => {
-    setMobileActiveTab(tab);
+    setHomeSubView(tab === 'account' || tab === 'decision' ? tab : 'home');
     if (tab === 'home') {
       setMobileMenuOpen(false);
       setIsUserMode(true);
@@ -415,7 +415,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   // 모바일 퀵 탭 스크롤 처리
   const handleMobileQuickMenuClick = (item: MobileMenuItem) => {
     setMobileMenuOpen(false);
-    setMobileActiveTab('home');
+    setHomeSubView('home');
     setIsUserMode(true);
     if (item.type === 'menu') {
       setSelectedMenu(item.value);
@@ -525,7 +525,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 onClick={() => {
                   setMobileMenuOpen(false);
                   setIsUserMode(true);
-                  setMobileActiveTab('service');
+                  setHomeSubView('home');
                   setActiveTab('sop');
                   setSelectedMenu('');
                   setSelectedBudget('');

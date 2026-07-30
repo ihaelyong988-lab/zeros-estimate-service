@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AppShell } from "@/components/layout/AppShell";
-import { useShell } from "@/lib/context/ShellContext";
+import { useShell, type ActiveTab } from "@/lib/context/ShellContext";
 import { RequestWizard, prefetchOtpEnabled, type RequestChannel } from "@/components/forms/RequestWizard";
 import { manualData } from "@/lib/constants/manuals";
 import { ZerosService } from "@/lib/supabase/client";
@@ -128,30 +128,19 @@ const MOBILE_TRADE_ESTIMATES: Record<string, { min: number; max: number; median:
   'CAPEX 개·증설 검토': { min: 50_000_000, max: 480_000_000, median: 220_000_000, base: 180_000_000 },
 };
 
-// 섹션 머리표 — 박스 래퍼 없이 accent bar + eyebrow + heading 으로 섹션 경계를 표시(L1)
-function SectionHeading({
-  eyebrow,
-  title,
-  accent = 'accent',
-}: {
-  eyebrow?: string;
-  title: string;
-  accent?: 'accent' | 'steel' | 'success';
-}) {
-  const barColor = accent === 'steel' ? 'bg-steel' : accent === 'success' ? 'bg-success' : 'bg-accent';
-  const eyebrowColor = accent === 'steel' ? 'text-steel' : accent === 'success' ? 'text-success' : 'text-accent';
-  return (
-    <div className="flex flex-col gap-1.5 select-none">
-      {eyebrow && (
-        <div className="flex items-center gap-2">
-          <span className={`w-1 h-4 ${barColor} rounded-full`} />
-          <span className={`text-[12px] font-black uppercase tracking-wider ${eyebrowColor}`}>{eyebrow}</span>
-        </div>
-      )}
-      <h2 className="text-[18px] font-black text-navy tracking-tight leading-snug">{title}</h2>
-    </div>
-  );
-}
+// 모바일 랜딩 히어로 — 핵심 3대 역량 칩. channel이 있으면 견적문의 해당 채널로 바로 진입한다.
+const MOBILE_HERO_LINKS: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  sub: string;
+  color: string;
+  targetTab: ActiveTab;
+  channel?: RequestChannel;
+}[] = [
+  { icon: Truck, label: '견적.출장요청 자료 등록하기', sub: '고객 자료등록 및 예약방문 요청', color: 'text-[#1E4D8C]', targetTab: 'request', channel: 'visit' },
+  { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-[#1E4D8C]', targetTab: 'sop' },
+  { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-[#1E4D8C]', targetTab: 'business' },
+];
 
 export default function Home() {
   const {
@@ -275,24 +264,28 @@ export default function Home() {
     });
   };
 
-  // 모바일 홈/로고 탭 클릭 등으로 첫 랜딩 상태 복귀 시, 내부 서브 캐러셀과 슬라이더 상태도 첫 화면(0)으로 초기화
-  useEffect(() => {
-    const isMobileLanding = activeTab === 'home' && !selectedMenu && !selectedBudget;
+  // 모바일 홈/로고 탭 클릭 등으로 첫 랜딩 상태 복귀 시, 내부 서브 캐러셀과 슬라이더 상태도 첫 화면(0)으로 초기화.
+  // 상태 초기화는 렌더 중 조정(이전 값 비교) — effect 안에서 동기 setState를 하면 연쇄 렌더가 생긴다.
+  const isMobileLanding = activeTab === 'home' && !selectedMenu && !selectedBudget;
+  const [wasMobileLanding, setWasMobileLanding] = useState(isMobileLanding);
+  if (wasMobileLanding !== isMobileLanding) {
+    setWasMobileLanding(isMobileLanding);
     if (isMobileLanding) {
       setMobileTradeIdx(0);
       setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[0]].base);
-      
-      const el = mobileCarouselRef.current;
-      if (el) {
-        el.scrollTo({ left: 0, behavior: 'auto' });
-      }
     }
-  }, [activeTab, selectedMenu, selectedBudget]);
+  }
+
+  // 캐러셀 DOM 위치 복귀(외부 시스템 동기화)는 커밋 이후에 수행한다.
+  useEffect(() => {
+    if (!isMobileLanding) return;
+    mobileCarouselRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+  }, [isMobileLanding]);
 
   // 홈 카드/CTA가 지정한 견적문의 진입 채널 — RequestWizard 마운트 시 1회 소비.
-  const pendingRequestChannel = useRef<RequestChannel | null>(null);
+  const [pendingRequestChannel, setPendingRequestChannel] = useState<RequestChannel | null>(null);
   const openRequestChannel = (ch: RequestChannel) => {
-    pendingRequestChannel.current = ch;
+    setPendingRequestChannel(ch);
     setActiveTabAtTop('request');
   };
 
@@ -737,8 +730,8 @@ export default function Home() {
   const renderRequestTab = () => (
     <div className="py-4 flex flex-col min-h-[calc(100vh-128px)]">
       <RequestWizard
-        initialChannel={pendingRequestChannel.current}
-        onChannelConsumed={() => { pendingRequestChannel.current = null; }}
+        initialChannel={pendingRequestChannel}
+        onChannelConsumed={() => setPendingRequestChannel(null)}
         onComplete={() => {
           // 완료 화면은 위저드 내부 '등록완료 탭'에서 처리(관리 페이지 이동 링크 포함).
           // 별도 라우팅 없이 위저드가 직접 완료 UI를 노출한다.
@@ -1468,14 +1461,10 @@ export default function Home() {
 
             {/* 핵심 3대 역량 아이콘 칩 — 탭화하여 각 탭으로 링크 연결 */}
             <div className="flex flex-col gap-4 select-none">
-              {[
-                { icon: Truck, label: '견적.출장요청 자료 등록하기', sub: '고객 자료등록 및 예약방문 요청', color: 'text-[#1E4D8C]', targetTab: 'request', channel: 'visit' as RequestChannel | undefined },
-                { icon: LineChart, label: 'AI Native 데이터분석 제공', sub: '실적 기반 견적 적합성 검증', color: 'text-[#1E4D8C]', targetTab: 'sop', channel: undefined as RequestChannel | undefined },
-                { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-[#1E4D8C]', targetTab: 'business', channel: undefined as RequestChannel | undefined },
-              ].map(({ icon: Icon, label, sub, color, targetTab, channel }) => (
+              {MOBILE_HERO_LINKS.map(({ icon: Icon, label, sub, color, targetTab, channel }) => (
                 <button
                   key={label}
-                  onClick={() => channel ? openRequestChannel(channel) : setActiveTabAtTop(targetTab as any)}
+                  onClick={() => channel ? openRequestChannel(channel) : setActiveTabAtTop(targetTab)}
                   className="flex items-start gap-4 text-left w-full p-3.5 rounded-[16px] bg-white border border-[#E4EAF2] hover:bg-[#F5F8FC] hover:border-[#D3E2F3] active:scale-[0.98] transition-all duration-200 cursor-pointer"
                 >
                   <div className="w-10 h-10 rounded-[12px] bg-[#EAF2FB] border border-[#D3E2F3] flex items-center justify-center shrink-0 mt-0.5">

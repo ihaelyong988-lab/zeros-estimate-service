@@ -45,7 +45,13 @@ function lint(files) {
   for (const f of files) {
     let src = '';
     try { src = readFileSync(join(root, f), 'utf8'); } catch { continue; }
-    const hasErrRender = /\{\s*errorMsg\s*&&/.test(src) || /errorMessage\s*&&/.test(src);
+    // R1 탐지 범위(2026-07-30 강화): 기존 errorMsg·errorMessage 두 변수명만 잡아 실제 코드의
+    // `{error &&`·`{authError &&` 렌더 3곳을 놓쳤다 → *error*를 포함한 임의 식별자를 탐지한다.
+    // 기존 두 패턴은 그대로 남겨 탐지 범위를 줄이지 않는다(강화 전용, 예외 추가 금지).
+    const hasErrRender =
+      /\{\s*errorMsg\s*&&/.test(src) ||
+      /errorMessage\s*&&/.test(src) ||
+      /\{\s*!*\s*[\w$]*[eE]rror[\w$]*\s*&&/.test(src);
     const hasAlert = /role=["']alert["']/.test(src) || /aria-live=/.test(src);
     if (hasErrRender && !hasAlert)
       out.push({ file: f, block: true, rule: 'R1 에러 alert 누락', fix: '에러 표시 div에 role="alert" 또는 aria-live 추가' });
