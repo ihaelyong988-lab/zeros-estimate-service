@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServiceClient } from '@/lib/supabase/supabaseServer';
 import { checkAdminSession, checkSession, checkVerified } from '@/lib/otp/token';
 import { isSmsConfigured } from '@/lib/sms/send';
+import { kstDateStr } from '@/lib/utils/date';
 import type { Estimate, Customer, SiteVisit, NotificationLog } from '@/types/estimate';
 
 // ==========================================
@@ -88,9 +89,22 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const isAdmin = !!body.adminToken && checkAdminSession(body.adminToken);
+  const adminToken = typeof body.adminToken === 'string' ? body.adminToken : '';
+  const sessionToken = typeof body.sessionToken === 'string' ? body.sessionToken : '';
+  const isAdmin = !!adminToken && checkAdminSession(adminToken);
   const reqDigits = digitsOf(body.phone);
-  const isCustomer = !isAdmin && !!body.sessionToken && !!reqDigits && checkSession(body.sessionToken, reqDigits);
+  const isCustomer = !isAdmin && !!sessionToken && !!reqDigits && checkSession(sessionToken, reqDigits);
+
+  // 토큰을 제시했는데 검증이 실패했다 = 세션 만료·무효. 이 경우를 빈 배열(200)로 돌려주면
+  // 화면에는 "데이터 없음"으로 보여 사용자가 원인을 알 수 없다 → 401 + 원인 메시지로 구분한다.
+  const adminSessionInvalid = !!adminToken && !isAdmin;
+  const customerSessionInvalid = !isAdmin && !!sessionToken && !isCustomer;
+
+  const unauthorized = (message: string) => Response.json({ error: message }, { status: 401 });
+  const ADMIN_EXPIRED = '관리자 세션이 만료되었습니다. 다시 로그인해 주세요.';
+  const CUSTOMER_EXPIRED = '로그인 세션이 만료되었습니다. 휴대폰 인증으로 다시 로그인해 주세요.';
+  const LOGIN_REQUIRED = '로그인이 필요한 자료입니다. 휴대폰 인증 후 조회해 주세요.';
+  const ADMIN_LOGIN_REQUIRED = '관리자 로그인이 필요한 자료입니다.';
 
   const op = body.op;
 
@@ -106,7 +120,13 @@ export async function POST(req: NextRequest) {
         return Response.json({ rows: await loadRows(supabase, table) });
       }
 
-      // 견적: 고객=본인 건 전체, 익명=허용목록 분석 필드만
+      // 견적 = 익명 허용 경로. 공개 실적 화면이 로그인 없이 동작해야 하므로
+      // 비로그인·세션 만료 모두 허용목록 분석 필드만 담아 200으로 응답한다.
+      //
+      // ⚠ 이 분기는 adminSessionInvalid 검사보다 반드시 앞에 있어야 한다.
+      // 클라이언트(lib/supabase/client.ts authBody)는 고객 모드에서도 localStorage의
+      // 관리자 토큰을 함께 실어 보내므로, 무효 토큰을 이유로 여기서 401을 내면
+      // 과거 관리자 로그인 이력이 있는 브라우저에서 공개 홈·실적이 통째로 빈다.
       if (table === TABLES.estimates) {
         const all = await loadRows<Estimate>(supabase, table);
         if (isCustomer) {
@@ -116,15 +136,26 @@ export async function POST(req: NextRequest) {
         return Response.json({ rows: publicRows });
       }
 
-      // 알림 로그: 고객=본인 건만, 익명=차단
+      // 관리자 토큰을 제시했는데 무효 = 관리자 화면의 세션 만료. 익명 응답으로 강등하면
+      // 백오피스가 PII 없는 공개 행을 "정상 데이터"처럼 그리므로 여기서 끊는다.
+      // (익명 허용 경로인 견적은 위에서 이미 반환됐다.)
+      if (adminSessionInvalid) return unauthorized(ADMIN_EXPIRED);
+
+      // 알림 로그 = 세션 필요 경로(본인 건만). 인증 실패는 빈 배열이 아니라 401.
       if (table === TABLES.notificationLogs) {
-        if (!isCustomer) return Response.json({ rows: [] });
+        if (!isCustomer) {
+          return unauthorized(customerSessionInvalid ? CUSTOMER_EXPIRED : LOGIN_REQUIRED);
+        }
         const all = await loadRows<NotificationLog>(supabase, table);
         return Response.json({ rows: all.filter((l) => digitsOf(l.phone) === reqDigits) });
       }
 
-      // 고객/결제/방문/관리자 테이블: 관리자만(위에서 반환). 그 외 차단.
-      return Response.json({ rows: [] });
+      // 고객/결제/방문/관리자 테이블 = 관리자 전용(위에서 반환).
+      // 미인증은 401, 고객 세션은 인증됐으나 권한이 없으므로 403.
+      if (isCustomer) {
+        return Response.json({ error: '권한이 없습니다.' }, { status: 403 });
+      }
+      return unauthorized(customerSessionInvalid ? CUSTOMER_EXPIRED : ADMIN_LOGIN_REQUIRED);
     }
 
     // ---------- 쓰기(관리자 전용) ----------
@@ -163,7 +194,9 @@ export async function POST(req: NextRequest) {
       }
 
       const nowIso = new Date().toISOString();
-      const todayStr = nowIso.slice(0, 10).replace(/-/g, '');
+      // 날짜는 KST 기준(AGENTS §13). UTC 로 자르면 한국시간 00~09시 접수가 전일자 번호로 발급된다.
+      const todayKst = kstDateStr(nowIso);
+      const todayStr = todayKst.replace(/-/g, '');
 
       // 접수번호는 서버에서 채번한다(클라이언트 count+1 경쟁으로 인한 중복 방지).
       const existing = await loadRows<Estimate>(supabase, TABLES.estimates);
@@ -254,7 +287,7 @@ export async function POST(req: NextRequest) {
         const visitRow: SiteVisit = {
           id: `visit-generated-uuid-${Math.random().toString(36).substr(2, 9)}`,
           estimate_id: newEstimate.id,
-          visit_date: v.visit_date || nowIso.slice(0, 10),
+          visit_date: v.visit_date || todayKst,
           visitor_name: v.visitor_name || '미배정',
           visit_purpose: v.visit_purpose || '현장 실측',
           visit_status: '예정',

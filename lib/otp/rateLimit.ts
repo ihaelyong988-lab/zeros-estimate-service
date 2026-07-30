@@ -42,9 +42,18 @@ export function rateLimit(key: string, max: number, windowMs: number): RateResul
   return { ok: true, retryAfterSec: 0 };
 }
 
-/** 요청 IP 추출(프록시 헤더 우선). 없으면 'unknown'. */
+/**
+ * 요청 IP 추출. 없으면 'unknown'.
+ *
+ * x-forwarded-for 의 **첫 홉은 클라이언트가 임의로 넣을 수 있다** — 요청마다 가짜 IP를
+ * 붙이면 IP 버킷이 매번 새로 생겨 제한이 무력화된다. 프록시가 자신이 관측한 주소를
+ * 덧붙이는 **마지막 홉**만 신뢰하고, 없으면 프록시가 단독으로 세팅하는 x-real-ip 를 쓴다.
+ */
 export function clientIp(req: Request): string {
   const xff = req.headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0].trim();
+  if (xff) {
+    const hops = xff.split(',').map((h) => h.trim()).filter(Boolean);
+    if (hops.length) return hops[hops.length - 1];
+  }
   return req.headers.get('x-real-ip') || 'unknown';
 }

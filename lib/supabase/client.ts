@@ -566,19 +566,26 @@ class SupabaseZerosService extends BaseZerosService {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
+      // 401 = 세션 만료·무효. 스테일 관리자 토큰을 그대로 두면 이후 모든 요청에 계속 실려
+      // 무효 상태가 고착되므로 여기서 폐기한다(수동 로그아웃 전까지 남던 문제).
+      if (res.status === 401 && typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('zeros_admin_token');
+          localStorage.removeItem('zeros_admin_authed');
+        } catch {
+          // 스토리지 접근 불가 환경은 무시
+        }
+      }
       throw new Error((data as { error?: string }).error || '데이터 요청에 실패했습니다.');
     }
     return data as R;
   }
 
+  // 실패를 빈 배열로 삼키면 서버 장애·세션 만료가 전 화면에서 "데이터 0건"으로 위장된다.
+  // 오류는 그대로 전파하고, 표시 방식은 호출한 화면이 결정한다(모든 호출부에 try/catch 있음).
   protected async loadTable<T>(key: string): Promise<T[]> {
-    try {
-      const { rows } = await this.postData<{ rows: T[] }>({ op: 'list', table: key });
-      return rows || [];
-    } catch (e) {
-      console.error(`[Data] ${key} 로드 실패:`, e instanceof Error ? e.message : e);
-      return [];
-    }
+    const { rows } = await this.postData<{ rows: T[] }>({ op: 'list', table: key });
+    return rows || [];
   }
 
   protected async persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void> {
