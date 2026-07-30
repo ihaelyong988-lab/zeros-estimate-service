@@ -162,7 +162,7 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified }) 
       )}
 
       {error && (
-        <div className="bg-danger/5 border border-danger/20 rounded-custom px-3 py-2 text-[12px] font-bold text-danger flex items-center gap-1.5">
+        <div role="alert" aria-live="assertive" className="bg-danger/5 border border-danger/20 rounded-custom px-3 py-2 text-[12px] font-bold text-danger flex items-center gap-1.5">
           {error}
         </div>
       )}

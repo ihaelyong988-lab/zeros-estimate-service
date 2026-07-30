@@ -22,7 +22,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-export interface DecisionMetrics {
+interface DecisionMetrics {
   avgDays: number;
   minAmount: string;
   maxAmount: string;
@@ -30,12 +30,10 @@ export interface DecisionMetrics {
   minVal: number;       // 최소 숫자 제원 (실시간 연동용)
   maxVal: number;       // 최대 숫자 제원 (실시간 연동용)
   percent: number;      // 기본 중앙값 위치 퍼센트
-  sampleCount: number;
   recommendation: string;
-  recommendationDesc: string;
 }
 
-export const metricsMap: Record<string, DecisionMetrics> = {
+const metricsMap: Record<string, DecisionMetrics> = {
   '배관공사': {
     avgDays: 2.1,
     minAmount: '1,200만',
@@ -44,9 +42,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 12000000,
     maxVal: 45000000,
     percent: 45,
-    sampleCount: 42,
     recommendation: '출장견적 검토 대상',
-    recommendationDesc: '도면 분석 및 현장 실측을 통해 신뢰도 높은 예상 범위를 산정합니다.',
   },
   '장비설치': {
     avgDays: 1.8,
@@ -56,9 +52,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 8000000,
     maxVal: 30000000,
     percent: 32,
-    sampleCount: 28,
     recommendation: '온라인 간편검토 대상',
-    recommendationDesc: '장비 제원표와 연결부 현장 사진 제출 시 24시간 내 간편 견적이 가능합니다.',
   },
   'Utility 배관': {
     avgDays: 3.2,
@@ -68,9 +62,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 25000000,
     maxVal: 80000000,
     percent: 55,
-    sampleCount: 35,
     recommendation: '출장견적 검토 대상',
-    recommendationDesc: '유틸리티 가동 중단 일정을 조율하고 현장 우회 경로를 파악해야 합니다.',
   },
   '공장증설': {
     avgDays: 4.5,
@@ -80,9 +72,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 50000000,
     maxVal: 250000000,
     percent: 60,
-    sampleCount: 19,
     recommendation: '프로젝트 사전진단 대상',
-    recommendationDesc: '생산 능력 증대에 따른 전체 CAPEX 예산 및 공기 타당성을 면밀히 기획합니다.',
   },
   '노후배관교체': {
     avgDays: 2.8,
@@ -92,9 +82,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 15000000,
     maxVal: 60000000,
     percent: 40,
-    sampleCount: 24,
     recommendation: '출장견적 검토 대상',
-    recommendationDesc: '기존 배관의 부식 수준 파악 및 철거 후 신설 동선 제약 요소를 실측합니다.',
   },
   '기계실개선': {
     avgDays: 3.5,
@@ -104,9 +92,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 30000000,
     maxVal: 120000000,
     percent: 50,
-    sampleCount: 15,
     recommendation: '출장견적 검토 대상',
-    recommendationDesc: '기계실 협소 구역 내 대형 장비 진입로 및 밸브 헤더 분기 최적화를 검토합니다.',
   },
   '생산설비 배관 연결': {
     avgDays: 2.3,
@@ -116,9 +102,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 8000000,
     maxVal: 40000000,
     percent: 38,
-    sampleCount: 31,
     recommendation: '온라인 간편검토 대상',
-    recommendationDesc: '설비측 훅업 규격과 Utility 탭 측 연결 밸브 사진 확인으로 검토합니다.',
   },
   'CAPEX 개·증설 검토': {
     avgDays: 5.0,
@@ -128,9 +112,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 80000000,
     maxVal: 500000000,
     percent: 65,
-    sampleCount: 12,
     recommendation: '프로젝트 사전진단 대상',
-    recommendationDesc: '1군 건설사 수준의 원가 설계 노하우를 바탕으로 공법별 예산 타당성을 종합 진단합니다.',
   },
   // 외주제작 (Fabrication) — 도면 기반 사전제작/모듈화 공급
   'spool': {
@@ -141,9 +123,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 20000000,
     maxVal: 150000000,
     percent: 30,
-    sampleCount: 68,
     recommendation: '도면 기반 사전제작 검토',
-    recommendationDesc: 'ISO 도면과 자재 사양으로 스풀 분할과 물량을 비대면으로 산출합니다.',
   },
   'skid': {
     avgDays: 2.5,
@@ -153,9 +133,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 30000000,
     maxVal: 300000000,
     percent: 33,
-    sampleCount: 54,
     recommendation: '패키지 모듈 사전제작 검토',
-    recommendationDesc: 'P&ID와 장비 사양으로 모듈 구성과 물량을 비대면으로 산출합니다.',
   },
   'structure': {
     avgDays: 2.2,
@@ -165,9 +143,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 15000000,
     maxVal: 120000000,
     percent: 29,
-    sampleCount: 47,
     recommendation: '도면 기반 공장가공 검토',
-    recommendationDesc: '구조 도면과 하중 조건으로 부재 물량과 가공 도면을 비대면으로 산출합니다.',
   },
   // 견적규모별 폴백
   'small': {
@@ -178,9 +154,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 1000000,
     maxVal: 10000000,
     percent: 40,
-    sampleCount: 56,
     recommendation: '온라인 간편검토',
-    recommendationDesc: '신속한 1차 서류 검토 및 자재 가격 기반 표준 견적을 산출합니다.',
   },
   'medium': {
     avgDays: 3.0,
@@ -190,9 +164,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 10000000,
     maxVal: 100000000,
     percent: 48,
-    sampleCount: 78,
     recommendation: '출장견적 및 실측 권장',
-    recommendationDesc: '전문 엔지니어가 현장을 방문하여 작업 여건과 배관 난이도를 실측합니다.',
   },
   'large': {
     avgDays: 5.5,
@@ -202,9 +174,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 100000000,
     maxVal: 1000000000,
     percent: 58,
-    sampleCount: 22,
     recommendation: '종합 CAPEX 사전진단',
-    recommendationDesc: '공법 검토, 시공 안전 리스크 분석, 단계별 예산 최적화 리포트를 제공합니다.',
   },
   'unknown': {
     avgDays: 2.5,
@@ -214,9 +184,7 @@ export const metricsMap: Record<string, DecisionMetrics> = {
     minVal: 10000000,
     maxVal: 100000000,
     percent: 50,
-    sampleCount: 14,
     recommendation: '전문가 유선 상담 필요',
-    recommendationDesc: '설비 내역 파악 및 대략적인 규모 확인을 위해 담당자 배정 후 연락을 드립니다.',
   }
 };
 

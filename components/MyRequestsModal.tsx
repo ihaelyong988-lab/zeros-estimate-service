@@ -91,15 +91,17 @@ export const MyRequestsModal: React.FC = () => {
 
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [logs, setLogs] = useState<NotificationLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  // 조회를 마친 번호. 로딩 표시는 여기서 파생한다 — effect 안에서 setLoading(true)를 동기 호출하면
+  // 연쇄 렌더가 생긴다(react-hooks/set-state-in-effect).
+  const [loadedPhone, setLoadedPhone] = useState<string | null>(null);
   const [tab, setTab] = useState<'timeline' | 'list'>('timeline');
 
   const phoneDigits = (customerAuth?.phone || '').replace(/\D/g, '');
+  const loading = loadedPhone !== phoneDigits;
 
   useEffect(() => {
     if (!showMyRequests || !customerAuth) return;
     let alive = true;
-    setLoading(true);
     (async () => {
       try {
         const [est, lg] = await Promise.all([
@@ -113,7 +115,7 @@ export const MyRequestsModal: React.FC = () => {
       } catch (e) {
         console.error('접수현황 로드 실패', e);
       } finally {
-        if (alive) setLoading(false);
+        if (alive) setLoadedPhone(phoneDigits);
       }
     })();
     return () => { alive = false; };
