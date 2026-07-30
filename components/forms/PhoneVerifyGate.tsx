@@ -21,7 +21,6 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified }) 
   const [phase, setPhase] = useState<'input' | 'code'>('input');
   const [token, setToken] = useState('');
   const [code, setCode] = useState('');
-  const [testCode, setTestCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +42,6 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified }) 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '인증번호 발송에 실패했습니다.');
       setToken(data.token);
-      setTestCode(data.devCode || null);
       setPhase('code');
     } catch (e) {
       setError(e instanceof Error ? e.message : '인증번호 발송 중 오류가 발생했습니다.');
@@ -130,12 +128,6 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified }) 
       {/* 인증번호 입력 단계 */}
       {phase === 'code' && (
         <div className="flex flex-col gap-3 border-t border-border/70 pt-3">
-          {testCode && (
-            <div className="bg-accent/10 border border-accent/30 rounded-custom px-3 py-2 text-[12px] text-accent font-bold leading-relaxed">
-              ⚙️ 테스트 모드 (문자발송 미설정): 인증번호는 <span className="font-black">{testCode}</span> 입니다.
-              실제 문자 발송은 SMS 업체 연동 후 작동합니다.
-            </div>
-          )}
           <label className="flex flex-col gap-1.5">
             <span className="text-[12px] font-bold text-navy flex items-center gap-1.5">
               <MessageSquare className="w-3.5 h-3.5 text-gray" /> 인증번호 6자리
@@ -161,7 +153,7 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified }) 
           </label>
           <button
             type="button"
-            onClick={() => { setPhase('input'); setCode(''); setTestCode(null); setError(null); }}
+            onClick={() => { setPhase('input'); setCode(''); setError(null); }}
             className="text-[12px] font-bold text-gray-light hover:text-navy transition-colors self-start"
           >
             번호 다시 입력하기

@@ -12,7 +12,7 @@ import type { Estimate, Customer, SiteVisit, NotificationLog } from '@/types/est
 // 모든 접근은 service_role 키로 서버에서만 수행하고, 요청자 신원을 서버가 검증한다.
 //   - 관리자 토큰   : 전체 테이블 읽기/쓰기
 //   - 고객 세션 토큰: 본인 휴대폰 번호의 견적·알림만 읽기
-//   - 익명          : 견적은 개인정보를 제거한 분석용 행만 읽기(공개 실적 화면), 그 외 차단
+//   - 익명          : 견적은 허용목록(PublicEstimate) 분석용 필드만 읽기(공개 실적 화면), 그 외 차단
 //   - 공개 접수     : OTP 인증(verified/session) 토큰 검증 후 서버가 단건 생성
 // body: { op, table?, rows?, estimate?, visit?, adminToken?, sessionToken?, verifiedToken?, phone? }
 
@@ -29,20 +29,26 @@ const ALLOWED_TABLES: string[] = Object.values(TABLES);
 
 const digitsOf = (v: string | undefined) => (v || '').replace(/\D/g, '');
 
-// 익명(공개 실적)에게 노출해도 되는 분석용 필드만 남기고 개인정보를 제거한다.
-function stripEstimate(e: Estimate): Estimate {
+// 익명(공개 실적)에게 노출해도 되는 분석용 필드 — 허용목록(allowlist).
+// 차단목록(스프레드 후 삭제)은 Estimate에 필드가 추가될 때마다 조용히 누출되므로 쓰지 않는다.
+// 목록에 없는 것(견적금액·확정계약금액·품목 단가 line_items·실주사유·담당자·접수번호·
+// 결제상태·공사목적·희망일정·정확도등급 및 모든 PII)은 익명 응답에 포함되지 않는다.
+// 실사용처 = components/PerformanceInsights.tsx(+ lib/calculations.ts의 totalCount·averageProcessDays):
+//   created_at · estimate_sent_at · work_type · site_type · estimate_category · status.
+type PublicEstimate = Pick<
+  Estimate,
+  'id' | 'created_at' | 'work_type' | 'site_type' | 'estimate_category' | 'status' | 'estimate_sent_at'
+>;
+
+function stripEstimate(e: Estimate): PublicEstimate {
   return {
-    ...e,
-    customer_name: '',
-    company_name: '',
-    phone: '',
-    email: '',
-    site_address: '',
-    admin_memo: '',
-    request_detail: '',
-    description: '',
-    submitted_files: [],
-    estimate_pdf_url: undefined,
+    id: e.id,
+    created_at: e.created_at,
+    work_type: e.work_type,
+    site_type: e.site_type,
+    estimate_category: e.estimate_category,
+    status: e.status,
+    estimate_sent_at: e.estimate_sent_at,
   };
 }
 
@@ -100,13 +106,14 @@ export async function POST(req: NextRequest) {
         return Response.json({ rows: await loadRows(supabase, table) });
       }
 
-      // 견적: 고객=본인 건 전체, 익명=PII 제거 분석 행
+      // 견적: 고객=본인 건 전체, 익명=허용목록 분석 필드만
       if (table === TABLES.estimates) {
         const all = await loadRows<Estimate>(supabase, table);
         if (isCustomer) {
           return Response.json({ rows: all.filter((e) => digitsOf(e.phone) === reqDigits) });
         }
-        return Response.json({ rows: all.map(stripEstimate) });
+        const publicRows: PublicEstimate[] = all.map(stripEstimate);
+        return Response.json({ rows: publicRows });
       }
 
       // 알림 로그: 고객=본인 건만, 익명=차단

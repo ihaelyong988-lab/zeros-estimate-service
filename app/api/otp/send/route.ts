@@ -43,11 +43,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 테스트 모드(키 미설정)일 때만 인증번호를 응답에 포함해 화면에서 확인 가능하게 한다.
-  // 실제 SMS 발송 시에는 절대 노출하지 않는다.
+  // 인증번호는 어떤 경우에도 응답에 담지 않는다(응답에 담으면 타인 번호로 무인증 로그인이 성립).
+  // 테스트 모드(SMS 키 미설정)에서는 서버 로그에만 남긴다.
+  if (result.testMode) {
+    console.log(`[otp/send] testMode code for ${phone}: ${code}`);
+  }
+
   return Response.json({
     token,
     testMode: result.testMode,
-    ...(result.testMode ? { devCode: code } : {}),
   });
 }

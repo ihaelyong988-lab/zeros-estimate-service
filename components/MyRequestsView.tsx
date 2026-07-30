@@ -101,7 +101,7 @@ export const MyRequestsView: React.FC = () => {
   const [phase, setPhase] = useState<'input' | 'code'>('input');
   const [token, setToken] = useState('');
   const [code, setCode] = useState('');
-  const [testCode, setTestCode] = useState<string | null>(null);
+  const [smsPending, setSmsPending] = useState(false); // SMS 발송 미설정(테스트 모드) 여부
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -152,7 +152,7 @@ export const MyRequestsView: React.FC = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '인증번호 발송에 실패했습니다.');
       setToken(data.token);
-      setTestCode(data.devCode || null);
+      setSmsPending(data.testMode === true);
       setPhase('code');
     } catch (e) {
       setAuthError(e instanceof Error ? e.message : '인증번호 발송 중 오류가 발생했습니다.');
@@ -185,7 +185,7 @@ export const MyRequestsView: React.FC = () => {
       setPhase('input');
       setToken('');
       setCode('');
-      setTestCode(null);
+      setSmsPending(false);
     } catch (e) {
       setAuthError(e instanceof Error ? e.message : '인증 처리 중 오류가 발생했습니다.');
     } finally {
@@ -288,9 +288,9 @@ export const MyRequestsView: React.FC = () => {
         {/* OTP 코드 입력 */}
         {phase === 'code' && (
           <div className="flex flex-col gap-3 border-t border-border/70 pt-3 animate-in slide-in-from-top-2 duration-200">
-            {testCode && (
+            {smsPending && (
               <div className="bg-accent/10 border border-accent/30 rounded-custom px-3 py-2 text-[12px] text-accent font-bold leading-relaxed">
-                ⚙️ 테스트 모드: 인증번호는 <span className="font-black">{testCode}</span> 입니다.
+                문자 인증 준비 중입니다. 관리자에게 문의해 주세요.
               </div>
             )}
             <label className="flex flex-col gap-1.5">
@@ -319,7 +319,7 @@ export const MyRequestsView: React.FC = () => {
             </label>
             <button
               type="button"
-              onClick={() => { setPhase('input'); setCode(''); setTestCode(null); setAuthError(null); }}
+              onClick={() => { setPhase('input'); setCode(''); setSmsPending(false); setAuthError(null); }}
               className="text-[12px] font-bold text-gray-light hover:text-navy transition-colors self-start"
             >
               번호 다시 입력하기
