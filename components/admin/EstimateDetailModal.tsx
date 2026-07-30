@@ -396,7 +396,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
         <div className="bg-bg-subtle border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <span className="bg-steel/15 text-steel px-2 py-0.5 rounded-custom text-[10px] font-black tracking-wider">
-              {estimate.estimate_category.toUpperCase()}
+              {(estimate.estimate_category || '').toUpperCase()}
             </span>
             <span className="font-extrabold text-navy tracking-tight text-[15px] tabular-nums">
               의뢰 상세: {estimate.estimate_no}

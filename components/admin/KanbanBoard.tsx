@@ -157,7 +157,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                             {est.work_type}
                           </span>
                           <span className={`px-1.5 py-0.5 rounded-custom text-[8.5px] font-bold border ${getCategoryChip(est.estimate_category)}`}>
-                            {est.estimate_category.toUpperCase()}
+                            {(est.estimate_category || '').toUpperCase()}
                           </span>
                         </div>
 

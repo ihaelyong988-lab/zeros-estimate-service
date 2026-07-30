@@ -47,3 +47,13 @@ next-env.d.ts
 # Claude Code — 훅·커맨드·공유 설정은 추적, 개인용 로컬/상태는 제외
 .claude/settings.local.json
 .claude/hooks/.state/
+
+# 고객 자료·개인 파일 — 공개 원격(GitHub)에 올라가면 안 된다.
+# 추적도 무시도 안 된 상태에서는 `git add -A` 한 번에 고객 견적서가 커밋된다.
+/견본/
+/견적서 사본/
+/estimate-ops/
+/ZEROS_DB 구축/
+/ZEROS 작성_0606/
+/ZEROS업데이트 0613.txt
+/.codex/

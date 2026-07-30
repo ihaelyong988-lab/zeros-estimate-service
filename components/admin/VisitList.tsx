@@ -11,7 +11,7 @@ export const VisitList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<'all' | SiteVisit['visit_status']>('all');
 
-  const loadData = async (showPending = true) => {
+  const loadData = async (showPending = true): Promise<{ visits: SiteVisit[]; estimates: Estimate[] }> => {
     if (showPending) {
       await Promise.resolve();
       setLoading(true);
@@ -19,11 +19,13 @@ export const VisitList: React.FC = () => {
     try {
       const vList = await ZerosService.getSiteVisits();
       setVisits(vList);
-      
+
       const eList = await ZerosService.getEstimates();
       setEstimates(eList);
+      return { visits: vList, estimates: eList };
     } catch (e) {
       console.error('Failed to load visits', e);
+      return { visits: [], estimates: [] };
     } finally {
       setLoading(false);
     }
@@ -37,14 +39,29 @@ export const VisitList: React.FC = () => {
 
   // 방문 완료 처리 액션
   const handleCompleteVisit = async (id: string) => {
+    // 견적 상태 동기화는 방문 이전 단계에서만 일어난다(lib/supabase/client.ts 의 화이트리스트 가드).
+    // updateSiteVisit 이 갱신 여부를 돌려주지 않으므로, 저장 전 상태와 저장 후 재적재한 상태를 비교해 안내한다.
+    const targetVisit = visits.find(v => v.id === id);
+    const estimateId = targetVisit?.estimate_id || '';
+    const beforeStatus = estimates.find(e => e.id === estimateId)?.status;
+
     try {
       // 1. 방문 상태 '완료' 로 변경
       await ZerosService.updateSiteVisit(id, {
         visit_status: '완료',
         visit_result: '현장 실측 전동 레이저 스캔 완료. P&ID 일치율 95% 확인.'
       });
-      alert('해당 현장방문 실측 조사가 성공적으로 완료 처리되었습니다. 관련 견적 상태가 [현장방문 완료]로 자동 리액티브 갱신되었습니다.');
-      await loadData();
+
+      // 2. 재적재 후 견적 상태 대조
+      const next = await loadData();
+      const afterStatus = next.estimates.find(e => e.id === estimateId)?.status;
+      const statusChanged = Boolean(beforeStatus && afterStatus && beforeStatus !== afterStatus);
+
+      alert(
+        statusChanged
+          ? `현장방문 실측을 완료 처리했습니다. 관련 견적 상태가 [${afterStatus}]로 갱신되었습니다.`
+          : '방문 이력을 저장했습니다. 견적 상태는 현재 단계를 유지합니다.'
+      );
     } catch (e) {
       console.error(e);
       alert('상태 변경 실패');
@@ -98,6 +115,7 @@ export const VisitList: React.FC = () => {
           {displayVisits.map((v) => {
             const relatedEst = estimates.find(e => e.id === v.estimate_id);
             const isCompleted = v.visit_status === '완료';
+            const isCancelled = v.visit_status === '취소';
 
             return (
               <div 
@@ -114,9 +132,13 @@ export const VisitList: React.FC = () => {
                     <span className="text-sm font-black text-navy tabular-nums">{v.visit_date}</span>
                   </div>
                   <span className={`px-2 py-0.5 rounded-custom text-[10px] font-black border ${
-                    isCompleted ? 'bg-success/15 text-success border-success/20' : 'bg-warning/15 text-warning border-warning/20'
+                    isCompleted
+                      ? 'bg-success/15 text-success border-success/20'
+                      : isCancelled
+                      ? 'bg-bg-subtle text-gray border-border'
+                      : 'bg-warning/15 text-warning border-warning/20'
                   }`}>
-                    {v.visit_status === '완료' ? '실측완료' : '출장예정'}
+                    {isCompleted ? '실측완료' : isCancelled ? '방문취소' : '출장예정'}
                   </span>
                 </div>
 
@@ -172,7 +194,7 @@ export const VisitList: React.FC = () => {
                 </div>
 
                 {/* 예정 일정인 경우, 신속 완료 액션 제공 */}
-                {!isCompleted && (
+                {v.visit_status === '예정' && (
                   <button
                     onClick={() => handleCompleteVisit(v.id)}
                     className="w-full mt-1.5 bg-steel hover:bg-navy text-bg py-2 rounded-custom text-xs font-extrabold transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm"

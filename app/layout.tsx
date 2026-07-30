@@ -17,8 +17,6 @@ export const viewport: Viewport = {
   themeColor: "#0F1E35",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -29,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased">
       <head>
-        <link rel="manifest" href="/manifest.json" />
+        {/* manifest는 metadata.manifest 한 곳에서만 선언한다(HTML 중복 출력 방지). */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <script

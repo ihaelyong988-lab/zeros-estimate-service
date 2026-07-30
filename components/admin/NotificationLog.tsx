@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { NotificationLog as NotificationType } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
-import { Search, Mail, MessageSquare, Check, RefreshCw } from 'lucide-react';
+import { Search, Mail, MessageSquare, Check, AlertCircle, RefreshCw } from 'lucide-react';
 
 export const NotificationLog: React.FC = () => {
   const [logs, setLogs] = useState<NotificationType[]>([]);
@@ -152,10 +152,17 @@ export const NotificationLog: React.FC = () => {
 
                     {/* 전송상태 */}
                     <td className="p-3 text-center">
-                      <span className="bg-success/15 text-success border border-success/35 px-2 py-0.5 rounded-custom text-[9.5px] font-black inline-flex items-center gap-0.5">
-                        <Check className="w-2.5 h-2.5" />
-                        발송 성공
-                      </span>
+                      {l.status === '발송오류' ? (
+                        <span className="bg-danger/15 text-danger border border-danger/35 px-2 py-0.5 rounded-custom text-[9.5px] font-black inline-flex items-center gap-0.5">
+                          <AlertCircle className="w-2.5 h-2.5" />
+                          발송 오류
+                        </span>
+                      ) : (
+                        <span className="bg-success/15 text-success border border-success/35 px-2 py-0.5 rounded-custom text-[9.5px] font-black inline-flex items-center gap-0.5">
+                          <Check className="w-2.5 h-2.5" />
+                          발송 성공
+                        </span>
+                      )}
                     </td>
 
                     {/* 발정시각 */}
