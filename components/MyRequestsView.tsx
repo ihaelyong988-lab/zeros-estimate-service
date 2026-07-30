@@ -127,8 +127,9 @@ export const MyRequestsView: React.FC = () => {
           ZerosService.getNotificationLogs(),
         ]);
         if (!alive) return;
-        setEstimates(est.filter(e => e.phone.replace(/\D/g, '') === phoneDigits));
-        setLogs(lg.filter(l => l.phone.replace(/\D/g, '') === phoneDigits));
+        // 세션이 만료·무효면 서버가 익명 허용목록 행(phone 없음)을 돌려주므로 널 가드가 필요하다.
+        setEstimates(est.filter(e => (e.phone || '').replace(/\D/g, '') === phoneDigits));
+        setLogs(lg.filter(l => (l.phone || '').replace(/\D/g, '') === phoneDigits));
       } catch (e) {
         console.error('접수현황 로드 실패', e);
       } finally {
