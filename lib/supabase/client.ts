@@ -7,13 +7,125 @@ import { supplyAmountOf } from '@/lib/quote/amounts';
 import { derivePaymentStatus } from '@/lib/payments/status';
 
 // ==========================================
+// 0. 접수 인증 토큰 — 전송 판정 (순수 함수)
+// ==========================================
+// 서버(/api/data op=createEstimate)는 접수 번호와 **같은 번호로 발급된**
+// verifiedToken(30분) 또는 sessionToken(30일) 중 하나를 요구한다(checkVerified/checkSession).
+// 번호가 다르거나 이미 만료된 토큰은 실어 보내도 403 이므로 여기서 걸러낸다.
+// 인증 완료 여부 표시도 이 판정과 같은 값을 써야 한다 — "화면은 인증됨, 서버는 미인증" 어긋남을 막는다.
+
+// 휴대폰 인증 직후 받은 단기 토큰 기록(sessionStorage 저장 형식)
+export interface VerifiedRecord {
+  phone?: string;
+  verifiedToken?: string;
+  verifiedAt?: number; // 발급 시각(epoch ms)
+}
+
+// 로그인 세션(localStorage customerAuth) 중 토큰 판정에 필요한 부분만
+export interface CustomerSessionLike {
+  phone?: string;
+  sessionToken?: string;
+  verifiedAt?: string; // 발급 시각(ISO)
+}
+
+export interface EstimateAuthTokens {
+  verifiedToken?: string;
+  sessionToken?: string;
+}
+
+// 서버 lib/otp/token.ts 의 TTL 과 같은 값 — 만료가 뻔한 토큰으로 접수를 시도하지 않는다.
+export const VERIFIED_TOKEN_TTL_MS = 30 * 60 * 1000;
+export const SESSION_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+const digitsOf = (v?: string | null): string => (v || '').replace(/\D/g, '');
+
+// 발급 시각을 모르면 만료로 단정하지 않는다 — 로컬 추측으로 유효한 토큰을 버리지 않고 서버 판정에 맡긴다.
+const expired = (issuedAt: number | undefined, ttlMs: number, now: number): boolean =>
+  typeof issuedAt === 'number' && Number.isFinite(issuedAt) && now - issuedAt >= ttlMs;
+
+const isoToMs = (iso?: string): number | undefined => {
+  if (!iso) return undefined;
+  const ms = Date.parse(iso);
+  return Number.isFinite(ms) ? ms : undefined;
+};
+
+// sessionStorage 저장값 복원 — 형식이 깨졌거나 다른 값이면 기록 없음으로 취급한다.
+export function parseVerifiedRecord(raw: string | null | undefined): VerifiedRecord | null {
+  if (!raw) return null;
+  try {
+    const obj = JSON.parse(raw) as VerifiedRecord;
+    if (!obj || typeof obj !== 'object') return null;
+    return {
+      phone: typeof obj.phone === 'string' ? obj.phone : undefined,
+      verifiedToken: typeof obj.verifiedToken === 'string' ? obj.verifiedToken : undefined,
+      verifiedAt: typeof obj.verifiedAt === 'number' ? obj.verifiedAt : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// 이 번호로 접수할 때 서버에 낼 수 있는 토큰만 고른다.
+export function pickEstimateAuth(
+  phone: string,
+  record?: VerifiedRecord | null,
+  session?: CustomerSessionLike | null,
+  now: number = Date.now()
+): EstimateAuthTokens {
+  const target = digitsOf(phone);
+  if (!target) return {};
+
+  const tokens: EstimateAuthTokens = {};
+  if (
+    record?.verifiedToken &&
+    digitsOf(record.phone) === target &&
+    !expired(record.verifiedAt, VERIFIED_TOKEN_TTL_MS, now)
+  ) {
+    tokens.verifiedToken = record.verifiedToken;
+  }
+  if (
+    session?.sessionToken &&
+    digitsOf(session.phone) === target &&
+    !expired(isoToMs(session.verifiedAt), SESSION_TOKEN_TTL_MS, now)
+  ) {
+    tokens.sessionToken = session.sessionToken;
+  }
+  return tokens;
+}
+
+// 인증 완료 판정 = 실어 보낼 토큰 보유. 번호만 저장돼 있으면 인증된 것이 아니다.
+export const isEstimateAuthed = (tokens: EstimateAuthTokens): boolean =>
+  !!(tokens.verifiedToken || tokens.sessionToken);
+
+// 데이터 요청 실패 — 상태코드를 보존해 호출부가 복구 경로(재인증)를 고를 수 있게 한다.
+export class DataRequestError extends Error {
+  readonly status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'DataRequestError';
+    this.status = status;
+  }
+}
+
+// 401(세션 만료)·403(미인증·권한 없음) = 같은 화면에서 다시 눌러도 실패한다 → 인증부터 다시 받아야 한다.
+export function isAuthRequiredError(e: unknown): boolean {
+  return e instanceof DataRequestError && (e.status === 401 || e.status === 403);
+}
+
+// 접수 부가 정보 — 예약방문 + 본인인증 토큰.
+export interface CreateEstimateOptions {
+  visit?: Partial<SiteVisit>;
+  verifiedToken?: string;
+}
+
+// ==========================================
 // 1. ZEROS 사전진단 데이터 서비스 표준 인터페이스
 // ==========================================
 export interface ZerosDataService {
   // 견적 관련
   getEstimates: () => Promise<Estimate[]>;
   getEstimateById: (id: string) => Promise<Estimate | null>;
-  createEstimate: (estimate: Partial<Estimate>, opts?: { visit?: Partial<SiteVisit> }) => Promise<Estimate>;
+  createEstimate: (estimate: Partial<Estimate>, opts?: CreateEstimateOptions) => Promise<Estimate>;
   updateEstimate: (id: string, updates: Partial<Estimate>) => Promise<Estimate>;
   deleteEstimate: (id: string) => Promise<void>;
 
@@ -87,7 +199,8 @@ abstract class BaseZerosService implements ZerosDataService {
     return list.find(e => e.id === id) || null;
   }
 
-  async createEstimate(estimate: Partial<Estimate>, opts?: { visit?: Partial<SiteVisit> }): Promise<Estimate> {
+  // 로컬(Mock) 경로는 서버 검증이 없으므로 opts.verifiedToken 을 쓰지 않는다.
+  async createEstimate(estimate: Partial<Estimate>, opts?: CreateEstimateOptions): Promise<Estimate> {
     // 연락처 검증: 폼에서 필수·인증되지만, 누락/형식오류 시 가짜번호(010-0000-0000) 저장을 방지한다.
     const phone = (estimate.phone || '').trim();
     if (!/^01[0-9]{8,9}$/.test(phone.replace(/[^0-9]/g, ''))) {
@@ -559,7 +672,7 @@ class SupabaseZerosService extends BaseZerosService {
           // 스토리지 접근 불가 환경은 무시
         }
       }
-      throw new Error((data as { error?: string }).error || '데이터 요청에 실패했습니다.');
+      throw new DataRequestError((data as { error?: string }).error || '데이터 요청에 실패했습니다.', res.status);
     }
     return data as R;
   }
@@ -577,11 +690,14 @@ class SupabaseZerosService extends BaseZerosService {
   }
 
   // 공개 접수는 서버가 인증 검증 + 접수번호 채번 + 단건 생성을 수행한다.
-  async createEstimate(estimate: Partial<Estimate>, opts?: { visit?: Partial<SiteVisit> }): Promise<Estimate> {
+  // verifiedToken(30분)은 로그인 세션이 아니라 이번 인증에서 막 받은 값이라 authBody() 가 아니라
+  // 호출부가 넘긴다 — 이 경로가 없으면 SMS 설정 환경에서 서버 okVerified 가 항상 false 가 된다.
+  async createEstimate(estimate: Partial<Estimate>, opts?: CreateEstimateOptions): Promise<Estimate> {
     const { estimate: created } = await this.postData<{ estimate: Estimate }>({
       op: 'createEstimate',
       estimate,
       visit: opts?.visit,
+      verifiedToken: opts?.verifiedToken,
     });
     return created;
   }
