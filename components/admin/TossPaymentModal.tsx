@@ -7,6 +7,8 @@ import { CreditCard, ShieldCheck, CheckCircle2, Lock, X } from 'lucide-react';
 interface TossPaymentModalProps {
   estimateId: string;
   estimateNo: string;
+  /** 갱신 대상 결제대기 행 id. 없으면 이 견적의 결제대기 행을 조회해 쓴다. */
+  pendingPaymentId?: string;
   amount: number;
   paymentType: '온라인검토비' | '출장견적비' | '프로젝트 사전진단비';
   onClose: () => void;
@@ -16,6 +18,7 @@ interface TossPaymentModalProps {
 export const TossPaymentModal: React.FC<TossPaymentModalProps> = ({
   estimateId,
   estimateNo,
+  pendingPaymentId,
   amount,
   paymentType,
   onClose,
@@ -39,23 +42,39 @@ export const TossPaymentModal: React.FC<TossPaymentModalProps> = ({
     // 모의 결제 딜레이
     setTimeout(async () => {
       try {
-        const transactionId = `TOSS-TX-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-        await ZerosService.createPayment({
-          estimate_id: estimateId,
-          payment_type: paymentType,
-          amount: amount,
-          payment_status: '결제완료',
+        const transactionId = `TOSS-TX-${Math.random().toString(36).slice(2, 11).toUpperCase()}`;
+        const paid = {
+          payment_status: '결제완료' as const,
           payment_provider: selectedMethod === 'card' ? '토스페이먼츠(신용카드)' : '토스페이먼츠(계좌이체)',
           transaction_id: transactionId,
           memo: `[모의승인] 접수번호 ${estimateNo} 건에 대한 ${paymentType} 입금 확인 완료.`
-        });
-        
+        };
+
+        // 결제대기 행이 있으면 그 행을 수납 완료로 갱신한다.
+        // 새 행을 만들면 대기 행이 남아 청구가 중복 누적되고 결제 버튼이 계속 노출된다.
+        let targetId = pendingPaymentId;
+        if (!targetId) {
+          const rows = await ZerosService.getPayments();
+          targetId = rows.find(p => p.estimate_id === estimateId && p.payment_status === '결제대기')?.id;
+        }
+
+        if (targetId) {
+          await ZerosService.updatePayment(targetId, { amount, payment_type: paymentType, ...paid });
+        } else {
+          await ZerosService.createPayment({
+            estimate_id: estimateId,
+            payment_type: paymentType,
+            amount,
+            ...paid
+          });
+        }
+
         setIsProcessing(false);
         setIsCompleted(true);
       } catch (err) {
         console.error(err);
         setIsProcessing(false);
-        alert('결제 처리 중 요류가 발생하였습니다.');
+        alert('결제 처리 중 오류가 발생했습니다.');
       }
     }, 2000);
   };
@@ -64,7 +83,7 @@ export const TossPaymentModal: React.FC<TossPaymentModalProps> = ({
     return (
       <div className="fixed inset-0 bg-navy/55 backdrop-blur-sm flex items-center justify-center z-[100] p-4 select-none font-sans">
         <div className="bg-bg border border-border w-full max-w-sm rounded-custom shadow-custom-md overflow-hidden flex flex-col p-6 items-center text-center gap-4">
-          <div className="bg-success/15 text-success p-3.5 rounded-full mt-2 animate-bounce">
+          <div className="bg-success/15 text-success p-3.5 rounded-full mt-2 animate-bounce motion-reduce:animate-none">
             <CheckCircle2 className="w-10 h-10" />
           </div>
           <div className="flex flex-col gap-1">
@@ -185,8 +204,8 @@ export const TossPaymentModal: React.FC<TossPaymentModalProps> = ({
                   />
                   <Lock className="w-3.5 h-3.5 text-gray-light absolute left-3 top-3" />
                 </div>
-                <span className="text-[9.5px] text-gray-light leading-normal mt-0.5">
-                  * 실제 보안카드 인증이 아닌 모의 테스트용 입력창입니다. 아무 숫자를 기입하셔도 통과됩니다.
+                <span className="text-[11px] text-gray leading-normal mt-0.5">
+                  실제 보안카드 인증이 아닌 모의 테스트용 입력창입니다. 임의의 숫자로 통과합니다.
                 </span>
               </div>
 

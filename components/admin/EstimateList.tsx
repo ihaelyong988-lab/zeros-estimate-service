@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Estimate, WorkType, EstimateStatus, EstimateCategory, ExpectedBudgetRange } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
+import { supplyAmountOf } from '@/lib/quote/amounts';
 import { Search, ArrowUpDown, KanbanSquare, Table, RefreshCw, Plus } from 'lucide-react';
 
 interface EstimateListProps {
@@ -410,12 +411,15 @@ export const EstimateList: React.FC<EstimateListProps> = ({
                             {est.site_address}
                           </td>
                         );
-                      case 'amount':
+                      case 'amount': {
+                        // 견적금액 = 공급가액(VAT 별도)
+                        const supply = supplyAmountOf(est);
                         return (
                           <td key={col.key} className="w-[110px] px-4 py-1 text-right font-extrabold text-[12px] text-navy tabular-nums align-middle">
-                            {est.estimated_amount ? `₩${est.estimated_amount.toLocaleString()}` : '-'}
+                            {supply > 0 ? `₩${supply.toLocaleString()}` : '-'}
                           </td>
                         );
+                      }
                       default:
                         return null;
                     }

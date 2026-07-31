@@ -5,6 +5,8 @@ import { useShell } from '@/lib/context/ShellContext';
 import { ZerosService } from '@/lib/supabase/client';
 import { Estimate, SiteVisit, Customer, NotificationLog } from '@/types/estimate';
 import { menuDisplayName } from '@/lib/constants/menu';
+import { TRUST, TRUST_LABEL, TRUST_VALUE } from '@/lib/constants/trust';
+import { sumExpectedRevenue } from '@/lib/calculations';
 import { kstToday, kstDateStr } from '@/lib/utils/date';
 import {
   ArrowRight,
@@ -286,9 +288,9 @@ export const RightSidebar: React.FC = () => {
           </button>
         </div>
 
-        {/* 평균 소요일 — borderless 행 */}
+        {/* 평균 검토 소요(공종별) — 1차 회신 소요(trust.ts 24시간)와 다른 지표라 라벨을 분리한다 */}
         <div className="flex items-center justify-between border-t border-border/60 pt-3">
-          <span className="text-[12px] font-bold text-gray">평균 1차 검토 소요</span>
+          <span className="text-[12px] font-bold text-gray">평균 검토 소요</span>
           <span className="text-[15px] font-black text-navy tabular-nums">{metrics.avgDays}일 이내</span>
         </div>
 
@@ -352,7 +354,9 @@ export const RightSidebar: React.FC = () => {
         >
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-gray">ZEROS 검증 실적</span>
-            <span className="text-[12px] text-gray-light font-medium mt-0.5 tabular-nums">누적 246건 · 준수율 98.4%</span>
+            <span className="text-[12px] text-gray-light font-medium mt-0.5 tabular-nums">
+              {TRUST_LABEL.cumulative} {TRUST_VALUE.cumulative} · {TRUST_LABEL.confidence} {TRUST_VALUE.confidence}
+            </span>
           </div>
           <span className={`inline-flex items-center gap-0.5 text-[12px] font-black ${accentTextCls} shrink-0 group-hover:underline underline-offset-4 decoration-2`}>
             상세 <ArrowRight className="w-3 h-3" />
@@ -461,9 +465,8 @@ const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
   const wonCnt = estimates.filter(e => e.status === '수주성공').length;
   const urgentCnt = estimates.filter(e => e.urgency && !closed.includes(e.status)).length;
   const winRate = total ? Math.round((wonCnt / total) * 100) : 0;
-  const pipelineRevenue = estimates
-    .filter(e => e.status === '견적서 작성중' || e.status === '견적서 송부완료')
-    .reduce((a, c) => a + (c.estimated_amount || 0), 0);
+  // 금액은 공급가액(VAT 별도) 기준 — 산식은 lib/calculations.ts 한 곳에서만 정의한다(AGENTS §14-4).
+  const pipelineRevenue = sumExpectedRevenue(estimates);
   const confirmedRevenue = estimates
     .filter(e => e.status === '수주성공')
     .reduce((a, c) => a + (c.confirmed_contract_amount || 0), 0);
@@ -514,7 +517,7 @@ const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
         { label: '긴급 표기', value: `${urgentCnt}건`, tone: 'danger' },
       ],
       checklist: [
-        { tone: 'danger', text: '긴급 건 우선 — 24시간 내 1차 검토 완료' },
+        { tone: 'danger', text: `긴급 건 우선 — ${TRUST.firstReplyHours}시간 내 1차 검토 완료` },
         { tone: 'steel', text: '접수완료 → 검토중 전환 후 담당 배정' },
         { tone: 'accent', text: '결제대기 건은 토스 결제 안내 재발송' },
       ],
@@ -650,7 +653,7 @@ const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
         {/* 운영 원칙 한 줄 */}
         <p className="text-[11px] text-gray-light font-medium leading-normal border-t border-border/60 pt-3 flex items-start gap-1.5">
           <Clock className="w-3.5 h-3.5 text-steel shrink-0 mt-px" />
-          <span>신규 사전진단 요청은 <strong className="text-navy font-black">24시간 이내</strong> 1차 엔지니어링 검토를 완료합니다.</span>
+          <span>신규 사전진단 요청은 <strong className="text-navy font-black">{TRUST_VALUE.firstReply}</strong> 1차 엔지니어링 검토를 완료합니다.</span>
         </p>
       </div>
     </aside>

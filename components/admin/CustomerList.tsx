@@ -3,23 +3,28 @@
 import React, { useEffect, useState } from 'react';
 import { Customer } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
+import { CUSTOMER_GRADES, gradeOf } from '@/lib/crm/customerRollup';
 import { Users2, Search, Edit2, Check, X, Award, FileText, TrendingUp } from 'lucide-react';
+
+// 등급 편집값 '' = 수동 지정 없음(견적 이력에서 자동 산출).
+// 편집창을 열고 그대로 저장해도 자동 등급이 수동 등급으로 고착되지 않게 하는 장치다.
+const AUTO_GRADE = '';
 
 export const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
-  
+
   // 편집 상태
   const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
-  const [editGrade, setEditGrade] = useState<Customer['customer_grade']>('신규');
+  const [editGrade, setEditGrade] = useState<string>(AUTO_GRADE);
   const [editMemo, setEditMemo] = useState('');
 
   // 고객 상세 모달 상태
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  const loadCustomers = async (showPending = true) => {
+  const loadCustomers = async (showPending = true): Promise<Customer[]> => {
     if (showPending) {
       await Promise.resolve();
       setLoading(true);
@@ -27,8 +32,10 @@ export const CustomerList: React.FC = () => {
     try {
       const list = await ZerosService.getCustomers();
       setCustomers(list);
+      return list;
     } catch (e) {
       console.error('Failed to load customers', e);
+      return [];
     } finally {
       setLoading(false);
     }
@@ -42,20 +49,28 @@ export const CustomerList: React.FC = () => {
 
   const handleEditClick = (cust: Customer) => {
     setEditingCustomerId(cust.id);
-    setEditGrade(cust.customer_grade);
+    setEditGrade(cust.customer_grade_manual || AUTO_GRADE);
     setEditMemo(cust.memo || '');
   };
 
   const handleSaveClick = async (id: string) => {
+    const target = customers.find(c => c.id === id);
     try {
       await ZerosService.updateCustomer(id, {
-        customer_grade: editGrade,
+        customer_grade_manual: editGrade,
+        // 표시 등급도 함께 확정 저장한다. 수동 지정을 해제(자동)했는데 저장된 등급이
+        // '중요고객'·'보류고객'으로 남아 있으면 서버가 그것을 다시 수동 지정으로 읽어 해제가 되지 않는다.
+        customer_grade: gradeOf(editGrade || undefined, {
+          total_requests: target?.total_requests || 0,
+          total_won: target?.total_won || 0,
+        }),
         memo: editMemo
       });
       setEditingCustomerId(null);
-      await loadCustomers();
+      const list = await loadCustomers();
       if (selectedCustomer && selectedCustomer.id === id) {
-        setSelectedCustomer(prev => prev ? { ...prev, customer_grade: editGrade, memo: editMemo } : null);
+        const fresh = list.find(c => c.id === id);
+        if (fresh) setSelectedCustomer(fresh);
       }
     } catch (e) {
       console.error('Failed to update customer', e);
@@ -163,11 +178,9 @@ export const CustomerList: React.FC = () => {
             className="text-xs border border-border rounded-custom bg-bg px-2.5 py-1.5 focus:outline-none focus:border-steel font-extrabold text-navy"
           >
             <option value="all">전체 보기</option>
-            <option value="신규">신규</option>
-            <option value="재문의">재문의</option>
-            <option value="중요고객">중요고객</option>
-            <option value="수주고객">수주고객</option>
-            <option value="보류고객">보류고객</option>
+            {CUSTOMER_GRADES.map(g => (
+              <option key={g} value={g}>{g}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -231,14 +244,14 @@ export const CustomerList: React.FC = () => {
                         {isEditing ? (
                           <select
                             value={editGrade}
-                            onChange={(e) => setEditGrade(e.target.value as Customer['customer_grade'])}
+                            onChange={(e) => setEditGrade(e.target.value)}
+                            aria-label={`${c.customer_name} 고객 등급 지정`}
                             className="text-[11px] font-black border border-border rounded-custom px-1.5 py-1 bg-bg text-navy"
                           >
-                            <option value="신규">신규</option>
-                            <option value="재문의">재문의</option>
-                            <option value="중요고객">중요고객</option>
-                            <option value="수주고객">수주고객</option>
-                            <option value="보류고객">보류고객</option>
+                            <option value={AUTO_GRADE}>자동 판정</option>
+                            {CUSTOMER_GRADES.map(g => (
+                              <option key={g} value={g}>{g}</option>
+                            ))}
                           </select>
                         ) : (
                           <span className={`px-2 py-0.5 rounded-custom text-[9.5px] font-extrabold inline-block ${getGradePillClass(c.customer_grade)}`}>

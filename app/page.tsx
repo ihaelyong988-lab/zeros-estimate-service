@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { useShell, type ActiveTab } from "@/lib/context/ShellContext";
 import { RequestWizard, prefetchOtpEnabled, type RequestChannel } from "@/components/forms/RequestWizard";
 import { manualData } from "@/lib/constants/manuals";
+import { TRUST, TRUST_LABEL, TRUST_VALUE, averageSavingRate } from "@/lib/constants/trust";
 import { ZerosService } from "@/lib/supabase/client";
 import { Estimate, EstimateStatus } from "@/types/estimate";
 
@@ -334,10 +335,11 @@ export default function Home() {
     ];
 
     // 신뢰 지표(social proof) — 스킬 권고: 사회적 증거를 CTA 직전에 배치. 검증 건수만 블루로 데이터 강조
+    // 수치·라벨은 lib/constants/trust.ts 단일 소스 참조(화면별 분산 금지)
     const proofStats = [
       { v: '30년', l: '현장 실무', hl: false },
-      { v: '246건', l: '누적 검증', hl: true },
-      { v: '98.4%', l: '준수율', hl: false },
+      { v: TRUST_VALUE.cumulative, l: TRUST_LABEL.cumulative, hl: true },
+      { v: TRUST_VALUE.confidence, l: TRUST_LABEL.confidence, hl: false },
     ];
 
     // Footer 삭제(→ 의뢰 탭 이동)로 생긴 하단 여백은 본문(flex-1) justify-center로 흡수해 상·하 균형 유지
@@ -529,8 +531,8 @@ export default function Home() {
         <div className="flex flex-col gap-2 border-t border-border pt-4">
           <div className="flex flex-wrap items-end gap-x-7 gap-y-3">
             {[
-              { l: '실거래 표본', v: '246건', accent: false },
-              { l: 'AI 신뢰도', v: '98.4%', accent: false },
+              { l: TRUST_LABEL.cumulative, v: TRUST_VALUE.cumulative, accent: false },
+              { l: TRUST_LABEL.confidence, v: TRUST_VALUE.confidence, accent: false },
               { l: '예산 밴드', v: '±5%', accent: false },
               { l: '리스크 등급', v: 'LOW', accent: false },
               { l: '근거 추적', v: '100%', accent: true },
@@ -1043,7 +1045,7 @@ export default function Home() {
               <text x="25" y="15" fill="currentColor" fontSize="3" className="font-mono">FAST AUDIT LAYOUT</text>
             </svg>
           ),
-          specText: '제출된 현장 사진 및 치수 정보 기준의 간이 관내 마찰 손실값 연산 및 24시간 내 초고속 권장 사양 도출'
+          specText: `제출된 현장 사진 및 치수 정보 기준의 간이 관내 마찰 손실값 연산 및 ${TRUST.firstReplyHours}시간 내 초고속 권장 사양 도출`
         };
       } else if (matchKey === 'medium') {
         return {
@@ -1097,13 +1099,15 @@ export default function Home() {
       }
     };
 
+    // 공종별 지표 — 표본 수·절감률(bubbleRate)만 공종별로 다르다.
+    // 신뢰도(구 confidence 99.2~99.9%)는 공종별 차등 근거가 없어 삭제하고
+    // lib/constants/trust.ts 대표값 하나로 수렴시켰다(2026-07-31 F5).
     const getDynamicMetrics = (menuKey: string) => {
       const matchKey = menuKey || '배관공사';
       switch (matchKey) {
         case '배관공사':
           return {
             sampleCount: 74,
-            confidence: 99.8,
             bubbleRate: 28.4,
             accentBg: 'bg-cyan-500/5',
             accentText: 'text-cyan-600',
@@ -1115,7 +1119,6 @@ export default function Home() {
         case '장비설치':
           return {
             sampleCount: 48,
-            confidence: 99.6,
             bubbleRate: 22.1,
             accentBg: 'bg-amber-500/5',
             accentText: 'text-amber-600',
@@ -1127,7 +1130,6 @@ export default function Home() {
         case 'Utility 배관':
           return {
             sampleCount: 62,
-            confidence: 99.5,
             bubbleRate: 24.6,
             accentBg: 'bg-sky-500/5',
             accentText: 'text-sky-600',
@@ -1139,7 +1141,6 @@ export default function Home() {
         case '공장증설':
           return {
             sampleCount: 35,
-            confidence: 99.2,
             bubbleRate: 31.5,
             accentBg: 'bg-accent/5',
             accentText: 'text-accent',
@@ -1151,7 +1152,6 @@ export default function Home() {
         case '노후배관교체':
           return {
             sampleCount: 51,
-            confidence: 99.7,
             bubbleRate: 26.8,
             accentBg: 'bg-emerald-500/5',
             accentText: 'text-emerald-600',
@@ -1163,7 +1163,6 @@ export default function Home() {
         case '기계실개선':
           return {
             sampleCount: 42,
-            confidence: 99.9,
             bubbleRate: 29.3,
             accentBg: 'bg-teal-500/5',
             accentText: 'text-teal-600',
@@ -1175,7 +1174,6 @@ export default function Home() {
         case '생산설비 배관 연결':
           return {
             sampleCount: 45,
-            confidence: 99.9,
             bubbleRate: 34.2,
             accentBg: 'bg-indigo-500/5',
             accentText: 'text-indigo-600',
@@ -1187,7 +1185,6 @@ export default function Home() {
         case 'CAPEX 개·증설 검토':
           return {
             sampleCount: 88,
-            confidence: 99.5,
             bubbleRate: 37.6,
             accentBg: 'bg-[#0f1e35]/5',
             accentText: 'text-navy',
@@ -1199,7 +1196,6 @@ export default function Home() {
         case 'spool':
           return {
             sampleCount: 68,
-            confidence: 99.6,
             bubbleRate: 50.0,
             accentBg: 'bg-cyan-500/5',
             accentText: 'text-cyan-600',
@@ -1211,7 +1207,6 @@ export default function Home() {
         case 'skid':
           return {
             sampleCount: 54,
-            confidence: 99.7,
             bubbleRate: 40.0,
             accentBg: 'bg-amber-500/5',
             accentText: 'text-amber-600',
@@ -1223,7 +1218,6 @@ export default function Home() {
         case 'structure':
           return {
             sampleCount: 47,
-            confidence: 99.5,
             bubbleRate: 35.0,
             accentBg: 'bg-accent/5',
             accentText: 'text-accent',
@@ -1235,7 +1229,6 @@ export default function Home() {
         case 'small':
           return {
             sampleCount: 124,
-            confidence: 99.4,
             bubbleRate: 18.2,
             accentBg: 'bg-cyan-500/5',
             accentText: 'text-cyan-600',
@@ -1247,7 +1240,6 @@ export default function Home() {
         case 'medium':
           return {
             sampleCount: 96,
-            confidence: 99.8,
             bubbleRate: 27.5,
             accentBg: 'bg-amber-500/5',
             accentText: 'text-amber-600',
@@ -1259,7 +1251,6 @@ export default function Home() {
         case 'large':
           return {
             sampleCount: 26,
-            confidence: 99.7,
             bubbleRate: 35.4,
             accentBg: 'bg-accent/5',
             accentText: 'text-accent',
@@ -1271,7 +1262,6 @@ export default function Home() {
         default:
           return {
             sampleCount: 30,
-            confidence: 99.0,
             bubbleRate: 25.0,
             accentBg: 'bg-[#1e4d8c]/5',
             accentText: 'text-steel',
@@ -1426,7 +1416,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2 border-t border-border pt-3.5">
             <ShieldCheck className="w-4 h-4 text-success shrink-0" />
-            <span className="text-[12.5px] text-gray font-semibold leading-snug">표준 품셈 · 실거래 표본 기준으로 적정 견적을 산출하고, 1차 검토는 24시간 이내 회신합니다.</span>
+            <span className="text-[12.5px] text-gray font-semibold leading-snug">표준 품셈 · 실거래 표본 기준으로 적정 견적을 산출하고, 1차 검토는 {TRUST_VALUE.firstReply} 회신합니다.</span>
           </div>
         </div>
       </div>
@@ -1571,7 +1561,7 @@ export default function Home() {
                       {/* 핵심 지표 — 큰 숫자 스탯 카드 3종 */}
                       <div className="grid grid-cols-3 gap-2.5">
                         {[
-                          { value: `${m.confidence}%`, label: 'AI 신뢰도', color: 'text-[#1E63B6]' },
+                          { value: TRUST_VALUE.confidence, label: TRUST_LABEL.confidence, color: 'text-[#1E63B6]' },
                           { value: '100%', label: '표준 일치', color: 'text-[#E07B1A]' },
                           { value: `-${m.bubbleRate}%`, label: '비용 절감', color: 'text-[#1E7A46]' },
                         ].map((s) => (
@@ -1803,15 +1793,11 @@ export default function Home() {
               </div>
               </div>
 
-              {/* 하단 앵커 — 신뢰 지표 인라인(좌측 사진 하단과 라인 맞춤). 세부 폰트 확대·세로폭 확장(2026-07-04 지시) */}
+              {/* 하단 앵커 — 공종별 표본 수만(좌측 사진 하단과 라인 맞춤). 세부 폰트 확대·세로폭 확장(2026-07-04 지시).
+                  신뢰도는 이 화면 하단 신뢰 밴드(HOME_STATS)가 이미 표시하므로 여기서 중복 표기하지 않는다(2026-07-31 F5). */}
               <div className="flex items-center gap-5 pt-5 border-t border-border/60">
                 <span className="flex items-baseline gap-1.5">
-                  <span className="text-[13px] font-semibold text-gray">AI 분석 신뢰도</span>
-                  <span className="text-[17.5px] font-black text-navy tabular-nums">{activeMetrics.confidence}%</span>
-                </span>
-                <span className="w-px h-4 bg-border shrink-0" />
-                <span className="flex items-baseline gap-1.5">
-                  <span className="text-[13px] font-semibold text-gray">검토 표본</span>
+                  <span className="text-[13px] font-semibold text-gray">이 공종 검토 표본</span>
                   <span className="text-[17.5px] font-black text-navy tabular-nums">{activeMetrics.sampleCount}건</span>
                 </span>
               </div>
@@ -1858,11 +1844,16 @@ export default function Home() {
 
   // 홈(데스크톱) — PPT 시안 기반의 간결한 단독 랜딩. 첫 화면으로 노출되며
   // 상세 작업공간(견적 검토)·진단·실적·의뢰로 진입하는 관문 역할을 한다.
+  // 평균 절감 효과 — 화면에 실제 렌더되는 공종별 절감률(bubbleRate)의 산술평균.
+  // 요약값을 따로 적어두면 개별 공종 수치와 어긋난다(구 -31.5% = 공장증설 단일값 복사).
+  const HOME_SAVING_RATE = averageSavingRate(LANDING_TRADES.map((t) => getDynamicMetrics(t).bubbleRate));
+
+  // 신뢰 지표는 lib/constants/trust.ts 단일 소스 참조 — 여기에 숫자를 직접 적지 않는다.
   const HOME_STATS = [
-    { icon: ShieldCheck, label: '검토 분석 신뢰도', value: '97.8%' },
-    { icon: Clock, label: '평균 1차 검토 소요', value: '2.1일 이내' },
-    { icon: TrendingDown, label: '평균 절감 효과', value: '-31.5%' },
-    { icon: BarChart3, label: '누적 검토 건수', value: '246건+' },
+    { icon: ShieldCheck, label: TRUST_LABEL.confidence, value: TRUST_VALUE.confidence },
+    { icon: Clock, label: TRUST_LABEL.firstReply, value: TRUST_VALUE.firstReply },
+    { icon: TrendingDown, label: TRUST_LABEL.saving, value: `-${HOME_SAVING_RATE}%` },
+    { icon: BarChart3, label: TRUST_LABEL.cumulative, value: TRUST_VALUE.cumulative },
   ];
 
   const HOME_CATEGORIES = [

@@ -138,7 +138,14 @@ export interface Customer {
   email: string;
   site_address: string;
   customer_type: string;
+  // 표시 등급. 읽는 시점에 lib/crm/customerRollup 의 gradeOf 가 산출한 값이 실린다
+  // (수동 지정이 있으면 그 값, 없으면 견적 이력에서 자동 산출).
   customer_grade: '신규' | '재문의' | '중요고객' | '수주고객' | '보류고객';
+  // 운영자가 직접 지정한 등급. 자동 산출보다 우선한다.
+  // 비어 있고 customer_grade 가 '중요고객'·'보류고객'이면 서버가 수동 지정으로 간주해 보존한다(백필 불필요).
+  customer_grade_manual?: string;
+  // ⚠ 아래 3개 저장 카운터는 레거시 호환 컬럼이다 — 표시 근거가 아니다.
+  // 화면에 나가는 값은 /api/data 가 견적 행에서 매번 파생 계산한다(rollupCustomer).
   total_requests: number;
   total_won: number;
   total_revenue: number;
@@ -164,7 +171,9 @@ export interface NotificationLog {
   notification_type: '카카오톡 알림톡' | '이메일 발송';
   template_code: string;
   content: string;
-  status: '발송완료' | '발송오류';
+  // '미발송' = 이력만 남고 실제 발송 API 호출이 없었던 건.
+  // 브라우저(client.ts)·접수 라우트가 만드는 로그는 문자 발송 경로를 타지 않으므로 전부 '미발송'이다.
+  status: '발송완료' | '발송오류' | '미발송';
   sent_at: string;
 }
 

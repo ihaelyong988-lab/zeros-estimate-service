@@ -2,17 +2,24 @@
 
 import React from 'react';
 import { Estimate } from '@/types/estimate';
+import { supplyAmountOf } from '@/lib/quote/amounts';
 import { ShieldCheck, Printer } from 'lucide-react';
 
 interface PrintableScopeSheetProps {
   estimate: Estimate;
 }
 
+// 고객에게 종이로 전달되는 문서다. 값이 없으면 그럴듯한 기본 문구를 인쇄하지 않고 '해당 없음'으로 비운다.
+const NONE = '해당 없음';
+
 export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estimate }) => {
-  
+
   const handlePrint = () => {
     window.print();
   };
+
+  // 금액은 공급가액(VAT 별도) 단일 정의로 읽는다.
+  const supplyAmount = supplyAmountOf(estimate);
 
   return (
     <div className="bg-bg border border-border p-6.5 rounded-custom shadow-custom-sm flex flex-col gap-6 select-none font-sans max-w-4xl mx-auto py-4">
@@ -39,15 +46,15 @@ export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estima
           <div className="flex flex-col gap-1.5">
             <span className="text-base font-black tracking-widest text-steel">ZEROS ENGINEERING REPORT</span>
             <h1 className="text-2xl font-black tracking-tight text-navy">범위 고정 사전진단 검토서</h1>
-            <div className="flex items-center gap-2 text-gray-light font-bold text-[10px] mt-1.5 tabular-nums">
+            <div className="flex items-center gap-2 text-gray font-bold text-[10px] mt-1.5 tabular-nums">
               <span>문서 번호: {estimate.estimate_no}</span>
               <span>•</span>
               <span>작성일자: {new Date().toLocaleDateString('ko-KR')}</span>
             </div>
           </div>
-          {/* 가상 도장/마크 */}
+          {/* 발행 주체 표기 — 인증·검증 마크가 아니다(근거 없는 보증 표현 금지). */}
           <div className="border-2 border-steel text-steel rounded-custom px-3 py-1 flex flex-col items-center justify-center font-black select-none opacity-90 scale-95 shrink-0">
-            <span className="text-[8px] tracking-widest uppercase">Certified By</span>
+            <span className="text-[8px] tracking-widest">발행</span>
             <span className="text-sm tracking-tight">ZEROS</span>
           </div>
         </div>
@@ -65,7 +72,7 @@ export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estima
             </div>
             <div className="flex justify-between">
               <span className="text-gray font-bold">연락처 / 이메일</span>
-              <span className="font-extrabold text-navy tabular-nums">{estimate.phone} / {estimate.email || '-'}</span>
+              <span className="font-extrabold text-navy tabular-nums">{estimate.phone} / {estimate.email || NONE}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray font-bold">현장 종류 / 업종</span>
@@ -77,7 +84,7 @@ export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estima
             </div>
             <div className="flex justify-between col-span-2 border-t border-border/60 pt-3">
               <span className="text-gray font-bold shrink-0">현장 설치 주소</span>
-              <span className="font-extrabold text-navy leading-normal text-right">{estimate.site_address || '현장 실측 필요'}</span>
+              <span className="font-extrabold text-navy leading-normal text-right">{estimate.site_address || NONE}</span>
             </div>
           </div>
         </div>
@@ -101,23 +108,23 @@ export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estima
               <tbody className="divide-y divide-border font-medium">
                 <tr>
                   <td className="p-3 font-bold text-navy">요청 사양 및 목적</td>
-                  <td className="p-3 text-gray leading-relaxed">{estimate.work_purpose || '신규 유틸리티 관로 신설 및 장비 연결'}</td>
+                  <td className="p-3 text-gray leading-relaxed">{estimate.work_purpose || NONE}</td>
                   <td className="p-3 text-center" rowSpan={3}>
                     <span className="px-2 py-0.5 rounded-custom text-[10px] font-black border border-steel/30 text-steel bg-steel/5">
-                      정확도 등급: {estimate.accuracy_grade || 'B'}
+                      정확도 등급: {estimate.accuracy_grade || '미지정'}
                     </span>
                   </td>
                 </tr>
                 <tr>
                   <td className="p-3 font-bold text-navy">현장 물리적 제약</td>
                   <td className="p-3 text-gray leading-relaxed">
-                    {estimate.description || '천장 유틸리티 브래킷 이격 필요, 기계실 내 협소 공간 밸브 조작 반경 사전 확보 요망.'}
+                    {estimate.description || NONE}
                   </td>
                 </tr>
                 <tr>
                   <td className="p-3 font-bold text-navy">요구 배관/장비 사양</td>
                   <td className="p-3 text-gray leading-relaxed">
-                    {estimate.request_detail || '80A 관경 중심의 SUS304 배관 설계 및 게이트 밸브/유량계 피팅 설치.'}
+                    {estimate.request_detail || NONE}
                   </td>
                 </tr>
               </tbody>
@@ -133,44 +140,44 @@ export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estima
           </h2>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="bg-bg-subtle border border-border p-3.5 rounded-custom">
-              <span className="text-gray-light font-bold block mb-0.5">고객 희망 예산</span>
-              <span className="text-sm font-extrabold text-navy tabular-nums">{estimate.expected_budget_range}</span>
+              <span className="text-gray font-bold block mb-0.5">고객 희망 예산</span>
+              <span className="text-sm font-extrabold text-navy tabular-nums">{estimate.expected_budget_range || NONE}</span>
             </div>
             <div className="bg-bg-subtle border border-border p-3.5 rounded-custom">
-              <span className="text-gray-light font-bold block mb-0.5">엔지니어 예상 원가</span>
+              <span className="text-gray font-bold block mb-0.5">1차 검토 산출액 (VAT 별도)</span>
               <span className="text-sm font-extrabold text-navy tabular-nums">
-                ₩{estimate.estimated_amount ? estimate.estimated_amount.toLocaleString() : '실측 산정중'}
+                {supplyAmount > 0 ? `₩${supplyAmount.toLocaleString()}` : NONE}
               </span>
             </div>
             <div className="bg-[#1E4D8C]/5 border border-[#1E4D8C]/20 p-3.5 rounded-custom">
               <span className="text-steel font-bold block mb-0.5">최종 조율 계약 금액</span>
               <span className="text-sm font-black text-steel tabular-nums">
-                ₩{estimate.confirmed_contract_amount ? estimate.confirmed_contract_amount.toLocaleString() : '미확정'}
+                {estimate.confirmed_contract_amount ? `₩${estimate.confirmed_contract_amount.toLocaleString()}` : NONE}
               </span>
             </div>
           </div>
-          <p className="text-[10.5px] text-gray-light leading-relaxed mt-1">
-            * 권장 예산안은 ZEROS 데이터베이스 내 유사 공종 $n$건의 실측 시공 데이터를 매핑하여 산출한 시장 적정 단가 밴드 기준입니다. 자재 및 시공법에 따라 ±12%의 편차가 발생할 수 있습니다.
+          <p className="text-[10.5px] text-gray leading-relaxed mt-1">
+            산출액은 ZEROS가 보유한 유사 공종 실거래 데이터를 대조해 만든 단가 밴드 기준입니다. 자재 사양과 시공 방법에 따라 편차가 발생합니다.
           </p>
         </div>
 
-        {/* 4. 후속 프로세스 및 안전 보장 서약 */}
+        {/* 4. 후속 프로세스 권고 */}
         <div className="flex flex-col gap-3.5 border-t border-border pt-4">
           <div className="bg-navy text-bg p-4.5 rounded-custom flex items-center gap-4 justify-between select-none">
             <div className="flex items-center gap-3">
               <ShieldCheck className="w-8 h-8 text-steel shrink-0" />
               <div className="flex flex-col gap-0.5">
-                <span className="text-[11px] font-black text-bg/90 tracking-wide">ZEROS CAPEX RISK ASSURANCE</span>
-                <span className="text-[10px] text-bg/70 leading-normal">
-                  본 리포트에서 확정 정의한 공사 범위(Scope) 규격을 시공사 계약 조건에 고정할 것을 권장하며, 무단 설계 변경으로 인한 예산 오버런 리스크를 99% 이상 보장합니다.
+                <span className="text-[11px] font-black text-bg/90 tracking-wide">공사 범위 고정 권고</span>
+                <span className="text-[10px] text-bg/85 leading-normal">
+                  본 리포트에서 정의한 공사 범위(Scope)를 시공 계약 조건에 그대로 고정할 것을 권고합니다. 계약 이후의 범위 변경은 예산 증가의 주된 원인입니다.
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[10px] text-gray-light font-bold mt-2 tabular-nums">
+          <div className="flex items-center justify-between text-[10px] text-gray font-bold mt-2 tabular-nums">
             <span>주식회사 제러스 사전엔지니어링 검토사업실</span>
-            <span>https://zeros-estimate-service.vercel.app</span>
+            <span>https://zerospipe.co.kr</span>
           </div>
         </div>
 

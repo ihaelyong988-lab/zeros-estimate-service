@@ -4,6 +4,7 @@ import { getServiceClient } from '@/lib/supabase/supabaseServer';
 import { checkAdminSession, checkSession, checkVerified } from '@/lib/otp/token';
 import { isSmsConfigured } from '@/lib/sms/send';
 import { kstDateStr } from '@/lib/utils/date';
+import { gradeOf, rollupCustomer } from '@/lib/crm/customerRollup';
 import type { Estimate, Customer, SiteVisit, NotificationLog } from '@/types/estimate';
 
 // ==========================================
@@ -50,6 +51,32 @@ function stripEstimate(e: Estimate): PublicEstimate {
     estimate_category: e.estimate_category,
     status: e.status,
     estimate_sent_at: e.estimate_sent_at,
+  };
+}
+
+// 운영자가 손으로만 매길 수 있는 등급 — 자동 산출(gradeOf)로는 나오지 않는 값이다.
+// customer_grade_manual 이 비어 있는데 저장된 customer_grade 가 이 목록에 있으면 수동 지정으로 간주한다.
+// 백필 SQL 없이 기존 화면 표시를 그대로 보존하기 위한 폴백이다(2026-07-31 결정④).
+const MANUAL_ONLY_GRADES: readonly string[] = ['중요고객', '보류고객'];
+
+function manualGradeOf(c: Customer): string | undefined {
+  const explicit = (c.customer_grade_manual || '').trim();
+  if (explicit) return explicit;
+  const legacy = (c.customer_grade || '').trim();
+  return MANUAL_ONLY_GRADES.includes(legacy) ? legacy : undefined;
+}
+
+// 고객 누적치는 저장 카운터가 아니라 견적 행에서 매번 파생 계산한다.
+// 저장된 total_requests·total_won·total_revenue 컬럼은 레거시 호환으로 남겨 두되 표시 근거가 아니다
+// (견적을 삭제하거나 계약금액을 정정해도 저장 카운터는 따라오지 않아 장부가 틀어졌다).
+function withDerivedRollup(c: Customer, estimates: Estimate[]): Customer {
+  const rolled = rollupCustomer(c.phone, estimates);
+  const manual = manualGradeOf(c);
+  return {
+    ...c,
+    ...rolled,
+    customer_grade: gradeOf(manual, rolled),
+    customer_grade_manual: manual,
   };
 }
 
@@ -117,6 +144,14 @@ export async function POST(req: NextRequest) {
       }
 
       if (isAdmin) {
+        // 고객 목록은 저장 카운터 대신 견적에서 파생한 누적치·등급을 실어 보낸다.
+        if (table === TABLES.customers) {
+          const [customers, estimates] = await Promise.all([
+            loadRows<Customer>(supabase, TABLES.customers),
+            loadRows<Estimate>(supabase, TABLES.estimates),
+          ]);
+          return Response.json({ rows: customers.map((c) => withDerivedRollup(c, estimates)) });
+        }
         return Response.json({ rows: await loadRows(supabase, table) });
       }
 
@@ -235,7 +270,10 @@ export async function POST(req: NextRequest) {
         .upsert([{ id: newEstimate.id, data: newEstimate }], { onConflict: 'id' });
       if (insErr) return Response.json({ error: insErr.message }, { status: 500 });
 
-      // 고객 CRM 누적(신규 생성 또는 의뢰 1건 증가) — 단건 upsert
+      // 고객 CRM 행 갱신(신규 생성 또는 최근 접촉일 기록) — 단건 upsert.
+      // 누적 카운터는 표시 시점에 견적에서 파생 계산하므로(withDerivedRollup) 저장값은 레거시 호환용이다.
+      // customer_grade 는 건드리지 않는다 — 접수 한 건이 운영자가 지정한 등급('중요고객'·'보류고객')을
+      // '재문의'로 덮어쓰던 문제의 원인이었다. 자동 등급은 읽는 시점에 gradeOf 가 산출한다.
       const customers = await loadRows<Customer>(supabase, TABLES.customers);
       const existingCustomer = customers.find((c) => digitsOf(c.phone) === phoneDigits);
       let customerRow: Customer;
@@ -244,7 +282,6 @@ export async function POST(req: NextRequest) {
           ...existingCustomer,
           total_requests: (existingCustomer.total_requests || 0) + 1,
           last_contact_at: nowIso,
-          customer_grade: '재문의',
         };
       } else {
         customerRow = {
@@ -265,7 +302,8 @@ export async function POST(req: NextRequest) {
       }
       await supabase.from(TABLES.customers).upsert([{ id: customerRow.id, data: customerRow }], { onConflict: 'id' });
 
-      // 접수완료 알림 로그(단건)
+      // 접수완료 알림 이력(단건). 이 경로는 알림톡·문자를 실제로 호출하지 않으므로
+      // 상태를 '미발송'으로 기록한다(과거엔 발송 없이 '발송완료'로 고정돼 이력이 거짓이었다).
       const log: NotificationLog = {
         id: `ntf-generated-uuid-${Math.random().toString(36).substr(2, 9)}`,
         estimate_id: newEstimate.id,
@@ -275,7 +313,7 @@ export async function POST(req: NextRequest) {
         notification_type: '카카오톡 알림톡',
         template_code: 'ZR_REG_COMPLETE',
         content: `[ZEROS 사전진단] ${newEstimate.customer_name}님, 의뢰하신 사전진단서가 정상적으로 접수되었습니다. (접수번호: ${newEstimate.estimate_no})`,
-        status: '발송완료',
+        status: '미발송',
         sent_at: nowIso,
       };
       await supabase.from(TABLES.notificationLogs).upsert([{ id: log.id, data: log }], { onConflict: 'id' });

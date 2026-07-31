@@ -45,11 +45,19 @@ export const VisitList: React.FC = () => {
     const estimateId = targetVisit?.estimate_id || '';
     const beforeStatus = estimates.find(e => e.id === estimateId)?.status;
 
+    // 실측 결과는 운영자가 직접 입력한다. 입력이 없으면 빈 값으로 저장한다
+    // (과거엔 고정 문구를 기록해, 실제로 수행하지 않은 실측 결과가 이력에 남았다).
+    const entered = window.prompt(
+      '현장 실측 결과를 입력하세요. 비워 두면 결과 없이 완료 처리합니다.',
+      targetVisit?.visit_result || ''
+    );
+    if (entered === null) return; // 취소 = 완료 처리 중단
+
     try {
       // 1. 방문 상태 '완료' 로 변경
       await ZerosService.updateSiteVisit(id, {
         visit_status: '완료',
-        visit_result: '현장 실측 전동 레이저 스캔 완료. P&ID 일치율 95% 확인.'
+        visit_result: entered.trim()
       });
 
       // 2. 재적재 후 견적 상태 대조
@@ -69,7 +77,7 @@ export const VisitList: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-xs font-bold text-gray-light text-center py-12">현장방문 데이터 적재 중...</div>;
+    return <div className="text-xs font-bold text-gray text-center py-12">현장방문 데이터 적재 중...</div>;
   }
 
   // 매핑 및 필터링
@@ -89,7 +97,7 @@ export const VisitList: React.FC = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as 'all' | SiteVisit['visit_status'])}
-            className="border border-border rounded-custom bg-bg px-3 py-1.5 text-xs text-navy focus:outline-none"
+            className="border border-border rounded-custom bg-bg px-3 min-h-[44px] text-xs text-navy focus:outline-none focus-visible:outline-2 focus-visible:outline-steel"
           >
             <option value="all">전체 일정 상태</option>
             <option value="예정">출장 예정</option>
@@ -98,10 +106,12 @@ export const VisitList: React.FC = () => {
           </select>
           
           <button
+            type="button"
             onClick={() => {
               void loadData();
             }}
-            className="p-1.5 border border-border rounded-custom bg-bg text-gray hover:bg-bg-subtle"
+            style={{ touchAction: 'manipulation' }}
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center border border-border rounded-custom bg-bg text-gray hover:bg-bg-subtle cursor-pointer focus-visible:outline-2 focus-visible:outline-steel"
             title="목록 새로고침"
           >
             <RefreshCw className="w-4 h-4" />
@@ -148,7 +158,7 @@ export const VisitList: React.FC = () => {
                     <User className="w-3.5 h-3.5 text-gray-light shrink-0 mt-0.5" />
                     <div className="flex flex-col gap-0.5">
                       <span className="font-extrabold text-navy">{v.visitor_name} 엔지니어 배정</span>
-                      <span className="text-[10px] text-gray-light leading-none">
+                      <span className="text-[10px] text-gray leading-none">
                         대상: {relatedEst?.customer_name || '의뢰'} ({relatedEst?.company_name || '개인'}) / {relatedEst?.estimate_no || '-'}
                       </span>
                     </div>
@@ -186,7 +196,7 @@ export const VisitList: React.FC = () => {
                     <div className="bg-success/5 border border-success/10 p-2.5 rounded-custom flex items-start gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
                       <div className="flex flex-col gap-0.5 text-success">
-                        <span className="font-bold text-[10.5px]">레이저 실측 결과</span>
+                        <span className="font-bold text-[10.5px]">실측 결과</span>
                         <p className="leading-normal text-[10.5px] font-semibold">{v.visit_result}</p>
                       </div>
                     </div>
@@ -196,8 +206,10 @@ export const VisitList: React.FC = () => {
                 {/* 예정 일정인 경우, 신속 완료 액션 제공 */}
                 {v.visit_status === '예정' && (
                   <button
+                    type="button"
                     onClick={() => handleCompleteVisit(v.id)}
-                    className="w-full mt-1.5 bg-steel hover:bg-navy text-bg py-2 rounded-custom text-xs font-extrabold transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm"
+                    style={{ touchAction: 'manipulation' }}
+                    className="w-full mt-1.5 bg-steel hover:bg-navy text-bg min-h-[44px] px-3 rounded-custom text-xs font-extrabold transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm cursor-pointer focus-visible:outline-2 focus-visible:outline-navy"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     현장 실측 조사 완료 처리
@@ -209,7 +221,7 @@ export const VisitList: React.FC = () => {
           })}
         </div>
       ) : (
-        <div className="bg-bg border border-border border-dashed p-12 text-center rounded-custom text-xs text-gray-light font-bold">
+        <div className="bg-bg border border-border border-dashed p-12 text-center rounded-custom text-xs text-gray font-bold">
           출장방문 일정 내역이 존재하지 않습니다.
         </div>
       )}

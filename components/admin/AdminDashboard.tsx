@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
 import { Estimate } from '@/types/estimate';
+import { sumExpectedRevenue } from '@/lib/calculations';
 import {
   FileText,
   Clock,
@@ -44,10 +45,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
   const visitWaitingCount = estimates.filter(e => e.status === '현장방문 예정' || e.status === '방문일정 조율중').length;
   const wonCount = estimates.filter(e => e.status === '수주성공').length;
 
-  // 매출 계산
-  const expectedRevenue = estimates
-    .filter(e => e.status === '견적서 작성중' || e.status === '견적서 송부완료')
-    .reduce((acc, curr) => acc + (curr.estimated_amount || 0), 0);
+  // 매출 계산 (견적금액 = 공급가액, VAT 별도). 산식은 lib/calculations.ts 한 곳에서만 정의한다.
+  const expectedRevenue = sumExpectedRevenue(estimates);
 
   const confirmedRevenue = estimates
     .filter(e => e.status === '수주성공')
@@ -124,7 +123,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
               ₩{expectedRevenue.toLocaleString()}
             </span>
             <span className="text-[10.5px] text-gray-light font-medium leading-none mt-1">
-              *상태: 견적서 작성중 및 송부 완료건 합계
+              *상태: 견적서 작성중 및 송부 완료건 합계 (공급가액, VAT 별도)
             </span>
           </div>
           <div className="bg-navy p-3 rounded-custom text-bg shrink-0">
