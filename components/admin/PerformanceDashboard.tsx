@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
-import { Estimate } from '@/types/estimate';
+import { Estimate, Payment } from '@/types/estimate';
 import { calculatePerformanceMetrics } from '@/lib/calculations';
 import { kstMonthStr } from '@/lib/utils/date';
 import {
@@ -15,6 +15,7 @@ const COLORS = ['#0F1E35', '#1E4D8C', '#E0701A', '#5B6573', '#9AA3AF', '#1F7A4D'
 
 export const PerformanceDashboard: React.FC = () => {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false); // SSR Hydration Mismatch 방지 - 핵심 기법!
 
@@ -23,15 +24,25 @@ export const PerformanceDashboard: React.FC = () => {
       setMounted(true);
     });
 
+    // 견적·결제를 각각 try/catch 로 적재한다. Promise.all 로 묶으면 한쪽 실패(세션 만료 등)가
+    // 다른 쪽 결과까지 버려 실적 화면 전체가 0건으로 위장된다.
     const load = async () => {
       try {
         const ests = await ZerosService.getEstimates();
         setEstimates(ests);
       } catch (e) {
-        console.error('Failed to load performance metrics', e);
-      } finally {
-        setLoading(false);
+        console.error('Failed to load estimates for performance metrics', e);
       }
+
+      try {
+        const pays = await ZerosService.getPayments();
+        setPayments(pays);
+      } catch (e) {
+        console.error('Failed to load payments for outstanding amount', e);
+        setPayments([]);
+      }
+
+      setLoading(false);
     };
     load();
     return () => window.cancelAnimationFrame(frameId);
@@ -42,7 +53,11 @@ export const PerformanceDashboard: React.FC = () => {
   }
 
   // calculations 연동
-  const metrics = calculatePerformanceMetrics(estimates);
+  const metrics = calculatePerformanceMetrics(estimates, payments);
+
+  // 매출 귀속월 = 수주 확정월(contract_won_at).
+  // contract_won_at 기록 이전에 마감된 과거 수주건은 값이 없으므로 접수월(created_at)로 폴백한다.
+  const revenueMonthOf = (e: Estimate) => kstMonthStr(e.contract_won_at || e.created_at);
 
   // 1. 월별 접수 및 매출 추이 동적 가공
   const getMonthlyData = () => {
@@ -60,11 +75,14 @@ export const PerformanceDashboard: React.FC = () => {
     });
 
     estimates.forEach(e => {
-      const m = kstMonthStr(e.created_at);
-      if (monthlyMap[m]) {
-        monthlyMap[m].count += 1;
-        if (e.status === '수주성공') {
-          monthlyMap[m].revenue += (e.confirmed_contract_amount || 0);
+      const receivedMonth = kstMonthStr(e.created_at);
+      if (monthlyMap[receivedMonth]) {
+        monthlyMap[receivedMonth].count += 1;
+      }
+      if (e.status === '수주성공') {
+        const wonMonth = revenueMonthOf(e);
+        if (monthlyMap[wonMonth]) {
+          monthlyMap[wonMonth].revenue += (e.confirmed_contract_amount || 0);
         }
       }
     });
@@ -73,6 +91,11 @@ export const PerformanceDashboard: React.FC = () => {
   };
 
   const monthlyData = getMonthlyData();
+
+  // 창(최근 7개월) 안 매출과 창 밖 매출을 분리 표기한다.
+  // 창 밖 수주건은 어느 막대에도 안 잡히므로, 표기하지 않으면 차트 합계와 누적 확정매출이 어긋난다.
+  const windowRevenue = monthlyData.reduce((acc, m) => acc + m.revenue, 0);
+  const outsideWindowRevenue = Math.max(0, metrics.confirmedRevenue - windowRevenue);
 
   // 2. 공사 종류별 비중 가공
   const getWorkTypeData = () => {
@@ -127,7 +150,8 @@ export const PerformanceDashboard: React.FC = () => {
       <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm">
         <h2 className="text-xl font-black text-navy leading-none">영업 성과 및 파이프라인 분석</h2>
         <p className="text-[12.5px] text-gray leading-relaxed mt-1">
-          사전진단 신청 유입부터 수주 확정 매출, 미수금, 그리고 공종별 분석 자료를 0 나눗셈 예외처리가 완비된 엔지니어링 계산식으로 시각화합니다.
+          사전진단 신청 유입부터 수주 확정 매출, 서비스 수수료 미수금, 공종별 분석까지 집계합니다.
+          금액 지표는 공급가액(VAT 별도) 기준이며, 미수금은 청구액에서 수납액을 뺀 값입니다.
         </p>
       </div>
 
@@ -202,7 +226,7 @@ export const PerformanceDashboard: React.FC = () => {
         </div>
 
         <div className="bg-bg border border-border p-4 rounded-custom shadow-sm col-span-2">
-          <span className="text-[9.5px] text-danger font-bold block uppercase tracking-wider mb-1">수주성공 중 수동 미수금</span>
+          <span className="text-[9.5px] text-danger font-bold block uppercase tracking-wider mb-1">서비스 수수료 미수금</span>
           <span className="text-lg font-black text-danger tracking-tight tabular-nums">
             ₩{metrics.outstandingAmount.toLocaleString()}
           </span>
@@ -237,7 +261,7 @@ export const PerformanceDashboard: React.FC = () => {
           <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm">
             <h4 className="text-xs font-bold text-navy mb-4 flex items-center gap-1.5 border-b border-border/60 pb-2">
               <DollarSign className="w-4 h-4 text-steel" />
-              월별 확정 계약 매출 (원)
+              월별 확정 계약 매출 (수주월 기준, 원)
             </h4>
             <div className="h-64 min-h-64 min-w-0">
               <ResponsiveContainer width="100%" height={256}>
@@ -253,6 +277,9 @@ export const PerformanceDashboard: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            <p className="mt-2 text-[11px] font-bold text-gray tabular-nums">
+              차트 구간 ₩{windowRevenue.toLocaleString()} · 구간 밖 수주 ₩{outsideWindowRevenue.toLocaleString()}
+            </p>
           </div>
 
           {/* 차트 3: 공사 종류별 비중 */}

@@ -7,7 +7,7 @@ import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { validateUpload, ACCEPT_ATTR, ALLOWED_LABEL, MAX_PER_CATEGORY, MAX_TOTAL_FILES } from '@/lib/constants/uploadLimits';
 import { useShell } from '@/lib/context/ShellContext';
 import { PhoneVerifyGate } from './PhoneVerifyGate';
-import { Estimate, FileMeta, WorkType, SiteType, ExpectedBudgetRange } from '@/types/estimate';
+import { Estimate, FileMeta, WorkType, SiteType, ExpectedBudgetRange, EstimateCategory } from '@/types/estimate';
 import {
   Building,
   Phone,
@@ -29,11 +29,30 @@ import {
 } from 'lucide-react';
 
 // 견적문의 진입 채널 — 자료등록 화면에서 둘 중 하나를 고른다.
-//  visit: 견적·출장요청 자료등록(자료 + 예약방문 신청)  ·  quick: 무료 견적 신청(100만원 이하 · AI Native 자동 등록)
+//  visit: 견적·출장요청 자료등록(자료 + 예약방문 신청)  ·  quick: 무료 견적 신청(1,000만원 이하 · AI Native 자동 등록)
 export type RequestChannel = 'visit' | 'quick';
 
 // 업종 — 꼭 필요한 선택값(드롭다운). 가입정보 외 최소 식별용.
 const INDUSTRY_OPTIONS = ['식품 제조', '제약·바이오', '화학·정밀', '기계·금속', '전자·반도체', '물류·유통', '일반 제조', '상업·건물', '기타'];
+
+// 예상 공사금액 선택지 — value = DB 저장 키(ExpectedBudgetRange, 변경 금지),
+// label = 저장 키와 정확히 같은 금액대를 부르는 표시 문구.
+// 구 라벨 "100만원 이하"는 저장값 '≤1,000만'과 10배 어긋나 마이페이지에서 다른 값이 보였다(2026-07-31 F6).
+const BUDGET_OPTIONS: { value: ExpectedBudgetRange; label: string }[] = [
+  { value: '≤1,000만', label: '1,000만원 이하' },
+  { value: '1,000만~1억', label: '1,000만원 ~ 1억원' },
+  { value: '≥1억', label: '1억원 이상' },
+  { value: '모름', label: '아직 모름' },
+];
+
+// 고객이 고른 예상 공사금액 → 견적 규모 자동 분류.
+// 채널로 강제 지정하지 않는다(구 로직은 quick=small 고정이라 고객 선택이 버려졌다 — F6-B).
+const BUDGET_TO_CATEGORY: Record<ExpectedBudgetRange, EstimateCategory> = {
+  '≤1,000만': 'small',
+  '1,000만~1억': 'medium',
+  '≥1억': 'large',
+  '모름': 'unknown',
+};
 
 // 채널별 견적 절차 방법론(2026-07-15 캡쳐 지시) — 채널 선택 카드 아래 정보 영역.
 //  visit=Crisp-DM 7단계 · quick=KDD 6단계. 콘텐츠는 데이터로 분리(문구 교체 용이).
@@ -93,7 +112,8 @@ const defaultFormData = {
   work_type: '배관공사' as WorkType,
   site_type: '공장' as SiteType,
   work_purpose: '신규설치',
-  expected_budget_range: '1,000만~1억' as ExpectedBudgetRange,
+  // 고객이 고르기 전 기본값 = '모름' — 고르지 않은 금액대를 임의로 저장하지 않는다(F6-B)
+  expected_budget_range: '모름' as ExpectedBudgetRange,
   desired_schedule: '1개월 이내',
   urgency: false,
   description: '',
@@ -378,8 +398,9 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     setLoading(true);
     try {
       const industryTag = formData.industry ? ` · 업종: ${formData.industry}` : '';
+      // 예상 공사금액은 expected_budget_range 필드에 그대로 저장되므로 태그에 다시 적지 않는다(중복 표기 금지).
       const channelTag = channel === 'quick'
-        ? `[무료견적·총 공사비 100만원 이하] AI Native 자동 등록${industryTag}`
+        ? `[무료견적] AI Native 자동 등록${industryTag}`
         : `[출장요청·예약방문] 희망 방문: ${formData.visit_date || '미지정'} ${formData.visit_time}${industryTag}`;
 
       // 출장요청 채널이면 예약방문 정보를 함께 넘겨, 서버가 접수와 방문 이력을 한 번에 기록한다.
@@ -401,12 +422,12 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         work_type: formData.work_type,
         site_type: formData.site_type,
         work_purpose: formData.work_purpose,
-        expected_budget_range: channel === 'quick' ? '≤1,000만' : formData.expected_budget_range,
+        expected_budget_range: formData.expected_budget_range,
         desired_schedule: channel === 'visit' && formData.visit_date ? formData.visit_date : formData.desired_schedule,
         urgency: formData.urgency,
         description: formData.description,
         request_detail: channelTag,
-        estimate_category: channel === 'quick' ? 'small' : 'unknown',
+        estimate_category: BUDGET_TO_CATEGORY[formData.expected_budget_range],
         payment_required: false,
         submitted_files: formData.files
       }, { visit: visitPayload });
@@ -580,7 +601,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
           <MethodologyList channel="visit" />
           </div>
 
-          {/* B. 무료 견적(100만원 이하 · AI Native 자동) + KDD 절차 — 독립 패널 */}
+          {/* B. 무료 견적(1,000만원 이하 · AI Native 자동) + KDD 절차 — 독립 패널 */}
           <div className="rounded-custom border border-border bg-bg p-5 md:p-6 flex flex-col">
           <button
             type="button"
@@ -595,7 +616,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
               <span className="text-[17px] font-black text-navy leading-tight">무료 견적 신청</span>
             </span>
             <span className="text-[13.5px] text-gray font-semibold leading-relaxed">
-              총 공사비 100만원 이하<br />AI Native 기반 자동 등록
+              총 공사비 1,000만원 이하<br />AI Native 기반 자동 등록
             </span>
             <span className="mt-1 w-full text-center bg-navy text-white py-3 min-h-[44px] flex items-center justify-center rounded-custom text-[15px] font-black group-hover:bg-steel transition-colors">
               무료 견적 신청
@@ -685,7 +706,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
           {/* ===== STEP 2 — 방문·연락 / 견적·연락 ===== */}
           {step === 2 && (
             <div className="flex flex-col gap-5">
-              {channel === 'visit' ? (
+              {channel === 'visit' && (
                 <div className="flex flex-col gap-2.5">
                   <label htmlFor="visit_date" className={labelCls}>
                     <CalendarClock className="w-4.5 h-4.5 text-steel" />
@@ -718,26 +739,28 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                     ))}
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="expected_budget_range" className={labelCls}>
-                    <Coins className="w-4.5 h-4.5 text-steel" />
-                    예상 공사금액 (선택)
-                  </label>
-                  <select
-                    id="expected_budget_range"
-                    name="expected_budget_range"
-                    value={formData.expected_budget_range}
-                    onChange={handleChange}
-                    style={{ touchAction: 'manipulation' }}
-                    className={`${inputCls} text-navy`}
-                  >
-                    <option value="≤1,000만">100만원 이하</option>
-                    <option value="1,000만~1억">1,000만 ~ 1억</option>
-                    <option value="모름">아직 모름</option>
-                  </select>
-                </div>
               )}
+
+              {/* 예상 공사금액 — 두 채널 공통(구조는 그대로, visit 채널에도 노출).
+                  고른 값이 그대로 저장되고 견적 규모 분류도 이 값에서 파생된다(F6-B). */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="expected_budget_range" className={labelCls}>
+                  <Coins className="w-4.5 h-4.5 text-steel" />
+                  예상 공사금액 (선택)
+                </label>
+                <select
+                  id="expected_budget_range"
+                  name="expected_budget_range"
+                  value={formData.expected_budget_range}
+                  onChange={handleChange}
+                  style={{ touchAction: 'manipulation' }}
+                  className={`${inputCls} text-navy`}
+                >
+                  {BUDGET_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="phone" className={labelCls}>

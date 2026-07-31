@@ -3,7 +3,18 @@
 import React, { useEffect, useState } from 'react';
 import { NotificationLog as NotificationType } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
-import { Search, Mail, MessageSquare, Check, AlertCircle, RefreshCw } from 'lucide-react';
+import { Search, Mail, MessageSquare, Check, AlertCircle, MinusCircle, RefreshCw } from 'lucide-react';
+
+// 전송 상태 배지 — 저장된 status 값을 그대로 표시한다.
+// '미발송' = 이력만 남고 실제 발송 API 호출이 없었던 건(무채색으로 구분, 기존 토큰만 사용).
+const STATUS_BADGE: Record<
+  NotificationType['status'],
+  { cls: string; Icon: typeof Check }
+> = {
+  발송완료: { cls: 'bg-success/15 text-success border-success/35', Icon: Check },
+  발송오류: { cls: 'bg-danger/15 text-danger border-danger/35', Icon: AlertCircle },
+  미발송: { cls: 'bg-gray/15 text-gray border-gray/35', Icon: MinusCircle },
+};
 
 export const NotificationLog: React.FC = () => {
   const [logs, setLogs] = useState<NotificationType[]>([]);
@@ -48,7 +59,7 @@ export const NotificationLog: React.FC = () => {
           <div>
             <h2 className="text-xl font-black text-navy leading-none mt-0.5">고객 안내 알림톡 & 이메일 발송 로그</h2>
             <p className="text-[12.5px] text-gray leading-relaxed mt-1">
-              WBS 영업 프로세스 상태가 전환될 때 고객사의 휴대폰으로 발송되는 카카오 알림톡 및 전송 이력을 실시간 모니터링합니다.
+              영업 프로세스 상태가 전환될 때 생성되는 고객 안내 알림톡·이메일 이력입니다.
             </p>
           </div>
           <button 
@@ -152,17 +163,16 @@ export const NotificationLog: React.FC = () => {
 
                     {/* 전송상태 */}
                     <td className="p-3 text-center">
-                      {l.status === '발송오류' ? (
-                        <span className="bg-danger/15 text-danger border border-danger/35 px-2 py-0.5 rounded-custom text-[9.5px] font-black inline-flex items-center gap-0.5">
-                          <AlertCircle className="w-2.5 h-2.5" />
-                          발송 오류
-                        </span>
-                      ) : (
-                        <span className="bg-success/15 text-success border border-success/35 px-2 py-0.5 rounded-custom text-[9.5px] font-black inline-flex items-center gap-0.5">
-                          <Check className="w-2.5 h-2.5" />
-                          발송 성공
-                        </span>
-                      )}
+                      {(() => {
+                        const badge = STATUS_BADGE[l.status] || STATUS_BADGE.미발송;
+                        const Icon = badge.Icon;
+                        return (
+                          <span className={`${badge.cls} border px-2 py-0.5 rounded-custom text-[9.5px] font-black inline-flex items-center gap-0.5`}>
+                            <Icon className="w-2.5 h-2.5" />
+                            {l.status}
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     {/* 발정시각 */}

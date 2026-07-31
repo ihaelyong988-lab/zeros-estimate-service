@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Estimate, EstimateStatus, EstimateCategory } from '@/types/estimate';
 import { Calendar } from 'lucide-react';
 import { kstMonthDay } from '@/lib/utils/date';
+import { supplyAmountOf } from '@/lib/quote/amounts';
 
 interface KanbanBoardProps {
   estimates: Estimate[];
@@ -34,6 +35,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   onSelectCard
 }) => {
   const [draggingId, setDraggingId] = useState<string | null>(null);
+
+  // 카드·컬럼 표시 금액 = 공급가액(VAT 별도). 견적금액이 없으면 확정 계약금액으로 대체한다.
+  const cardAmountOf = (est: Estimate) => {
+    const supply = supplyAmountOf(est);
+    return supply > 0 ? supply : (est.confirmed_contract_amount || 0);
+  };
 
   // 드래그 시작 핸들러
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -86,9 +93,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           const columnCount = columnEstimates.length;
           
           // 컬럼별 금액 총합 계산
-          const totalAmount = columnEstimates.reduce((acc, curr) => {
-            return acc + (curr.estimated_amount || curr.confirmed_contract_amount || 0);
-          }, 0);
+          const totalAmount = columnEstimates.reduce((acc, curr) => acc + cardAmountOf(curr), 0);
 
           return (
             <div
@@ -164,11 +169,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         {/* 가격 / 접수일 */}
                         <div className="flex items-center justify-between text-[10px] font-bold text-gray-light pt-0.5">
                           <span className="text-navy font-extrabold text-[11px] tabular-nums">
-                            {est.estimated_amount 
-                              ? `₩${(est.estimated_amount / 10000).toLocaleString()}만` 
-                              : est.confirmed_contract_amount 
-                              ? `₩${(est.confirmed_contract_amount / 10000).toLocaleString()}만`
-                              : '-'}
+                            {cardAmountOf(est) > 0 ? `₩${Math.round(cardAmountOf(est) / 10000).toLocaleString()}만` : '-'}
                           </span>
                           <span className="flex items-center gap-0.5 text-[9.5px]">
                             <Calendar className="w-3 h-3 text-gray-light" />

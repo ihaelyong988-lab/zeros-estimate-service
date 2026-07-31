@@ -3,6 +3,8 @@
 import { Estimate, EstimateStatus, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
 import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits } from './mock-data';
 import { isSupabaseEnabled } from './supabaseBrowser';
+import { supplyAmountOf } from '@/lib/quote/amounts';
+import { derivePaymentStatus } from '@/lib/payments/status';
 
 // ==========================================
 // 1. ZEROS 사전진단 데이터 서비스 표준 인터페이스
@@ -55,8 +57,6 @@ const SEED_VERSION_KEY = 'zeros_seed_version';
 // 방문 이력으로 견적 상태를 덮어써도 되는 단계(방문 이전 ~ 방문 단계) 화이트리스트.
 // 여기에 없는 단계(견적서 작성중·견적서 송부완료·수주성공·수주실패·보류·취소)는
 // 이미 방문 이후로 진행·종결된 건이므로 방문 이력을 나중에 넣어도 상태를 되돌리지 않는다.
-// 특히 '수주성공' 건의 상태를 되돌리면 updateEstimate → syncCustomerOnStatusChange 가
-// 수주 취소로 판정해 고객의 total_won·total_revenue 를 실제 DB에서 차감한다.
 const VISIT_SYNCABLE_STATUSES: readonly EstimateStatus[] = [
   '접수완료',
   '검토중',
@@ -145,20 +145,16 @@ abstract class BaseZerosService implements ZerosDataService {
     return newEstimate;
   }
 
+  // 고객 행 자체(신원·최근 접촉일)만 유지한다.
+  // 누적 카운터·등급은 저장값이 아니라 /api/data 가 견적에서 파생 계산한 값을 화면이 쓴다.
+  // 특히 customer_grade 는 여기서 건드리지 않는다 — 접수 한 건이 운영자가 지정한 등급을 덮어썼다.
   private async syncCustomerForEstimate(est: Estimate) {
     const customers = await this.loadTable<Customer>(TABLES.customers);
     const existing = customers.find(c => c.phone === est.phone);
 
     if (existing) {
-      existing.total_requests += 1;
+      existing.total_requests += 1; // 레거시 컬럼 유지용(표시 근거 아님)
       existing.last_contact_at = new Date().toISOString();
-      if (est.status === '수주성공') {
-        existing.total_won += 1;
-        existing.total_revenue += est.confirmed_contract_amount || 0;
-        existing.customer_grade = '수주고객';
-      } else {
-        existing.customer_grade = '재문의';
-      }
     } else {
       const newCustomer: Customer = {
         id: `cust-generated-uuid-${Math.random().toString(36).substr(2, 9)}`,
@@ -191,8 +187,11 @@ abstract class BaseZerosService implements ZerosDataService {
     // 수주성공 시점에 contract_won_at 날짜가 없다면 자동 설정
     if (updated.status === '수주성공' && original.status !== '수주성공') {
       updated.contract_won_at = new Date().toISOString();
-      if (!updated.confirmed_contract_amount && updated.estimated_amount) {
-        updated.confirmed_contract_amount = updated.estimated_amount;
+      // 확정 계약금액은 공급가액(VAT 별도) 기준으로 복사한다.
+      // estimated_amount 를 그대로 쓰면 구 저장값(VAT 포함)이 확정매출로 넘어가 매출이 10% 부풀었다.
+      if (!updated.confirmed_contract_amount) {
+        const supply = supplyAmountOf(updated);
+        if (supply > 0) updated.confirmed_contract_amount = supply;
       }
     }
 
@@ -204,9 +203,9 @@ abstract class BaseZerosService implements ZerosDataService {
     list[idx] = updated;
     await this.persistTable(TABLES.estimates, list);
 
-    // 고객 통계 동기화 — 수주성공 상태 '전이'가 있을 때만 won 지표를 갱신한다.
-    // (과거엔 매 저장마다 total_requests·total_won 을 무조건 +1 해 CRM 수치가 오염됐다.)
-    await this.syncCustomerOnStatusChange(original, updated);
+    // 고객 통계는 여기서 증감시키지 않는다(M6).
+    // 저장 카운터를 가·감산하던 방식은 견적을 삭제해도 차감되지 않고, 수주 유지 중 계약금액을
+    // 정정해도 반영되지 않았다. 이제 /api/data 가 고객 목록을 낼 때 견적에서 파생 계산한다.
 
     // 상태 변경 시 알림 로그 자동 트리거
     if (updates.status && original.status !== updates.status) {
@@ -214,30 +213,6 @@ abstract class BaseZerosService implements ZerosDataService {
     }
 
     return updated;
-  }
-
-  // 견적 상태 변경 시 고객 수주 통계를 멱등하게 반영한다(의뢰 건수는 접수 시에만 증가).
-  private async syncCustomerOnStatusChange(original: Estimate, updated: Estimate) {
-    const wonBefore = original.status === '수주성공';
-    const wonNow = updated.status === '수주성공';
-    if (wonBefore === wonNow) return; // 수주 상태 전이가 없으면 통계 변화 없음
-
-    const customers = await this.loadTable<Customer>(TABLES.customers);
-    const existing = customers.find(c => c.phone === updated.phone);
-    if (!existing) return;
-
-    const amount = updated.confirmed_contract_amount || 0;
-    if (wonNow && !wonBefore) {
-      existing.total_won += 1;
-      existing.total_revenue += amount;
-      existing.customer_grade = '수주고객';
-    } else if (!wonNow && wonBefore) {
-      // 수주성공 → 다른 상태로 되돌림: 앞서 더한 값을 상쇄
-      existing.total_won = Math.max(0, existing.total_won - 1);
-      existing.total_revenue = Math.max(0, existing.total_revenue - amount);
-    }
-    existing.last_contact_at = new Date().toISOString();
-    await this.persistTable(TABLES.customers, customers);
   }
 
   // ---------- 견적 삭제 ----------
@@ -316,6 +291,9 @@ abstract class BaseZerosService implements ZerosDataService {
     return this.loadTable<NotificationLog>(TABLES.notificationLogs);
   }
 
+  // 이 경로는 브라우저에서 이력 행만 만든다 — 알림톡·문자 발송 API를 호출하지 않는다.
+  // 따라서 기본 상태는 '미발송'이다(과거엔 발송 없이 '발송완료'로 고정해 이력이 거짓이었다).
+  // 실제 발송 결과를 남기려면 서버 발송 경로가 status 를 명시적으로 넘겨야 한다.
   async createNotificationLog(log: Partial<NotificationLog>): Promise<NotificationLog> {
     const list = await this.getNotificationLogs();
     const newLog: NotificationLog = {
@@ -327,7 +305,7 @@ abstract class BaseZerosService implements ZerosDataService {
       notification_type: log.notification_type || '카카오톡 알림톡',
       template_code: log.template_code || 'ZR_COMMON',
       content: log.content || '',
-      status: '발송완료',
+      status: log.status || '미발송',
       sent_at: new Date().toISOString()
     };
     list.unshift(newLog);
@@ -358,10 +336,12 @@ abstract class BaseZerosService implements ZerosDataService {
     list.unshift(newPayment);
     await this.persistTable(TABLES.payments, list);
 
-    // 견적서 테이블 결제상태 동기화
+    // 견적의 결제상태는 방금 만든 행 하나가 아니라 그 견적의 Payment 행 집합에서 파생한다.
+    // (행 하나만 반영하면 이미 결제완료된 건에 새 청구가 생겼을 때 상태가 뒤로 밀렸다.)
     if (newPayment.estimate_id) {
+      const rows = list.filter(p => p.estimate_id === newPayment.estimate_id);
       await this.updateEstimate(newPayment.estimate_id, {
-        payment_status: newPayment.payment_status,
+        payment_status: derivePaymentStatus(rows),
         payment_required: true
       });
     }
@@ -382,10 +362,11 @@ abstract class BaseZerosService implements ZerosDataService {
     list[idx] = updated;
     await this.persistTable(TABLES.payments, list);
 
-    // 견적서 테이블 결제상태 동기화
+    // 결제상태는 갱신된 행 하나가 아니라 그 견적의 Payment 행 집합에서 파생한다.
     if (updated.estimate_id) {
+      const rows = list.filter(p => p.estimate_id === updated.estimate_id);
       await this.updateEstimate(updated.estimate_id, {
-        payment_status: updated.payment_status
+        payment_status: derivePaymentStatus(rows)
       });
     }
 
@@ -458,6 +439,8 @@ abstract class BaseZerosService implements ZerosDataService {
   }
 
   // ---------- 고객 ----------
+  // 반환 행의 total_requests·total_won·total_revenue·customer_grade 는
+  // 서버(/api/data)가 견적에서 파생 계산해 채운 값이다. 저장 카운터 컬럼은 레거시 호환으로만 남아 있다.
   async getCustomers(): Promise<Customer[]> {
     return this.loadTable<Customer>(TABLES.customers);
   }

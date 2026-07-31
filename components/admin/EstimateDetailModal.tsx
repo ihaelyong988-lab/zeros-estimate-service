@@ -4,14 +4,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Estimate, EstimateStatus, AccuracyGrade, Payment, SiteVisit, EstimateLineItem } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
 import { uploadEstimateFiles, uploadEstimateFile } from '@/lib/supabase/storage';
-import { draftLineItems, lineAmount, sumSubtotal } from '@/lib/quote/quoteDraft';
+import { draftLineItems } from '@/lib/quote/quoteDraft';
+import { lineAmount, sumSubtotal, vatOf, totalOf, supplyAmountOf } from '@/lib/quote/amounts';
+import { derivePaymentStatus } from '@/lib/payments/status';
 import { buildQuoteXlsxBlob, quoteFileName, downloadBlob } from '@/lib/quote/quoteXlsx';
 import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { openSecureFile } from '@/lib/files/secureFile';
 import { validateFileFormat, ACCEPT_ATTR } from '@/lib/constants/uploadLimits';
 import { TossPaymentModal } from './TossPaymentModal';
 import { PrintableScopeSheet } from './PrintableScopeSheet';
-import { AiBlueprintAnalyzer } from '../forms/AiBlueprintAnalyzer';
 import {
   X,
   User,
@@ -22,7 +23,6 @@ import {
   Plus,
   FolderOpen,
   Printer,
-  Cpu,
   FileSpreadsheet,
   Sparkles,
   Send,
@@ -68,7 +68,6 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   // 2차 고도화 모달 상태
   const [showTossModal, setShowTossModal] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [showAiAnalyzer, setShowAiAnalyzer] = useState(false);
 
   // AI 견적 초안 · 발송 상태
   const [quoteItems, setQuoteItems] = useState<EstimateLineItem[]>([]);
@@ -88,7 +87,8 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
         setStatus(est.status);
         setAccuracyGrade(est.accuracy_grade || '');
         setAdminMemo(est.admin_memo || '');
-        setEstimatedAmount(est.estimated_amount || '');
+        // 금액은 공급가액(VAT 별도) 단일 정의로 읽는다 — 구 저장값(VAT 포함)은 여기서 정규화된다.
+        setEstimatedAmount(supplyAmountOf(est) || '');
         setConfirmedContractAmount(est.confirmed_contract_amount || '');
       }
       const pays = await ZerosService.getPayments();
@@ -108,7 +108,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
           setStatus(est.status);
           setAccuracyGrade(est.accuracy_grade || '');
           setAdminMemo(est.admin_memo || '');
-          setEstimatedAmount(est.estimated_amount || '');
+          setEstimatedAmount(supplyAmountOf(est) || '');
           setConfirmedContractAmount(est.confirmed_contract_amount || '');
           setQuoteItems(est.line_items || []);
         }
@@ -303,9 +303,10 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   };
 
   // ── AI 견적 초안 · 발송 핸들러 ──
+  // 품목표 합계 = 공급가액(VAT 별도). VAT·총액은 저장하지 않고 여기서 파생한다.
   const quoteSubtotal = sumSubtotal(quoteItems);
-  const quoteVat = Math.round(quoteSubtotal * 0.1);
-  const quoteTotal = quoteSubtotal + quoteVat;
+  const quoteVat = vatOf(quoteSubtotal);
+  const quoteTotal = totalOf(quoteSubtotal);
 
   const handleGenerateDraft = () => {
     if (!estimate) return;
@@ -368,13 +369,14 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
       const sentAt = new Date().toISOString();
       await ZerosService.updateEstimate(estimate.id, {
         line_items: quoteItems,
-        estimated_amount: quoteTotal,
+        // 저장값은 공급가액(VAT 별도) 고정. 총액을 저장하면 재발송마다 VAT가 10%씩 증식한다.
+        estimated_amount: quoteSubtotal,
         estimate_pdf_url: meta.file_path || meta.file_url,
         estimate_sent_at: sentAt,
         status: '견적서 송부완료',
       });
       setStatus('견적서 송부완료');
-      setEstimatedAmount(quoteTotal);
+      setEstimatedAmount(quoteSubtotal);
       alert('견적서가 승인·발송되었습니다. 고객 마이페이지에 다운로드 버튼이 노출됩니다.');
       await refreshDetailData();
       onSaved();
@@ -385,6 +387,12 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
       setQuoteBusy('');
     }
   };
+
+  // ── 결제 상태 파생 ──
+  // 견적 단위 결제 상태는 행 하나가 아니라 Payment 행 집합에서 판정한다.
+  // (행 단위 조건으로 두면 결제완료 뒤에도 결제대기 행이 남아 청구 버튼이 계속 노출됐다.)
+  const paymentStatus = derivePaymentStatus(payments);
+  const pendingPayment = payments.find(p => p.payment_status === '결제대기');
 
   return (
     <div className="fixed inset-0 z-50 bg-navy/50 backdrop-blur-sm flex items-center justify-center p-4 md:p-6 select-none font-sans overflow-hidden">
@@ -441,44 +449,11 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
               </div>
 
               <div className="bg-bg border border-border p-5 rounded-custom shadow-sm flex flex-col gap-3">
-                <div className="flex justify-between items-center border-b border-border/80 pb-2">
-                  <h4 className="text-xs font-bold text-navy flex items-center gap-1.5">
-                    <ClipboardList className="w-4 h-4 text-steel" />
-                    상세 진단 요청 사항
-                  </h4>
-                  <button
-                    type="button"
-                    onClick={() => setShowAiAnalyzer(prev => !prev)}
-                    className="flex items-center gap-1 text-steel hover:text-navy text-[10.5px] font-black border border-steel/20 rounded-custom px-2.5 py-1 bg-bg transition-all"
-                  >
-                    <Cpu className="w-3 h-3 text-steel" />
-                    AI 도면 스캔 분석
-                  </button>
-                </div>
+                <h4 className="text-xs font-bold text-navy flex items-center gap-1.5 border-b border-border/80 pb-2">
+                  <ClipboardList className="w-4 h-4 text-steel" />
+                  상세 진단 요청 사항
+                </h4>
 
-                {showAiAnalyzer && (
-                  <div className="my-2 border-b border-border/50 pb-3">
-                    <AiBlueprintAnalyzer
-                      onAnalysisComplete={(res) => {
-                        setAccuracyGrade(res.accuracy_grade);
-                        setEstimatedAmount(res.estimated_amount);
-                        setAdminMemo(prev => prev ? `${prev}\n${res.description}` : res.description);
-                        
-                        // 인라인 estimate 객체 업데이트용 임시 반사
-                        setEstimate(prev => prev ? { 
-                          ...prev, 
-                          work_purpose: res.work_purpose,
-                          description: `${prev.description}\n${res.description}`,
-                          request_detail: res.request_detail,
-                          accuracy_grade: res.accuracy_grade,
-                          estimated_amount: res.estimated_amount
-                        } : null);
-                        
-                        setShowAiAnalyzer(false);
-                      }}
-                    />
-                  </div>
-                )}
                 <div className="flex flex-col gap-2 text-xs leading-relaxed text-gray">
                   <div>
                     <span className="font-semibold block text-[10.5px] text-gray-light">공사 종류 (용도 / 목적)</span>
@@ -665,7 +640,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
 
               {/* 견적금액 */}
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-gray-light font-bold">1차 검토 산출액 (원)</label>
+                <label className="text-[10px] text-gray font-bold">1차 검토 산출액 (VAT 별도)</label>
                 <input
                   type="number"
                   placeholder="예: 25000000"
@@ -959,15 +934,24 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                   <CreditCard className="w-4 h-4 text-steel" />
                   출장/진단비 수동 청구 관리
                 </h4>
-                {payments.some(p => p.payment_status === '결제대기') && (
+                {paymentStatus === '결제대기' ? (
                   <button
+                    type="button"
                     onClick={() => setShowTossModal(true)}
-                    className="flex items-center gap-1 bg-[#1F8CE6] hover:bg-[#1571bc] text-bg px-2 py-0.5 rounded-custom text-[10px] font-black transition-all animate-pulse"
+                    style={{ touchAction: 'manipulation' }}
+                    className="flex items-center gap-1.5 bg-[#1F8CE6] hover:bg-[#1571bc] text-bg px-3 min-h-[44px] rounded-custom text-[11px] font-black transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-navy"
                   >
-                    <CreditCard className="w-3 h-3" />
+                    <CreditCard className="w-3.5 h-3.5" />
                     Toss 모의결제 호출
                   </button>
-                )}
+                ) : payments.length > 1 ? (
+                  // 행이 2건 이상일 때만 집계 상태를 별도 표기한다(1건이면 아래 이력과 같은 값 — 중복 표시 금지).
+                  <span className={`px-2 py-0.5 rounded-custom text-[10px] font-black ${
+                    paymentStatus === '결제완료' ? 'bg-success/15 text-success' : 'bg-bg-subtle text-gray'
+                  }`}>
+                    청구 집계: {paymentStatus}
+                  </span>
+                ) : null}
               </div>
 
               {/* 결제 청구 폼 */}
@@ -1027,7 +1011,8 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                       <div className="flex items-center gap-3">
                         <span className="font-extrabold text-steel tabular-nums">₩{p.amount.toLocaleString()}</span>
                         <span className={`px-1.5 py-0.5 rounded-custom text-[9px] font-black ${
-                          p.payment_status === '결제완료' ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning'
+                          p.payment_status === '결제완료' ? 'bg-success/15 text-success' :
+                          p.payment_status === '결제대기' ? 'bg-warning/15 text-warning' : 'bg-bg-subtle text-gray'
                         }`}>
                           {p.payment_status}
                         </span>
@@ -1078,8 +1063,10 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
         <TossPaymentModal
           estimateId={estimate.id}
           estimateNo={estimate.estimate_no}
-          amount={payments.find(p => p.payment_status === '결제대기')?.amount || 300000}
-          paymentType={payments.find(p => p.payment_status === '결제대기')?.payment_type || '출장견적비'}
+          // 결제대기 행 자체를 갱신 대상으로 넘긴다(새 행 생성 시 중복 청구가 쌓인다).
+          pendingPaymentId={pendingPayment?.id}
+          amount={pendingPayment?.amount || 300000}
+          paymentType={pendingPayment?.payment_type || '출장견적비'}
           onClose={() => setShowTossModal(false)}
           onSuccess={async () => {
             await refreshDetailData();

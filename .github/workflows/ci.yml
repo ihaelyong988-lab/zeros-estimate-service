@@ -1,0 +1,60 @@
+name: CI
+
+# master 푸시와 master 대상 PR에서 검사 전 과정을 자동 실행한다.
+# master 푸시 = 호스팅 자동 배포다(AGENTS.md §8). 따라서 이 파이프라인의 실패는
+# 곧 배포 사고 신호다 — 빨간 상태로 두지 않는다(AGENTS.md §14-3).
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+# 같은 ref에 새 푸시가 오면 진행 중인 런을 취소한다.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: 타입·린트·테스트·빌드
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 소스 체크아웃
+        uses: actions/checkout@v4
+
+      # 로컬 개발 환경(node v24.14.0, 2026-07-31 실측)과 메이저 버전을 맞춘다.
+      - name: Node 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      # package-lock.json 기준 재현 설치. lock과 package.json이 어긋나면 여기서 멈춘다.
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 타입 검사
+        run: npx tsc --noEmit
+
+      # eslint 기본 동작 = 에러만 종료 코드 1, 경고는 통과.
+      # 경고 수를 잠그려면 `npm run lint -- --max-warnings <현재값>`으로 바꾼다.
+      # 2026-07-31 기준 경고 1건(estimate-ops/05_scripts/1_intake_downloader.mjs).
+      - name: 린트
+        run: npm run lint
+
+      # vitest run(비watch). 보호 모듈 회귀는 여기서 잡는다(AGENTS.md §14-2).
+      - name: 단위 테스트
+        run: npm test
+
+      # Supabase env 없이 빌드된다(2026-07-31 확인) — 더미 env를 넣지 않는다.
+      # 근거: NEXT_PUBLIC_SUPABASE_URL/ANON_KEY는 supabaseBrowser.ts에 기본값이 있고,
+      # SUPABASE_SERVICE_ROLE_KEY·ZEROS_ADMIN_PASSWORD·OTP_SERVER_SECRET·SOLAPI_*는
+      # 전부 빈 값 폴백(fail-closed)이라 모듈 최상위에서 예외를 던지지 않는다.
+      - name: 프로덕션 빌드
+        run: npm run build

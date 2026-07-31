@@ -1,6 +1,7 @@
 'use client';
 
 import { Estimate, EstimateLineItem, WorkType } from '@/types/estimate';
+import { lineAmount, sumSubtotal, supplyAmountOf } from './amounts';
 
 // ==========================================
 // AI 견적 초안 엔진 (1단계: 규칙 기반)
@@ -8,6 +9,10 @@ import { Estimate, EstimateLineItem, WorkType } from '@/types/estimate';
 // 공종별 표준 품목 구성비 + 예산 규모를 근거로 라인아이템 초안을 만든다.
 // 초안은 반드시 관리자가 편집·승인해야 발송된다(자동 발송 없음).
 // 2단계(Edge Function + Claude API 도면 판독)로 교체 시 이 모듈만 대체하면 된다.
+//
+// 금액 헬퍼는 lib/quote/amounts.ts 단일 정의를 그대로 재-export 한다(중복 정의 금지).
+// quoteXlsx.ts·EstimateDetailModal.tsx 가 이 경로로 import 하므로 경로를 유지한다.
+export { lineAmount, sumSubtotal } from './amounts';
 
 interface TemplateItem {
   name: string;
@@ -102,9 +107,12 @@ const TEMPLATES: Record<WorkType, TemplateItem[]> = {
   ],
 };
 
-// 예산 근거 총액: 관리자 산출액 > 고객 예산대역 > 규모 분류 순으로 채택
+// 예산 근거 총액(공급가액, VAT 별도): 관리자 산출액 > 고객 예산대역 > 규모 분류 순으로 채택.
+// est.estimated_amount 를 직접 읽지 않는다 — 구 저장값이 VAT 포함일 수 있어
+// 초안 총액이 재발송마다 10%씩 증식한다. supplyAmountOf 가 그 지점을 끊는다.
 function baseAmount(est: Estimate): number {
-  if (est.estimated_amount && est.estimated_amount > 0) return est.estimated_amount;
+  const supply = supplyAmountOf(est);
+  if (supply > 0) return supply;
   switch (est.expected_budget_range) {
     case '≤1,000만': return 8_000_000;
     case '1,000만~1억': return 40_000_000;
@@ -121,12 +129,45 @@ function baseAmount(est: Estimate): number {
 
 const round10k = (n: number) => Math.max(10_000, Math.round(n / 10_000) * 10_000);
 
-/** 공종·규모 기반 견적 라인아이템 초안 생성 */
+const MIN_LINE_AMOUNT = 10_000; // 라인 최소 금액 — 0원·음수 라인 방지 하한
+
+/**
+ * 잔차 정산 — 라인 합계를 기준액과 원 단위로 정확히 일치시킨다.
+ * 공수 반올림(1공수 단위)·round10k 때문에 생기는 차액을 금액이 큰 '식' 항목부터 흡수한다.
+ * - '공수' 항목은 단가(LABOR_UNIT_PRICE)가 견적 근거라 정산 대상에서 제외한다.
+ * - 각 항목은 MIN_LINE_AMOUNT 아래로 내려가지 않는다(음수 가드).
+ * - 기준액이 라인 최소합보다 작으면 정확 일치가 불가능하므로 최소합을 유지한다.
+ */
+function settleResidual(items: EstimateLineItem[], target: number): EstimateLineItem[] {
+  let residual = target - sumSubtotal(items);
+  if (residual === 0) return items;
+
+  // 흡수 여력이 큰 순서 = 금액이 큰 '식'(수량 1) 항목부터. 수량 1이라 차액이 단가에 그대로 반영된다.
+  // '공수' 항목은 제외한다 — 단가가 표준 노임단가(LABOR_UNIT_PRICE)라 차액을 흡수시키면
+  // 고객 견적서에 "1공수 × 300,000" 처럼 근거 없는 단가가 찍힌다. 수량이 1로 반올림된
+  // 공수 행도 unit 으로 걸러야 한다(qty 조건만으로는 새어 들어온다).
+  const order = items
+    .map((it, index) => ({ index, amount: lineAmount(it) }))
+    .filter(({ index }) => items[index].qty === 1 && items[index].unit !== '공수')
+    .sort((a, b) => b.amount - a.amount);
+
+  for (const { index } of order) {
+    if (residual === 0) break;
+    const current = items[index].unit_price;
+    const next = Math.max(MIN_LINE_AMOUNT, current + residual);
+    residual -= next - current;
+    items[index] = { ...items[index], unit_price: next };
+  }
+
+  return items;
+}
+
+/** 공종·규모 기반 견적 라인아이템 초안 생성 — 합계는 기준액(공급가액)과 원 단위로 일치한다 */
 export function draftLineItems(est: Estimate): EstimateLineItem[] {
   const total = baseAmount(est);
   const tpl = TEMPLATES[est.work_type] || TEMPLATES['기타'];
   const stamp = Date.now();
-  return tpl.map((t, i) => {
+  const items = tpl.map<EstimateLineItem>((t, i) => {
     const amount = total * t.weight;
     if (t.unit === '공수') {
       const qty = Math.max(1, Math.round(amount / LABOR_UNIT_PRICE));
@@ -134,7 +175,6 @@ export function draftLineItems(est: Estimate): EstimateLineItem[] {
     }
     return { id: `li-${stamp}-${i}`, name: t.name, spec: t.spec, qty: 1, unit: t.unit, unit_price: round10k(amount) };
   });
-}
 
-export const lineAmount = (it: EstimateLineItem) => (it.qty || 0) * (it.unit_price || 0);
-export const sumSubtotal = (items: EstimateLineItem[]) => items.reduce((s, it) => s + lineAmount(it), 0);
+  return settleResidual(items, total);
+}
