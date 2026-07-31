@@ -1,15 +1,23 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ZerosService } from '@/lib/supabase/client';
+import {
+  ZerosService,
+  pickEstimateAuth,
+  isEstimateAuthed,
+  isAuthRequiredError,
+  parseVerifiedRecord,
+  type VerifiedRecord,
+} from '@/lib/supabase/client';
 import { uploadEstimateFiles } from '@/lib/supabase/storage';
 import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { validateUpload, ACCEPT_ATTR, ALLOWED_LABEL, MAX_PER_CATEGORY, MAX_TOTAL_FILES } from '@/lib/constants/uploadLimits';
-import { useShell } from '@/lib/context/ShellContext';
+import { useShell, PHONE_VERIFIED_KEY } from '@/lib/context/ShellContext';
 import { PhoneVerifyGate } from './PhoneVerifyGate';
 import { Estimate, FileMeta, WorkType, SiteType, ExpectedBudgetRange, EstimateCategory } from '@/types/estimate';
 import {
   Building,
+  User,
   Phone,
   Mail,
   MapPin,
@@ -149,21 +157,14 @@ export const prefetchOtpEnabled = (): Promise<boolean> => {
   return otpEnabledPromise;
 };
 
-const getInitialVerified = () => {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  const saved = sessionStorage.getItem('zeros_phone_verified');
-  if (!saved) {
-    return false;
-  }
-
+// 탭에 남아 있는 인증 기록 복원. 번호만 있고 토큰이 없는 구 기록은 인증으로 인정되지 않는다
+// (판정은 pickEstimateAuth 가 하고, 여기서는 저장값만 읽는다).
+const readVerifiedRecord = (): VerifiedRecord | null => {
+  if (typeof window === 'undefined') return null;
   try {
-    const { phone } = JSON.parse(saved) as { phone?: string };
-    return Boolean(phone);
+    return parseVerifiedRecord(sessionStorage.getItem(PHONE_VERIFIED_KEY));
   } catch {
-    return false;
+    return null;
   }
 };
 
@@ -195,9 +196,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 휴대폰 본인인증 상태 (의뢰 전 필수). 로그인(customerAuth)은 OTP 인증을 거쳤으므로 본인확인 완료로 간주(파생값).
-  const [phoneVerified, setPhoneVerified] = useState<boolean>(() => getInitialVerified());
-  const verified = phoneVerified || !!customerAuth;
+  // 휴대폰 본인인증 기록 — 서버에 낼 토큰까지 함께 보관한다(번호만으로는 인증이 아니다).
+  const [verifyRecord, setVerifyRecord] = useState<VerifiedRecord | null>(() => readVerifiedRecord());
+  // 인증 화면 노출 여부 — STEP2 → STEP3 이동 시점, 또는 접수가 401/403 으로 막힐 때만 연다.
+  const [verifyOpen, setVerifyOpen] = useState(false);
   // SMS(Solapi) 설정 여부: null=확인중, true=인증 필요, false=설정 전이라 인증 생략
   const [verifyEnabled, setVerifyEnabled] = useState<boolean | null>(otpEnabledCache);
 
@@ -207,10 +209,12 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     return () => { active = false; };
   }, []);
 
-  const handleVerified = ({ name, phone, sessionToken }: { name: string; phone: string; verifiedToken: string; sessionToken: string }) => {
-    setPhoneVerified(true);
+  const handleVerified = ({ name, phone, verifiedToken, sessionToken }: { name: string; phone: string; verifiedToken: string; sessionToken: string }) => {
+    // verifiedToken(30분)은 접수 요청에 실어야 서버 checkVerified 를 통과한다 — 버리면 403 이 된다.
+    const record: VerifiedRecord = { phone, verifiedToken, verifiedAt: new Date().getTime() };
+    setVerifyRecord(record);
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('zeros_phone_verified', JSON.stringify({ phone }));
+      sessionStorage.setItem(PHONE_VERIFIED_KEY, JSON.stringify(record));
     }
     // 처음 사용자도 본인인증을 마치면 로그인으로 영속화한다 — 다음 방문 시 바로 자료등록 화면으로.
     // sessionToken(30일)을 함께 저장해야 접수·본인 견적서 다운로드 시 서버 재검증을 통과한다.
@@ -222,6 +226,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
       }
       return updated;
     });
+    // 인증을 마쳤으므로 막혔던 지점(참조·자료 단계)으로 넘긴다.
+    setVerifyOpen(false);
+    setErrorMsg(null);
+    setStep(3);
   };
 
   // 폼 입력 데이터 상태 관리 및 임시저장 복구
@@ -270,6 +278,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     })();
     return () => { cancelled = true; };
   }, [customerAuth]);
+
+  // 지금 입력된 번호로 접수할 때 서버에 낼 수 있는 인증 토큰.
+  // 화면의 "인증 완료" 표시도 이 값에서 파생한다 — 표시와 서버 판정이 어긋나지 않는다.
+  const auth = pickEstimateAuth(formData.phone, verifyRecord, customerAuth);
+  const verified = isEstimateAuthed(auth);
 
   // 폼 입력값 변경 시 자동 임시저장
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -372,9 +385,22 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     return true;
   };
 
-  const goNext = () => { if (validateStep(step)) setStep((s) => (s < 3 ? ((s + 1) as 1 | 2 | 3) : s)); };
+  // 다음 단계로. 인증은 여기(STEP2 → STEP3)에서 한 번만 요구한다 —
+  // 무엇을 신청하는지 보기 전에 번호부터 받지 않기 위해 채널 선택·STEP1·STEP2는 인증 없이 진행한다.
+  const goNext = async () => {
+    if (!validateStep(step)) return;
+    if (step === 2 && !verified) {
+      // 아직 /api/otp/status 응답 전이면 여기서 기다린다(문자키 미설정이면 지금처럼 인증을 생략한다).
+      const enabled = verifyEnabled ?? (await prefetchOtpEnabled());
+      setVerifyEnabled(enabled);
+      if (enabled) { setVerifyOpen(true); return; }
+    }
+    setStep((s) => (s < 3 ? ((s + 1) as 1 | 2 | 3) : s));
+  };
+
   const goBack = () => {
     setErrorMsg(null);
+    if (verifyOpen) { setVerifyOpen(false); return; } // 인증 중단 → 직전 단계 그대로
     if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3);
     else { setChannel(null); }
   };
@@ -430,7 +456,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         estimate_category: BUDGET_TO_CATEGORY[formData.expected_budget_range],
         payment_required: false,
         submitted_files: formData.files
-      }, { visit: visitPayload });
+      }, { visit: visitPayload, verifiedToken: auth.verifiedToken });
 
       localStorage.removeItem('zeros_draft_request');
       onComplete?.(newEst);
@@ -438,7 +464,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
       setSubmitted(newEst);
     } catch (err: unknown) {
       console.error(err);
-      setErrorMsg('등록 도중 오류가 발생했습니다. 다시 시도해 주세요.');
+      // 서버가 알려준 사유를 그대로 보여준다. 같은 문구만 반복하면 고객도 운영자도 원인을 알 수 없다.
+      const serverMsg = err instanceof Error ? err.message.trim() : '';
+      setErrorMsg(serverMsg || '등록 도중 오류가 발생했습니다. 다시 시도해 주세요.');
+      // 401·403 = 인증 만료·미인증. 다시 눌러도 같은 결과이므로 인증 화면으로 되돌려 복구 경로를 준다.
+      if (isAuthRequiredError(err)) setVerifyOpen(true);
     } finally {
       setLoading(false);
     }
@@ -450,15 +480,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     setChannel(null);
     setStep(1);
     setErrorMsg(null);
+    setVerifyOpen(false);
   };
 
-  // 화면 분기
-  const checkingVerify = verifyEnabled === null;
-  const verifyRequired = verifyEnabled === true && !verified;
-  const showForm = !checkingVerify && !verifyRequired;
-  const completed = showForm && !!submitted;
-  const channelView = showForm && !channel && !completed;
-  const formView = showForm && !!channel && !completed;
+  // 화면 분기 — 채널 선택과 STEP1·STEP2 는 인증 여부와 무관하게 바로 보여준다.
+  const completed = !!submitted;
+  const channelView = !completed && !channel;
+  const verifyView = !completed && !!channel && verifyOpen;
+  const formView = !completed && !!channel && !verifyOpen;
 
   const channelLabel = channel === 'visit' ? '견적 자료등록' : '무료 견적 신청';
   // 단계 라벨(진행 표시) — 채널별로 2단계 명칭만 다르다.
@@ -471,6 +500,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
   const inputCls = 'w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all';
   const labelCls = 'text-[14.5px] font-bold text-navy flex items-center gap-1.5';
 
+  // 오류 표시는 폼과 인증 화면이 같은 블록을 쓴다(문구 원천 1곳).
+  const errorBanner = errorMsg ? (
+    <div role="alert" aria-live="assertive" className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold flex items-start gap-2 animate-in fade-in duration-200 motion-reduce:animate-none">
+      <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+      <span>{errorMsg}</span>
+    </div>
+  ) : null;
+
   return (
     <div className={
       channelView
@@ -479,15 +516,15 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         : 'w-full bg-bg border border-border rounded-custom shadow-custom-md max-w-3xl mx-auto overflow-hidden'
     }>
 
-      {/* 헤더 바 — 채널 선택 화면에선 숨김(제목·부제 제거). 폼/완료 단계에서만 ← + 단계명 표시. */}
-      {(verifyRequired || formView || completed) && (
+      {/* 헤더 바 — 채널 선택 화면에선 숨김(제목·부제 제거). 폼/인증/완료 단계에서만 ← + 단계명 표시. */}
+      {(verifyView || formView || completed) && (
         <div className="bg-bg-subtle border-b border-border px-6 md:px-7 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            {formView && (
+            {(formView || verifyView) && (
               <button
                 type="button"
                 onClick={goBack}
-                aria-label={step > 1 ? '이전 단계로' : '등록 방법 다시 선택'}
+                aria-label={verifyView ? '본인확인 중단' : step > 1 ? '이전 단계로' : '등록 방법 다시 선택'}
                 style={{ touchAction: 'manipulation' }}
                 className="shrink-0 w-11 h-11 flex items-center justify-center rounded-custom border border-border bg-bg text-steel hover:text-navy hover:border-steel transition-all active:scale-95 motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
               >
@@ -495,17 +532,17 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
               </button>
             )}
             <h3 className="text-[20px] font-black text-navy leading-tight tracking-tight truncate">
-              {verifyRequired ? '본인확인' : completed ? '등록 완료' : channelLabel}
+              {verifyView ? '본인확인' : completed ? '등록 완료' : channelLabel}
             </h3>
           </div>
-          {customerAuth && showForm && !completed && (
+          {customerAuth && formView && (
             <span className="text-[12.5px] font-bold text-success shrink-0">{customerAuth.name}님 · 자동입력됨</span>
           )}
         </div>
       )}
 
-      {/* 진행 표시(단계 탭) — 폼/완료에서 노출 */}
-      {(formView || completed) && (
+      {/* 진행 표시(단계 탭) — 폼/인증/완료에서 노출 */}
+      {(formView || verifyView || completed) && (
         <div className="flex gap-2 px-6 md:px-7 pt-4">
           {stepLabels.map((lbl, i) => {
             const done = i < activeStepIdx;
@@ -523,11 +560,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
       )}
 
       {/* 본문 */}
-      {checkingVerify ? (
-        <div className="p-10 text-center text-[14px] text-gray font-bold">불러오는 중...</div>
-      ) : verifyRequired ? (
-        <div className="p-7">
-          <PhoneVerifyGate onVerified={handleVerified} />
+      {verifyView ? (
+        <div className="p-7 flex flex-col gap-4">
+          {errorBanner}
+          <PhoneVerifyGate
+            initialName={formData.customer_name || customerAuth?.name || ''}
+            initialPhone={formData.phone}
+            onVerified={handleVerified}
+          />
         </div>
       ) : completed ? (
         /* 등록완료 탭 — 관리 페이지로 이동해 확인 */
@@ -630,12 +670,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         <form onSubmit={handleSubmit} className="p-6 md:p-8 pt-5 flex flex-col gap-6">
 
           {/* 에러 피드백 */}
-          {errorMsg && (
-            <div role="alert" aria-live="assertive" className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold flex items-start gap-2 animate-in fade-in duration-200 motion-reduce:animate-none">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <span>{errorMsg}</span>
-            </div>
-          )}
+          {errorBanner}
 
           {/* ===== STEP 1 — 사업·현장 ===== */}
           {step === 1 && (
@@ -694,7 +729,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
               <button
                 type="button"
-                onClick={goNext}
+                onClick={() => { void goNext(); }}
                 style={{ touchAction: 'manipulation' }}
                 className="self-end flex items-center gap-2 bg-navy hover:bg-steel text-white py-3 px-9 min-h-[44px] rounded-custom text-[15.5px] font-black transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
               >
@@ -762,6 +797,24 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                 </select>
               </div>
 
+              {/* 담당자 성함 — 본인확인 화면에 그대로 전달해 같은 값을 두 번 입력하지 않게 한다. */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="customer_name" className={labelCls}>
+                  <User className="w-4.5 h-4.5 text-steel" />
+                  담당자 성함
+                </label>
+                <input
+                  id="customer_name"
+                  name="customer_name"
+                  type="text"
+                  value={formData.customer_name}
+                  onChange={handleChange}
+                  style={{ touchAction: 'manipulation' }}
+                  placeholder="홍길동"
+                  className={inputCls}
+                />
+              </div>
+
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="phone" className={labelCls}>
                   <Phone className="w-4.5 h-4.5 text-steel" />
@@ -800,7 +853,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
               <button
                 type="button"
-                onClick={goNext}
+                onClick={() => { void goNext(); }}
                 style={{ touchAction: 'manipulation' }}
                 className="self-end flex items-center gap-2 bg-navy hover:bg-steel text-white py-3 px-9 min-h-[44px] rounded-custom text-[15.5px] font-black transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/50"
               >

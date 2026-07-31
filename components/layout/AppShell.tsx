@@ -19,6 +19,8 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { MyRequestsView } from '../MyRequestsView';
+import { CustomerLoginModal } from '../forms/CustomerLoginModal';
+import { MyRequestsModal } from '../MyRequestsModal';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -67,7 +69,9 @@ const mobileAdminMenuItems: MobileAdminMenuItem[] = [
   { label: '알림 발송 로그', value: 'notifications' }
 ];
 
-export const AppShell: React.FC<AppShellProps> = ({ children }) => {
+// 레이아웃 본체 — 스플래시·관리자 잠금·모바일·데스크톱 4개 분기 중 하나만 렌더한다.
+// 전역 모달은 이 안에 두지 않는다(모바일 마이페이지·의사결정 분기는 children을 렌더하지 않는다) — AppShell 래퍼가 맡는다.
+const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
   const {
     isUserMode,
     setIsUserMode,
@@ -499,8 +503,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </div>
           </button>
           <div className="flex items-center gap-2.5">
-            {/* 로그인 전엔 진입 버튼만 — 로그인 후 '마이페이지' 칩은 하단 탭과 중복이라 제거(중복 금지) */}
-            {!customerAuth && (
+            {/* 로그인 전엔 진입 버튼만 — 로그인 후 '마이페이지' 칩은 하단 탭과 중복이라 제거(중복 금지).
+                마이페이지 탭은 화면 자체에 인라인 로그인 폼이 있으므로 이 버튼을 숨긴다 —
+                같이 두면 같은 로그인 입력이 모달과 본문에 두 번 뜬다(1정보 1표시). */}
+            {!customerAuth && mobileActiveTab !== 'account' && (
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -834,3 +840,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     </div>
   );
 };
+
+// 고객 휴대폰 인증 로그인 · 본인 접수현황(시계열) 모달은 레이아웃 분기 바깥에서 **정확히 1회** 마운트한다.
+// 이전에는 page.tsx가 AppShell children으로 넘겨서, children을 렌더하지 않는 모바일 마이페이지·의사결정
+// 화면에서는 상단 '간편 로그인/등록' 버튼이 무반응이었다(2026-08-01 P2-5). 두 모달 모두 열림 상태가 아니면
+// null을 반환하므로 레이아웃 세로 예산에는 영향이 없다.
+export const AppShell: React.FC<AppShellProps> = ({ children }) => (
+  <>
+    <AppShellLayout>{children}</AppShellLayout>
+    <CustomerLoginModal />
+    <MyRequestsModal />
+  </>
+);

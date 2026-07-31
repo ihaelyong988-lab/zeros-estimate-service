@@ -73,6 +73,9 @@ const ShellContext = createContext<ShellContextType | undefined>(undefined);
 const ADMIN_AUTH_KEY = 'zeros_admin_authed';
 // 고객 휴대폰 인증 로그인 세션 저장 키
 const CUSTOMER_AUTH_KEY = 'zeros_customer_auth';
+// 휴대폰 본인인증 흔적(탭 한정, sessionStorage) — 신청 화면이 인증 게이트를 건너뛸지 판정하는 값.
+// 로그아웃 때 함께 지우지 않으면 같은 탭에서 로그아웃 후 재의뢰 시 게이트가 뜨지 않는다.
+export const PHONE_VERIFIED_KEY = 'zeros_phone_verified';
 
 export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isUserMode, setIsUserMode] = useState<boolean>(true);
@@ -163,6 +166,14 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const logoutCustomer = useCallback(() => {
     setCustomerAuth(null);
     setShowMyRequests(false);
+    // localStorage 세션만 지우면 sessionStorage 의 인증 흔적이 남아 같은 탭에서 인증 없이 재의뢰된다.
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.removeItem(PHONE_VERIFIED_KEY);
+      } catch {
+        // 스토리지 접근이 막힌 환경(사파리 프라이빗 등)은 무시
+      }
+    }
   }, [setCustomerAuth]);
 
   return (

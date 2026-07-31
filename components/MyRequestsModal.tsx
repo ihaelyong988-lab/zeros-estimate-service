@@ -3,8 +3,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
 import { ZerosService } from '@/lib/supabase/client';
+import { resolveRequestsLoad, RequestsLoadError } from '@/lib/requests/loadOutcome';
 import { Estimate, NotificationLog } from '@/types/estimate';
-import { X, LogOut, History, ListChecks, FileText, Clock, Inbox, ArrowRight } from 'lucide-react';
+import { X, LogOut, History, ListChecks, FileText, Clock, Inbox, ArrowRight, AlertCircle } from 'lucide-react';
 
 type Tone = 'steel' | 'warning' | 'accent' | 'info' | 'success' | 'navy' | 'gray';
 
@@ -86,7 +87,7 @@ interface TLEvent {
 // 시계열(타임라인) 및 건별 카드로 확인한다.
 export const MyRequestsModal: React.FC = () => {
   const {
-    showMyRequests, setShowMyRequests, customerAuth, logoutCustomer, setActiveTab,
+    showMyRequests, setShowMyRequests, customerAuth, logoutCustomer, setActiveTab, setShowLogin,
   } = useShell();
 
   const [estimates, setEstimates] = useState<Estimate[]>([]);
@@ -94,32 +95,52 @@ export const MyRequestsModal: React.FC = () => {
   // 조회를 마친 번호. 로딩 표시는 여기서 파생한다 — effect 안에서 setLoading(true)를 동기 호출하면
   // 연쇄 렌더가 생긴다(react-hooks/set-state-in-effect).
   const [loadedPhone, setLoadedPhone] = useState<string | null>(null);
+  // 조회 실패는 "0건"과 분리해 보관한다. 합치면 접수한 고객에게 내역이 사라진 것처럼 보인다.
+  const [loadError, setLoadError] = useState<RequestsLoadError | null>(null);
+  // 다시 시도 트리거 — 값이 바뀌면 조회 effect 가 재실행된다.
+  const [reloadKey, setReloadKey] = useState(0);
   const [tab, setTab] = useState<'timeline' | 'list'>('timeline');
 
   const phoneDigits = (customerAuth?.phone || '').replace(/\D/g, '');
   const loading = loadedPhone !== phoneDigits;
 
+  // allSettled — 세션 만료 시 견적은 200(익명 허용목록 행), 알림은 401 이라 all 로 묶으면 401 하나가
+  // 전체를 실패로 만들고 화면은 "내역 없음"으로 위장한다. 성공한 쪽은 표시하고 실패는 배너로 알린다.
   useEffect(() => {
     if (!showMyRequests || !customerAuth) return;
     let alive = true;
     (async () => {
-      try {
-        const [est, lg] = await Promise.all([
-          ZerosService.getEstimates(),
-          ZerosService.getNotificationLogs(),
-        ]);
-        if (!alive) return;
-        // 세션이 만료·무효면 서버가 익명 허용목록 행(phone 없음)을 돌려주므로 널 가드가 필요하다.
-        setEstimates(est.filter(e => (e.phone || '').replace(/\D/g, '') === phoneDigits));
-        setLogs(lg.filter(l => (l.phone || '').replace(/\D/g, '') === phoneDigits));
-      } catch (e) {
-        console.error('접수현황 로드 실패', e);
-      } finally {
-        if (alive) setLoadedPhone(phoneDigits);
-      }
+      const [est, lg] = await Promise.allSettled([
+        ZerosService.getEstimates(),
+        ZerosService.getNotificationLogs(),
+      ]);
+      if (!alive) return;
+      const result = resolveRequestsLoad(est, lg, phoneDigits);
+      setEstimates(result.estimates);
+      setLogs(result.logs);
+      setLoadError(result.error);
+      setLoadedPhone(phoneDigits);
     })();
     return () => { alive = false; };
-  }, [showMyRequests, customerAuth, phoneDigits]);
+  }, [showMyRequests, customerAuth, phoneDigits, reloadKey]);
+
+  // 다시 시도 — 로딩 표시가 loadedPhone 파생값이라 초기화까지 함께 한다.
+  const retryLoad = () => {
+    setLoadError(null);
+    setLoadedPhone(null);
+    setReloadKey(k => k + 1);
+  };
+
+  // 세션 만료(401·403) — 같은 화면에서 다시 눌러도 실패하므로 인증부터 다시 받는다.
+  // logoutCustomer 가 이 모달을 닫으므로 로그인 모달을 이어서 연다.
+  const reauth = () => {
+    setLoadError(null);
+    setEstimates([]);
+    setLogs([]);
+    setLoadedPhone(null);
+    logoutCustomer();
+    setShowLogin(true);
+  };
 
   // 시계열 이벤트 구성: 알림 로그가 있으면 그것을(권위 있는 상태변경 이력),
   // 없으면(시드/구접수) 견적 타임스탬프로 마일스톤을 합성한다.
@@ -232,7 +253,27 @@ export const MyRequestsModal: React.FC = () => {
         <div className="flex-1 overflow-y-auto no-scrollbar p-4">
           {loading ? (
             <div className="text-[13px] font-bold text-gray-light text-center py-16">접수현황을 불러오는 중...</div>
-          ) : estimates.length === 0 ? (
+          ) : (
+          <div className="flex flex-col gap-3">
+          {/* 조회 실패 — 0건 안내와 절대 합치지 않는다. 실패 사유와 복구 경로를 함께 준다. */}
+          {loadError && (
+            <div role="alert" aria-live="assertive" className="bg-danger/5 border border-danger/20 rounded-custom px-3 py-2.5 flex flex-col gap-2">
+              <span className="text-[12.5px] font-bold text-danger leading-snug flex items-start gap-1.5">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-px" />
+                {loadError.message}
+              </span>
+              <button
+                type="button"
+                onClick={loadError.authRequired ? reauth : retryLoad}
+                style={{ touchAction: 'manipulation' }}
+                className="min-h-11 w-full inline-flex items-center justify-center rounded-custom border border-danger/30 bg-bg text-danger text-[12.5px] font-black transition-colors hover:bg-danger/10 cursor-pointer focus-visible:outline-2 focus-visible:outline-danger"
+              >
+                {loadError.authRequired ? '다시 인증하기' : '다시 시도'}
+              </button>
+            </div>
+          )}
+          {estimates.length === 0 ? (
+            loadError ? null : (
             <div className="flex flex-col items-center justify-center text-center gap-3 py-16">
               <span className="w-12 h-12 rounded-full bg-bg border border-border flex items-center justify-center">
                 <Inbox className="w-6 h-6 text-gray-light" />
@@ -248,6 +289,7 @@ export const MyRequestsModal: React.FC = () => {
                 무료 견적 의뢰하기 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
+            )
           ) : tab === 'timeline' ? (
             /* ── 시계열 타임라인 ── */
             <div className="relative pl-6">
@@ -324,6 +366,8 @@ export const MyRequestsModal: React.FC = () => {
                 );
               })}
             </div>
+          )}
+          </div>
           )}
         </div>
 

@@ -5,6 +5,9 @@ import { User, Phone, ShieldCheck, MessageSquare, CheckCircle2 } from 'lucide-re
 
 interface PhoneVerifyGateProps {
   onVerified: (data: { name: string; phone: string; verifiedToken: string; sessionToken: string }) => void;
+  // 앞 단계에서 이미 받은 성함·연락처. 같은 값을 두 번 입력하지 않도록 초기값으로 채운다.
+  initialName?: string;
+  initialPhone?: string;
 }
 
 // 휴대폰 번호를 010-0000-0000 형태로 표시 포맷팅
@@ -15,9 +18,9 @@ function formatPhone(v: string): string {
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
-export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified }) => {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, initialName = '', initialPhone = '' }) => {
+  const [name, setName] = useState(() => initialName.trim());
+  const [phone, setPhone] = useState(() => formatPhone(initialPhone));
   const [phase, setPhase] = useState<'input' | 'code'>('input');
   const [token, setToken] = useState('');
   const [code, setCode] = useState('');
@@ -77,10 +80,10 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified }) 
       <div className="bg-bg-subtle p-4 rounded-custom border border-border/80 flex flex-col gap-1.5">
         <span className="text-[12px] font-bold text-navy leading-none flex items-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-steel" />
-          본인확인 후 견적 의뢰가 가능합니다
+          본인확인 후 다음 단계로 진행합니다
         </span>
         <span className="text-[12px] text-gray leading-relaxed mt-0.5">
-          장난·테스트 접수를 막기 위해 휴대폰 인증을 진행합니다. 성함과 휴대폰 번호를 입력하시면 인증번호 문자를 보내드립니다.
+          장난·테스트 접수를 막기 위해 휴대폰 인증을 진행합니다. 아래 번호로 인증번호 문자를 보내드립니다.
         </span>
       </div>
 

@@ -20,8 +20,6 @@ import { PerformanceInsights } from "@/components/PerformanceInsights";
 import { EstimateFlow } from "@/components/EstimateFlow";
 import { CustomerList } from "@/components/admin/CustomerList";
 import { NotificationLog } from "@/components/admin/NotificationLog";
-import { CustomerLoginModal } from "@/components/forms/CustomerLoginModal";
-import { MyRequestsModal } from "@/components/MyRequestsModal";
 
 import {
   BookOpen,
@@ -1476,11 +1474,12 @@ export default function Home() {
 
           {/* 하단 영역 — CTA 2종 + 스와이프 큐 */}
           <div className="flex flex-col gap-3 pt-4 shrink-0">
+            {/* 채널 선택 화면으로 보낸다 — quick 직행은 도면 첨부칸이 없어 접수 후 견적 산출이 불가하다(2026-08-01 P2-1) */}
             <button
-              onClick={() => openRequestChannel('quick')}
+              onClick={() => setActiveTabAtTop('request')}
               className="bg-[#E0701A] min-h-12 rounded-lg text-white text-[18px] font-black active:scale-[0.98] transition-transform"
             >
-              무료 견적 신청하기
+              무료 견적 의뢰하기
             </button>
             <button
               onClick={() => setActiveTabAtTop('process')}
@@ -1662,7 +1661,7 @@ export default function Home() {
               </div>
             </div>
 
-          {/* 최종 CTA — AI Native 검증 절차 / 무료 견적 신청 */}
+          {/* 최종 CTA — AI Native 검증 절차 / 무료 견적 의뢰 */}
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setActiveTabAtTop('sop')}
@@ -1670,11 +1669,12 @@ export default function Home() {
             >
               AI Native 검증 절차
             </button>
+            {/* 채널 선택 화면으로 보낸다 — 슬라이더 금액을 보고 누른 방문자가 조건·첨부 안내를 건너뛰지 않게(2026-08-01 P2-1) */}
             <button
-              onClick={() => openRequestChannel('quick')}
+              onClick={() => setActiveTabAtTop('request')}
               className="min-h-12 rounded-lg bg-[#E0701A] text-white text-[17px] font-black active:scale-[0.98] transition-transform"
             >
-              무료 견적 신청
+              무료 견적 의뢰
             </button>
           </div>
         </section>
@@ -2210,9 +2210,7 @@ export default function Home() {
         />
       )}
 
-      {/* 고객 휴대폰 인증 로그인 & 본인 접수현황(시계열) 모달 */}
-      <CustomerLoginModal />
-      <MyRequestsModal />
+      {/* 고객 로그인·접수현황 모달은 AppShell이 마운트한다(여기 두면 children 미렌더 화면에서 무반응 — AppShell 주석) */}
     </AppShell>
   );
 }
