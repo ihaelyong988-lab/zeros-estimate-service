@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ZerosService } from '@/lib/supabase/client';
+import { ZerosService, clearDataCache } from '@/lib/supabase/client';
 import { SiteVisit, Estimate } from '@/types/estimate';
 import { Calendar, User, ClipboardList, CheckCircle2, ShieldAlert, FileWarning, RefreshCw } from 'lucide-react';
 
@@ -108,6 +108,8 @@ export const VisitList: React.FC = () => {
           <button
             type="button"
             onClick={() => {
+              // 명시적 새로고침은 캐시를 건너뛴다 — 안 그러면 TTL 동안 버튼이 무동작으로 보인다.
+              clearDataCache();
               void loadData();
             }}
             style={{ touchAction: 'manipulation' }}
