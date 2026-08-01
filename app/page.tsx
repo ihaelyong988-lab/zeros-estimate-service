@@ -1,25 +1,61 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import dynamic from "next/dynamic";
+import Image, { getImageProps } from "next/image";
 import { AppShell } from "@/components/layout/AppShell";
 import { useShell, type ActiveTab } from "@/lib/context/ShellContext";
 import { RequestWizard, prefetchOtpEnabled, type RequestChannel } from "@/components/forms/RequestWizard";
 import { manualData } from "@/lib/constants/manuals";
 import { TRUST, TRUST_LABEL, TRUST_VALUE, averageSavingRate } from "@/lib/constants/trust";
-import { ZerosService } from "@/lib/supabase/client";
+import { ZerosService, clearDataCache } from "@/lib/supabase/client";
 import { Estimate, EstimateStatus } from "@/types/estimate";
 
-// 관리자 컴포넌트 임포트
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { EstimateList } from "@/components/admin/EstimateList";
-import { KanbanBoard } from "@/components/admin/KanbanBoard";
-import { EstimateDetailModal } from "@/components/admin/EstimateDetailModal";
-import { VisitList } from "@/components/admin/VisitList";
-import { PerformanceDashboard } from "@/components/admin/PerformanceDashboard";
 import { PerformanceInsights } from "@/components/PerformanceInsights";
 import { EstimateFlow } from "@/components/EstimateFlow";
-import { CustomerList } from "@/components/admin/CustomerList";
-import { NotificationLog } from "@/components/admin/NotificationLog";
+
+// 관리자 백오피스 컴포넌트 — 지연 로드(next/dynamic).
+// 고객은 백오피스를 열지 않으므로 첫 로드 번들에서 분리한다(차트·칸반·결제 모달·알림 이력).
+// 운영자만 보는 화면이라 전환 시 짧은 로딩 표시는 허용한다. 모든 대상은 named export다.
+const AdminPanelFallback = () => (
+  <div role="status" aria-live="polite" className="p-6 text-[13.5px] font-semibold text-gray">
+    관리 화면을 불러옵니다.
+  </div>
+);
+
+const AdminDashboard = dynamic(
+  () => import("@/components/admin/AdminDashboard").then((m) => m.AdminDashboard),
+  { ssr: false, loading: AdminPanelFallback },
+);
+const EstimateList = dynamic(
+  () => import("@/components/admin/EstimateList").then((m) => m.EstimateList),
+  { ssr: false, loading: AdminPanelFallback },
+);
+const KanbanBoard = dynamic(
+  () => import("@/components/admin/KanbanBoard").then((m) => m.KanbanBoard),
+  { ssr: false, loading: AdminPanelFallback },
+);
+const VisitList = dynamic(
+  () => import("@/components/admin/VisitList").then((m) => m.VisitList),
+  { ssr: false, loading: AdminPanelFallback },
+);
+const PerformanceDashboard = dynamic(
+  () => import("@/components/admin/PerformanceDashboard").then((m) => m.PerformanceDashboard),
+  { ssr: false, loading: AdminPanelFallback },
+);
+const CustomerList = dynamic(
+  () => import("@/components/admin/CustomerList").then((m) => m.CustomerList),
+  { ssr: false, loading: AdminPanelFallback },
+);
+const NotificationLog = dynamic(
+  () => import("@/components/admin/NotificationLog").then((m) => m.NotificationLog),
+  { ssr: false, loading: AdminPanelFallback },
+);
+// 상세 모달은 오버레이라 자리 표시가 필요 없다(로딩 중 아무것도 그리지 않는다).
+const EstimateDetailModal = dynamic(
+  () => import("@/components/admin/EstimateDetailModal").then((m) => m.EstimateDetailModal),
+  { ssr: false },
+);
 
 import {
   BookOpen,
@@ -54,6 +90,12 @@ const LANDING_TRADES = [
   '생산설비 배관 연결',
   'CAPEX 개·증설 검토',
 ];
+
+// 데스크톱 전용 히어로 이미지의 모바일 폴백(1×1 투명 GIF, 43B).
+// `hidden lg:flex`로 숨기기만 하면 브라우저는 원본을 그대로 내려받는다 →
+// <picture>의 min-width 1024px source로 데스크톱에만 실제 이미지를 물리고, 모바일은 이 픽셀로 끝낸다.
+const BLANK_PIXEL =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 // 공종별 실사 사진 [현장 전경, 작업 상세] — 견적 검토 히어로 좌측 2분할 슬롯용.
 // Pexels 무료 라이선스(상업 이용 가능·출처표기 불요), public/images/trades/ 자체 호스팅.
@@ -141,6 +183,32 @@ const MOBILE_HERO_LINKS: {
   { icon: Award, label: '현장실무 경력30년 암묵지', sub: 'PM역무, 국가기술자격 다수 보유', color: 'text-[#1E4D8C]', targetTab: 'business' },
 ];
 
+// 홈 데스크톱 히어로 사진.
+// 아트디렉션(<picture>) — 1024px 이상에서만 실제 이미지를 물리고, 그 미만에서는 BLANK_PIXEL로 끝낸다.
+// srcSet은 next/image 최적화 경로(자동 리사이즈 + AVIF/WebP)를 그대로 사용한다.
+// 렌더 박스는 기존 <img className="w-full h-full object-cover">와 동일해 레이아웃이 바뀌지 않는다.
+function HomeHeroPhoto() {
+  const alt = '현장 엔지니어가 노트북으로 배관 설비를 검토하는 모습';
+  const {
+    props: { srcSet, sizes, ...imgProps },
+  } = getImageProps({
+    src: '/hero-engineers.jpg',
+    alt,
+    width: 1536,
+    height: 1024,
+    sizes: '40vw',
+    loading: 'eager',
+    className: 'w-full h-full object-cover',
+  });
+
+  return (
+    <picture>
+      <source media="(min-width: 1024px)" srcSet={srcSet} sizes={sizes} />
+      <img {...imgProps} alt={alt} src={BLANK_PIXEL} />
+    </picture>
+  );
+}
+
 export default function Home() {
   const {
     isUserMode,
@@ -216,8 +284,10 @@ export default function Home() {
     setLandingTradeChipClass(LANDING_CHIP_CLASS[name] || 'bg-steel border-steel text-bg');
   }, [activeTradeIdx, setLandingTradeName, setLandingTradeChipClass]);
 
-  // 실시간 데이터 로딩
+  // 실시간 데이터 로딩 — 견적 전체 목록은 관리자 뷰(EstimateList·KanbanBoard)에서만 소비한다.
+  // 고객 모드에서는 호출하지 않는다(익명 응답 실측 약 59KB, 화면에 쓰이지 않음).
   useEffect(() => {
+    if (isUserMode) return;
     let active = true;
     const load = async () => {
       try {
@@ -232,6 +302,9 @@ export default function Home() {
   }, [refreshTrigger, isUserMode, adminView]);
 
   const handleRefresh = () => {
+    // 사용자가 '새로고침'을 누른 것은 "지금 최신값을 달라"는 명시적 요청이다.
+    // 캐시를 그대로 두면 TTL(30초)이 끝날 때까지 버튼이 아무 일도 하지 않는 것처럼 보인다.
+    clearDataCache();
     setRefreshTrigger(prev => prev + 1);
   };
 
@@ -1723,12 +1796,13 @@ export default function Home() {
                     >
                       {photoSrc ? (
                         <>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          {/* fill = absolute inset-0 + w/h 100% (기존 <img>와 동일 박스). 부모가 relative·flex-1로 높이 확정. */}
+                          <Image
                             src={photoSrc}
                             alt={`${activeManual.title} ${slot} 실사 사진`}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            loading="lazy"
+                            fill
+                            sizes="480px"
+                            className="object-cover"
                           />
                           <span className="absolute left-2.5 bottom-2.5 text-[11px] font-bold text-white bg-[#0F1E35]/60 px-2 py-0.5 rounded-[4px]">{slot}</span>
                         </>
@@ -1989,13 +2063,7 @@ export default function Home() {
               {/* 우: 현장 이미지 + 플로팅 배지 */}
               <div className="relative w-full flex flex-col items-center">
                 <div className="relative w-full rounded-2xl overflow-hidden shadow-custom-md ring-1 ring-black/5 aspect-[1.25/1]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/hero-engineers.jpg"
-                    alt="현장 엔지니어가 노트북으로 배관 설비를 검토하는 모습"
-                    className="w-full h-full object-cover"
-                    loading="eager"
-                  />
+                  <HomeHeroPhoto />
                   {/* 가독성용 하단 그라데이션 */}
                   <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0F1E35]/30 to-transparent pointer-events-none" />
                 </div>

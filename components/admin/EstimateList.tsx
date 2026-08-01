@@ -6,6 +6,67 @@ import { ZerosService } from '@/lib/supabase/client';
 import { supplyAmountOf } from '@/lib/quote/amounts';
 import { Search, ArrowUpDown, KanbanSquare, Table, RefreshCw, Plus } from 'lucide-react';
 
+// ==========================================
+// 페이지 계산 (순수 함수 — 회귀 테스트: test/admin/pagination.test.ts)
+// ==========================================
+// 접수가 쌓이면 전 건 렌더는 화면을 무겁게 만들고 탐색을 스크롤에만 의존하게 한다.
+// 경계 계산(범위 라벨·마지막 페이지 접힘)은 화면과 분리해 테스트로 고정한다(AGENTS §14-1).
+
+export const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+export const DEFAULT_PAGE_SIZE = 25;
+
+export interface PageSlice<T> {
+  /** 보정된 현재 페이지(1부터). 범위를 벗어난 입력은 마지막 페이지로 접는다 */
+  page: number;
+  /** 전체 페이지 수. 0건이어도 1 */
+  totalPages: number;
+  /** 대상 건수(필터 적용 후) */
+  total: number;
+  /** 표시 구간 시작 번호(1부터, 0건이면 0) */
+  from: number;
+  /** 표시 구간 끝 번호(0건이면 0) */
+  to: number;
+  /** 이번 페이지에 렌더할 항목 */
+  items: T[];
+}
+
+/**
+ * 필터 결과를 페이지 단위로 자른다.
+ * - 필터가 좁혀져 페이지 수가 줄어도 빈 화면이 아니라 마지막 페이지를 보여준다.
+ * - 잘못된 입력(0·음수·NaN·소수)은 사용 가능한 값으로 보정한다.
+ */
+export function paginate<T>(items: T[], page: number, pageSize: number): PageSlice<T> {
+  const list = Array.isArray(items) ? items : [];
+  const size = Number.isFinite(pageSize) ? Math.max(1, Math.floor(pageSize)) : DEFAULT_PAGE_SIZE;
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / size));
+  const requested = Number.isFinite(page) ? Math.floor(page) : 1;
+  const current = Math.min(Math.max(requested, 1), totalPages);
+  const startIdx = (current - 1) * size;
+  const pageItems = list.slice(startIdx, startIdx + size);
+
+  return {
+    page: current,
+    totalPages,
+    total,
+    from: total === 0 ? 0 : startIdx + 1,
+    to: total === 0 ? 0 : startIdx + pageItems.length,
+    items: pageItems,
+  };
+}
+
+/**
+ * 풋터 표시 범위 문구.
+ * 총계가 필터 결과 기준인지 전체 기준인지 라벨로 구분한다 — 같은 숫자를 두 뜻으로 읽히게 두지 않는다.
+ */
+export function rangeLabelOf(slice: Pick<PageSlice<unknown>, 'total' | 'from' | 'to'>, overallTotal: number, filtered: boolean): string {
+  if (!filtered) {
+    return slice.total === 0 ? '전체 0건' : `전체 ${slice.total}건 중 ${slice.from}–${slice.to} 표시`;
+  }
+  if (slice.total === 0) return `필터 결과 0건 (전체 ${overallTotal}건)`;
+  return `필터 결과 ${slice.total}건 중 ${slice.from}–${slice.to} 표시 (전체 ${overallTotal}건)`;
+}
+
 interface EstimateListProps {
   estimates: Estimate[];
   onRefresh: () => void;
@@ -27,6 +88,14 @@ export const EstimateList: React.FC<EstimateListProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortByDate, setSortByDate] = useState<'desc' | 'asc'>('desc');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  // 페이지네이션 — 컬럼 순서(columns·draggedColIdx) 상태와 독립이다.
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+
+  // 검색어·필터·정렬이 바뀌면 첫 페이지로 되돌린다.
+  // (3페이지에서 조건을 바꾸면 결과가 있어도 빈 화면을 보게 된다.)
+  const toFirstPage = () => setPage(1);
 
   const showCustomToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -163,6 +232,15 @@ export const EstimateList: React.FC<EstimateListProps> = ({
       return sortByDate === 'desc' ? dateB - dateA : dateA - dateB;
     });
 
+  // 이번 페이지에 렌더할 구간. 필터가 좁혀져 페이지가 줄면 paginate 가 마지막 페이지로 접는다.
+  const hasFilter =
+    searchTerm.trim() !== '' ||
+    workTypeFilter !== 'all' ||
+    categoryFilter !== 'all' ||
+    statusFilter !== 'all';
+  const pageSlice = paginate(filteredEstimates, page, pageSize);
+  const rangeLabel = rangeLabelOf(pageSlice, estimates.length, hasFilter);
+
   // 상태 배지 색상 매핑 - §3.2 상태색
   const getStatusBadgeStyle = (status: EstimateStatus) => {
     const maps: Record<EstimateStatus, string> = {
@@ -206,7 +284,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
             type="text"
             placeholder="접수번호, 고객명, 회사명, 현장주소 검색..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); toFirstPage(); }}
             className="w-full pl-9 pr-4 py-2 text-xs border border-border rounded-custom bg-bg focus:outline-none focus:border-steel"
           />
         </div>
@@ -217,7 +295,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
           {/* 공사 종류 필터 */}
           <select
             value={workTypeFilter}
-            onChange={(e) => setWorkTypeFilter(e.target.value)}
+            onChange={(e) => { setWorkTypeFilter(e.target.value); toFirstPage(); }}
             className="border border-border rounded-custom bg-bg px-2.5 py-1.5 text-xs text-navy focus:outline-none"
           >
             <option value="all">전체 공사종류</option>
@@ -234,7 +312,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
           {/* 규모 분류 필터 */}
           <select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            onChange={(e) => { setCategoryFilter(e.target.value); toFirstPage(); }}
             className="border border-border rounded-custom bg-bg px-2.5 py-1.5 text-xs text-navy focus:outline-none"
           >
             <option value="all">전체 견적규모</option>
@@ -247,7 +325,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
           {/* 진행 상태 필터 */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); toFirstPage(); }}
             className="border border-border rounded-custom bg-bg px-2.5 py-1.5 text-xs text-navy focus:outline-none"
           >
             <option value="all">전체 진행상태</option>
@@ -268,7 +346,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
 
           {/* 정렬 버튼 */}
           <button
-            onClick={() => setSortByDate(prev => prev === 'desc' ? 'asc' : 'desc')}
+            onClick={() => { setSortByDate(prev => prev === 'desc' ? 'asc' : 'desc'); toFirstPage(); }}
             className="flex items-center gap-1 border border-border rounded-custom bg-bg px-3 py-1.5 text-xs text-navy hover:bg-bg-subtle"
           >
             <ArrowUpDown className="w-3.5 h-3.5 text-gray" />
@@ -348,8 +426,8 @@ export const EstimateList: React.FC<EstimateListProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
-            {filteredEstimates.length > 0 ? (
-              filteredEstimates.map((est) => (
+            {pageSlice.items.length > 0 ? (
+              pageSlice.items.map((est) => (
                 <tr
                   key={est.id}
                   onClick={() => onSelectEstimate(est.id)}
@@ -437,10 +515,56 @@ export const EstimateList: React.FC<EstimateListProps> = ({
         </table>
       </div>
 
-      {/* 테이블 풋터 */}
-      <div className="p-3 bg-bg-subtle/50 border-t border-border flex items-center justify-between text-[11px] text-gray-light font-bold">
-        <span>총 {filteredEstimates.length} 건 출력됨</span>
-        <span>* 견적 접수를 클릭하면 상세 메모 기입, 실측 방문 및 금액 조율 모달이 열립니다.</span>
+      {/* 테이블 풋터 — 표시 범위 · 페이지 이동 */}
+      <div className="bg-bg-subtle/50 border-t border-border">
+        <div className="px-3 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2">
+          <span className="text-[11px] text-gray font-bold tabular-nums">{rangeLabel}</span>
+
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 text-[11px] text-gray font-bold shrink-0">
+              <span>페이지당</span>
+              <select
+                value={pageSize}
+                onChange={(e) => { setPageSize(Number(e.target.value)); toFirstPage(); }}
+                className="border border-border rounded-custom bg-bg px-2 min-h-[44px] text-xs text-navy tabular-nums"
+              >
+                {PAGE_SIZE_OPTIONS.map((n) => (
+                  <option key={n} value={n}>{n}건</option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="button"
+              onClick={() => setPage(pageSlice.page - 1)}
+              disabled={pageSlice.page <= 1}
+              aria-label="이전 페이지"
+              className="min-w-[44px] min-h-[44px] px-3 border border-border rounded-custom bg-bg text-xs font-bold text-navy hover:bg-bg-subtle disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              이전
+            </button>
+
+            {/* role="status" = 암묵적 aria-live="polite" — 페이지 이동을 보조기술에 알린다.
+                (aria-live 속성을 직접 쓰면 ui-quality-gate R1 의 에러 alert 탐지가 무력화된다.) */}
+            <span className="px-1 text-[11px] text-gray font-bold tabular-nums" role="status">
+              {pageSlice.page} / {pageSlice.totalPages}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setPage(pageSlice.page + 1)}
+              disabled={pageSlice.page >= pageSlice.totalPages}
+              aria-label="다음 페이지"
+              className="min-w-[44px] min-h-[44px] px-3 border border-border rounded-custom bg-bg text-xs font-bold text-navy hover:bg-bg-subtle disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              다음
+            </button>
+          </div>
+        </div>
+
+        <p className="px-3 pb-2 text-[11px] text-gray">
+          * 견적 접수를 클릭하면 상세 메모 기입, 실측 방문 및 금액 조율 모달이 열립니다.
+        </p>
       </div>
 
       {/* 고품격 Custom Toast 알림 팝창 */}

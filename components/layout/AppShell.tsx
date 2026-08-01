@@ -314,28 +314,66 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
   }, [activeTab, selectedMenu, selectedBudget, setShowDecisionPanel]);
 
   // 레이아웃 확정 전: 브랜드 스플래시 (깨진 헤더 대신 깔끔한 첫 화면)
+  // 이 마크업이 서버 프리렌더 HTML의 본문이 된다(2026-08-01 P3-2) — 워드마크만 두면 검색엔진·링크
+  // 미리보기·JS 차단 회선에서 읽을 텍스트가 0이 된다. 홈 히어로 카피(app/page.tsx)를 그대로 싣고,
+  // JS가 끝내 실행되지 않는 환경용 안내는 <noscript>로 덧붙인다. layoutReady 직후 통째로 사라지므로
+  // 확정 화면 조문(O-37·O-38 등)과 접점이 없다.
   if (!layoutReady) {
     return (
-      <div className="h-screen flex items-center justify-center bg-navy text-bg select-none">
-        <div className="flex items-center gap-3 animate-pulse">
-          <div 
-            className="w-10 h-10 rounded-custom flex items-center justify-center shadow-md"
-            style={{
-              background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
-              backgroundSize: '300% 300%',
-              animation: 'logoGlowSplash 9s ease-in-out infinite',
-            }}
-          >
-            <style>{`
-              @keyframes logoGlowSplash {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-              }
-            `}</style>
-            <Building2 className="w-5 h-5 text-[#FF6A00] drop-shadow-[0_0_2px_rgba(255,106,0,0.5)]" />
+      /* min-h-screen — JS 차단 환경에서는 아래 <noscript> 안내까지 함께 표시되므로 고정 h-screen이면
+         좁은 화면에서 잘린다. JS가 도는 경로(스플래시만 표시)에서는 h-screen과 동일하게 보인다. */
+      <div className="min-h-screen flex items-center justify-center bg-navy text-bg select-none px-6 py-8">
+        <div className="w-full max-w-xl flex flex-col gap-5">
+          <div className="flex items-center gap-3 animate-pulse motion-reduce:animate-none">
+            <div
+              className="w-10 h-10 rounded-custom flex items-center justify-center shadow-md shrink-0"
+              style={{
+                background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
+                backgroundSize: '300% 300%',
+                animation: 'logoGlowSplash 9s ease-in-out infinite',
+              }}
+            >
+              <style>{`
+                @keyframes logoGlowSplash {
+                  0% { background-position: 0% 50%; }
+                  50% { background-position: 100% 50%; }
+                  100% { background-position: 0% 50%; }
+                }
+              `}</style>
+              <Building2 className="w-5 h-5 text-[#FF6A00] drop-shadow-[0_0_2px_rgba(255,106,0,0.5)]" />
+            </div>
+            <span className="font-black text-[18px] tracking-widest uppercase">ZEROS</span>
           </div>
-          <span className="font-black text-[18px] tracking-widest uppercase">ZEROS</span>
+
+          <h1 className="text-[clamp(23px,4.6vw,32px)] font-black leading-[1.22] tracking-tight break-keep">
+            공정설비 CAPEX 개선·증설 배관공사,
+            <br />
+            AI 분석으로 더 정확하게
+          </h1>
+          <p className="text-[16px] leading-relaxed font-semibold text-white/75 break-keep text-pretty">
+            ZEROS는 현장 실무 경험과 AI 데이터 분석을 결합해, 비용과 리스크까지 고려한 가장 합리적인 견적을 제안합니다.
+          </p>
+
+          {/* 자바스크립트가 차단된 회선(공장 사무실·사내 프록시)에서만 표시된다 — 위 카피와 문장이 겹치지 않게
+              서비스 범위와 접수 경로만 적는다(1정보 1표시). */}
+          <noscript>
+            <div className="mt-1 border-t border-white/20 pt-4 flex flex-col gap-2">
+              <p className="text-[16px] leading-relaxed font-semibold text-white/75 break-keep text-pretty">
+                도면과 현장 사진을 판독해 공사 범위·물량·예산의 적정 범위를 발주 전에 제시하는 산업설비 예상견적
+                서비스입니다. 일반 배관공사, 기계 장비설치, Utility 배관, 공장증설, 노후배관 교체를 다룹니다.
+              </p>
+              <p className="text-[16px] leading-relaxed font-semibold text-white/75 break-keep text-pretty">
+                견적 의뢰 접수와 진행 상황 조회는 브라우저에서 자바스크립트를 허용한 뒤{' '}
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages --
+                    이 링크는 <noscript> 안이다. next/link 는 클라이언트 컴포넌트라
+                    자바스크립트가 꺼진 상황에서는 동작하지 않는다 — 여기서는 <a>가 맞다. */}
+                <a href="/?tab=request" className="font-black text-white underline underline-offset-4">
+                  zerospipe.co.kr
+                </a>
+                에서 진행합니다.
+              </p>
+            </div>
+          </noscript>
         </div>
       </div>
     );

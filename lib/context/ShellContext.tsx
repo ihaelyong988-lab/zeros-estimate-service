@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { clearAdminToken } from '@/lib/files/secureFile';
+import { clearDataCache } from '@/lib/supabase/client';
 
 export type ActiveTab = 'business' | 'performance' | 'request' | 'home' | 'sop' | 'review' | 'process';
 
@@ -97,6 +98,9 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const logoutAdmin = () => {
     setAdminAuthed(false);
     clearAdminToken(); // 파일 열람용 관리자 토큰도 함께 폐기
+    // 캐시는 권한별로 나뉘어 있지만, 로그아웃 후에도 남아 있으면 같은 브라우저를 쓰는
+    // 다음 사용자에게 이전 사용자의 행이 그대로 나갈 수 있다. 신원이 바뀌면 전부 비운다.
+    clearDataCache();
     setIsUserMode(true);
   };
   const [activeTab, setActiveTabState] = useState<ActiveTab>('home');
@@ -166,6 +170,8 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const logoutCustomer = useCallback(() => {
     setCustomerAuth(null);
     setShowMyRequests(false);
+    // 신원이 바뀌면 캐시를 비운다 — 남겨 두면 다음 사용자 조회에 이전 고객 행이 섞인다.
+    clearDataCache();
     // localStorage 세션만 지우면 sessionStorage 의 인증 흔적이 남아 같은 탭에서 인증 없이 재의뢰된다.
     if (typeof window !== 'undefined') {
       try {
