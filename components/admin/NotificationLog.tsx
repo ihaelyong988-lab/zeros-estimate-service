@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { NotificationLog as NotificationType } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
+import { resolveAdminLoadError, type AdminLoadError } from '@/lib/admin/loadState';
 import { Search, Mail, MessageSquare, Check, AlertCircle, MinusCircle, RefreshCw } from 'lucide-react';
 
 // 전송 상태 배지 — 저장된 status 값을 그대로 표시한다.
@@ -19,6 +20,7 @@ const STATUS_BADGE: Record<
 export const NotificationLog: React.FC = () => {
   const [logs, setLogs] = useState<NotificationType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<AdminLoadError | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const loadLogs = async (showPending = true) => {
@@ -29,8 +31,12 @@ export const NotificationLog: React.FC = () => {
     try {
       const list = await ZerosService.getNotificationLogs();
       setLogs(list);
+      setLoadError(null);
     } catch (e) {
       console.error('Failed to load notification logs', e);
+      // 조회 실패를 빈 목록으로 떨어뜨리면 화면이 "발송 이력 없음"을 사실로 안내한다.
+      setLogs([]);
+      setLoadError(resolveAdminLoadError('발송 로그를 불러오지 못했습니다.', e));
     } finally {
       setLoading(false);
     }
@@ -74,6 +80,17 @@ export const NotificationLog: React.FC = () => {
         </div>
       </div>
 
+      {loadError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
+          <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
+        </div>
+      )}
+
       {/* 검색 바 */}
       <div className="bg-bg border border-border p-4 rounded-custom shadow-custom-sm">
         <div className="relative">
@@ -112,8 +129,10 @@ export const NotificationLog: React.FC = () => {
                 </tr>
               ) : filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-xs font-bold text-gray-light">
-                    기록된 알림톡 발송 로그가 없습니다. 견적서의 진행 상태를 전환하면 자동으로 로그가 추가됩니다.
+                  <td colSpan={7} className="p-8 text-center text-xs font-bold text-gray">
+                    {loadError
+                      ? '조회 실패로 로그를 표시하지 못했습니다.'
+                      : '기록된 알림톡 발송 로그가 없습니다. 견적서의 진행 상태를 전환하면 자동으로 로그가 추가됩니다.'}
                   </td>
                 </tr>
               ) : (

@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Estimate, WorkType, EstimateStatus, EstimateCategory, ExpectedBudgetRange } from '@/types/estimate';
-import { ZerosService } from '@/lib/supabase/client';
+import { Estimate, EstimateStatus, EstimateCategory } from '@/types/estimate';
 import { supplyAmountOf } from '@/lib/quote/amounts';
-import { Search, ArrowUpDown, KanbanSquare, Table, RefreshCw, Plus } from 'lucide-react';
+import { Search, ArrowUpDown, KanbanSquare, Table, RefreshCw, AlertCircle } from 'lucide-react';
 
 // ==========================================
 // 페이지 계산 (순수 함수 — 회귀 테스트: test/admin/pagination.test.ts)
@@ -67,6 +66,40 @@ export function rangeLabelOf(slice: Pick<PageSlice<unknown>, 'total' | 'from' | 
   return `필터 결과 ${slice.total}건 중 ${slice.from}–${slice.to} 표시 (전체 ${overallTotal}건)`;
 }
 
+// ==========================================
+// 검색 필터 · 관리자 세션 판정 (순수 함수 — 회귀 테스트: test/admin/estimateRows.test.ts)
+// ==========================================
+// /api/data 는 관리자 토큰이 만료돼도 견적 테이블만은 PII 를 제거한 행을 200 으로 돌려준다
+// (공개 실적 화면이 살아 있어야 하므로 그 설계는 유지된다). 그 행에는 customer_name·
+// site_address·estimate_no 가 없어서, 필드 접근을 화면에 두면 목록 전체가 TypeError 로 죽는다.
+
+/** 검색이 훑는 필드만 추린 최소 형태. PII 가 제거된 행도 그대로 담긴다. */
+export type SearchableEstimate = Partial<
+  Pick<Estimate, 'customer_name' | 'company_name' | 'site_address' | 'estimate_no'>
+>;
+
+const SEARCH_FIELDS = ['customer_name', 'company_name', 'site_address', 'estimate_no'] as const;
+
+/** 행은 jsonb 그대로 들어오므로 타입이 어긋난 옛 데이터도 빈 문자열로 본다. */
+function searchText(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+/** 검색어 일치 여부. 빈 검색어는 전부 통과한다. */
+export function matchesSearch(est: SearchableEstimate, term: string): boolean {
+  const needle = term.toLowerCase();
+  if (needle === '') return true;
+  return SEARCH_FIELDS.some((key) => searchText(est[key]).toLowerCase().includes(needle));
+}
+
+/**
+ * 관리자 필드가 통째로 빠진 응답 = 토큰 만료로 공개(PII 제거) 행을 받은 상태.
+ * 서버가 전 행을 일괄 치환하므로 every 로 본다 — 필드가 빠진 옛 행 하나 때문에 정상 목록을 잠그지 않는다.
+ */
+export function isAdminSessionExpired(rows: readonly SearchableEstimate[]): boolean {
+  return rows.length > 0 && rows.every((row) => typeof row.customer_name !== 'string');
+}
+
 interface EstimateListProps {
   estimates: Estimate[];
   onRefresh: () => void;
@@ -87,7 +120,6 @@ export const EstimateList: React.FC<EstimateListProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortByDate, setSortByDate] = useState<'desc' | 'asc'>('desc');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   // 페이지네이션 — 컬럼 순서(columns·draggedColIdx) 상태와 독립이다.
   const [page, setPage] = useState(1);
@@ -96,11 +128,6 @@ export const EstimateList: React.FC<EstimateListProps> = ({
   // 검색어·필터·정렬이 바뀌면 첫 페이지로 되돌린다.
   // (3페이지에서 조건을 바꾸면 결과가 있어도 빈 화면을 보게 된다.)
   const toFirstPage = () => setPage(1);
-
-  const showCustomToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
-  };
 
   // 드래그 가능한 헤더 및 열 배치의 동적 제어 정의
   type ColumnKey = 'estimate_no' | 'status' | 'customer' | 'work_type' | 'category' | 'accuracy' | 'site_address' | 'amount';
@@ -147,51 +174,6 @@ export const EstimateList: React.FC<EstimateListProps> = ({
     setDraggedColIdx(null);
   };
 
-  // 관리자 신규 수동 대리 접수 등록 - §6.4
-  const handleAddManualEstimate = async () => {
-    const mockCompanies = ['(주)한화솔루션', 'CJ제일제당 화성공장', '삼성바이오로직스 송도', '아모레퍼시픽 기흥', '현대그린푸드 기계실'];
-    const mockCustomers = ['이영희 차장', '최정우 파트장', '박준서 대리', '정민우 대표', '김아름 실장'];
-    const mockAddresses = [
-      '경기도 평택시 산단로 128',
-      '충청남도 천안시 서북구 3공단로 45',
-      '인천광역시 연수구 송도바이오대로 92',
-      '경기도 용인시 기흥구 제조로 12',
-      '서울특별시 강남구 테헤란로 412'
-    ];
-    const mockWorkTypes: WorkType[] = ['배관공사', '장비설치', 'Utility 배관', '공장증설', '노후배관교체', '기계실개선'];
-    const mockExpectedBudgets: ExpectedBudgetRange[] = ['1,000만~1억', '≥1억', '≤1,000만', '모름'];
-
-    const randomCompany = mockCompanies[Math.floor(Math.random() * mockCompanies.length)];
-    const randomCustomer = mockCustomers[Math.floor(Math.random() * mockCustomers.length)];
-    const randomAddress = mockAddresses[Math.floor(Math.random() * mockAddresses.length)];
-    const randomWorkType = mockWorkTypes[Math.floor(Math.random() * mockWorkTypes.length)];
-    const randomBudget = mockExpectedBudgets[Math.floor(Math.random() * mockExpectedBudgets.length)];
-
-    try {
-      await ZerosService.createEstimate({
-        customer_name: randomCustomer,
-        company_name: randomCompany,
-        phone: `010-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
-        email: `${Math.random().toString(36).substr(2, 5)}@company.com`,
-        site_address: randomAddress,
-        customer_type: '일반',
-        work_type: randomWorkType,
-        site_type: '공장',
-        work_purpose: '노후 라인 보완 및 교체',
-        expected_budget_range: randomBudget,
-        desired_schedule: '2개월 이내',
-        urgency: Math.random() > 0.5,
-        description: `[관리자 유선 대리 접수]\n- ${randomWorkType} 요청 건\n- 현장 실측 요청에 따른 1차 모의 데이터 세팅.`,
-        request_detail: '유선 통화 상으로 수압 인자 검토 및 schedules 10s 배관 적용 요청 확인됨.'
-      });
-      showCustomToast(`[대리 접수 성공] ${randomCompany} (${randomCustomer}님) 수동 의뢰 건이 성공적으로 생성 및 세이브되었습니다.`, 'success');
-      onRefresh();
-    } catch (e) {
-      console.error(e);
-      showCustomToast('신규 수동 접수 도중 오류가 발생했습니다.', 'error');
-    }
-  };
-
   const getStatusDotStyle = (status: EstimateStatus) => {
     const maps: Record<EstimateStatus, string> = {
       '접수완료': 'bg-steel',
@@ -214,11 +196,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
   // 필터링 및 정렬 처리
   const filteredEstimates = estimates
     .filter(est => {
-      const matchSearch =
-        est.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (est.company_name && est.company_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        est.site_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        est.estimate_no.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchSearch = matchesSearch(est, searchTerm);
 
       const matchWorkType = workTypeFilter === 'all' || est.work_type === workTypeFilter;
       const matchCategory = categoryFilter === 'all' || est.estimate_category === categoryFilter;
@@ -270,6 +248,25 @@ export const EstimateList: React.FC<EstimateListProps> = ({
     };
     return maps[cat] || cat;
   };
+
+  // 세션이 끊긴 상태에서 받은 PII 제거 행을 정상 접수 데이터처럼 그리지 않는다.
+  // 목록을 그대로 두면 관리자가 "접수가 비었다"로 오독한다 — 목록 대신 재로그인 경로를 알린다.
+  if (isAdminSessionExpired(estimates)) {
+    return (
+      <div className="bg-bg border border-border rounded-custom shadow-custom-sm font-sans p-6">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
+          <span className="text-[13.5px] font-bold text-danger leading-snug">
+            관리자 세션이 만료되었습니다. 다시 로그인해 주세요.
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-bg border border-border rounded-custom shadow-custom-sm select-none font-sans overflow-hidden">
@@ -382,16 +379,6 @@ export const EstimateList: React.FC<EstimateListProps> = ({
             title="목록 새로고침"
           >
             <RefreshCw className="w-4 h-4" />
-          </button>
-
-          {/* 신규 수동 대리 접수 등록 버튼 */}
-          <button
-            onClick={handleAddManualEstimate}
-            style={{ touchAction: 'manipulation' }}
-            className="flex items-center gap-1.5 bg-steel hover:bg-navy text-bg px-3.5 py-1.5 rounded-custom text-xs font-black transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            대리 접수 등록
           </button>
 
         </div>
@@ -566,21 +553,6 @@ export const EstimateList: React.FC<EstimateListProps> = ({
           * 견적 접수를 클릭하면 상세 메모 기입, 실측 방문 및 금액 조율 모달이 열립니다.
         </p>
       </div>
-
-      {/* 고품격 Custom Toast 알림 팝창 */}
-      {toast && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className={`flex items-center gap-2.5 px-5 py-3.5 rounded-custom shadow-custom-lg border select-none backdrop-blur-md ${
-            toast.type === 'success' ? 'bg-navy/95 border-steel text-bg' :
-            toast.type === 'error' ? 'bg-danger/95 border-danger/40 text-bg' :
-            'bg-bg-subtle/95 border-border text-navy'
-          }`}>
-            {toast.type === 'success' && <div className="w-2.5 h-2.5 rounded-full bg-accent animate-ping shrink-0" />}
-            {toast.type === 'error' && <div className="w-2.5 h-2.5 rounded-full bg-danger animate-ping shrink-0" />}
-            <span className="text-[12px] font-black tracking-tight leading-none">{toast.message}</span>
-          </div>
-        </div>
-      )}
 
     </div>
   );

@@ -5,11 +5,60 @@ import { Estimate, EstimateStatus, EstimateCategory } from '@/types/estimate';
 import { Calendar } from 'lucide-react';
 import { kstMonthDay } from '@/lib/utils/date';
 import { supplyAmountOf } from '@/lib/quote/amounts';
+import { ZerosService } from '@/lib/supabase/client';
 
 interface KanbanBoardProps {
   estimates: Estimate[];
   onStatusChange: (id: string, newStatus: EstimateStatus) => Promise<void>;
   onSelectCard: (id: string) => void;
+}
+
+// ==========================================
+// 수주성공 전이 · 확정 계약금액 (순수 함수 — 회귀 테스트: test/admin/contractAmount.test.ts)
+// ==========================================
+// 수주성공으로 들어가면 확정 계약금액·수주 확정일이 기록된다(lib/supabase/client.ts updateEstimate).
+// 나갈 때 되돌리는 경로가 없어, 잘못 드롭한 값이 남아 이후 실제 계약액을 덮어썼다 —
+// 매출·고객 누적치가 함께 오염되므로 이탈 전이에서 두 필드를 같이 지운다.
+const WON_STATUS: EstimateStatus = '수주성공';
+
+export type ContractTransition = 'enter' | 'leave' | 'none';
+
+export interface ContractFieldPatch {
+  confirmed_contract_amount?: number;
+  contract_won_at?: string;
+}
+
+export const contractTransitionOf = (
+  current: EstimateStatus,
+  next: EstimateStatus,
+): ContractTransition => {
+  if (next === WON_STATUS) return current === WON_STATUS ? 'none' : 'enter';
+  return current === WON_STATUS ? 'leave' : 'none';
+};
+
+type ContractSource = Pick<Estimate, 'status' | 'confirmed_contract_amount' | 'estimated_amount' | 'line_items'>;
+
+export function contractFieldsForStatusChange(
+  est: ContractSource,
+  next: EstimateStatus,
+  opts: { amount?: number; now?: string } = {},
+): ContractFieldPatch {
+  const transition = contractTransitionOf(est.status, next);
+
+  if (transition === 'enter') {
+    // 금액 근거 우선순위 = 운영자 입력 > 이미 확정된 계약금액 > 공급가액(VAT 별도).
+    const amount = opts.amount ?? est.confirmed_contract_amount ?? supplyAmountOf(est);
+    const patch: ContractFieldPatch = { contract_won_at: opts.now ?? new Date().toISOString() };
+    if (amount > 0) patch.confirmed_contract_amount = amount;
+    return patch;
+  }
+
+  if (transition === 'leave') {
+    // 키를 남긴 채 undefined 를 넣어야 병합·직렬화 저장에서 값이 실제로 지워진다.
+    return { confirmed_contract_amount: undefined, contract_won_at: undefined };
+  }
+
+  return {};
 }
 
 // 13단계 전체 상태 정의
@@ -55,19 +104,62 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     e.dataTransfer.dropEffect = 'move';
   };
 
+  // 수주성공 진입·이탈은 돈이 걸린 전이다 — 드롭 즉시 반영하지 않고 확인 단계를 둔다.
+  // 운영자가 취소하면 null 을 돌려 상태 변경까지 중단한다.
+  const confirmContractPatch = (est: Estimate, targetStatus: EstimateStatus): ContractFieldPatch | null => {
+    const transition = contractTransitionOf(est.status, targetStatus);
+
+    if (transition === 'enter') {
+      const suggested = est.confirmed_contract_amount || supplyAmountOf(est);
+      const input = window.prompt(
+        `${est.estimate_no} 건을 수주성공으로 변경합니다.\n확정 계약금액을 원 단위로 입력해 주세요(VAT 별도).`,
+        suggested > 0 ? String(suggested) : '',
+      );
+      if (input === null) return null;
+      // 자릿점·단위 표기만 걷어낸다. "3천만" 같은 표기는 숫자로 바꾸지 않고 되묻는다(3원 저장 방지).
+      const cleaned = input.replace(/[\s,원]/g, '');
+      const amount = Number(cleaned);
+      if (!/^[0-9]+$/.test(cleaned) || !(amount > 0)) {
+        alert('확정 계약금액을 숫자로 입력해 주세요. 상태를 변경하지 않았습니다.');
+        return null;
+      }
+      return contractFieldsForStatusChange(est, targetStatus, { amount });
+    }
+
+    if (transition === 'leave') {
+      const stored = est.confirmed_contract_amount || 0;
+      const detail = stored > 0
+        ? `확정 계약금액 ₩${stored.toLocaleString()} 과 수주 확정일이 함께 삭제됩니다.`
+        : '수주 확정일이 삭제됩니다.';
+      if (!confirm(`${est.estimate_no} 건을 수주성공에서 '${targetStatus}' 상태로 되돌립니다.\n${detail}`)) return null;
+      return contractFieldsForStatusChange(est, targetStatus);
+    }
+
+    return {};
+  };
+
   // 드롭 핸들러
   const handleDrop = async (e: React.DragEvent, targetStatus: EstimateStatus) => {
     e.preventDefault();
     const id = e.dataTransfer.getData('text/plain') || draggingId;
     setDraggingId(null);
-    
-    if (id) {
-      try {
-        await onStatusChange(id, targetStatus);
-      } catch (err) {
-        console.error('Failed to change estimate status in kanban drop', err);
-        alert('상태 변경 적용 중 오류가 발생했습니다. (자동 롤백)');
+    if (!id) return;
+
+    // 목록에 없는 카드는 계약금액 근거가 없다 — 상태만 넘긴다.
+    const est = estimates.find(x => x.id === id);
+    const patch = est ? confirmContractPatch(est, targetStatus) : {};
+    if (patch === null) return;
+
+    try {
+      // 계약 필드를 먼저 확정하고 상태를 바꾼다. 순서를 뒤집으면 상태만 바뀐 채 실패했을 때
+      // 같은 드롭을 다시 해도 이탈 전이로 잡히지 않아 잘못된 금액이 영구히 남는다.
+      if (Object.keys(patch).length > 0) {
+        await ZerosService.updateEstimate(id, patch);
       }
+      await onStatusChange(id, targetStatus);
+    } catch (err) {
+      console.error('Failed to change estimate status in kanban drop', err);
+      alert('상태 변경 적용 중 오류가 발생했습니다. (자동 롤백)');
     }
   };
 

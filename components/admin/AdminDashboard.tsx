@@ -4,13 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
 import { Estimate } from '@/types/estimate';
 import { sumExpectedRevenue } from '@/lib/calculations';
+import { resolveAdminLoadError, UNRESOLVED, type AdminLoadError } from '@/lib/admin/loadState';
 import {
   FileText,
   Clock,
   CalendarCheck,
   TrendingUp,
   DollarSign,
-  Briefcase
+  Briefcase,
+  AlertCircle
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -20,14 +22,19 @@ interface AdminDashboardProps {
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView }) => {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<AdminLoadError | null>(null);
 
   useEffect(() => {
     const load = async () => {
       try {
         const list = await ZerosService.getEstimates();
         setEstimates(list);
+        setLoadError(null);
       } catch (e) {
         console.error('Failed to load estimates for dashboard', e);
+        // 집계에 실패한 상태를 0 원으로 그리면 운영자가 "미수금 없음"으로 읽어 회수를 멈춘다.
+        setEstimates([]);
+        setLoadError(resolveAdminLoadError('대시보드 집계를 불러오지 못했습니다.', e));
       } finally {
         setLoading(false);
       }
@@ -52,6 +59,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
     .filter(e => e.status === '수주성공')
     .reduce((acc, curr) => acc + (curr.confirmed_contract_amount || 0), 0);
 
+  // 조회에 실패한 칸은 미확정으로 둔다 — 0 을 값처럼 보여주지 않는다.
+  const countText = (n: number) => (loadError ? UNRESOLVED : `${n}건`);
+  const wonText = (n: number) => (loadError ? UNRESOLVED : `₩${n.toLocaleString()}`);
+
   return (
     <div className="flex flex-col gap-6 select-none font-sans max-w-5xl mx-auto py-2">
       
@@ -63,6 +74,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
         </p>
       </div>
 
+      {loadError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
+          <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
+        </div>
+      )}
+
       {/* 실시간 KPI 카드 그리드 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         
@@ -70,7 +92,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
         <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex items-center justify-between">
           <div className="flex flex-col gap-1.5">
             <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider">신규 접수완료</span>
-            <span className="text-2xl font-black text-navy tabular-nums">{newCount}건</span>
+            <span className="text-2xl font-black text-navy tabular-nums">{countText(newCount)}</span>
           </div>
           <div className="bg-steel/10 p-2.5 rounded-custom text-steel">
             <FileText className="w-5 h-5" />
@@ -81,7 +103,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
         <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex items-center justify-between">
           <div className="flex flex-col gap-1.5">
             <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider">엔지니어 검토중</span>
-            <span className="text-2xl font-black text-navy tabular-nums">{reviewingCount}건</span>
+            <span className="text-2xl font-black text-navy tabular-nums">{countText(reviewingCount)}</span>
           </div>
           <div className="bg-warning/10 p-2.5 rounded-custom text-warning">
             <Clock className="w-5 h-5" />
@@ -92,7 +114,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
         <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex items-center justify-between">
           <div className="flex flex-col gap-1.5">
             <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider">방문 실측 대기</span>
-            <span className="text-2xl font-black text-navy tabular-nums">{visitWaitingCount}건</span>
+            <span className="text-2xl font-black text-navy tabular-nums">{countText(visitWaitingCount)}</span>
           </div>
           <div className="bg-info/10 p-2.5 rounded-custom text-info">
             <CalendarCheck className="w-5 h-5" />
@@ -103,7 +125,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
         <div className="bg-bg border border-border p-5 rounded-custom shadow-custom-sm flex items-center justify-between">
           <div className="flex flex-col gap-1.5">
             <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider">최종 수주성공</span>
-            <span className="text-2xl font-black text-navy tabular-nums">{wonCount}건</span>
+            <span className="text-2xl font-black text-navy tabular-nums">{countText(wonCount)}</span>
           </div>
           <div className="bg-success/10 p-2.5 rounded-custom text-success">
             <TrendingUp className="w-5 h-5" />
@@ -120,7 +142,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
           <div className="flex flex-col gap-1.5">
             <span className="text-[10px] text-gray-light font-bold uppercase tracking-wider">예상 파이프라인 매출 (견적/송부)</span>
             <span className="text-2xl font-black text-navy tracking-tight tabular-nums">
-              ₩{expectedRevenue.toLocaleString()}
+              {wonText(expectedRevenue)}
             </span>
             <span className="text-[10.5px] text-gray-light font-medium leading-none mt-1">
               *상태: 견적서 작성중 및 송부 완료건 합계 (공급가액, VAT 별도)
@@ -136,7 +158,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
           <div className="flex flex-col gap-1.5">
             <span className="text-[10px] text-bg/60 font-bold uppercase tracking-wider">확정 누적 계약 매출 (수주성공)</span>
             <span className="text-2xl font-black text-bg tracking-tight tabular-nums">
-              ₩{confirmedRevenue.toLocaleString()}
+              {wonText(confirmedRevenue)}
             </span>
             <span className="text-[10.5px] text-bg/75 font-medium leading-none mt-1">
               *상태: 최종 수주성공 계약금액 합계

@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { Customer } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
 import { CUSTOMER_GRADES, gradeOf } from '@/lib/crm/customerRollup';
-import { Users2, Search, Edit2, Check, X, Award, FileText, TrendingUp } from 'lucide-react';
+import { resolveAdminLoadError, UNRESOLVED, type AdminLoadError } from '@/lib/admin/loadState';
+import { Users2, Search, Edit2, Check, X, Award, FileText, TrendingUp, AlertCircle } from 'lucide-react';
 
 // 등급 편집값 '' = 수동 지정 없음(견적 이력에서 자동 산출).
 // 편집창을 열고 그대로 저장해도 자동 등급이 수동 등급으로 고착되지 않게 하는 장치다.
@@ -13,6 +14,7 @@ const AUTO_GRADE = '';
 export const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<AdminLoadError | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
 
@@ -32,9 +34,13 @@ export const CustomerList: React.FC = () => {
     try {
       const list = await ZerosService.getCustomers();
       setCustomers(list);
+      setLoadError(null);
       return list;
     } catch (e) {
       console.error('Failed to load customers', e);
+      // 조회 실패를 빈 목록으로 떨어뜨리면 화면이 "고객 없음"을 사실로 안내한다.
+      setCustomers([]);
+      setLoadError(resolveAdminLoadError('고객 데이터베이스를 불러오지 못했습니다.', e));
       return [];
     } finally {
       setLoading(false);
@@ -114,6 +120,10 @@ export const CustomerList: React.FC = () => {
   const totalWon = customers.reduce((acc, curr) => acc + (curr.total_won || 0), 0);
   const totalRequests = customers.reduce((acc, curr) => acc + (curr.total_requests || 0), 0);
 
+  // 조회에 실패한 칸은 미확정으로 둔다 — 0 을 집계값처럼 보여주지 않는다.
+  const countText = (n: number, unit: string) => (loadError ? UNRESOLVED : `${n}${unit}`);
+  const wonText = (n: number) => (loadError ? UNRESOLVED : `₩${n.toLocaleString()}`);
+
   return (
     <div className="flex flex-col gap-6 select-none font-sans max-w-5xl mx-auto py-2">
       
@@ -125,33 +135,44 @@ export const CustomerList: React.FC = () => {
         </p>
       </div>
 
+      {loadError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
+          <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
+        </div>
+      )}
+
       {/* 고객 CRM 핵심 KPI 요약 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-bg border border-border p-4.5 rounded-custom shadow-sm flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <span className="text-[9.5px] text-gray-light font-bold block uppercase tracking-wider">누적 고객 수</span>
-            <span className="text-xl font-black text-navy tabular-nums">{customers.length}명</span>
+            <span className="text-xl font-black text-navy tabular-nums">{countText(customers.length, '명')}</span>
           </div>
           <Users2 className="w-8 h-8 text-steel/25" />
         </div>
         <div className="bg-bg border border-border p-4.5 rounded-custom shadow-sm flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <span className="text-[9.5px] text-gray-light font-bold block uppercase tracking-wider">누적 총 의뢰 건수</span>
-            <span className="text-xl font-black text-navy tabular-nums">{totalRequests}건</span>
+            <span className="text-xl font-black text-navy tabular-nums">{countText(totalRequests, '건')}</span>
           </div>
           <FileText className="w-8 h-8 text-steel/25" />
         </div>
         <div className="bg-bg border border-border p-4.5 rounded-custom shadow-sm flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <span className="text-[9.5px] text-gray-light font-bold block uppercase tracking-wider">총 계약 성공</span>
-            <span className="text-xl font-black text-success tabular-nums">{totalWon}건</span>
+            <span className="text-xl font-black text-success tabular-nums">{countText(totalWon, '건')}</span>
           </div>
           <Award className="w-8 h-8 text-success/25" />
         </div>
         <div className="bg-bg border border-border p-4.5 rounded-custom shadow-sm flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <span className="text-[9.5px] text-gray-light font-bold block uppercase tracking-wider">누적 계약 고정 매출</span>
-            <span className="text-lg font-black text-navy tabular-nums">₩{totalRevenue.toLocaleString()}</span>
+            <span className="text-lg font-black text-navy tabular-nums">{wonText(totalRevenue)}</span>
           </div>
           <TrendingUp className="w-8 h-8 text-navy/20" />
         </div>
@@ -204,8 +225,10 @@ export const CustomerList: React.FC = () => {
             <tbody className="divide-y divide-border">
               {filteredCustomers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-xs font-bold text-gray-light">
-                    일치하는 고객 정보가 존재하지 않습니다.
+                  <td colSpan={8} className="p-8 text-center text-xs font-bold text-gray">
+                    {loadError
+                      ? '조회 실패로 목록을 표시하지 못했습니다.'
+                      : '일치하는 고객 정보가 존재하지 않습니다.'}
                   </td>
                 </tr>
               ) : (

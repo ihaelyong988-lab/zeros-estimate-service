@@ -275,7 +275,7 @@ export const MyRequestsView: React.FC = () => {
             <ShieldCheck className="w-3.5 h-3.5 text-steel shrink-0" />
             등록된 본인만 이용 내역을 열람할 수 있습니다
           </span>
-          <span className="text-[11.5px] text-gray/80 leading-relaxed mt-0.5">
+          <span className="text-[11.5px] text-gray leading-relaxed mt-0.5">
             의뢰 시 작성하신 휴대전화 번호로 로그인하시면 별도의 비밀번호 없이 진행 단계를 확인 및 동기화합니다.
           </span>
         </div>
@@ -343,7 +343,7 @@ export const MyRequestsView: React.FC = () => {
             <button
               type="button"
               onClick={() => { setPhase('input'); setCode(''); setSmsPending(false); setAuthError(null); }}
-              className="text-[12px] font-bold text-gray-light hover:text-navy transition-colors self-start"
+              className="text-[12px] font-bold text-gray hover:text-navy transition-colors self-start"
             >
               번호 다시 입력하기
             </button>
@@ -356,7 +356,7 @@ export const MyRequestsView: React.FC = () => {
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 text-[12px] text-gray-light font-medium mt-1">
+        <div className="flex items-center gap-1.5 text-[12px] text-gray font-medium mt-1">
           <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
           입력하신 번호는 본인확인 용도로만 사용되며 안전하게 보호됩니다.
         </div>
@@ -402,7 +402,7 @@ export const MyRequestsView: React.FC = () => {
               key={key}
               onClick={() => setActiveTabKey(key)}
               className={`relative px-3.5 py-2 text-[12.5px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
-                active ? 'text-navy' : 'text-gray-light hover:text-gray'
+                active ? 'text-navy' : 'text-gray hover:text-navy'
               }`}
             >
               <Icon className="w-3.5 h-3.5" /> {label}
@@ -418,7 +418,7 @@ export const MyRequestsView: React.FC = () => {
       {/* 본문 스크롤 영역 */}
       <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
         {loading ? (
-          <div className="text-[13px] font-bold text-gray-light text-center py-12">접수현황을 불러오는 중...</div>
+          <div className="text-[13px] font-bold text-gray text-center py-12">접수현황을 불러오는 중...</div>
         ) : (
         <div className="flex flex-col gap-3">
         {/* 조회 실패 — 0건 안내와 절대 합치지 않는다. 실패 사유와 복구 경로를 함께 준다. */}
@@ -442,7 +442,7 @@ export const MyRequestsView: React.FC = () => {
           loadError ? null : (
           <div className="flex flex-col items-center justify-center text-center gap-3 py-10">
             <span className="w-12 h-12 rounded-full bg-bg border border-border flex items-center justify-center">
-              <Inbox className="w-6 h-6 text-gray-light" />
+              <Inbox className="w-6 h-6 text-gray" />
             </span>
             <div className="flex flex-col gap-1">
               <span className="text-[13.5px] font-black text-navy">접수된 사전진단 내역이 없습니다</span>
@@ -466,7 +466,7 @@ export const MyRequestsView: React.FC = () => {
                   <span className={`absolute -left-[22px] top-1 w-3.5 h-3.5 rounded-full ring-4 ring-bg-subtle ${toneBg[ev.tone]}`} />
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`px-2 py-0.5 rounded-full text-[10.5px] font-black border ${toneSoft[ev.tone]}`}>{ev.label}</span>
-                    <span className="text-[10.5px] font-bold text-gray-light tabular-nums">{fmtDateTime(ev.ts)}</span>
+                    <span className="text-[10.5px] font-bold text-gray tabular-nums">{fmtDateTime(ev.ts)}</span>
                     <span className="text-[10px] font-mono font-bold text-steel ml-auto">{ev.estimateNo}</span>
                   </div>
                   <p className="text-[12px] text-gray font-medium leading-snug bg-bg border border-border rounded-custom px-3 py-2 shadow-custom-sm">
@@ -489,7 +489,7 @@ export const MyRequestsView: React.FC = () => {
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <span className="text-[10px] font-mono font-bold text-steel">{e.estimate_no}</span>
                       <span className="text-[13.5px] font-black text-navy truncate">{e.work_type}</span>
-                      <span className="text-[11px] text-gray-light font-semibold">
+                      <span className="text-[11px] text-gray font-semibold">
                         {e.site_type} · 접수 {fmtDate(e.created_at)}
                       </span>
                     </div>
@@ -511,7 +511,7 @@ export const MyRequestsView: React.FC = () => {
                           <React.Fragment key={st}>
                             <div className="flex flex-col items-center gap-1 shrink-0">
                               <span className={`w-2.5 h-2.5 rounded-full ${done ? toneBg[tone] : 'bg-border'}`} />
-                              <span className={`text-[9.5px] font-bold ${done ? toneText[tone] : 'text-gray-light'}`}>{st}</span>
+                              <span className={`text-[9.5px] font-bold ${done ? toneText[tone] : 'text-gray'}`}>{st}</span>
                             </div>
                             {i < STAGES.length - 1 && (
                               <span className={`flex-1 h-0.5 -mt-3.5 ${i < si ? toneBg[tone] : 'bg-border'}`} />
@@ -556,9 +556,10 @@ export const MyRequestsView: React.FC = () => {
 
       {/* 푸터 영역 */}
       <div className="bg-bg-subtle border-t border-border px-4 py-3.5 flex items-center justify-between gap-2 shrink-0">
-        <span className="text-[11px] text-gray-light font-medium flex items-center gap-1.5 leading-tight">
+        {/* 상태 알림 문자 발송 경로가 아직 없어 문자 약속을 뺐다 — 발송이 붙으면 되돌린다. */}
+        <span className="text-[11px] text-gray font-medium flex items-center gap-1.5 leading-tight">
           <Clock className="w-3.5 h-3.5 text-steel shrink-0" />
-          상태 변경 시 문자로도 실시간 안내됩니다.
+          상태 변경은 이 화면에서 확인합니다.
         </span>
         <button
           onClick={goRequest}

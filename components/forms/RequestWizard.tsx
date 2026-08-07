@@ -14,7 +14,20 @@ import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { validateUpload, ACCEPT_ATTR, ALLOWED_LABEL, MAX_PER_CATEGORY, MAX_TOTAL_FILES } from '@/lib/constants/uploadLimits';
 import { useShell, PHONE_VERIFIED_KEY } from '@/lib/context/ShellContext';
 import { PhoneVerifyGate } from './PhoneVerifyGate';
-import { Estimate, FileMeta, WorkType, SiteType, ExpectedBudgetRange, EstimateCategory } from '@/types/estimate';
+import { menuDisplayName } from '@/lib/constants/menu';
+import {
+  SITE_TYPE_OPTIONS,
+  SMS_PENDING_NOTICE,
+  WORK_TYPE_OPTIONS,
+  buildRequestScopeFields,
+  parseRequestDraft,
+  serializeRequestDraft,
+  validateRequestStep1,
+  type RequestChannel,
+  type SelectedSiteType,
+  type SelectedWorkType,
+} from '@/lib/forms/requestForm';
+import { Estimate, FileMeta, ExpectedBudgetRange, EstimateCategory } from '@/types/estimate';
 import {
   Building,
   User,
@@ -29,6 +42,8 @@ import {
   Trash2,
   Truck,
   Zap,
+  Wrench,
+  Factory,
   CalendarClock,
   Coins,
   CheckCircle2,
@@ -38,7 +53,7 @@ import {
 
 // 견적문의 진입 채널 — 자료등록 화면에서 둘 중 하나를 고른다.
 //  visit: 견적·출장요청 자료등록(자료 + 예약방문 신청)  ·  quick: 무료 견적 신청(1,000만원 이하 · AI Native 자동 등록)
-export type RequestChannel = 'visit' | 'quick';
+export type { RequestChannel };
 
 // 업종 — 꼭 필요한 선택값(드롭다운). 가입정보 외 최소 식별용.
 const INDUSTRY_OPTIONS = ['식품 제조', '제약·바이오', '화학·정밀', '기계·금속', '전자·반도체', '물류·유통', '일반 제조', '상업·건물', '기타'];
@@ -117,12 +132,13 @@ const defaultFormData = {
   site_address: '',
   industry: '',
   customer_type: '일반',
-  work_type: '배관공사' as WorkType,
-  site_type: '공장' as SiteType,
-  work_purpose: '신규설치',
+  // 공사 종류·현장 유형은 기본 선택이 없다 — 고객이 고른 값만 저장한다(B1).
+  work_type: '' as SelectedWorkType,
+  site_type: '' as SelectedSiteType,
+  work_purpose: '',
   // 고객이 고르기 전 기본값 = '모름' — 고르지 않은 금액대를 임의로 저장하지 않는다(F6-B)
   expected_budget_range: '모름' as ExpectedBudgetRange,
-  desired_schedule: '1개월 이내',
+  desired_schedule: '',
   urgency: false,
   description: '',
   request_detail: '',
@@ -134,6 +150,13 @@ const defaultFormData = {
 };
 
 type RequestFormData = typeof defaultFormData;
+
+// 임시저장 — 저장·복구를 한 곳에서만 다뤄 버전 표식이 빠지지 않게 한다.
+const DRAFT_KEY = 'zeros_draft_request';
+const saveDraft = (values: RequestFormData) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(DRAFT_KEY, serializeRequestDraft(values));
+};
 
 // /api/otp/status 결과 모듈 캐시 — 랜딩 진입 시 미리 받아두면(prefetch)
 // 신청 탭을 열 때 "불러오는 중" 대기 없이 폼이 즉시 뜬다(서버리스 콜드스타트 지연 차단).
@@ -179,9 +202,29 @@ interface RequestWizardProps {
 // 고객 간단 등록 — 채널 선택 → 선택형 단계 탭 폼 → 등록완료 탭(관리 페이지 이동).
 // 가입(로그인)정보는 자동입력하고, 채널별로 꼭 필요한 칸만 단계로 나눠 간결하게 받는다.
 export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initialChannel = null, onChannelConsumed }) => {
-  const { customerAuth, setCustomerAuth, setShowMyRequests, setActiveTab } = useShell();
+  const { customerAuth, setCustomerAuth, setShowMyRequests, setShowLogin, setActiveTab } = useShell();
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsgRaw] = useState<string | null>(null);
+  // STEP1 에 공사 종류·현장 유형 칩이 들어오면서 단계 높이가 1,200px 을 넘는다. 오류 배너는 폼 최상단에
+  // 있으므로 아래까지 스크롤해 '다음'을 누른 고객에게는 배너가 화면 밖에 렌더돼 버튼이 무반응으로 보인다.
+  // 같은 문구를 버튼 옆에 한 번 더 그리는 방식은 헌법 제10조(1정보 1표시) 위반이라, 배너를 시야로 끌어온다.
+  // 같은 오류가 연달아 나도 반응해야 하므로 메시지가 아니라 발생 횟수를 신호로 쓴다.
+  const [errorNonce, setErrorNonce] = useState(0);
+  const errorRef = useRef<HTMLDivElement | null>(null);
+  const setErrorMsg = (msg: string | null) => {
+    setErrorMsgRaw(msg);
+    if (msg) setErrorNonce((n) => n + 1);
+  };
+
+  useEffect(() => {
+    if (!errorNonce) return;
+    const el = errorRef.current;
+    if (!el) return;
+    const reduced = typeof window !== 'undefined'
+      && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+    el.focus({ preventScroll: true });
+  }, [errorNonce]);
 
   // 자료등록 채널 선택 — null이면 2채널 선택 화면, 값이 있으면 단계 폼.
   const [channel, setChannel] = useState<RequestChannel | null>(initialChannel);
@@ -221,9 +264,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     setCustomerAuth({ name: name.trim(), phone, verifiedAt: new Date().toISOString(), sessionToken });
     setFormData(prev => {
       const updated = { ...prev, phone, customer_name: prev.customer_name || name };
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
-      }
+      saveDraft(updated);
       return updated;
     });
     // 인증을 마쳤으므로 막혔던 지점(참조·자료 단계)으로 넘긴다.
@@ -234,22 +275,9 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
   // 폼 입력 데이터 상태 관리 및 임시저장 복구
   const [formData, setFormData] = useState<RequestFormData>(() => {
-    if (typeof window === 'undefined') {
-      return defaultFormData;
-    }
-
-    const draft = localStorage.getItem('zeros_draft_request');
-    if (!draft) {
-      return defaultFormData;
-    }
-
-    try {
-      const parsed = JSON.parse(draft) as Partial<RequestFormData>;
-      return { ...defaultFormData, ...parsed };
-    } catch (e) {
-      console.error('Failed to parse draft request', e);
-      return defaultFormData;
-    }
+    if (typeof window === 'undefined') return defaultFormData;
+    // 구 버전 draft 의 공사 정보(임의 기본값)는 복구되지 않는다 — parseRequestDraft 가 걸러낸다.
+    return { ...defaultFormData, ...parseRequestDraft<RequestFormData>(localStorage.getItem(DRAFT_KEY)) };
   });
 
   // 사전 로그인 고객: 기본 사항 자동 입력. 이름·연락처는 로그인 정보로, 회사·이메일·주소는 최근 접수건이 있으면 그 값으로.
@@ -297,7 +325,17 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
     const updated = { ...formData, [name]: val };
     setFormData(updated);
-    localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
+    saveDraft(updated);
+  };
+
+  // 칩 선택(공사 종류·현장 유형)도 입력과 같게 임시저장에 남긴다.
+  const selectScope = (patch: Partial<Pick<RequestFormData, 'work_type' | 'site_type'>>) => {
+    setErrorMsg(null);
+    setFormData(prev => {
+      const updated = { ...prev, ...patch };
+      saveDraft(updated);
+      return updated;
+    });
   };
 
   // 파일 선택 input 참조 및 업로드 상태
@@ -343,7 +381,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
       setFormData(prev => {
         const updated = { ...prev, files: [...prev.files, ...uploaded] };
-        localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
+        saveDraft(updated);
         return updated;
       });
     } catch (err) {
@@ -358,7 +396,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     setFormData(prev => {
       const updatedFiles = prev.files.filter((_, i) => i !== idx);
       const updated = { ...prev, files: updatedFiles };
-      localStorage.setItem('zeros_draft_request', JSON.stringify(updated));
+      saveDraft(updated);
       return updated;
     });
   };
@@ -374,7 +412,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
   const validateStep = (s: 1 | 2 | 3): boolean => {
     setErrorMsg(null);
     if (s === 1) {
-      if (!formData.site_address.trim()) return failValidation(channel === 'visit' ? '출장 지역(현장 주소)을 입력해 주세요.' : '지역(현장 주소)을 입력해 주세요.');
+      const scopeError = validateRequestStep1(formData, channel);
+      if (scopeError) return failValidation(scopeError);
     }
     if (s === 2) {
       if (!formData.phone.trim()) return failValidation('담당자 연락처를 입력해 주세요.');
@@ -411,6 +450,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     if (!formData.phone.trim() || !isPhoneValid()) return failValidation('담당자 연락처를 휴대폰 번호로 입력해 주세요.');
     if (!formData.email.trim()) return failValidation('이메일 회신처를 입력해 주세요.');
     if (!formData.site_address.trim()) return failValidation('현장(지역) 주소를 입력해 주세요.');
+    // 공사 종류·현장 유형 미선택 접수를 막는다(B1). 주소는 위에서 이미 봤으므로 남는 건 이 둘뿐 —
+    // 고칠 수 있는 STEP1 로 되돌려 준다.
+    const scopeError = validateRequestStep1(formData, channel);
+    if (scopeError) { setStep(1); return failValidation(scopeError); }
     if (channel === 'visit' && !formData.visit_date) return failValidation('희망 방문일을 선택해 주세요.');
     if (!formData.agreePrivacy) return failValidation('개인정보 수집 및 이용에 동의해 주세요.');
     return true;
@@ -420,6 +463,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateAll()) return;
+
+    // 고객이 고른 공사 정보. validateAll 을 통과하면 항상 값이 있다.
+    const scope = buildRequestScopeFields(formData, channel);
+    if (!scope) return;
 
     setLoading(true);
     try {
@@ -445,11 +492,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         email: formData.email,
         site_address: formData.site_address,
         customer_type: formData.customer_type,
-        work_type: formData.work_type,
-        site_type: formData.site_type,
-        work_purpose: formData.work_purpose,
+        work_type: scope.work_type,
+        site_type: scope.site_type,
+        work_purpose: scope.work_purpose,
         expected_budget_range: formData.expected_budget_range,
-        desired_schedule: channel === 'visit' && formData.visit_date ? formData.visit_date : formData.desired_schedule,
+        desired_schedule: scope.desired_schedule,
         urgency: formData.urgency,
         description: formData.description,
         request_detail: channelTag,
@@ -458,9 +505,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         submitted_files: formData.files
       }, { visit: visitPayload, verifiedToken: auth.verifiedToken });
 
-      localStorage.removeItem('zeros_draft_request');
+      localStorage.removeItem(DRAFT_KEY);
       onComplete?.(newEst);
-      // 등록완료 탭으로 전환 — 관리 페이지로 이동해 확인할 수 있게 한다.
+      // 등록완료 탭으로 전환 — 관리 페이지로 이동해 확인한다.
+      // 직전 시도의 오류 문구가 남아 있으면 완료 화면에 그대로 보이므로 함께 비운다.
+      setErrorMsg(null);
       setSubmitted(newEst);
     } catch (err: unknown) {
       console.error(err);
@@ -472,6 +521,18 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     } finally {
       setLoading(false);
     }
+  };
+
+  // 접수 완료 후 마이페이지 열기 — 마이페이지는 로그인(customerAuth)이 있어야 열린다.
+  // 로그인 없이 setShowMyRequests(true) 만 부르면 아무 화면도 뜨지 않아 고객이 마지막에 막힌다.
+  const openMyRequests = async () => {
+    if (customerAuth) { setShowMyRequests(true); return; }
+    const enabled = verifyEnabled ?? (await prefetchOtpEnabled());
+    setVerifyEnabled(enabled);
+    // 문자 인증이 설정되기 전이면 로그인 자체가 불가능하다 — 그 사실을 알린다.
+    if (!enabled) { setErrorMsg(SMS_PENDING_NOTICE); return; }
+    setErrorMsg(null);
+    setShowLogin(true);
   };
 
   // 새 등록 — 완료 후 다시 채널 선택부터.
@@ -502,7 +563,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
   // 오류 표시는 폼과 인증 화면이 같은 블록을 쓴다(문구 원천 1곳).
   const errorBanner = errorMsg ? (
-    <div role="alert" aria-live="assertive" className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold flex items-start gap-2 animate-in fade-in duration-200 motion-reduce:animate-none">
+    <div ref={errorRef} tabIndex={-1} role="alert" aria-live="assertive" className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold text-left flex items-start gap-2 outline-none focus-visible:ring-2 focus-visible:ring-danger/40 animate-in fade-in duration-200 motion-reduce:animate-none">
       <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
       <span>{errorMsg}</span>
     </div>
@@ -586,9 +647,10 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
             <span className="text-[14px] font-black text-navy tracking-wide tabular-nums">{submitted?.estimate_no}</span>
           </div>
           <div className="w-full max-w-xs flex flex-col gap-2.5 pt-1">
+            {errorBanner}
             <button
               type="button"
-              onClick={() => { setShowMyRequests(true); }}
+              onClick={() => { void openMyRequests(); }}
               style={{ touchAction: 'manipulation' }}
               className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-[#c95f12] text-white py-3.5 min-h-[44px] rounded-custom text-[16px] font-black shadow-md transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
             >
@@ -690,6 +752,62 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                   placeholder="경기도 화성시 향남읍 식품공단로 42"
                   className={inputCls}
                 />
+              </div>
+
+              {/* 공사 종류 — 기본 선택 없음(B1). 고르지 않으면 다음 단계로 넘어가지 않는다. */}
+              <div className="flex flex-col gap-2">
+                <span id="work_type_label" className={labelCls}>
+                  <Wrench className="w-4.5 h-4.5 text-steel" />
+                  공사 종류 · 필수
+                </span>
+                <div role="radiogroup" aria-labelledby="work_type_label" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {WORK_TYPE_OPTIONS.map((w) => {
+                    const on = formData.work_type === w;
+                    return (
+                      <button
+                        key={w}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => selectScope({ work_type: w })}
+                        style={{ touchAction: 'manipulation' }}
+                        className={`px-2.5 py-2 min-h-[44px] rounded-custom text-[14.5px] font-bold leading-snug border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40 ${
+                          on ? 'border-steel bg-steel/10 text-navy' : 'border-border bg-bg text-gray hover:border-steel/60'
+                        }`}
+                      >
+                        {menuDisplayName(w)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 현장 유형 — 공사 종류와 같은 칩 패턴. */}
+              <div className="flex flex-col gap-2">
+                <span id="site_type_label" className={labelCls}>
+                  <Factory className="w-4.5 h-4.5 text-steel" />
+                  현장 유형 · 필수
+                </span>
+                <div role="radiogroup" aria-labelledby="site_type_label" className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {SITE_TYPE_OPTIONS.map((s) => {
+                    const on = formData.site_type === s;
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => selectScope({ site_type: s })}
+                        style={{ touchAction: 'manipulation' }}
+                        className={`px-2.5 py-2 min-h-[44px] rounded-custom text-[14.5px] font-bold leading-snug border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40 ${
+                          on ? 'border-steel bg-steel/10 text-navy' : 'border-border bg-bg text-gray hover:border-steel/60'
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">

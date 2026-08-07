@@ -65,6 +65,13 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   const [payType, setPayType] = useState<'온라인검토비' | '출장견적비' | '프로젝트 사전진단비'>('출장견적비');
   const [payStatus, setPayStatus] = useState<AdminPaymentStatus>('결제대기');
 
+  // 기청구 행 수정 — 잘못 넣은 금액·상태가 미수금 지표를 영구히 오염시키지 않게 한다.
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
+  const [editPayAmount, setEditPayAmount] = useState<number | ''>('');
+  const [editPayStatus, setEditPayStatus] = useState<Payment['payment_status']>('결제대기');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentSaving, setPaymentSaving] = useState(false);
+
   // 2차 고도화 모달 상태
   const [showTossModal, setShowTossModal] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
@@ -211,6 +218,41 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     } catch (e) {
       console.error(e);
       alert('결제 등록 도중 오류가 발생했습니다.');
+    }
+  };
+
+  // 3-1. 기청구 행 수정 액션
+  const startEditPayment = (p: Payment) => {
+    setEditingPaymentId(p.id);
+    setEditPayAmount(p.amount);
+    setEditPayStatus(p.payment_status);
+    setPaymentError(null);
+  };
+
+  const cancelEditPayment = () => {
+    setEditingPaymentId(null);
+    setPaymentError(null);
+  };
+
+  const handleUpdatePayment = async (id: string) => {
+    const amount = Number(editPayAmount);
+    if (!(amount > 0)) {
+      setPaymentError('청구 액수를 1원 이상으로 입력해 주세요.');
+      return;
+    }
+    setPaymentSaving(true);
+    try {
+      // 견적의 결제 상태·미수금은 이 행 집합에서 파생되므로 행만 고치면 지표가 따라온다.
+      await ZerosService.updatePayment(id, { amount, payment_status: editPayStatus });
+      setEditingPaymentId(null);
+      setPaymentError(null);
+      await refreshDetailData();
+      onSaved();
+    } catch (e) {
+      console.error(e);
+      setPaymentError(e instanceof Error ? e.message : '결제 정보 수정 도중 오류가 발생했습니다.');
+    } finally {
+      setPaymentSaving(false);
     }
   };
 
@@ -1003,22 +1045,84 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
 
               {/* 기매핑된 결제 내역 리스트 */}
               {payments.length > 0 && (
-                <div className="flex flex-col gap-1.5 border-t border-border/60 pt-3 max-h-24 overflow-y-auto">
+                <div className="flex flex-col gap-1.5 border-t border-border/60 pt-3 max-h-40 overflow-y-auto">
                   <span className="text-[9.5px] text-gray-light font-bold">기청구 내역 ({payments.length}건)</span>
                   {payments.map((p) => (
-                    <div key={p.id} className="bg-bg-subtle border border-border p-2 rounded-custom text-[11px] font-medium flex items-center justify-between">
-                      <span className="text-navy font-bold">{p.payment_type}</span>
-                      <div className="flex items-center gap-3">
-                        <span className="font-extrabold text-steel tabular-nums">₩{p.amount.toLocaleString()}</span>
-                        <span className={`px-1.5 py-0.5 rounded-custom text-[9px] font-black ${
-                          p.payment_status === '결제완료' ? 'bg-success/15 text-success' :
-                          p.payment_status === '결제대기' ? 'bg-warning/15 text-warning' : 'bg-bg-subtle text-gray'
-                        }`}>
-                          {p.payment_status}
-                        </span>
-                      </div>
+                    <div key={p.id} className="bg-bg-subtle border border-border p-2 rounded-custom text-[11px] font-medium flex flex-col gap-1.5">
+                      {editingPaymentId === p.id ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <span className="text-navy font-bold shrink-0">{p.payment_type}</span>
+                            <input
+                              type="number"
+                              min={1}
+                              aria-label={`${p.payment_type} 청구 액수 수정`}
+                              value={editPayAmount}
+                              onChange={(e) => setEditPayAmount(e.target.value ? Number(e.target.value) : '')}
+                              className="w-full border border-border p-1.5 rounded-custom text-[11px] font-bold text-navy text-right tabular-nums focus:outline-none focus:border-steel"
+                            />
+                            <select
+                              aria-label={`${p.payment_type} 입금 상태 수정`}
+                              value={editPayStatus}
+                              onChange={(e) => setEditPayStatus(e.target.value as Payment['payment_status'])}
+                              className="border border-border p-1.5 rounded-custom text-[11px] bg-bg shrink-0"
+                            >
+                              <option value="미결제">미결제</option>
+                              <option value="결제대기">결제대기</option>
+                              <option value="결제완료">결제완료</option>
+                              <option value="환불">환불</option>
+                            </select>
+                          </div>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={cancelEditPayment}
+                              style={{ touchAction: 'manipulation' }}
+                              className="flex items-center min-h-[44px] px-3 border border-border rounded-custom text-gray hover:text-navy hover:border-steel/50 text-[11px] font-bold transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-steel"
+                            >
+                              취소
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdatePayment(p.id)}
+                              disabled={paymentSaving}
+                              style={{ touchAction: 'manipulation' }}
+                              className="flex items-center min-h-[44px] px-3 bg-steel hover:bg-navy text-bg rounded-custom text-[11px] font-black transition-colors cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-navy"
+                            >
+                              {paymentSaving ? '저장 중...' : '저장'}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-navy font-bold">{p.payment_type}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="font-extrabold text-steel tabular-nums">₩{p.amount.toLocaleString()}</span>
+                            <span className={`px-1.5 py-0.5 rounded-custom text-[9px] font-black ${
+                              p.payment_status === '결제완료' ? 'bg-success/15 text-success' :
+                              p.payment_status === '결제대기' ? 'bg-warning/15 text-warning' : 'bg-bg-subtle text-gray'
+                            }`}>
+                              {p.payment_status}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => startEditPayment(p)}
+                              style={{ touchAction: 'manipulation' }}
+                              className="flex items-center min-h-[44px] px-2.5 rounded-custom text-steel hover:text-navy hover:bg-border/35 text-[11px] font-black transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-steel"
+                            >
+                              수정
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {paymentError && (
+                <div role="alert" className="bg-danger/5 border border-danger/20 rounded-custom px-3 py-2 text-[11px] font-bold text-danger">
+                  {paymentError}
                 </div>
               )}
             </div>

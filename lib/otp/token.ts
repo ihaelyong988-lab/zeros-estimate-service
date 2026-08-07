@@ -102,17 +102,19 @@ export function checkSession(token: string, phone: string): boolean {
 // ==========================================
 // 관리자 토큰은 전체 고객 PII·파일 열람 권한이라 고객 세션(30일)과 수명을 분리한다.
 //  - TTL 8시간: 탈취 토큰의 유효 창을 근무 1일 이내로 제한한다.
-//  - 비밀번호 바인딩: 발급 시점 ZEROS_ADMIN_PASSWORD 의 해시 프리픽스를 페이로드에 넣고
-//    검증 때 현재 비밀번호의 프리픽스와 대조한다. 비밀번호를 바꾸면 프리픽스가 달라져
-//    기존 토큰이 전부 즉시 무효가 된다(= 서버 측 일괄 폐기 수단).
+//  - 비밀번호 바인딩: 발급 시점 ZEROS_ADMIN_PASSWORD 의 태그를 페이로드에 넣고 검증 때
+//    현재 비밀번호의 태그와 대조한다. 비밀번호를 바꾸면 태그가 달라져 기존 토큰이 전부
+//    즉시 무효가 된다(= 서버 측 일괄 폐기 수단).
 const ADMIN_SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8시간
 
-// 비밀번호 원문은 토큰에 넣지 않는다. 해시 앞 16자만 식별자로 사용한다.
+// 비밀번호 원문도, 무염 해시도 토큰에 넣지 않는다. 무염 SHA-256 은 토큰이 한 번만 새도
+// 그 프리픽스로 비밀번호를 오프라인 대입할 수 있다 — 서버 전용 SECRET 으로 HMAC 한 값의
+// 앞 16자만 식별자로 쓴다(SECRET 없이는 후보 비밀번호를 대조할 수 없다).
 // 미설정(빈 값)이면 ''를 돌려주고 검증은 항상 실패시킨다 — 로그인 자체가 503 인 fail-closed 상태와 일치.
 function adminPasswordTag(): string {
   const pw = process.env.ZEROS_ADMIN_PASSWORD || '';
   if (!pw) return '';
-  return crypto.createHash('sha256').update(pw).digest('base64url').slice(0, 16);
+  return hmac(`adminpw:${pw}`).slice(0, 16);
 }
 
 // 관리자 세션 토큰 — 비밀번호 검증 성공 시 발급, 전체 파일 열람에 사용

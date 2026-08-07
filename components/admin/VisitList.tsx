@@ -3,12 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { ZerosService, clearDataCache } from '@/lib/supabase/client';
 import { SiteVisit, Estimate } from '@/types/estimate';
-import { Calendar, User, ClipboardList, CheckCircle2, ShieldAlert, FileWarning, RefreshCw } from 'lucide-react';
+import { resolveAdminLoadError, type AdminLoadError } from '@/lib/admin/loadState';
+import { Calendar, User, ClipboardList, CheckCircle2, ShieldAlert, FileWarning, RefreshCw, AlertCircle } from 'lucide-react';
 
 export const VisitList: React.FC = () => {
   const [visits, setVisits] = useState<SiteVisit[]>([]);
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<AdminLoadError | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | SiteVisit['visit_status']>('all');
 
   const loadData = async (showPending = true): Promise<{ visits: SiteVisit[]; estimates: Estimate[] }> => {
@@ -22,9 +24,14 @@ export const VisitList: React.FC = () => {
 
       const eList = await ZerosService.getEstimates();
       setEstimates(eList);
+      setLoadError(null);
       return { visits: vList, estimates: eList };
     } catch (e) {
       console.error('Failed to load visits', e);
+      // 조회 실패를 빈 배열로 떨어뜨리면 화면이 "방문 일정 없음"을 사실로 안내한다.
+      setVisits([]);
+      setEstimates([]);
+      setLoadError(resolveAdminLoadError('현장방문 대장을 불러오지 못했습니다.', e));
       return { visits: [], estimates: [] };
     } finally {
       setLoading(false);
@@ -120,6 +127,17 @@ export const VisitList: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {loadError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
+          <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
+        </div>
+      )}
 
       {/* 실측 카드 목록 */}
       {displayVisits.length > 0 ? (
@@ -224,7 +242,9 @@ export const VisitList: React.FC = () => {
         </div>
       ) : (
         <div className="bg-bg border border-border border-dashed p-12 text-center rounded-custom text-xs text-gray font-bold">
-          출장방문 일정 내역이 존재하지 않습니다.
+          {loadError
+            ? '조회 실패로 일정을 표시하지 못했습니다.'
+            : '출장방문 일정 내역이 존재하지 않습니다.'}
         </div>
       )}
 

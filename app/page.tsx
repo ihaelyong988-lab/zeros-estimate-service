@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import Image, { getImageProps } from "next/image";
 import { AppShell } from "@/components/layout/AppShell";
 import { useShell, type ActiveTab } from "@/lib/context/ShellContext";
@@ -78,6 +79,11 @@ import {
   AlertTriangle,
   Image as ImageIcon
 } from 'lucide-react';
+
+// 저작권 연도 — 하드코딩하면 해가 바뀔 때마다 과거 연도가 남는다. 렌더 시점에서 파생한다.
+// 표기 지점(footer)에 suppressHydrationWarning 을 두는 이유: 빌드 시점 HTML과
+// 연말 경계에서 클라이언트 계산값이 갈릴 수 있고, 그 차이는 경고 대상이 아니다.
+const COPYRIGHT_YEAR = new Date().getFullYear();
 
 // 랜딩 쇼케이스 자동 순회 공종 순서 — 최상단 칩바와 값으로 매칭(연동)되므로 모듈 스코프로 고정
 const LANDING_TRADES = [
@@ -372,14 +378,22 @@ export default function Home() {
   // FOOTER — 브랜드 소개·핵심영역 삭제, © 저작권 바만 유지(2026-07-16 PHASE O-32 지시). 공용 렌더로 분리.
   const renderBrandFooter = () => (
     <footer className="border-t-2 border-navy pt-4 flex justify-between items-center gap-4 flex-wrap">
-      <span className="text-[13px] font-medium text-gray">© 2025 ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
+      <span suppressHydrationWarning className="text-[13px] font-medium text-gray">© {COPYRIGHT_YEAR} ZEROS Co., Ltd. · 사업자등록번호 준비중</span>
+      {/* 히트 영역 ≥44px(§10·게이트 R3) — 죽은 span 이 링크가 되면서 20px 타깃이 생겼다.
+          O-32 가 확정한 것은 구성·문구·순서·테두리·폭이므로 세로 여백만 넓힌다(문구·순서 불변). */}
       <div className="flex items-center gap-4 text-[13.5px] font-bold">
-        <span className="text-gray hover:text-navy transition-colors cursor-pointer">개인정보처리방침</span>
-        <span className="text-gray-light/40">|</span>
+        <Link
+          href="/privacy"
+          style={{ touchAction: 'manipulation' }}
+          className="inline-flex items-center min-h-[44px] text-gray hover:text-navy transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-steel"
+        >
+          개인정보처리방침
+        </Link>
+        <span className="text-gray-light/40" aria-hidden="true">|</span>
         <button
           onClick={() => setActiveTabAtTop('request')}
           style={{ touchAction: 'manipulation' }}
-          className="inline-flex items-center gap-1 text-steel hover:text-navy transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1 min-h-[44px] text-steel hover:text-navy transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-steel"
         >
           문의하기 <ArrowRight className="w-3 h-3 shrink-0" />
         </button>
@@ -2145,11 +2159,11 @@ export default function Home() {
       {/* ── 푸터 (청색 2단 中 하단 띠 — 헤더와 동일한 64px 높이) ── */}
       <footer className="bg-[#04204C] text-white/60 h-16 shrink-0 flex items-center z-10 select-none">
         <div className="w-full max-w-[1400px] mx-auto px-10 flex items-center justify-between gap-4 text-[12.5px] font-semibold">
-          <span>© 2025 ZEROS Co., Ltd. All rights reserved.</span>
+          <span suppressHydrationWarning>© {COPYRIGHT_YEAR} ZEROS Co., Ltd. All rights reserved.</span>
           <div className="flex items-center gap-5">
             <span className="text-white/45">사업자등록번호 준비중</span>
             <span className="text-white/25">|</span>
-            <span className="hover:text-white transition-colors">개인정보처리방침</span>
+            <Link href="/privacy" className="hover:text-white transition-colors">개인정보처리방침</Link>
             <button
               onClick={() => setActiveTabAtTop('request')}
               className="text-white hover:text-accent transition-colors font-bold"

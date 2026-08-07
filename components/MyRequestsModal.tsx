@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShell } from '@/lib/context/ShellContext';
+import { useModalDialog } from '@/lib/a11y/modalDialog';
 import { ZerosService } from '@/lib/supabase/client';
 import { resolveRequestsLoad, RequestsLoadError } from '@/lib/requests/loadOutcome';
 import { Estimate, NotificationLog } from '@/types/estimate';
@@ -101,6 +102,10 @@ export const MyRequestsModal: React.FC = () => {
   const [reloadKey, setReloadKey] = useState(0);
   const [tab, setTab] = useState<'timeline' | 'list'>('timeline');
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const close = useCallback(() => setShowMyRequests(false), [setShowMyRequests]);
+
   const phoneDigits = (customerAuth?.phone || '').replace(/\D/g, '');
   const loading = loadedPhone !== phoneDigits;
 
@@ -181,6 +186,14 @@ export const MyRequestsModal: React.FC = () => {
     return out.sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
   }, [logs, estimates]);
 
+  // 키보드·스크린리더 사용자가 마우스 없이 열고 닫을 수 있어야 한다(ESC·포커스 트랩·복귀).
+  useModalDialog({
+    open: showMyRequests && !!customerAuth,
+    onClose: close,
+    containerRef: dialogRef,
+    initialFocusRef: closeButtonRef,
+  });
+
   if (!showMyRequests || !customerAuth) return null;
 
   const displayName = customerAuth.name || estimates[0]?.customer_name || '고객';
@@ -192,10 +205,16 @@ export const MyRequestsModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy/60 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="absolute inset-0" onClick={() => setShowMyRequests(false)} />
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="my-requests-title"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy/60 backdrop-blur-md animate-in fade-in duration-200 motion-reduce:animate-none"
+    >
+      <div className="absolute inset-0" onClick={close} />
 
-      <div className="relative z-10 w-full max-w-[560px] h-[82vh] max-h-[720px] bg-bg-subtle border border-border rounded-[20px] shadow-custom-xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative z-10 w-full max-w-[560px] h-[82vh] max-h-[720px] bg-bg-subtle border border-border rounded-[20px] shadow-custom-xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 motion-reduce:animate-none">
         {/* 헤더 */}
         <div className="bg-[#04204C] text-white px-5 py-4 flex items-center justify-between select-none shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -203,7 +222,7 @@ export const MyRequestsModal: React.FC = () => {
               <History className="w-4 h-4 text-white" />
             </span>
             <div className="flex flex-col leading-tight min-w-0">
-              <span className="text-[15px] font-black tracking-tight truncate">{displayName}님의 접수현황</span>
+              <span id="my-requests-title" className="text-[15px] font-black tracking-tight truncate">{displayName}님의 접수현황</span>
               <span className="text-[11.5px] font-semibold text-white/60 tabular-nums">{maskedPhone} · 본인인증 완료</span>
             </div>
           </div>
@@ -215,7 +234,8 @@ export const MyRequestsModal: React.FC = () => {
               <LogOut className="w-3.5 h-3.5" /> 로그아웃
             </button>
             <button
-              onClick={() => setShowMyRequests(false)}
+              ref={closeButtonRef}
+              onClick={close}
               className="w-8 h-8 inline-flex items-center justify-center rounded-custom text-white/70 hover:bg-white/10 hover:text-white transition-colors"
               aria-label="닫기"
             >
@@ -236,7 +256,7 @@ export const MyRequestsModal: React.FC = () => {
                 key={key}
                 onClick={() => setTab(key)}
                 className={`relative px-3.5 py-2 text-[13px] font-bold flex items-center gap-1.5 transition-colors ${
-                  active ? 'text-navy' : 'text-gray-light hover:text-gray'
+                  active ? 'text-navy' : 'text-gray hover:text-navy'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" /> {label}
@@ -252,7 +272,7 @@ export const MyRequestsModal: React.FC = () => {
         {/* 본문 */}
         <div className="flex-1 overflow-y-auto no-scrollbar p-4">
           {loading ? (
-            <div className="text-[13px] font-bold text-gray-light text-center py-16">접수현황을 불러오는 중...</div>
+            <div className="text-[13px] font-bold text-gray text-center py-16">접수현황을 불러오는 중...</div>
           ) : (
           <div className="flex flex-col gap-3">
           {/* 조회 실패 — 0건 안내와 절대 합치지 않는다. 실패 사유와 복구 경로를 함께 준다. */}
@@ -276,7 +296,7 @@ export const MyRequestsModal: React.FC = () => {
             loadError ? null : (
             <div className="flex flex-col items-center justify-center text-center gap-3 py-16">
               <span className="w-12 h-12 rounded-full bg-bg border border-border flex items-center justify-center">
-                <Inbox className="w-6 h-6 text-gray-light" />
+                <Inbox className="w-6 h-6 text-gray" />
               </span>
               <div className="flex flex-col gap-1">
                 <span className="text-[14px] font-black text-navy">접수된 사전진단 내역이 없습니다</span>
@@ -300,7 +320,7 @@ export const MyRequestsModal: React.FC = () => {
                     <span className={`absolute -left-[22px] top-1 w-3.5 h-3.5 rounded-full ring-4 ring-bg-subtle ${toneBg[ev.tone]}`} />
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-full text-[11px] font-black border ${toneSoft[ev.tone]}`}>{ev.label}</span>
-                      <span className="text-[11px] font-bold text-gray-light tabular-nums">{fmtDateTime(ev.ts)}</span>
+                      <span className="text-[11px] font-bold text-gray tabular-nums">{fmtDateTime(ev.ts)}</span>
                       <span className="text-[10.5px] font-mono font-bold text-steel ml-auto">{ev.estimateNo}</span>
                     </div>
                     <p className="text-[12.5px] text-gray font-medium leading-snug bg-bg border border-border rounded-custom px-3 py-2 shadow-custom-sm">
@@ -323,7 +343,7 @@ export const MyRequestsModal: React.FC = () => {
                       <div className="flex flex-col gap-0.5 min-w-0">
                         <span className="text-[10.5px] font-mono font-bold text-steel">{e.estimate_no}</span>
                         <span className="text-[14px] font-black text-navy truncate">{e.work_type}</span>
-                        <span className="text-[11.5px] text-gray-light font-semibold">
+                        <span className="text-[11.5px] text-gray font-semibold">
                           {e.site_type} · 접수 {fmtDate(e.created_at)}
                         </span>
                       </div>
@@ -345,7 +365,7 @@ export const MyRequestsModal: React.FC = () => {
                             <React.Fragment key={st}>
                               <div className="flex flex-col items-center gap-1">
                                 <span className={`w-2.5 h-2.5 rounded-full ${done ? toneBg[tone] : 'bg-border'}`} />
-                                <span className={`text-[10px] font-bold ${done ? toneText[tone] : 'text-gray-light'}`}>{st}</span>
+                                <span className={`text-[10px] font-bold ${done ? toneText[tone] : 'text-gray'}`}>{st}</span>
                               </div>
                               {i < STAGES.length - 1 && (
                                 <span className={`flex-1 h-0.5 -mt-4 ${i < si ? toneBg[tone] : 'bg-border'}`} />
@@ -358,7 +378,7 @@ export const MyRequestsModal: React.FC = () => {
 
                     {(e.estimate_sent_at || e.expected_budget_range) && (
                       <div className="flex items-center justify-between border-t border-border/60 pt-2.5 text-[11.5px]">
-                        <span className="text-gray-light font-semibold">예상 규모</span>
+                        <span className="text-gray font-semibold">예상 규모</span>
                         <span className="font-black text-navy">{e.expected_budget_range}</span>
                       </div>
                     )}
@@ -373,9 +393,10 @@ export const MyRequestsModal: React.FC = () => {
 
         {/* 푸터 */}
         <div className="bg-bg border-t border-border px-4 py-3 flex items-center justify-between gap-2 shrink-0">
-          <span className="text-[11.5px] text-gray-light font-medium flex items-center gap-1.5">
+          {/* 상태 알림 문자 발송 경로가 아직 없어 문자 약속을 뺐다 — 발송이 붙으면 되돌린다. */}
+          <span className="text-[11.5px] text-gray font-medium flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-steel shrink-0" />
-            상태가 바뀌면 문자로도 안내됩니다.
+            상태 변경은 이 화면에서 확인합니다.
           </span>
           <button
             onClick={goRequest}
