@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { useShell, type ActiveTab } from "@/lib/context/ShellContext";
 import { RequestWizard, prefetchOtpEnabled, type RequestChannel } from "@/components/forms/RequestWizard";
 import { manualData } from "@/lib/constants/manuals";
+import { REQUEST_CTA_LABEL } from "@/lib/constants/cta";
 import { TRUST, TRUST_LABEL, TRUST_VALUE, averageSavingRate } from "@/lib/constants/trust";
 import { ZerosService, clearDataCache } from "@/lib/supabase/client";
 import { Estimate, EstimateStatus } from "@/types/estimate";
@@ -224,8 +225,6 @@ export default function Home() {
     selectedBudget,
     setSelectedMenu,
     setSelectedBudget,
-    setLandingTradeName,
-    setLandingTradeChipClass,
     adminView,
     setAdminView,
     adminSubView,
@@ -270,25 +269,20 @@ export default function Home() {
     if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
   };
 
-  // 신청 탭 진입 전에 OTP 설정 여부를 미리 받아둔다 — "무료 견적 신청하기" 클릭 시 폼이 즉시 뜨도록
+  // 신청 탭 진입 전에 OTP 설정 여부를 미리 받아둔다 — "무료 견적 검토 신청" 클릭 시 폼이 즉시 뜨도록
   useEffect(() => {
     prefetchOtpEnabled();
   }, []);
 
-  // 실시간 공종 쇼케이스 애니메이션 로테이션 타이머
+  // 공종 순회 타이머 — 데스크톱 견적검토 히어로(renderReviewDesktop)가 activeTradeIdx 를 소비한다.
+  // 과거에는 이 값을 셸 컨텍스트로도 끌어올려 모바일 칩바 하이라이트와 연동했으나,
+  // 칩바 렌더 조건(!isMobileLanding)과 하이라이트 조건이 배타라 그 경로는 한 번도 발동하지 않았다(D6).
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveTradeIdx(prev => (prev + 1) % LANDING_TRADES.length);
     }, 3000);
     return () => clearInterval(timer);
   }, []);
-
-  // 현재 순회 중인 공종명·시그니처 색을 셸 컨텍스트로 끌어올려 최상단 칩바와 연동(하이라이트·색·자동스크롤)
-  useEffect(() => {
-    const name = LANDING_TRADES[activeTradeIdx];
-    setLandingTradeName(name);
-    setLandingTradeChipClass(LANDING_CHIP_CLASS[name] || 'bg-steel border-steel text-bg');
-  }, [activeTradeIdx, setLandingTradeName, setLandingTradeChipClass]);
 
   // 실시간 데이터 로딩 — 견적 전체 목록은 관리자 뷰(EstimateList·KanbanBoard)에서만 소비한다.
   // 고객 모드에서는 호출하지 않는다(익명 응답 실측 약 59KB, 화면에 쓰이지 않음).
@@ -641,7 +635,7 @@ export default function Home() {
               onClick={() => setActiveTabAtTop('request')}
               className="w-full bg-transparent hover:bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-bold transition-all active:scale-95 motion-reduce:active:scale-100 whitespace-nowrap cursor-pointer text-center"
             >
-              무료 견적 검토 의뢰하기
+              {REQUEST_CTA_LABEL}
             </button>
           </div>
         </div>
@@ -803,7 +797,7 @@ export default function Home() {
                 onClick={() => setActiveTabAtTop('request')}
                 className="w-full bg-[#FF6A00] hover:brightness-110 text-white px-4 py-2.5 rounded-custom text-[14.5px] font-black transition-all active:scale-95 whitespace-nowrap cursor-pointer text-center"
               >
-                무료 출장 견적 신청하기
+                {REQUEST_CTA_LABEL}
               </button>
             </div>
           </div>
@@ -847,6 +841,7 @@ export default function Home() {
                   100% { stroke-dashoffset: 0; }
                 }
                 .flow-line { stroke-dasharray: 4 6; animation: pipeFlow 1s linear infinite; }
+                @media (prefers-reduced-motion: reduce) { .flow-line { animation: none; } }
               ` }} />
               <defs>
                 <pattern id="grid-piping" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -858,7 +853,7 @@ export default function Home() {
               <path d="M10,30 L60,30 Q70,30 70,40 L70,80" stroke="#06b6d4" strokeWidth="1" className="flow-line" />
               <path d="M30,50 L80,50 Q90,50 90,60 L90,90" stroke="currentColor" strokeWidth="1.5" />
               <path d="M30,50 L80,50 Q90,50 90,60 L90,90" stroke="#f97316" strokeWidth="1" className="flow-line" />
-              <circle cx="70" cy="30" r="3" fill="#06b6d4" className="animate-ping" />
+              <circle cx="70" cy="30" r="3" fill="#06b6d4" className="animate-ping motion-reduce:animate-none" />
               <circle cx="70" cy="30" r="2" fill="#06b6d4" />
               <circle cx="90" cy="50" r="2" fill="#f97316" />
               {/* 압력계 계기판 */}
@@ -881,6 +876,7 @@ export default function Home() {
                   50% { opacity: 0.6; }
                 }
                 .stress-node { animation: pulseGrid 2s infinite ease-in-out; }
+                @media (prefers-reduced-motion: reduce) { .stress-node { animation: none; } }
               ` }} />
               {/* 3D 아이소메트릭 장비 프레임 */}
               <rect x="25" y="35" width="40" height="25" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
@@ -910,6 +906,7 @@ export default function Home() {
                   100% { transform: translateY(-8px) scale(1.2); opacity: 0; }
                 }
                 .steam-puff { animation: steamVent 1.5s infinite ease-out; }
+                @media (prefers-reduced-motion: reduce) { .steam-puff { animation: none; } }
               ` }} />
               {/* 스팀 루프 구조 */}
               <path d="M15,60 C25,25 75,25 85,60" stroke="currentColor" strokeWidth="1.5" />
@@ -938,7 +935,7 @@ export default function Home() {
               {/* 분기 신설 관로 (Active Orange) */}
               <path d="M50,25 L50,75 L85,75" stroke="#E0701A" strokeWidth="2" />
               {/* 티인 조인트 결합부 */}
-              <circle cx="50" cy="25" r="4.5" fill="#0A182F" stroke="#E0701A" strokeWidth="1.5" className="animate-pulse" />
+              <circle cx="50" cy="25" r="4.5" fill="#0A182F" stroke="#E0701A" strokeWidth="1.5" className="animate-pulse motion-reduce:animate-none" />
               <circle cx="50" cy="25" r="2" fill="#E0701A" />
               {/* 크로스헤어 정밀 조준 스케일 */}
               <circle cx="50" cy="25" r="12" stroke="#E0701A" strokeWidth="0.5" strokeDasharray="3 3" strokeOpacity="0.7" />
@@ -961,6 +958,7 @@ export default function Home() {
                   50% { stroke-dashoffset: 16; }
                 }
                 .scan-dash { stroke-dasharray: 4 4; animation: erosionScan 4s infinite linear; }
+                @media (prefers-reduced-motion: reduce) { .scan-dash { animation: none; } }
               ` }} />
               {/* 배관 단면도 */}
               <rect x="15" y="30" width="70" height="40" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -987,6 +985,7 @@ export default function Home() {
                   100% { transform: rotate(360deg); }
                 }
                 .vortex-group { animation: vortexSpin 8s infinite linear; transform-origin: 50px 50px; }
+                @media (prefers-reduced-motion: reduce) { .vortex-group { animation: none; } }
               ` }} />
               {/* 펌프 하우징 하이테크 그래픽 */}
               <circle cx="50" cy="50" r="24" stroke="currentColor" strokeWidth="1.5" />
@@ -1037,6 +1036,7 @@ export default function Home() {
                   50% { stroke-dashoffset: 5; }
                 }
                 .trend-line { stroke-dasharray: 100; stroke-dashoffset: 0; animation: chartMove 5s infinite ease-in-out; }
+                @media (prefers-reduced-motion: reduce) { .trend-line { animation: none; } }
               ` }} />
               {/* 축 선 */}
               <line x1="15" y1="85" x2="85" y2="85" stroke="currentColor" strokeWidth="1.2" />
@@ -1061,6 +1061,7 @@ export default function Home() {
               <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes spoolFlow { 0% { stroke-dashoffset: 20; } 100% { stroke-dashoffset: 0; } }
                 .spool-flow { stroke-dasharray: 4 6; animation: spoolFlow 1.2s linear infinite; }
+                @media (prefers-reduced-motion: reduce) { .spool-flow { animation: none; } }
               ` }} />
               {/* 플랜지가 달린 사전제작 스풀 */}
               <path d="M20,40 L55,40 Q65,40 65,50 L65,78" stroke="currentColor" strokeWidth="1.5" />
@@ -1070,8 +1071,8 @@ export default function Home() {
               <line x1="59" y1="72" x2="71" y2="72" stroke="currentColor" strokeWidth="2" transform="rotate(90 65 78)" />
               <line x1="59" y1="78" x2="71" y2="78" stroke="currentColor" strokeWidth="2" />
               {/* 용접 비드 노드 */}
-              <circle cx="55" cy="40" r="2" fill="#f97316" className="animate-pulse" />
-              <circle cx="65" cy="50" r="2" fill="#f97316" className="animate-pulse" />
+              <circle cx="55" cy="40" r="2" fill="#f97316" className="animate-pulse motion-reduce:animate-none" />
+              <circle cx="65" cy="50" r="2" fill="#f97316" className="animate-pulse motion-reduce:animate-none" />
               <text x="20" y="30" fill="currentColor" fontSize="2.8" className="font-mono">ISO SPOOL · RT PASS</text>
             </svg>
           ),
@@ -1088,7 +1089,7 @@ export default function Home() {
               <line x1="22" y1="71" x2="78" y2="71" stroke="currentColor" strokeWidth="0.6" />
               {/* 탑재 장비: 펌프/탱크/계장 */}
               <circle cx="36" cy="46" r="7" stroke="#f59e0b" strokeWidth="1.2" />
-              <line x1="36" y1="46" x2="36" y2="40" stroke="#f59e0b" strokeWidth="1" className="animate-[spin_4s_linear_infinite]" style={{ transformOrigin: '36px 46px' }} />
+              <line x1="36" y1="46" x2="36" y2="40" stroke="#f59e0b" strokeWidth="1" className="animate-[spin_4s_linear_infinite] motion-reduce:animate-none" style={{ transformOrigin: '36px 46px' }} />
               <rect x="52" y="38" width="14" height="17" rx="1" stroke="currentColor" strokeWidth="1" />
               <path d="M43,50 L52,50" stroke="#06b6d4" strokeWidth="1" strokeDasharray="2 1.5" />
               <text x="24" y="34" fill="#f59e0b" fontSize="2.8" className="font-mono font-bold">FAT TESTED</text>
@@ -1140,7 +1141,7 @@ export default function Home() {
             <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-amber-500 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
               {/* 3차원 좌표계 및 레이저 스캔 */}
               <path d="M20,70 L50,45 L80,70 M50,45 L50,15" stroke="currentColor" strokeWidth="1" />
-              <circle cx="50" cy="45" r="4.5" fill="#08152D" stroke="#f59e0b" strokeWidth="1.5" className="animate-ping" />
+              <circle cx="50" cy="45" r="4.5" fill="#08152D" stroke="#f59e0b" strokeWidth="1.5" className="animate-ping motion-reduce:animate-none" />
               <circle cx="50" cy="45" r="2" fill="#f59e0b" />
               <line x1="50" y1="45" x2="25" y2="65" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2 1" />
               <line x1="50" y1="45" x2="75" y2="65" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2 1" />
@@ -1160,7 +1161,7 @@ export default function Home() {
               <circle cx="70" cy="30" r="5" fill="#0A162B" stroke="currentColor" strokeWidth="1.5" />
               <circle cx="50" cy="70" r="5" fill="#0A162B" stroke="currentColor" strokeWidth="1.5" />
               <line x1="35" y1="30" x2="65" y2="30" stroke="currentColor" strokeWidth="1" />
-              <line x1="30" y1="35" x2="45" y2="65" stroke="#E0701A" strokeWidth="1.5" className="animate-pulse" />
+              <line x1="30" y1="35" x2="45" y2="65" stroke="#E0701A" strokeWidth="1.5" className="animate-pulse motion-reduce:animate-none" />
               <line x1="70" y1="35" x2="55" y2="65" stroke="currentColor" strokeWidth="1" />
               <text x="25" y="15" fill="currentColor" fontSize="3" className="font-mono">PM COST RELATION MATRIX</text>
             </svg>
@@ -1379,7 +1380,7 @@ export default function Home() {
     const reviewItems = tradeReviewItems[key] || ['규격 · 압력 검토 여부', '표준 품셈 적용 여부', '예비 · 안전 항목'];
 
     return (
-      <div key={key} className="flex flex-col gap-8 max-w-4xl mx-auto py-4 animate-in fade-in duration-300">
+      <div key={key} className="flex flex-col gap-8 max-w-4xl mx-auto py-4 animate-in fade-in duration-300 motion-reduce:animate-none">
 
         {/* 주요 견적공종 — 라벨 + 공종별 핵심 키워드를 한 줄로 옆에 배치 (박스 없이 헤드라인) */}
         {keywords.length > 0 && (
@@ -1548,7 +1549,7 @@ export default function Home() {
                   <div className="flex-1 flex flex-col gap-1 leading-tight min-w-0 pt-0.5">
                     <span className="text-[16px] font-black text-[#0F1E35] tracking-tight flex items-center justify-between gap-1.5">
                       {label}
-                      <span className="text-[11px] text-[#9AA3AF] font-bold uppercase tracking-wider shrink-0 flex items-center gap-0.5">
+                      <span className="text-[11px] text-[#5B6573] font-bold uppercase tracking-wider shrink-0 flex items-center gap-0.5">
                         이동 <ArrowRight className="w-3 h-3" />
                       </span>
                     </span>
@@ -1566,7 +1567,7 @@ export default function Home() {
               onClick={() => setActiveTabAtTop('request')}
               className="bg-[#E0701A] min-h-12 rounded-lg text-white text-[18px] font-black active:scale-[0.98] transition-transform"
             >
-              무료 견적 의뢰하기
+              {REQUEST_CTA_LABEL}
             </button>
             <button
               onClick={() => setActiveTabAtTop('process')}
@@ -1581,7 +1582,7 @@ export default function Home() {
               className="flex flex-col items-center gap-0.5 pt-2 text-[#5B6573] active:text-[#0F1E35] transition-colors select-none"
             >
               <span className="text-[12.5px] font-semibold">현재 프로젝트 분석</span>
-              <ChevronDown className="w-5 h-5 animate-bounce" />
+              <ChevronDown className="w-5 h-5 animate-bounce motion-reduce:animate-none" />
             </button>
           </div>
         </section>
@@ -1685,7 +1686,7 @@ export default function Home() {
             className="flex flex-col items-center gap-0.5 text-[#5B6573] active:text-[#0F1E35] transition-colors select-none"
           >
             <span className="text-[12.5px] font-semibold">실시간 분석 현황</span>
-            <ChevronDown className="w-5 h-5 animate-bounce" />
+            <ChevronDown className="w-5 h-5 animate-bounce motion-reduce:animate-none" />
           </button>
         </section>
 
@@ -1748,7 +1749,7 @@ export default function Home() {
               </div>
             </div>
 
-          {/* 최종 CTA — AI Native 검증 절차 / 무료 견적 의뢰 */}
+          {/* 최종 CTA — AI Native 검증 절차 / 무료 견적 검토 신청 */}
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setActiveTabAtTop('sop')}
@@ -1761,7 +1762,7 @@ export default function Home() {
               onClick={() => setActiveTabAtTop('request')}
               className="min-h-12 rounded-lg bg-[#E0701A] text-white text-[17px] font-black active:scale-[0.98] transition-transform"
             >
-              무료 견적 의뢰
+              {REQUEST_CTA_LABEL}
             </button>
           </div>
         </section>
@@ -2030,7 +2031,7 @@ export default function Home() {
                     className="cta-border-trace cta-border-trace--lead inline-flex items-center justify-center gap-2 text-[#155EEF] px-6 py-3.5 rounded-custom text-[15px] font-black tracking-wide shadow-sm active:scale-95 cursor-pointer"
                   >
                     <FileCheck className="w-4.5 h-4.5 shrink-0" />
-                    무료 출장 견적 신청
+                    {REQUEST_CTA_LABEL}
                   </button>
                   <button
                     onClick={() => setActiveTabAtTop('sop')}
@@ -2089,7 +2090,7 @@ export default function Home() {
                   aria-label="AI Native 검증 표준 작업 절차 보기"
                   className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border border-[#E2E8F0] rounded-full shadow-custom-md px-3.5 py-1.5 flex items-center gap-2.5 z-20 whitespace-nowrap cursor-pointer hover:scale-105 hover:shadow-lg hover:border-[#155EEF]/40 transition-all duration-200 active:scale-100"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none shrink-0" />
                   <span className="text-[12.5px] font-extrabold text-[#0F1E35]">AI Native 검증</span>
                 </button>
               </div>
@@ -2105,7 +2106,7 @@ export default function Home() {
                     setSelectedBudget('');
                     setActiveTabAtTop('review');
                   }}
-                  className="flex flex-col items-start text-left gap-1 pl-4.5 pb-2.5 relative group transition-all duration-200 cursor-pointer focus:outline-none hover:-translate-y-0.5"
+                  className="flex flex-col items-start text-left gap-1 pl-4.5 pb-2.5 relative group transition-all duration-200 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-steel hover:-translate-y-0.5"
                 >
                   <span className="text-[14.5px] font-black text-navy group-hover:text-steel transition-colors duration-150 whitespace-nowrap">
                     {cat.title}
@@ -2135,13 +2136,11 @@ export default function Home() {
               0% { left: -50%; }
               100% { left: 100%; }
             }
+            .flow-orange-bar { animation: flowOrange 6s linear infinite; }
+            @media (prefers-reduced-motion: reduce) { .flow-orange-bar { animation: none; } }
           `}</style>
-          <div 
-            className="absolute top-0 bottom-0 w-[50%] bg-gradient-to-r from-transparent via-[#FF6A00] to-transparent"
-            style={{
-              animation: 'flowOrange 6s linear infinite',
-            }}
-          />
+          {/* 인라인 style 의 animation 은 어떤 클래스로도 못 끄므로 클래스로 옮겨 reduced-motion 가드를 건다 */}
+          <div className="flow-orange-bar absolute top-0 bottom-0 w-[50%] bg-gradient-to-r from-transparent via-[#FF6A00] to-transparent" />
         </div>
         <div className="w-full max-w-[1400px] mx-auto px-10 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2">
           {HOME_STATS.map(({ icon: Icon, label, value }) => (

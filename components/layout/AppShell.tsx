@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useShell, ActiveTab } from '@/lib/context/ShellContext';
+import { useShell } from '@/lib/context/ShellContext';
 import { TopHeader } from './TopHeader';
 import { LeftSidebar } from './LeftSidebar';
 import { RightSidebar } from './RightSidebar';
@@ -21,6 +21,14 @@ import {
 import { MyRequestsView } from '../MyRequestsView';
 import { CustomerLoginModal } from '../forms/CustomerLoginModal';
 import { MyRequestsModal } from '../MyRequestsModal';
+import { HEADER_TOUCH_CLASS, ICON_TOUCH_CLASS, mobileHeaderClass } from '@/lib/ui/mobileShellTheme';
+import {
+  buildShellUrl,
+  parseShellUrl,
+  shouldPushShellUrl,
+  shouldRearmExitGuard,
+  type ShellHomeSubView,
+} from '@/lib/shell/urlState';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -39,11 +47,7 @@ interface MobileAdminMenuItem {
 
 type MobileActiveTab = 'home' | 'service' | 'request' | 'history' | 'account' | 'decision' | 'admin';
 // activeTab === 'home' 위에 겹쳐 뜨는 모바일 전용 화면(마이페이지·의사결정). 나머지 하단 탭은 activeTab에서 파생된다.
-type HomeSubView = 'home' | 'account' | 'decision';
-type AdminView = MobileAdminMenuItem['value'];
-
-const activeTabValues: ActiveTab[] = ['home', 'business', 'performance', 'request', 'sop', 'review', 'process'];
-const adminViewValues: AdminView[] = ['dashboard', 'estimates', 'visits', 'customers', 'performance', 'notifications'];
+type HomeSubView = ShellHomeSubView;
 
 const mobileMenuItems: MobileMenuItem[] = [
   { type: 'menu', label: '일반 배관공사', value: '배관공사' },
@@ -83,8 +87,6 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
     setSelectedMenu,
     selectedBudget,
     setSelectedBudget,
-    landingTradeName,
-    landingTradeChipClass,
     mobileMenuOpen,
     setMobileMenuOpen,
     showDecisionPanel,
@@ -110,8 +112,8 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const isSyncingFromHistoryRef = useRef(false);
   const lastShellUrlRef = useRef('');
-  // 최상단 공종 칩 가로 스크롤 컨테이너 — 랜딩 쇼케이스 순회에 맞춰 활성 칩으로 자동 이동
-  const quickMenuScrollRef = useRef<HTMLDivElement>(null);
+  // 종료 팝업 '닫기' 후 창이 살아 있는지 확인하는 타이머 — 언마운트 시 회수한다.
+  const exitCloseTimerRef = useRef<number | null>(null);
 
   // 홈을 벗어나면 겹침 화면(마이페이지·의사결정)은 해제한다 — 다시 홈으로 돌아왔을 때 홈이 보이게.
   // (이전 값과 비교하는 렌더 중 상태 조정 패턴. 홈→홈 이동인 겹침 화면 진입은 건드리지 않는다.)
@@ -149,50 +151,17 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
 
   useEffect(() => {
     const applyUrlState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const mode = params.get('mode');
-      const tab = params.get('tab');
-      const menu = params.get('menu') || '';
-      const budget = params.get('budget') || '';
-      const adminViewParam = params.get('view') as AdminView | null;
+      // 주소 → 화면상태 해석은 lib/shell/urlState 가 맡는다(생성부와 같은 규칙으로 대칭 유지).
+      const next = parseShellUrl(window.location.search);
 
       isSyncingFromHistoryRef.current = true;
-      setSelectedMenu('');
-      setSelectedBudget('');
-
-      if (mode === 'admin') {
-        setIsUserMode(false);
-        setActiveTab('home');
-        setHomeSubView('home');
-        setAdminView(adminViewParam && adminViewValues.includes(adminViewParam) ? adminViewParam : 'dashboard');
-        return;
-      }
-
-      setIsUserMode(true);
-
-      if (tab === 'decision') {
-        setActiveTab('home');
-        setHomeSubView('decision');
-        return;
-      }
-
-      if (tab === 'account') {
-        setActiveTab('home');
-        setHomeSubView('account');
-        return;
-      }
-
-      if (tab && activeTabValues.includes(tab as ActiveTab) && tab !== 'home') {
-        // 하단 탭은 activeTab에서 파생되므로 겹침 화면만 되돌린다.
-        setActiveTab(tab as ActiveTab);
-        setHomeSubView('home');
-        return;
-      }
-
-      setActiveTab('home');
-      setHomeSubView('home');
-      setSelectedMenu(menu);
-      setSelectedBudget(menu ? '' : budget);
+      setIsUserMode(next.isUserMode);
+      // 관리자 화면은 관리자 주소에서만 되돌린다 — 고객 주소로 이동했다고 관리자 위치를 초기화하지 않는다.
+      if (!next.isUserMode) setAdminView(next.adminView);
+      setActiveTab(next.activeTab);
+      setHomeSubView(next.homeSubView);
+      setSelectedMenu(next.selectedMenu);
+      setSelectedBudget(next.selectedBudget);
     };
 
     applyUrlState();
@@ -220,18 +189,38 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
     lastShellUrlRef.current = url;
   }, [isMobileLayout]);
 
-  // "계속 사용" — 가드를 다시 쌓아 원상 복귀 / "닫기" — 가드 소진 상태 유지 + window.close 베스트에포트
-  // (close가 차단되는 브라우저에선 다음 뒤로가기에서 OS가 앱을 종료한다 — 스택 바닥이므로)
+  // "계속 사용" — 가드를 다시 쌓아 원상 복귀 / "닫기" — window.close 베스트에포트
   const handleExitContinue = () => {
     const url = `${window.location.pathname}${window.location.search}`;
     window.history.pushState({ zerosShell: true }, '', url);
     lastShellUrlRef.current = url;
     setShowExitConfirm(false);
   };
+
+  // close()는 스크립트가 연 창이 아니면 브라우저가 막는다. 막히면 팝업만 사라지고 가드 한 층이
+  // 소진된 채 남아, 다음 뒤로가기에서 화면과 주소가 어긋난다 — 창이 살아 있으면 가드를 다시 쌓는다.
   const handleExitClose = () => {
     setShowExitConfirm(false);
     window.close();
+    if (exitCloseTimerRef.current !== null) window.clearTimeout(exitCloseTimerRef.current);
+    exitCloseTimerRef.current = window.setTimeout(() => {
+      exitCloseTimerRef.current = null;
+      const state = window.history.state as { zerosExitGuard?: boolean } | null;
+      const rearm = shouldRearmExitGuard({
+        windowClosed: window.closed,
+        documentHidden: document.hidden,
+        atGuardEntry: state?.zerosExitGuard === true,
+      });
+      if (!rearm) return;
+      const url = `${window.location.pathname}${window.location.search}`;
+      window.history.pushState({ zerosShell: true }, '', url);
+      lastShellUrlRef.current = url;
+    }, 300);
   };
+
+  useEffect(() => () => {
+    if (exitCloseTimerRef.current !== null) window.clearTimeout(exitCloseTimerRef.current);
+  }, []);
 
   useEffect(() => {
     if (!layoutReady) return;
@@ -244,32 +233,18 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
       return;
     }
 
-    const params = new URLSearchParams();
-    if (window.location.search.includes('mobile=true')) {
-      params.set('mobile', 'true');
-    }
+    const nextUrl = buildShellUrl(window.location.pathname, {
+      isUserMode,
+      adminView,
+      isMobileLayout,
+      homeSubView: mobileActiveTab === 'decision' || mobileActiveTab === 'account' ? mobileActiveTab : 'home',
+      activeTab,
+      selectedMenu,
+      selectedBudget,
+      keepMobileFlag: window.location.search.includes('mobile=true'),
+    });
 
-    if (!isUserMode) {
-      params.set('mode', 'admin');
-      if (adminView !== 'dashboard') {
-        params.set('view', adminView);
-      }
-    } else if (isMobileLayout && mobileActiveTab === 'decision') {
-      params.set('tab', 'decision');
-    } else if (isMobileLayout && mobileActiveTab === 'account') {
-      params.set('tab', 'account');
-    } else if (activeTab !== 'home') {
-      params.set('tab', activeTab);
-    } else if (selectedMenu) {
-      params.set('menu', selectedMenu);
-    } else if (selectedBudget) {
-      params.set('budget', selectedBudget);
-    }
-
-    const query = params.toString();
-    const nextUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
-
-    if (nextUrl !== currentUrl && nextUrl !== lastShellUrlRef.current) {
+    if (shouldPushShellUrl(nextUrl, currentUrl, lastShellUrlRef.current)) {
       window.history.pushState({ zerosShell: true }, '', nextUrl);
       lastShellUrlRef.current = nextUrl;
     } else {
@@ -285,21 +260,6 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
     selectedBudget,
     selectedMenu,
   ]);
-
-  // 랜딩(홈·미선택) 상태 여부 — 이때만 쇼케이스 순회와 칩 하이라이트를 연동
-  const isLandingShowcase =
-    isUserMode && mobileActiveTab === 'home' && activeTab === 'home' && !selectedMenu && !selectedBudget;
-
-  // 쇼케이스가 순회하는 공종에 맞춰 최상단 칩바를 가로로 부드럽게 이동(활성 칩 중앙 정렬)
-  useEffect(() => {
-    if (!isLandingShowcase || !landingTradeName) return;
-    const container = quickMenuScrollRef.current;
-    if (!container) return;
-    const activeEl = container.querySelector('[data-landing-active="true"]') as HTMLElement | null;
-    if (!activeEl) return;
-    const target = activeEl.offsetLeft - (container.clientWidth - activeEl.clientWidth) / 2;
-    container.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
-  }, [landingTradeName, isLandingShowcase]);
 
   // 견적 검토(review)·사업 소개(business)·실적(performance) 탭 진입 시 우측 결과 패널을 접어 작업 공간을 넓게 —
   // 숨긴 상태로 들어가고, 필요 시 우측 가장자리 '검토' 엣지 탭으로 펼친다.
@@ -477,7 +437,7 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
       isUserMode && mobileActiveTab === 'home' && activeTab === 'home' && !selectedMenu && !selectedBudget;
 
     return (
-      <div className={`overflow-hidden flex flex-col text-text font-sans pb-safe ${isMobileLanding ? 'h-[100svh] bg-[#041B33]' : 'h-[100dvh] bg-bg-subtle'}`}>
+      <div className={`overflow-hidden flex flex-col text-text font-sans pb-safe ${isMobileLanding ? 'h-[100svh] bg-bg' : 'h-[100dvh] bg-bg-subtle'}`}>
 
         {/* 뒤로가기 앱 닫기 확인 팝업 — 진입 스택 바닥(종료 가드)에 닿으면 표시(2026-07-12 지시) */}
         {showExitConfirm && (
@@ -512,32 +472,39 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
         )}
 
         {/* 모바일 상단 네이티브 로고 헤더 */}
-        <div className={`${isMobileLanding ? 'bg-[#061F3C] border-white/10 px-5 py-4' : 'bg-navy border-white/5 px-5 py-4.5'} shrink-0 text-bg flex items-center justify-between select-none shadow-md border-b relative z-40`}>
+        <div className={`${mobileHeaderClass(isMobileLanding)} shrink-0 flex items-center justify-between select-none shadow-md border-b relative z-40`}>
           <button
             onClick={() => handleMobileTabChange('home')}
             style={{ touchAction: 'manipulation' }}
-            className="flex items-center gap-2.5 active:scale-98 transition-transform cursor-pointer text-left"
+            className={`${HEADER_TOUCH_CLASS} flex items-center gap-2.5 active:scale-98 transition-transform cursor-pointer text-left`}
           >
-            <div 
-              className="w-8 h-8 rounded-custom flex items-center justify-center shadow-md"
-              style={{
-                background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
-                backgroundSize: '300% 300%',
-                animation: 'logoGlowApp 9s ease-in-out infinite',
-              }}
-            >
-              <style>{`
-                @keyframes logoGlowApp {
-                  0% { background-position: 0% 50%; }
-                  50% { background-position: 100% 50%; }
-                  100% { background-position: 0% 50%; }
-                }
-              `}</style>
-              <Building2 className="w-4 h-4 text-[#FF6A00] drop-shadow-[0_0_2px_rgba(255,106,0,0.5)]" />
-            </div>
+            {isMobileLanding ? (
+              /* 홈 랜딩은 화이트 셸 — 네온 그라데이션·오렌지 글로우는 "AI 도구 느낌"이라 스틸블루 단색으로 둔다(§10-A 공통 1항) */
+              <div className="w-8 h-8 rounded-custom flex items-center justify-center bg-steel">
+                <Building2 className="w-4 h-4 text-white" />
+              </div>
+            ) : (
+              <div
+                className="w-8 h-8 rounded-custom flex items-center justify-center shadow-md"
+                style={{
+                  background: 'linear-gradient(135deg, #0088FF, #00D2FF, #0055FF, #00D2FF)',
+                  backgroundSize: '300% 300%',
+                  animation: 'logoGlowApp 9s ease-in-out infinite',
+                }}
+              >
+                <style>{`
+                  @keyframes logoGlowApp {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                  }
+                `}</style>
+                <Building2 className="w-4 h-4 text-[#FF6A00] drop-shadow-[0_0_2px_rgba(255,106,0,0.5)]" />
+              </div>
+            )}
             {/* 로고박스 높이에 맞춰 워드마크 수직 중앙 정렬 + 대문자 광학오차 1px 보정 */}
             <div className="h-8 flex items-center">
-              <span className="relative top-[1px] font-black text-[19px] text-bg leading-none uppercase">ZEROS</span>
+              <span className={`relative top-[1px] font-black text-[19px] leading-none uppercase ${isMobileLanding ? 'text-navy' : 'text-bg'}`}>ZEROS</span>
             </div>
           </button>
           <div className="flex items-center gap-2.5">
@@ -550,7 +517,13 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
                   setMobileMenuOpen(false);
                   setShowLogin(true);
                 }}
-                className="bg-accent hover:bg-[#c95f12] text-white px-3 py-1.5 rounded-custom text-[11.5px] font-black tracking-tight transition-all active:scale-95 shadow-sm cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
+                /* 랜딩에서 오렌지 솔리드는 히어로 주 CTA 한 곳뿐이다(§10-A 공통 1항) — 여기선 스틸블루 아웃라인 */
+                className={`${HEADER_TOUCH_CLASS} inline-flex items-center px-3 rounded-custom text-[11.5px] font-black tracking-tight transition-all active:scale-95 shadow-sm cursor-pointer ${
+                  isMobileLanding
+                    ? 'bg-bg border border-steel text-steel'
+                    : 'bg-accent hover:bg-[#c95f12] text-white'
+                }`}
               >
                 간편 로그인/등록
               </button>
@@ -558,7 +531,8 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
             {isMobileLanding ? (
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="w-9 h-9 inline-flex items-center justify-center text-white cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
+                className={`${ICON_TOUCH_CLASS} inline-flex items-center justify-center text-steel cursor-pointer`}
                 aria-label="메뉴 열기"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -575,8 +549,9 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
                   setSelectedBudget('');
                   scrollMainPanelToTop();
                 }}
+                style={{ touchAction: 'manipulation' }}
                 aria-label="AI Native 검증 절차 보기"
-                className="bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[11.5px] px-2 py-0.5 rounded-full font-black active:scale-95 transition-transform cursor-pointer"
+                className={`${HEADER_TOUCH_CLASS} inline-flex items-center bg-[#E0701A]/10 border border-[#E0701A]/30 text-accent text-[11.5px] px-2 rounded-full font-black active:scale-95 transition-transform cursor-pointer`}
               >
                 AI NATIVE
               </button>
@@ -587,29 +562,21 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
         {/* 모바일 퀵메뉴 칩 영역 (홈 화면일 때만 노출) */}
         {mobileActiveTab === 'home' && isUserMode && !isMobileLanding && (
           <div className="sticky top-0 z-30 bg-bg border-b border-border shadow-sm flex flex-col shrink-0">
-            <div ref={quickMenuScrollRef} className="flex items-center gap-2 overflow-x-auto whitespace-nowrap px-4 py-2.5 scrollbar-none no-scrollbar">
+            <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap px-4 py-2.5 scrollbar-none no-scrollbar">
               {mobileMenuItems.map((item) => {
                 // 사용자가 직접 선택한 칩
-                const isSelected =
+                const isActive =
                   item.type === 'menu'
                     ? selectedMenu === item.value && !selectedBudget && activeTab === 'home'
                     : selectedBudget === item.value && !selectedMenu && activeTab === 'home';
-                // 랜딩 쇼케이스가 현재 순회 중인 공종(미선택 상태에서만 연동)
-                const isLandingActive =
-                  isLandingShowcase && item.type === 'menu' && item.value === landingTradeName;
-                const isActive = isSelected || isLandingActive;
-                // 활성 색: 쇼케이스 자동순회 칩은 공종 시그니처 색(쇼케이스 텍스트 색과 일치),
-                // 사용자가 직접 선택한 칩은 기존 steel — "자동 쇼케이스 vs 내 선택" 의미 구분
-                const activeColor = isLandingActive ? landingTradeChipClass : 'bg-steel border-steel text-bg';
 
                 return (
                   <button
                     key={item.value}
-                    data-landing-active={isLandingActive ? 'true' : undefined}
                     onClick={() => handleMobileQuickMenuClick(item)}
                     className={`px-3 py-1.5 rounded-custom text-[12px] font-bold border transition-all duration-150 shrink-0 select-none ${
                       isActive
-                        ? `${activeColor} shadow-sm scale-102 font-extrabold`
+                        ? 'bg-steel border-steel text-bg shadow-sm scale-102 font-extrabold'
                         : 'bg-bg-subtle border-border/80 text-gray hover:text-navy'
                     }`}
                   >
@@ -621,17 +588,19 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
           </div>
         )}
 
+        {/* 드로어 스크림은 앱의 기존 모달 값(bg-navy/60)과 같은 값을 쓴다 — 새 매직넘버를 만들지 않는다 */}
         {mobileMenuOpen && isMobileLanding && (
-          <div className="fixed inset-0 z-50 bg-[#031225]/70 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
+          <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
             <div
-              className="ml-auto h-full w-[82%] max-w-[320px] bg-[#071F3C] border-l border-white/10 p-5 flex flex-col gap-5"
+              className="ml-auto h-full w-[82%] max-w-[320px] bg-bg border-l border-[#E4EAF2] p-5 flex flex-col gap-5"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="flex items-center justify-between">
-                <span className="text-white text-[15px] font-black">ZEROS 메뉴</span>
+                <span className="text-navy text-[15px] font-black">ZEROS 메뉴</span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-9 h-9 inline-flex items-center justify-center text-white/80"
+                  style={{ touchAction: 'manipulation' }}
+                  className={`${ICON_TOUCH_CLASS} inline-flex items-center justify-center text-steel`}
                   aria-label="메뉴 닫기"
                 >
                   <X className="w-5 h-5" />
@@ -640,8 +609,8 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
 
               {/* 휴대폰 인증 로그인 / 본인 접수현황 */}
               {customerAuth ? (
-                <div className="rounded-custom bg-white/[0.07] border border-white/10 p-3 flex flex-col gap-2.5">
-                  <span className="text-[12px] font-bold text-white/80">{customerAuth.name || '고객'}님 · 인증 완료</span>
+                <div className="rounded-custom bg-bg border border-[#E4EAF2] p-3 flex flex-col gap-2.5">
+                  <span className="text-[12px] font-bold text-gray">{customerAuth.name || '고객'}님 · 인증 완료</span>
                   <button
                     onClick={() => { setMobileMenuOpen(false); setShowMyRequests(true); }}
                     className="w-full bg-accent text-white rounded-custom px-3 py-2.5 text-[13px] font-black text-left"
@@ -650,7 +619,7 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
                   </button>
                   <button
                     onClick={() => { logoutCustomer(); }}
-                    className="text-[12px] font-bold text-white/55 self-start"
+                    className="text-[12px] font-bold text-gray self-start"
                   >
                     로그아웃
                   </button>
@@ -675,21 +644,21 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
                   <button
                     key={item.label}
                     onClick={() => handleMobileTabChange(item.tab)}
-                    className="text-left rounded-custom bg-white/[0.07] border border-white/10 px-4 py-3 text-[13px] font-bold text-white"
+                    className="text-left rounded-custom bg-bg border border-[#E4EAF2] px-4 py-3 text-[13px] font-bold text-navy"
                   >
                     {item.label}
                   </button>
                 ))}
               </div>
 
-              <div className="border-t border-white/10 pt-4 flex flex-col gap-2">
-                <span className="text-[12px] font-bold text-white/60">공종 바로가기</span>
+              <div className="border-t border-[#E4EAF2] pt-4 flex flex-col gap-2">
+                <span className="text-[12px] font-bold text-gray">공종 바로가기</span>
                 <div className="grid grid-cols-2 gap-2">
                   {mobileMenuItems.slice(0, 8).map((item) => (
                     <button
                       key={item.value}
                       onClick={() => handleMobileQuickMenuClick(item)}
-                      className="rounded-custom bg-white/[0.07] border border-white/10 px-3 py-2 text-[12px] font-bold text-white/90 text-left"
+                      className="rounded-custom bg-bg-subtle border border-[#E4EAF2] px-3 py-2 text-[12px] font-bold text-navy text-left"
                     >
                       {item.label}
                     </button>
@@ -736,7 +705,7 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
         <div
           data-main-scroll="true"
           /* 사업소개(business)만 pb-4 — 하단 탭바는 fixed가 아닌 flex 형제라 클리어런스 불필요, 한 화면 수납 지시(2026-07-28 O-38). 다른 탭은 pb-28 유지. */
-          className={`flex-1 overflow-y-auto min-w-0 relative ${isMobileLanding ? 'bg-[#041B33] p-0 snap-y snap-mandatory' : `bg-bg ${activeTab === 'business' ? 'px-4 py-3' : 'p-4 pb-28'}`}`}
+          className={`flex-1 overflow-y-auto min-w-0 relative ${isMobileLanding ? 'bg-bg p-0 snap-y snap-mandatory' : `bg-bg ${activeTab === 'business' ? 'px-4 py-3' : 'p-4 pb-28'}`}`}
         >
           {mobileActiveTab === 'account' ? (
             <MyRequestsView />
@@ -750,11 +719,11 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
         </div>
 
         {/* 모바일 고유의 네이티브형 하단 네비게이션 바 (iOS/Android 스타일) */}
-        <div className={`${isMobileLanding ? 'bg-[#061F3C]/96 border-white/10 text-white' : 'bg-bg/95 border-border'} shrink-0 backdrop-blur-md border-t shadow-custom-lg grid grid-cols-5 items-center justify-around py-2.5 pb-safe z-40 text-center select-none`}>
+        <div className={`${isMobileLanding ? 'bg-bg/95 border-[#E4EAF2] text-navy' : 'bg-bg/95 border-border'} shrink-0 backdrop-blur-md border-t shadow-custom-lg grid grid-cols-5 items-center justify-around py-2.5 pb-safe z-40 text-center select-none`}>
           <button
             onClick={() => handleMobileTabChange('home')}
             className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'home' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
+              mobileActiveTab === 'home' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
             }`}
           >
             <Home className="w-5.5 h-5.5" />
@@ -764,7 +733,7 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
           <button
             onClick={() => handleMobileTabChange('service')}
             className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'service' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
+              mobileActiveTab === 'service' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
             }`}
           >
             <BookOpen className="w-5.5 h-5.5" />
@@ -774,7 +743,7 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
           <button
             onClick={() => handleMobileTabChange('request')}
             className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'request' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
+              mobileActiveTab === 'request' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
             }`}
           >
             <FileText className="w-5.5 h-5.5" />
@@ -784,7 +753,7 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
           <button
             onClick={() => handleMobileTabChange('history')}
             className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'history' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
+              mobileActiveTab === 'history' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
             }`}
           >
             <TrendingUp className="w-5.5 h-5.5" />
@@ -794,7 +763,7 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
           <button
             onClick={() => handleMobileTabChange('account')}
             className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'account' ? 'text-accent font-black scale-105' : isMobileLanding ? 'text-white/60' : 'text-gray hover:text-navy'
+              mobileActiveTab === 'account' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
             }`}
           >
             <User className="w-5.5 h-5.5" />

@@ -14,8 +14,12 @@ export const meta = {
 }
 
 const ROOT = 'C:\\dev\\zerospipe.co.kr'
-const PLAN = args && args.plan === 'B' ? 'B' : 'A'
-const WAVE = (args && Number(args.wave)) || 1
+// args 는 객체로 오는 것이 정상이나 문자열(JSON)로 전달되는 경로가 있다 —
+// 2026-08-07 실측: 문자열로 와서 args.plan 이 undefined 가 되고 PLAN B 지시가 조용히 A 로 떨어졌다.
+// 기본값으로 흘러가면 티가 안 나므로 파싱을 방어하고, 해석 결과를 log 로 즉시 노출한다.
+const RAW = typeof args === 'string' ? (() => { try { return JSON.parse(args) } catch { return {} } })() : (args || {})
+const PLAN = RAW.plan === 'B' ? 'B' : 'A'
+const WAVE = String(RAW.wave || '1')
 
 const COMMON = `
 너는 ZEROS(zerospipe.co.kr) 프로덕션 앱을 수정하는 시니어 엔지니어다. Next.js 16 / React 19 / TypeScript.
@@ -445,9 +449,28 @@ const pick = (list) =>
     prompt: COMMON + '\n' + a.prompt + (PLAN === 'B' && a.planB_extra ? a.planB_extra : ''),
   }))
 
-const WAVES = { 1: pick(WAVE1), 2: pick(WAVE2), 3: pick(WAVE3) }
+// 파도 1B — 파도 1 이 PLAN A 로 잘못 돌았을 때의 보강분(PLAN B 전용 항목만).
+// 파일이 서로 달라 동시 실행 안전: AppShell+layout / app/page.tsx / PerformanceInsights+trust.ts
+const WAVE1B = [
+  WAVE1.find((a) => a.key === 'shell-color'),
+  {
+    key: 'page-b5',
+    prompt: `【너의 파일】 app/page.tsx · lib/constants/ (CTA 상수 신설) · test/ui/pageSource.test.ts
+⚠ 이 파일은 방금 다른 기수가 C4·C5·C6 을 수정했다. 착수 전 \`git diff\` 로 최신 상태를 읽어라.
+⚠ §10-A O-37(홈 1366×768 한 화면 수납) 세로 예산 — **여백·폰트를 건드리지 마라.**
+${WAVE1.find((a) => a.key === 'page').planB_extra}`,
+  },
+  {
+    key: 'metrics-b',
+    prompt: `【너의 파일】 lib/constants/trust.ts · components/PerformanceInsights.tsx · test/
+⚠ 방금 다른 기수가 이 두 파일에 B4(집계 정의 통일)를 반영했다. 착수 전 \`git diff\` 로 최신 상태를 읽고 그 위에 얹어라.
+${WAVE1.find((a) => a.key === 'metrics').planB_extra}`,
+  },
+].filter(Boolean)
 
-if (WAVE === 4) {
+const WAVES = { '1': pick(WAVE1), '1B': WAVE1B.map((a) => ({ ...a, prompt: COMMON + '\n' + a.prompt })), '2': pick(WAVE2), '3': pick(WAVE3) }
+
+if (WAVE === '4') {
   // 적대 검증 전용 파도 — 앞 파도가 전부 커밋된 뒤 돌린다.
   const LENSES = [
     {

@@ -11,6 +11,7 @@ import { buildQuoteXlsxBlob, quoteFileName, downloadBlob } from '@/lib/quote/quo
 import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { openSecureFile } from '@/lib/files/secureFile';
 import { validateFileFormat, ACCEPT_ATTR } from '@/lib/constants/uploadLimits';
+import { menuDisplayName } from '@/lib/constants/menu';
 import { TossPaymentModal } from './TossPaymentModal';
 import { PrintableScopeSheet } from './PrintableScopeSheet';
 import {
@@ -27,7 +28,8 @@ import {
   Sparkles,
   Send,
   Trash2,
-  Download
+  Download,
+  Save
 } from 'lucide-react';
 
 interface EstimateDetailModalProps {
@@ -37,6 +39,43 @@ interface EstimateDetailModalProps {
 }
 
 type AdminPaymentStatus = '결제대기' | '결제완료' | '환불';
+
+// ==========================================
+// 품목표 초안 저장 (순수 함수 — 회귀 테스트: test/admin/quoteDraft.test.ts)
+// ==========================================
+// 품목표의 유일한 저장 경로가 '승인·견적서 발송'이라, 발송하지 않고 모달을 닫으면
+// 편집분이 통째로 사라졌다. 저장본 스냅샷과 현재 편집분을 비교해
+// 초안 저장 버튼·닫기 확인 게이트의 근거로 삼는다.
+
+// 구분자는 입력으로 들어올 수 없는 제어문자다 — 필드 경계가 섞이면 다른 편집을 같다고 판정한다.
+const FIELD_SEP = String.fromCharCode(1);
+
+/** 비교 대상 필드만 이어 붙인 정규형 — 참조 동일성에 기대지 않는다. */
+const quoteItemKey = (it: EstimateLineItem) =>
+  [
+    it.id,
+    it.name ?? '',
+    it.spec ?? '',
+    Number(it.qty) || 0,
+    it.unit ?? '',
+    Number(it.unit_price) || 0,
+    it.note ?? '',
+  ].join(FIELD_SEP);
+
+/** 저장본 대비 미저장 편집분이 있는가. 행 추가·삭제·순서 변경도 저장 내용이 달라지므로 dirty 다. */
+export const isQuoteDirty = (saved: EstimateLineItem[], current: EstimateLineItem[]): boolean =>
+  saved.length !== current.length || saved.some((it, i) => quoteItemKey(it) !== quoteItemKey(current[i]));
+
+/**
+ * 초안 저장 패치 — 발송과 달리 상태·발송본 URL·발송 시각을 담지 않는다(고객 미노출 유지).
+ * 금액은 §14-4 불변식대로 공급가액(VAT 별도)만 저장한다. 총액을 저장하면 재저장마다 VAT 가 증식한다.
+ */
+export const quoteDraftPatch = (
+  items: EstimateLineItem[]
+): Pick<Estimate, 'line_items' | 'estimated_amount'> => ({
+  line_items: items,
+  estimated_amount: sumSubtotal(items),
+});
 
 export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   estimateId,
@@ -78,7 +117,9 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
 
   // AI 견적 초안 · 발송 상태
   const [quoteItems, setQuoteItems] = useState<EstimateLineItem[]>([]);
-  const [quoteBusy, setQuoteBusy] = useState<'' | 'preview' | 'send'>('');
+  // 마지막으로 저장된 품목표 스냅샷 — 미저장 편집분 판정의 기준값이다.
+  const [savedQuoteItems, setSavedQuoteItems] = useState<EstimateLineItem[]>([]);
+  const [quoteBusy, setQuoteBusy] = useState<'' | 'preview' | 'send' | 'draft'>('');
   const [quoteError, setQuoteError] = useState<string | null>(null);
 
   // 관리자 파일 업로드 - 실제 파일 선택 후 Storage 업로드
@@ -118,6 +159,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
           setEstimatedAmount(supplyAmountOf(est) || '');
           setConfirmedContractAmount(est.confirmed_contract_amount || '');
           setQuoteItems(est.line_items || []);
+          setSavedQuoteItems(est.line_items || []);
         }
 
         // 결제 정보 적재
@@ -232,6 +274,27 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
   const cancelEditPayment = () => {
     setEditingPaymentId(null);
     setPaymentError(null);
+  };
+
+  // 잘못 등록한 청구 행은 지울 수 있어야 한다 — '환불' 전환으로 미수금에서는 빠지지만
+  // 존재하지 않았던 청구가 이력에 남아 운영자가 매번 그 행을 해석해야 한다.
+  // 삭제는 되돌릴 수 없으므로 확인 단계를 둔다.
+  const handleDeletePayment = async (p: Payment) => {
+    if (!window.confirm(`${p.payment_type} ₩${p.amount.toLocaleString()} 청구 행을 삭제합니다. 되돌릴 수 없습니다.`)) return;
+    setPaymentSaving(true);
+    try {
+      // 견적의 결제 상태·미수금은 남은 행 집합에서 파생되므로 행만 지우면 지표가 따라온다.
+      await ZerosService.deletePayment(p.id);
+      setEditingPaymentId(null);
+      setPaymentError(null);
+      await refreshDetailData();
+      onSaved();
+    } catch (e) {
+      console.error(e);
+      setPaymentError(e instanceof Error ? e.message : '결제 정보 삭제 도중 오류가 발생했습니다.');
+    } finally {
+      setPaymentSaving(false);
+    }
   };
 
   const handleUpdatePayment = async (id: string) => {
@@ -373,12 +436,51 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     setQuoteItems(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const validateQuote = (): string | null => {
-    if (quoteItems.length === 0) return '품목이 없습니다. 먼저 "AI 초안 생성" 또는 "품목 추가"로 품목표를 구성해 주세요.';
-    if (quoteItems.some(it => !it.name.trim())) return '품명이 비어 있는 행이 있습니다.';
+  const EMPTY_QUOTE_MSG = '품목이 없습니다. 먼저 "AI 초안 생성" 또는 "품목 추가"로 품목표를 구성해 주세요.';
+
+  // 수량·단가는 그대로 공급가액으로 굳으므로 초안 저장에서도 막는다.
+  const validateQuoteNumbers = (): string | null => {
     if (quoteItems.some(it => !(it.qty > 0))) return '수량은 1 이상이어야 합니다.';
     if (quoteItems.some(it => it.unit_price < 0)) return '단가는 0 이상이어야 합니다.';
     return null;
+  };
+
+  const validateQuote = (): string | null => {
+    if (quoteItems.length === 0) return EMPTY_QUOTE_MSG;
+    if (quoteItems.some(it => !it.name.trim())) return '품명이 비어 있는 행이 있습니다.';
+    return validateQuoteNumbers();
+  };
+
+  // 초안은 작성 도중 저장이라 품명 공란을 막지 않는다.
+  const validateQuoteDraft = (): string | null =>
+    quoteItems.length === 0 ? EMPTY_QUOTE_MSG : validateQuoteNumbers();
+
+  const quoteDirty = isQuoteDirty(savedQuoteItems, quoteItems);
+
+  // 발송 없이 품목표만 저장한다 — 이 경로가 없어 발송 전 편집분이 모달을 닫는 순간 사라졌다.
+  const handleQuoteSaveDraft = async () => {
+    if (!estimate) return;
+    const err = validateQuoteDraft();
+    if (err) { setQuoteError(err); return; }
+    setQuoteBusy('draft');
+    try {
+      await ZerosService.updateEstimate(estimate.id, quoteDraftPatch(quoteItems));
+      setSavedQuoteItems(quoteItems);
+      setQuoteError(null);
+      await refreshDetailData();
+      onSaved();
+    } catch (e) {
+      console.error(e);
+      setQuoteError(e instanceof Error ? e.message : '품목표 저장 도중 오류가 발생했습니다.');
+    } finally {
+      setQuoteBusy('');
+    }
+  };
+
+  // 닫기 지점 2곳(헤더 X · 풋터 버튼)이 같은 게이트를 지난다 — 한쪽만 막으면 결함이 남는다.
+  const requestClose = () => {
+    if (quoteDirty && !confirm('품목표에 저장하지 않은 편집분이 있습니다. 저장하지 않고 닫으시겠습니까?')) return;
+    onClose();
   };
 
   const handleQuotePreview = async () => {
@@ -419,6 +521,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
       });
       setStatus('견적서 송부완료');
       setEstimatedAmount(quoteSubtotal);
+      setSavedQuoteItems(quoteItems);
       alert('견적서가 승인·발송되었습니다. 고객 마이페이지에 다운로드 버튼이 노출됩니다.');
       await refreshDetailData();
       onSaved();
@@ -440,7 +543,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     <div className="fixed inset-0 z-50 bg-navy/50 backdrop-blur-sm flex items-center justify-center p-4 md:p-6 select-none font-sans overflow-hidden">
       
       {/* 모달 윈도우 */}
-      <div className="w-full max-w-4xl h-[90vh] bg-bg border border-border rounded-custom shadow-custom-md flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-4xl h-[90vh] bg-bg border border-border rounded-custom shadow-custom-md flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 motion-reduce:animate-none">
         
         {/* 모달 헤더 */}
         <div className="bg-bg-subtle border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
@@ -452,9 +555,11 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
               의뢰 상세: {estimate.estimate_no}
             </span>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-1.5 hover:bg-border/30 rounded-custom text-gray transition-colors"
+          <button
+            type="button"
+            onClick={requestClose}
+            aria-label="상세 창 닫기"
+            className="p-1.5 hover:bg-border/30 rounded-custom text-gray transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-steel"
           >
             <X className="w-5 h-5" />
           </button>
@@ -499,7 +604,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                 <div className="flex flex-col gap-2 text-xs leading-relaxed text-gray">
                   <div>
                     <span className="font-semibold block text-[10.5px] text-gray-light">공사 종류 (용도 / 목적)</span>
-                    <span className="font-bold text-navy">{estimate.work_type} ({estimate.site_type} / {estimate.work_purpose})</span>
+                    <span className="font-bold text-navy">{menuDisplayName(estimate.work_type)} ({estimate.site_type} / {estimate.work_purpose})</span>
                   </div>
                   <div>
                     <span className="font-semibold block text-[10.5px] text-gray-light">현재 발생 문제점 및 요구 내용</span>
@@ -521,7 +626,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
               {/* 첨부 파일 관리 카드 (고객 제출 & 관리자 전용 업로드 기능 통합) */}
               <div className="bg-bg border border-border p-5 rounded-custom shadow-sm flex flex-col gap-3">
                 <h4 className="text-xs font-bold text-navy flex items-center gap-1.5 border-b border-border/80 pb-2">
-                  <FolderOpen className="w-4 h-4 text-steel animate-pulse" />
+                  <FolderOpen className="w-4 h-4 text-steel animate-pulse motion-reduce:animate-none" />
                   진단 증빙자료 및 도면 파일 관리 (고객 & 관리자)
                 </h4>
                 
@@ -550,7 +655,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                             <span className="truncate text-navy font-bold text-[11px]">{file.file_name}</span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 shrink-0 text-gray-light text-[10px] select-none">
+                        <div className="flex items-center gap-2 shrink-0 text-gray text-[10px] select-none">
                           <span className="mr-1">{new Date(file.uploaded_at).toLocaleDateString()}</span>
                           {(file.file_path || file.file_url) && (
                             <button
@@ -577,7 +682,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <div className="border border-border border-dashed p-4 text-center rounded-custom text-[11.5px] text-gray-light font-bold bg-bg-subtle/10">
+                  <div className="border border-border border-dashed p-4 text-center rounded-custom text-[11.5px] text-gray font-bold bg-bg-subtle/10">
                     *등록된 증빙자료나 도면 파일이 없습니다.
                   </div>
                 )}
@@ -646,7 +751,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as EstimateStatus)}
-                  className="w-full border border-border p-2 rounded-custom text-xs font-semibold focus:outline-none focus:border-steel bg-bg"
+                  className="w-full border border-border p-2 rounded-custom text-xs font-semibold focus-visible:outline-2 focus-visible:outline-steel focus:border-steel bg-bg"
                 >
                   <option value="접수완료">접수완료</option>
                   <option value="검토중">검토중</option>
@@ -670,7 +775,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                 <select
                   value={accuracyGrade}
                   onChange={(e) => setAccuracyGrade(e.target.value as AccuracyGrade)}
-                  className="w-full border border-border p-2 rounded-custom text-xs font-semibold focus:outline-none focus:border-steel bg-bg"
+                  className="w-full border border-border p-2 rounded-custom text-xs font-semibold focus-visible:outline-2 focus-visible:outline-steel focus:border-steel bg-bg"
                 >
                   <option value="">미지정</option>
                   <option value="A">A등급 (도면+사진 충분)</option>
@@ -688,7 +793,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                   placeholder="예: 25000000"
                   value={estimatedAmount}
                   onChange={(e) => setEstimatedAmount(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full border border-border p-2 rounded-custom text-xs font-bold focus:outline-none focus:border-steel"
+                  className="w-full border border-border p-2 rounded-custom text-xs font-bold focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                 />
               </div>
 
@@ -700,7 +805,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                   placeholder="예: 23000000"
                   value={confirmedContractAmount}
                   onChange={(e) => setConfirmedContractAmount(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full border border-border p-2 rounded-custom text-xs font-bold focus:outline-none focus:border-steel"
+                  className="w-full border border-border p-2 rounded-custom text-xs font-bold focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                 />
               </div>
 
@@ -712,7 +817,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                   placeholder="예: 셧다운 시간 일요일 하루 배정 확인 완료됨."
                   value={adminMemo}
                   onChange={(e) => setAdminMemo(e.target.value)}
-                  className="w-full border border-border p-2 rounded-custom text-xs focus:outline-none focus:border-steel leading-normal resize-none"
+                  className="w-full border border-border p-2 rounded-custom text-xs focus-visible:outline-2 focus-visible:outline-steel focus:border-steel leading-normal resize-none"
                 />
               </div>
 
@@ -748,7 +853,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
 
             {quoteItems.length === 0 ? (
               <div className="border border-border border-dashed p-4 text-center rounded-custom text-[11.5px] text-gray font-bold bg-bg-subtle/10">
-                &quot;AI 초안 생성&quot;을 누르면 {estimate.work_type} 표준 품목 구성과 예산 규모를 근거로 품목표 초안이 채워집니다. 초안은 편집 후 승인해야 발송됩니다.
+                &quot;AI 초안 생성&quot;을 누르면 {menuDisplayName(estimate.work_type)} 표준 품목 구성과 예산 규모를 근거로 품목표 초안이 채워집니다. 초안은 편집 후 승인해야 발송됩니다.
               </div>
             ) : (
               <>
@@ -774,7 +879,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                               aria-label={`품명 ${idx + 1}`}
                               value={it.name}
                               onChange={(e) => updateQuoteItem(idx, { name: e.target.value })}
-                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-semibold text-navy focus:outline-none focus:border-steel"
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-semibold text-navy focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                             />
                           </td>
                           <td className="py-1 pr-2">
@@ -783,7 +888,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                               aria-label={`규격 ${idx + 1}`}
                               value={it.spec}
                               onChange={(e) => updateQuoteItem(idx, { spec: e.target.value })}
-                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] text-gray focus:outline-none focus:border-steel"
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] text-gray focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                             />
                           </td>
                           <td className="py-1 pr-2">
@@ -793,7 +898,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                               aria-label={`수량 ${idx + 1}`}
                               value={it.qty}
                               onChange={(e) => updateQuoteItem(idx, { qty: e.target.value ? Number(e.target.value) : 0 })}
-                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-bold text-navy tabular-nums focus:outline-none focus:border-steel"
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-bold text-navy tabular-nums focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                             />
                           </td>
                           <td className="py-1 pr-2">
@@ -802,7 +907,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                               aria-label={`단위 ${idx + 1}`}
                               value={it.unit}
                               onChange={(e) => updateQuoteItem(idx, { unit: e.target.value })}
-                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] text-center text-gray focus:outline-none focus:border-steel"
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] text-center text-gray focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                             />
                           </td>
                           <td className="py-1 pr-2">
@@ -813,7 +918,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                               aria-label={`단가 ${idx + 1}`}
                               value={it.unit_price}
                               onChange={(e) => updateQuoteItem(idx, { unit_price: e.target.value ? Number(e.target.value) : 0 })}
-                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-bold text-navy text-right tabular-nums focus:outline-none focus:border-steel"
+                              className="w-full border border-border/70 p-1.5 rounded-custom text-[11.5px] font-bold text-navy text-right tabular-nums focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                             />
                           </td>
                           <td className="py-1 pr-2 text-right font-extrabold text-navy tabular-nums">
@@ -884,10 +989,20 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
               </span>
               <button
                 type="button"
+                onClick={handleQuoteSaveDraft}
+                disabled={quoteBusy !== '' || !quoteDirty}
+                style={{ touchAction: 'manipulation' }}
+                className="flex items-center gap-1.5 border border-navy hover:bg-navy/5 text-navy px-3.5 py-2.5 min-h-[44px] rounded-custom text-xs font-black transition-all cursor-pointer disabled:opacity-40 disabled:cursor-default focus-visible:outline-2 focus-visible:outline-navy"
+              >
+                <Save className="w-3.5 h-3.5" />
+                {quoteBusy === 'draft' ? '저장 중...' : '초안 저장'}
+              </button>
+              <button
+                type="button"
                 onClick={handleQuotePreview}
                 disabled={quoteBusy !== ''}
                 style={{ touchAction: 'manipulation' }}
-                className="flex items-center gap-1.5 border border-steel hover:bg-steel/5 text-steel px-3.5 py-2.5 rounded-custom text-xs font-black transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-steel"
+                className="flex items-center gap-1.5 border border-steel hover:bg-steel/5 text-steel px-3.5 py-2.5 min-h-[44px] rounded-custom text-xs font-black transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-steel"
               >
                 <Download className="w-3.5 h-3.5" />
                 {quoteBusy === 'preview' ? '생성 중...' : '엑셀 미리보기'}
@@ -897,7 +1012,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                 onClick={handleQuoteSend}
                 disabled={quoteBusy !== ''}
                 style={{ touchAction: 'manipulation' }}
-                className="flex items-center gap-1.5 bg-accent hover:bg-[#c95f12] text-bg px-4 py-2.5 rounded-custom text-xs font-black transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-navy"
+                className="flex items-center gap-1.5 bg-accent hover:bg-[#c95f12] text-bg px-4 py-2.5 min-h-[44px] rounded-custom text-xs font-black transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-navy"
               >
                 <Send className="w-3.5 h-3.5" />
                 {quoteBusy === 'send' ? '발송 중...' : '승인·견적서 발송'}
@@ -923,7 +1038,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                     type="date"
                     value={visitDate}
                     onChange={(e) => setVisitDate(e.target.value)}
-                    className="border border-border p-2 rounded-custom text-xs focus:outline-none focus:border-steel"
+                    className="border border-border p-2 rounded-custom text-xs focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -933,7 +1048,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                     placeholder="김철수 부장"
                     value={visitorName}
                     onChange={(e) => setVisitorName(e.target.value)}
-                    className="border border-border p-2 rounded-custom text-xs focus:outline-none focus:border-steel"
+                    className="border border-border p-2 rounded-custom text-xs focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                   />
                 </div>
                 <div className="col-span-2 flex flex-col gap-1">
@@ -942,7 +1057,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                     type="text"
                     value={visitPurpose}
                     onChange={(e) => setVisitPurpose(e.target.value)}
-                    className="border border-border p-2 rounded-custom text-xs focus:outline-none"
+                    className="border border-border p-2 rounded-custom text-xs focus-visible:outline-2 focus-visible:outline-steel"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -1017,7 +1132,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                     placeholder="300000"
                     value={payAmount}
                     onChange={(e) => setPayAmount(e.target.value ? Number(e.target.value) : '')}
-                    className="border border-border p-2 rounded-custom text-xs focus:outline-none focus:border-steel font-bold"
+                    className="border border-border p-2 rounded-custom text-xs focus-visible:outline-2 focus-visible:outline-steel focus:border-steel font-bold"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -1059,7 +1174,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                               aria-label={`${p.payment_type} 청구 액수 수정`}
                               value={editPayAmount}
                               onChange={(e) => setEditPayAmount(e.target.value ? Number(e.target.value) : '')}
-                              className="w-full border border-border p-1.5 rounded-custom text-[11px] font-bold text-navy text-right tabular-nums focus:outline-none focus:border-steel"
+                              className="w-full border border-border p-1.5 rounded-custom text-[11px] font-bold text-navy text-right tabular-nums focus-visible:outline-2 focus-visible:outline-steel focus:border-steel"
                             />
                             <select
                               aria-label={`${p.payment_type} 입금 상태 수정`}
@@ -1112,6 +1227,15 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                             >
                               수정
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePayment(p)}
+                              disabled={paymentSaving}
+                              style={{ touchAction: 'manipulation' }}
+                              className="flex items-center min-h-[44px] px-2.5 rounded-custom text-gray hover:text-danger hover:bg-danger/10 text-[11px] font-black transition-colors cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-danger"
+                            >
+                              삭제
+                            </button>
                           </div>
                         </div>
                       )}
@@ -1148,13 +1272,14 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
             >
               의뢰 건 영구 삭제
             </button>
-            <span className="text-[10px] text-gray-light font-bold">
+            <span className="text-[10px] text-gray font-bold">
               * 수정한 속성은 저장 즉시 로컬 Mock DB 및 실적관리 탭에 실시간 리액티브 반영됩니다.
             </span>
           </div>
           <button
-            onClick={onClose}
-            className="bg-navy hover:bg-steel text-bg px-5 py-2.5 rounded-custom text-xs font-extrabold transition-all"
+            type="button"
+            onClick={requestClose}
+            className="bg-navy hover:bg-steel text-bg px-5 py-2.5 rounded-custom text-xs font-extrabold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-navy"
           >
             모달 닫기
           </button>
@@ -1182,7 +1307,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
       {/* 범위 고정 진단서 A4 인쇄/PDF 팝업 */}
       {showPrintModal && (
         <div className="fixed inset-0 z-[90] bg-navy/45 backdrop-blur-sm overflow-y-auto p-4 flex items-start justify-center select-none font-sans">
-          <div className="bg-bg border border-border w-full max-w-4xl rounded-custom shadow-custom-md overflow-hidden relative my-8 animate-in slide-in-from-bottom-2 duration-200">
+          <div className="bg-bg border border-border w-full max-w-4xl rounded-custom shadow-custom-md overflow-hidden relative my-8 animate-in slide-in-from-bottom-2 duration-200 motion-reduce:animate-none">
             <button
               onClick={() => setShowPrintModal(false)}
               className="absolute right-6 top-6 bg-navy text-bg hover:bg-steel px-4 py-2 rounded-custom text-xs font-black transition-all print:hidden z-10 shadow-md"

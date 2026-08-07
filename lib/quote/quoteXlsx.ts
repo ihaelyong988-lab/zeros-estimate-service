@@ -2,6 +2,7 @@
 
 import { Estimate, EstimateLineItem } from '@/types/estimate';
 import { sumSubtotal } from './quoteDraft';
+import { menuDisplayName } from '@/lib/constants/menu';
 
 // ==========================================
 // ZEROS 견적서(예상 원가 검토서) 엑셀 생성기
@@ -45,7 +46,8 @@ export async function buildQuoteXlsxBlob(est: Estimate, items: EstimateLineItem[
   const meta: Array<[string, string, string, string]> = [
     ['문서번호', est.estimate_no, '발행일', new Date().toLocaleDateString('ko-KR')],
     ['고객명', `${est.customer_name} (${est.company_name || '개인'})`, '연락처', est.phone],
-    ['현장 주소', est.site_address, '공종', `${est.work_type} / ${est.site_type}`],
+    // 고객에게 발송되는 문서다 — 공종은 DB 저장 키가 아니라 화면과 같은 표시명으로 낸다(§10-A O-33 단일 소스).
+    ['현장 주소', est.site_address, '공종', `${menuDisplayName(est.work_type)} / ${est.site_type}`],
   ];
   meta.forEach((row, i) => {
     const r = ws.getRow(4 + i);

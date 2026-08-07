@@ -6,10 +6,12 @@ import { clientIp, rateLimit } from '@/lib/otp/rateLimit';
 import { isSmsConfigured } from '@/lib/sms/send';
 import { kstDateStr } from '@/lib/utils/date';
 import { gradeOf, rollupCustomer } from '@/lib/crm/customerRollup';
+import { derivePaymentStatus } from '@/lib/payments/status';
 import type {
   Estimate,
   Customer,
   SiteVisit,
+  Payment,
   NotificationLog,
   FileMeta,
   WorkType,
@@ -598,6 +600,33 @@ export async function POST(req: NextRequest) {
       }
 
       return Response.json({ ok: true });
+    }
+
+    // ---------- 결제 행 영구 삭제(관리자 전용) ----------
+    // 오입력된 청구 행을 지울 경로가 없어 미수금·결제상태가 틀린 채로 남았다.
+    // 견적의 payment_status 는 여기서 저장하지 않는다 — 남은 결제 행 집합에서
+    // 파생한 값을 응답으로 돌려주고, 화면·집계가 그 값을 근거로 쓴다(§14-4).
+    if (op === 'deletePayment') {
+      if (!isAdmin) {
+        return Response.json({ error: '권한이 없습니다.' }, { status: 403 });
+      }
+      const id = typeof body.id === 'string' ? body.id : '';
+      if (!id) {
+        return Response.json({ error: '삭제할 결제 id가 없습니다.' }, { status: 400 });
+      }
+
+      // 삭제 전에 읽어 둔다 — 어느 견적의 행이었는지를 알아야 남은 집합을 가릴 수 있다.
+      const rows = await loadRows<Payment>(supabase, TABLES.payments);
+      const target = rows.find((p) => p.id === id);
+      if (!target) {
+        return Response.json({ error: '이미 삭제되었거나 없는 결제 건입니다.' }, { status: 404 });
+      }
+
+      const { error: delErr } = await supabase.from(TABLES.payments).delete().eq('id', id);
+      if (delErr) return serverFailure('deletePayment', delErr);
+
+      const remaining = rows.filter((p) => p.id !== id && p.estimate_id === target.estimate_id);
+      return Response.json({ ok: true, payment_status: derivePaymentStatus(remaining) });
     }
 
     return Response.json({ error: '알 수 없는 작업입니다.' }, { status: 400 });

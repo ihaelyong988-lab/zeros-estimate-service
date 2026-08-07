@@ -2,29 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { ZerosService } from '@/lib/supabase/client';
-import { Estimate, WorkType, EstimateCategory } from '@/types/estimate';
-import { calculatePerformanceMetrics } from '@/lib/calculations';
+import { Estimate } from '@/types/estimate';
+import { aggregatePerformance, BUDGET_COLS, WORK_TYPES } from '@/lib/performance/insights';
+import { PERFORMANCE_LABEL } from '@/lib/constants/trust';
+// 공종 표시명은 menu.ts 단일 소스를 쓴다(§10-A O-33 이 이 파일을 동기 대상으로 명시).
+// 집계·색 매핑은 DB 저장 키(WORK_TYPES)로 그대로 두고, 화면 문자열만 표시명으로 바꾼다.
+import { menuDisplayName } from '@/lib/constants/menu';
 import { LayoutGrid, Grid3x3, BarChart3, Activity } from 'lucide-react';
-
-// 좌측 메뉴와 동일한 8대 공종 순서 (LeftSidebar workCategories와 일치)
-const WORK_TYPES: WorkType[] = [
-  '배관공사',
-  '장비설치',
-  'Utility 배관',
-  '공장증설',
-  '노후배관교체',
-  '기계실개선',
-  '생산설비 배관 연결',
-  'CAPEX 개·증설 검토',
-];
-
-// 견적규모 4등급 (LeftSidebar budgetCategories와 일치)
-const BUDGET_COLS: { key: EstimateCategory; label: string; range: string }[] = [
-  { key: 'small', label: '온라인 간편검토', range: '≤1,000만' },
-  { key: 'medium', label: '출장견적', range: '1,000만~1억' },
-  { key: 'large', label: '프로젝트 사전진단', range: '>1억' },
-  { key: 'unknown', label: '공사규모·금액', range: '온라인 컨설팅' },
-];
 
 // 공종별 색 = '작업 특성'에 맞춘 의미 기반 팔레트(색상심리) —
 //   물/유체 배관=블루 · 유틸리티=스틸블루 · 기계실/HVAC=틸 · 금속 장비=그래파이트
@@ -40,10 +24,6 @@ const TRADE_COLORS: Record<string, string> = {
   '생산설비 배관 연결': '#4A56A6', // 인디고 — 라인 연결·통합
   'CAPEX 개·증설 검토': '#1E3A5F', // 딥네이비 — 자본·검토
 };
-
-const REVIEW_DONE: ReadonlySet<string> = new Set([
-  '견적서 송부완료', '수주성공', '수주실패',
-]);
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
   const h = hex.replace('#', '');
@@ -92,78 +72,15 @@ export const PerformanceInsights: React.FC = () => {
     load();
   }, []);
 
-  const agg = useMemo(() => {
-    const metrics = calculatePerformanceMetrics(estimates);
-
-    // 공종 × 규모 매트릭스 (건수)
-    const matrix: Record<string, Record<string, number>> = {};
-    const rowTotal: Record<string, number> = {};
-    const colTotal: Record<string, number> = {};
-    WORK_TYPES.forEach((w) => {
-      matrix[w] = {};
-      rowTotal[w] = 0;
-      BUDGET_COLS.forEach((c) => { matrix[w][c.key] = 0; });
-    });
-    BUDGET_COLS.forEach((c) => { colTotal[c.key] = 0; });
-
-    // 공종별 부가 지표
-    const detail: Record<string, { count: number; daysSum: number; daysN: number; sites: Record<string, number> }> = {};
-    WORK_TYPES.forEach((w) => { detail[w] = { count: 0, daysSum: 0, daysN: 0, sites: {} }; });
-
-    let matrixMax = 0;
-    let grandTotal = 0;
-
-    estimates.forEach((e) => {
-      const w = e.work_type as string;
-      if (!matrix[w]) return; // 8대 공종 외(배관+장비설치/기타)는 매트릭스 제외
-      const c = e.estimate_category;
-      matrix[w][c] = (matrix[w][c] || 0) + 1;
-      rowTotal[w] += 1;
-      colTotal[c] += 1;
-      grandTotal += 1;
-      if (matrix[w][c] > matrixMax) matrixMax = matrix[w][c];
-
-      const d = detail[w];
-      d.count += 1;
-      if (e.estimate_sent_at) {
-        const days = Math.round(
-          (new Date(e.estimate_sent_at).getTime() - new Date(e.created_at).getTime()) / 86_400_000,
-        );
-        if (days >= 0) { d.daysSum += days; d.daysN += 1; }
-      }
-      if (e.site_type) d.sites[e.site_type] = (d.sites[e.site_type] || 0) + 1;
-    });
-
-    // 분포 차트용 — 순서는 히트맵(WORK_TYPES)과 동일 고정(2026-07-12 캡쳐 지시: 행렬 직관 일치, 내림차순 폐지)
-    const distribution = WORK_TYPES.map((w) => ({ name: w, value: rowTotal[w] }));
-
-    // 세부 카드용
-    const cards = WORK_TYPES.map((w) => {
-      const d = detail[w];
-      const topSite = Object.entries(d.sites).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—';
-      return {
-        name: w,
-        count: d.count,
-        share: grandTotal > 0 ? Math.round((d.count / grandTotal) * 1000) / 10 : 0,
-        avgDays: d.daysN > 0 ? Math.round(d.daysSum / d.daysN) : null,
-        topSite,
-      };
-    }).sort((a, b) => b.count - a.count);
-
-    const reviewDoneCount = estimates.filter((e) => REVIEW_DONE.has(e.status)).length;
-
-    return {
-      metrics, matrix, rowTotal, colTotal, matrixMax, grandTotal,
-      distribution, cards, reviewDoneCount,
-    };
-  }, [estimates]);
+  // 집계는 lib/performance/insights.ts 한 곳에서만 한다 —
+  // KPI·분포·히트맵이 같은 모집단을 쓰도록 정의를 화면 밖에 두고 테스트로 고정한다.
+  const agg = useMemo(() => aggregatePerformance(estimates), [estimates]);
 
   if (loading) {
     return <div className="text-[12px] font-bold text-gray-light text-center py-16">실적 집계 데이터를 적재 중입니다…</div>;
   }
 
-  const { metrics, matrix, rowTotal, colTotal, matrixMax, grandTotal, distribution, cards, reviewDoneCount } = agg;
-  const reviewDoneRate = grandTotal > 0 ? Math.round((reviewDoneCount / grandTotal) * 100) : 0;
+  const { metrics, matrix, rowTotal, colTotal, matrixMax, grandTotal, distribution, cards, reviewDoneRate } = agg;
 
   // 분리선 스트립 색 = 각 섹션에 실제 등장하는 순서 그대로(스트립이 곧 미니 범례가 되도록)
   const distColors = distribution.map((d) => TRADE_COLORS[d.name] || '#1E4D8C');
@@ -173,7 +90,7 @@ export const PerformanceInsights: React.FC = () => {
     <div className="flex flex-col gap-3 max-w-5xl mx-auto py-1">
 
       {/* 최상단 한 행 — 좌=분포 헤더(상단 이동, 2026-07-05 지시) / 우=KPI 4종 균일 클러스터
-          (좌측 지배 KPI 블록 삭제 → "견적 건수"를 보조와 동일 스타일로 편입, 세로폭 확보) */}
+          (좌측 지배 KPI 블록 삭제 → 접수 건수를 보조와 동일 스타일로 편입, 세로폭 확보) */}
       <section className="relative border-b border-border pb-2.5">
         <div className="overflow-x-auto no-scrollbar">
           <div className="flex min-w-full w-max items-end gap-x-8">
@@ -183,7 +100,7 @@ export const PerformanceInsights: React.FC = () => {
         </h3>
             <div className="flex shrink-0 items-end gap-x-6 ml-auto">
           {[
-            { label: '견적 건수', value: metrics.totalCount, unit: '건' },
+            { label: PERFORMANCE_LABEL.intake, value: metrics.totalCount, unit: '건' },
             { label: '검토 비율', value: reviewDoneRate, unit: '%' },
             { label: '평균 소요', value: metrics.averageProcessDays, unit: '일' },
             { label: '공종 수', value: WORK_TYPES.length, unit: '종' },
@@ -216,13 +133,13 @@ export const PerformanceInsights: React.FC = () => {
             const widthPct = maxCount > 0 ? Math.max((d.value / maxCount) * 100, d.value > 0 ? 3 : 0) : 0;
             const share = grandTotal > 0 ? Math.round((d.value / grandTotal) * 1000) / 10 : 0;
             return (
-              <div key={d.name} className="grid grid-cols-[176px_1fr_104px] items-center flex-1 min-h-0" title={`${d.name} · ${d.value}건 (${share}%)`}>
+              <div key={d.name} className="grid grid-cols-[176px_1fr_104px] items-center flex-1 min-h-0" title={`${menuDisplayName(d.name)} · ${d.value}건 (${share}%)`}>
                 {/* 라벨 셀 — 히트맵 행 라벨(td) 미러: 3px 공종색 보더 + pl-3 좌측 정렬로 하나의 수직 일직선 */}
                 <span
                   className="self-stretch flex items-center pl-3 pr-2 text-[13px] font-bold text-navy text-left leading-tight whitespace-nowrap truncate"
                   style={{ borderLeft: `3px solid ${hex}` }}
                 >
-                  {d.name}
+                  {menuDisplayName(d.name)}
                 </span>
                 <div className="relative h-[18px] rounded-[3px] bg-[#EFF3F8] overflow-hidden">
                   <div
@@ -282,7 +199,7 @@ export const PerformanceInsights: React.FC = () => {
                     className="sticky left-0 bg-bg py-1.5 px-2 pl-3 font-bold text-navy whitespace-nowrap border-t border-border/50"
                     style={{ borderLeft: `3px solid ${rowHex}` }}
                   >
-                    {w}
+                    {menuDisplayName(w)}
                   </td>
                   {BUDGET_COLS.map((c) => {
                     const v = matrix[w][c.key];
@@ -291,7 +208,7 @@ export const PerformanceInsights: React.FC = () => {
                         key={c.key}
                         className="p-0 text-center border border-bg-subtle"
                         style={heatCellStyle(v, matrixMax, rowHex)}
-                        title={`${w} · ${c.label}: ${v}건`}
+                        title={`${menuDisplayName(w)} · ${c.label}: ${v}건`}
                       >
                         <div className="py-1.5 font-black tabular-nums">{v > 0 ? v : '·'}</div>
                       </td>
@@ -333,7 +250,7 @@ export const PerformanceInsights: React.FC = () => {
               <div className="flex items-start justify-between gap-2">
                 <span className="text-[13px] font-black text-navy leading-tight flex items-start gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: cardHex }} />
-                  {card.name}
+                  {menuDisplayName(card.name)}
                 </span>
                 <span className="shrink-0 text-[12px] font-black text-navy tabular-nums px-1.5 py-0.5 rounded-full border" style={{ backgroundColor: `${cardHex}1A`, borderColor: `${cardHex}45` }}>{card.share}%</span>
               </div>
