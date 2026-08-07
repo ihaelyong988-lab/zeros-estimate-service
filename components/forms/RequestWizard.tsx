@@ -54,7 +54,8 @@ import {
   Coins,
   CheckCircle2,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  type LucideIcon
 } from 'lucide-react';
 
 // 견적문의 진입 채널 — 자료등록 화면에서 둘 중 하나를 고른다.
@@ -192,6 +193,54 @@ function RadioChipGroup<T extends string>({
     </div>
   );
 }
+
+// 공통 입력 클래스 — 16px 이상 본문, focus-visible 가시.
+const inputCls = 'w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all';
+const labelCls = 'text-[14.5px] font-bold text-navy flex items-center gap-1.5';
+
+interface FormFieldProps {
+  /** htmlFor · id · name 이 모두 이 값이다 — 폼 8칸 전부 name 이 id 와 같다. */
+  id: string;
+  icon: LucideIcon;
+  label: React.ReactNode;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  control?: 'input' | 'select' | 'textarea';
+  // 컨트롤에 그대로 실리는 속성 — 그 칸에 있는 것만 넘긴다.
+  type?: string; placeholder?: string; readOnly?: boolean; maxLength?: number; rows?: number;
+  /** 기본 입력 클래스 뒤에 덧댈 부분만 넘긴다 — 합성 방식은 옛 블록과 같다. */
+  extraClassName?: string;
+  children?: React.ReactNode; // select 의 option 목록
+  after?: React.ReactNode; // 컨트롤 아래 보조 표시(글자수 등)
+}
+
+// 입력 한 칸의 공통 골격 — 라벨(아이콘+문구) + 컨트롤. 8칸이 같은 마크업을 반복해
+// 여백·터치·클래스 계약이 칸마다 어긋날 수 있었다. 골격은 여기 한 곳만 두고 다른 부분만 prop 으로 받는다.
+const FormField = ({
+  id, icon: Icon, label, value, onChange, control = 'input', type = 'text',
+  placeholder, readOnly, maxLength, rows, extraClassName, children, after,
+}: FormFieldProps) => {
+  const shared = {
+    id, name: id, value, onChange, style: { touchAction: 'manipulation' } as const,
+    className: extraClassName === undefined ? inputCls : `${inputCls} ${extraClassName}`,
+  };
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className={labelCls}>
+        <Icon className="w-4.5 h-4.5 text-steel" />
+        {label}
+      </label>
+      {control === 'select' ? (
+        <select {...shared}>{children}</select>
+      ) : control === 'textarea' ? (
+        <textarea {...shared} maxLength={maxLength} rows={rows} placeholder={placeholder} />
+      ) : (
+        <input {...shared} type={type} readOnly={readOnly} placeholder={placeholder} />
+      )}
+      {after}
+    </div>
+  );
+};
 
 const defaultFormData = {
   customer_name: '',
@@ -626,10 +675,6 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     : ['사업·현장', '견적·연락', '참조 사항', '완료'];
   const activeStepIdx = completed ? 3 : step - 1;
 
-  // 공통 입력 클래스 — 16px 이상 본문, focus-visible 가시.
-  const inputCls = 'w-full border border-border p-3.5 rounded-custom text-[16.5px] focus:outline-none focus:border-steel transition-all';
-  const labelCls = 'text-[14.5px] font-bold text-navy flex items-center gap-1.5';
-
   // 오류 표시는 폼과 인증 화면이 같은 블록을 쓴다(문구 원천 1곳).
   const errorBanner = errorMsg ? (
     <div ref={errorRef} tabIndex={-1} role="alert" aria-live="assertive" className="bg-danger/10 border border-danger/25 text-danger px-4 py-3 rounded-custom text-[13.5px] font-bold text-left flex items-start gap-2 outline-none focus-visible:ring-2 focus-visible:ring-danger/40 animate-in fade-in duration-200 motion-reduce:animate-none">
@@ -806,22 +851,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
           {/* ===== STEP 1 — 사업·현장 ===== */}
           {step === 1 && (
             <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="site_address" className={labelCls}>
-                  <MapPin className="w-4.5 h-4.5 text-steel" />
-                  {channel === 'visit' ? '출장 지역 (현장 주소) · 필수' : '지역 (현장 주소) · 필수'}
-                </label>
-                <input
-                  id="site_address"
-                  name="site_address"
-                  type="text"
-                  value={formData.site_address}
-                  onChange={handleChange}
-                  style={{ touchAction: 'manipulation' }}
-                  placeholder="경기도 화성시 향남읍 식품공단로 42"
-                  className={inputCls}
-                />
-              </div>
+              <FormField
+                id="site_address"
+                icon={MapPin}
+                label={channel === 'visit' ? '출장 지역 (현장 주소) · 필수' : '지역 (현장 주소) · 필수'}
+                value={formData.site_address}
+                onChange={handleChange}
+                placeholder="경기도 화성시 향남읍 식품공단로 42"
+              />
 
               {/* 공사 종류 — 기본 선택 없음(B1). 고르지 않으면 다음 단계로 넘어가지 않는다. */}
               <div className="flex flex-col gap-2">
@@ -856,40 +893,27 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                 />
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="company_name" className={labelCls}>
-                  <Building className="w-4.5 h-4.5 text-steel" />
-                  사업체 (선택)
-                </label>
-                <input
-                  id="company_name"
-                  name="company_name"
-                  type="text"
-                  value={formData.company_name}
-                  onChange={handleChange}
-                  style={{ touchAction: 'manipulation' }}
-                  placeholder="ABC식품 (주)"
-                  className={inputCls}
-                />
-              </div>
+              <FormField
+                id="company_name"
+                icon={Building}
+                label="사업체 (선택)"
+                value={formData.company_name}
+                onChange={handleChange}
+                placeholder="ABC식품 (주)"
+              />
 
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="industry" className={labelCls}>
-                  <Briefcase className="w-4.5 h-4.5 text-steel" />
-                  업종 (선택)
-                </label>
-                <select
-                  id="industry"
-                  name="industry"
-                  value={formData.industry}
-                  onChange={handleChange}
-                  style={{ touchAction: 'manipulation' }}
-                  className={`${inputCls} ${formData.industry ? 'text-navy' : 'text-gray-light'}`}
-                >
-                  <option value="">업종을 선택하세요</option>
-                  {INDUSTRY_OPTIONS.map((o) => <option key={o} value={o} className="text-navy">{o}</option>)}
-                </select>
-              </div>
+              <FormField
+                id="industry"
+                icon={Briefcase}
+                label="업종 (선택)"
+                control="select"
+                value={formData.industry}
+                onChange={handleChange}
+                extraClassName={formData.industry ? 'text-navy' : 'text-gray-light'}
+              >
+                <option value="">업종을 선택하세요</option>
+                {INDUSTRY_OPTIONS.map((o) => <option key={o} value={o} className="text-navy">{o}</option>)}
+              </FormField>
 
               <button
                 type="button"
@@ -937,78 +961,51 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
               {/* 예상 공사금액 — 두 채널 공통(구조는 그대로, visit 채널에도 노출).
                   고른 값이 그대로 저장되고 견적 규모 분류도 이 값에서 파생된다(F6-B). */}
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="expected_budget_range" className={labelCls}>
-                  <Coins className="w-4.5 h-4.5 text-steel" />
-                  예상 공사금액 (선택)
-                </label>
-                <select
-                  id="expected_budget_range"
-                  name="expected_budget_range"
-                  value={formData.expected_budget_range}
-                  onChange={handleChange}
-                  style={{ touchAction: 'manipulation' }}
-                  className={`${inputCls} text-navy`}
-                >
-                  {BUDGET_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
+              <FormField
+                id="expected_budget_range"
+                icon={Coins}
+                label="예상 공사금액 (선택)"
+                control="select"
+                value={formData.expected_budget_range}
+                onChange={handleChange}
+                extraClassName="text-navy"
+              >
+                {BUDGET_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </FormField>
 
               {/* 담당자 성함 — 본인확인 화면에 그대로 전달해 같은 값을 두 번 입력하지 않게 한다. */}
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="customer_name" className={labelCls}>
-                  <User className="w-4.5 h-4.5 text-steel" />
-                  담당자 성함
-                </label>
-                <input
-                  id="customer_name"
-                  name="customer_name"
-                  type="text"
-                  value={formData.customer_name}
-                  onChange={handleChange}
-                  style={{ touchAction: 'manipulation' }}
-                  placeholder="홍길동"
-                  className={inputCls}
-                />
-              </div>
+              <FormField
+                id="customer_name"
+                icon={User}
+                label="담당자 성함"
+                value={formData.customer_name}
+                onChange={handleChange}
+                placeholder="홍길동"
+              />
 
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="phone" className={labelCls}>
-                  <Phone className="w-4.5 h-4.5 text-steel" />
-                  담당자 연락처 (필수)
-                  {verified && <span className="text-[12.5px] text-success font-bold">· 본인인증 완료</span>}
-                </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  readOnly={verified}
-                  style={{ touchAction: 'manipulation' }}
-                  placeholder="010-0000-0000"
-                  className={`${inputCls} ${verified ? 'bg-bg-subtle text-gray' : ''}`}
-                />
-              </div>
+              <FormField
+                id="phone"
+                icon={Phone}
+                type="tel"
+                label={<>담당자 연락처 (필수){verified && <span className="text-[12.5px] text-success font-bold">· 본인인증 완료</span>}</>}
+                value={formData.phone}
+                onChange={handleChange}
+                readOnly={verified}
+                placeholder="010-0000-0000"
+                extraClassName={verified ? 'bg-bg-subtle text-gray' : ''}
+              />
 
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="email" className={labelCls}>
-                  <Mail className="w-4.5 h-4.5 text-steel" />
-                  이메일 회신처 (필수)
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  style={{ touchAction: 'manipulation' }}
-                  placeholder="name@example.com"
-                  className={inputCls}
-                />
-              </div>
+              <FormField
+                id="email"
+                icon={Mail}
+                type="email"
+                label="이메일 회신처 (필수)"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="name@example.com"
+              />
 
               <button
                 type="button"
@@ -1024,24 +1021,19 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
           {/* ===== STEP 3 — 참조 사항 · 자료 ===== */}
           {step === 3 && (
             <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="description" className={labelCls}>
-                  <MessageSquare className="w-4.5 h-4.5 text-steel" />
-                  간단한 참조 사항 (선택 · 200자 이내)
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  maxLength={200}
-                  rows={4}
-                  style={{ touchAction: 'manipulation' }}
-                  placeholder="예) 80A 배관 신규 설치 및 기존 라인 분기 검토를 요청드립니다."
-                  className={`${inputCls} resize-none`}
-                />
-                <span className="text-[12.5px] text-gray font-bold self-end tabular-nums">{formData.description.length}/200</span>
-              </div>
+              <FormField
+                id="description"
+                icon={MessageSquare}
+                label="간단한 참조 사항 (선택 · 200자 이내)"
+                control="textarea"
+                value={formData.description}
+                onChange={handleChange}
+                maxLength={200}
+                rows={4}
+                placeholder="예) 80A 배관 신규 설치 및 기존 라인 분기 검토를 요청드립니다."
+                extraClassName="resize-none"
+                after={<span className="text-[12.5px] text-gray font-bold self-end tabular-nums">{formData.description.length}/200</span>}
+              />
 
               {/* 자료 첨부 — 출장요청(visit) 채널만 */}
               {channel === 'visit' && (

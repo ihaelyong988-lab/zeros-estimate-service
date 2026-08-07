@@ -5,6 +5,9 @@
 // 보여준다. 상태색·단계·날짜 표기를 각자 들고 있으면 한쪽만 고쳐졌을 때 같은 건이 화면마다
 // 다르게 읽힌다 — 규약은 여기 한 곳에만 둔다.
 
+import { Estimate, NotificationLog } from '@/types/estimate';
+import { menuDisplayName } from '@/lib/constants/menu';
+
 export type Tone = 'steel' | 'warning' | 'accent' | 'info' | 'success' | 'navy' | 'gray';
 
 export const toneText: Record<Tone, string> = {
@@ -80,4 +83,43 @@ export interface TLEvent {
   label: string;
   desc: string;
   tone: Tone;
+}
+
+// 시계열 이벤트 구성: 알림 로그가 있으면 그것을(권위 있는 상태변경 이력),
+// 없으면(시드/구접수) 견적 타임스탬프로 마일스톤을 합성한다. 최신순 정렬.
+export function buildTimelineEvents(logs: NotificationLog[], estimates: Estimate[]): TLEvent[] {
+  const out: TLEvent[] = [];
+  if (logs.length > 0) {
+    for (const l of logs) {
+      const t = TPL[l.template_code] || { label: '알림', tone: 'gray' as Tone };
+      out.push({ id: l.id, ts: l.sent_at, estimateNo: l.estimate_no, label: t.label, desc: l.content, tone: t.tone });
+    }
+  } else {
+    for (const e of estimates) {
+      out.push({
+        id: `${e.id}-reg`, ts: e.created_at, estimateNo: e.estimate_no,
+        label: '접수완료', desc: `${menuDisplayName(e.work_type)} · ${e.site_type} 사전진단 접수`, tone: 'steel',
+      });
+      if (e.estimate_sent_at) {
+        out.push({
+          id: `${e.id}-sent`, ts: e.estimate_sent_at, estimateNo: e.estimate_no,
+          label: '견적서 송부완료', desc: '예상 원가 검토서 송부', tone: 'success',
+        });
+      }
+      if (e.contract_won_at) {
+        out.push({
+          id: `${e.id}-won`, ts: e.contract_won_at, estimateNo: e.estimate_no,
+          label: '수주성공', desc: '최종 계약 체결', tone: 'success',
+        });
+      }
+      // 현재 상태가 위 마일스톤과 다르면 현재 진행 상태도 노드로 표시
+      if (!['접수완료', '견적서 송부완료', '수주성공'].includes(e.status)) {
+        out.push({
+          id: `${e.id}-cur`, ts: e.created_at, estimateNo: e.estimate_no,
+          label: e.status, desc: '현재 진행 상태', tone: STATUS_TONE[e.status] || 'gray',
+        });
+      }
+    }
+  }
+  return out.sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
 }

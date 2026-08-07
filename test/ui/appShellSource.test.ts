@@ -1,21 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readSource } from '../support/sourceScan';
 
 // C2(모바일 홈 다크 네이비 제거)·C10(헤더 터치 타깃)은 원인이 컴포넌트 상태 분기의 클래스 문자열이라
 // DOM 렌더 없이 재현할 수 없다. test/ui/pageSource.test.ts 와 같은 방식으로 소스를 채점해 재발을 막는다.
-const SOURCE_PATH = fileURLToPath(new URL('../../components/layout/AppShell.tsx', import.meta.url));
-const source = readFileSync(SOURCE_PATH, 'utf8');
-const lines = source.split(/\r?\n/);
-
-/** 위반 줄을 "번호: 내용" 으로 만들어 실패 메시지에서 바로 위치를 알 수 있게 한다. */
-function locate(predicate: (line: string) => boolean, from = 0, to = lines.length): string[] {
-  return lines
-    .slice(from, to)
-    .map((line, index) => ({ line, no: from + index + 1 }))
-    .filter(({ line }) => predicate(line))
-    .map(({ line, no }) => `${no}: ${line.trim()}`);
-}
+const { lines, locate, interpolations } = readSource('components/layout/AppShell.tsx');
 
 /** 모바일 레이아웃 분기 구간만 잘라낸다 — 스플래시(다크 네이비 유지)·데스크톱은 조문 밖이다. */
 function mobileBranchRange(): [number, number] {
@@ -23,11 +11,6 @@ function mobileBranchRange(): [number, number] {
   const end = lines.findIndex((line) => line.includes('2. 데스크탑 레이아웃 렌더링'));
   if (start < 0 || end < 0) throw new Error('모바일 분기 구간 앵커 주석을 찾지 못했다');
   return [start, end];
-}
-
-/** 템플릿 보간(`${NAME}`) 사용 횟수 — import 줄은 세지 않는다. */
-function interpolations(name: string): number {
-  return (source.match(new RegExp(`\\$\\{${name}\\}`, 'g')) ?? []).length;
 }
 
 describe('AppShell 모바일 홈 랜딩 화이트 셸 (C2 · §10-A 공통 1항)', () => {

@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { useShell, type ActiveTab } from "@/lib/context/ShellContext";
 import { RequestWizard, prefetchOtpEnabled, type RequestChannel } from "@/components/forms/RequestWizard";
 import { manualData } from "@/lib/constants/manuals";
+import { LANDING_TRADES } from "@/lib/constants/landingTrades";
 import { REQUEST_CTA_LABEL } from "@/lib/constants/cta";
 import { TRUST, TRUST_LABEL, TRUST_VALUE, averageSavingRate } from "@/lib/constants/trust";
 import { ZerosService, clearDataCache } from "@/lib/supabase/client";
@@ -87,63 +88,11 @@ import {
 // 연말 경계에서 클라이언트 계산값이 갈릴 수 있고, 그 차이는 경고 대상이 아니다.
 const COPYRIGHT_YEAR = new Date().getFullYear();
 
-// 랜딩 쇼케이스 자동 순회 공종 순서 — 최상단 칩바와 값으로 매칭(연동)되므로 모듈 스코프로 고정
-const LANDING_TRADES = [
-  '배관공사',
-  '장비설치',
-  'Utility 배관',
-  '공장증설',
-  '노후배관교체',
-  '기계실개선',
-  '생산설비 배관 연결',
-  'CAPEX 개·증설 검토',
-];
-
 // 데스크톱 전용 히어로 이미지의 모바일 폴백(1×1 투명 GIF, 43B).
 // `hidden lg:flex`로 숨기기만 하면 브라우저는 원본을 그대로 내려받는다 →
 // <picture>의 min-width 1024px source로 데스크톱에만 실제 이미지를 물리고, 모바일은 이 픽셀로 끝낸다.
 const BLANK_PIXEL =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-
-// 공종별 실사 사진 [현장 전경, 작업 상세] — 견적 검토 히어로 좌측 2분할 슬롯용.
-// Pexels 무료 라이선스(상업 이용 가능·출처표기 불요), public/images/trades/ 자체 호스팅.
-// 자사 현장 사진 확보 시 파일만 교체하면 된다(경로 유지).
-const TRADE_PHOTOS: Record<string, [string, string]> = {
-  '배관공사': ['/images/trades/pipe-1.jpg', '/images/trades/pipe-2.jpg'],
-  '장비설치': ['/images/trades/equip-1.jpg', '/images/trades/equip-2.jpg'],
-  'Utility 배관': ['/images/trades/utility-1.jpg', '/images/trades/utility-2.jpg'],
-  '공장증설': ['/images/trades/expansion-1.jpg', '/images/trades/expansion-2.jpg'],
-  '노후배관교체': ['/images/trades/renewal-1.jpg', '/images/trades/renewal-2.jpg'],
-  '기계실개선': ['/images/trades/mechroom-1.jpg', '/images/trades/mechroom-2.jpg'],
-  '생산설비 배관 연결': ['/images/trades/hookup-1.jpg', '/images/trades/hookup-2.jpg'],
-  'CAPEX 개·증설 검토': ['/images/trades/capex-1.jpg', '/images/trades/capex-2.jpg'],
-};
-
-// 공종별 활성 칩 시그니처 색 — 쇼케이스 eyebrow 텍스트 색(-600 계열)과 동일 색상으로 묶어 시선 연결
-// (Tailwind JIT가 스캔하도록 완전한 클래스 문자열을 직접 명시)
-const LANDING_CHIP_CLASS: Record<string, string> = {
-  '배관공사': 'bg-cyan-600 border-cyan-600 text-white',
-  '장비설치': 'bg-amber-600 border-amber-600 text-white',
-  'Utility 배관': 'bg-sky-600 border-sky-600 text-white',
-  '공장증설': 'bg-accent border-accent text-white',
-  '노후배관교체': 'bg-emerald-600 border-emerald-600 text-white',
-  '기계실개선': 'bg-teal-600 border-teal-600 text-white',
-  '생산설비 배관 연결': 'bg-indigo-600 border-indigo-600 text-white',
-  'CAPEX 개·증설 검토': 'bg-navy border-navy text-white',
-};
-
-// 공종별 시그니처 색(hex) — 견적 검토 히어로(renderReviewDesktop)에서 공종마다 테마색을 입혀
-// 상단 칩바(LANDING_CHIP_CLASS)와 시선을 묶고, 회전하는 공종을 시각적으로 차별화한다.
-const LANDING_SIGNATURE_HEX: Record<string, string> = {
-  '배관공사': '#0891B2',          // cyan-600
-  '장비설치': '#D97706',          // amber-600
-  'Utility 배관': '#0284C7',      // sky-600
-  '공장증설': '#D2691E',          // accent 계열
-  '노후배관교체': '#059669',      // emerald-600
-  '기계실개선': '#0D9488',        // teal-600
-  '생산설비 배관 연결': '#4F46E5', // indigo-600
-  'CAPEX 개·증설 검토': '#16365F', // navy
-};
 
 // 공종별 주요 견적 키워드 — 공종 상세(renderManualDetail)와 견적 검토 히어로(renderReviewDesktop) 공용. 추후 영업 표현으로 교체.
 const TRADE_KEYWORDS: Record<string, string[]> = {
@@ -163,18 +112,6 @@ const TRADE_KEYWORDS: Record<string, string[]> = {
   'medium': ['현장 실측', '중규모 배관', '계통 검토'],
   'large': ['대규모 설비', 'CAPEX', '공법·예산'],
   'unknown': ['규모 산정', '예산 방향', '전문가 상담'],
-};
-
-// 공종별 대표 견적 밴드(원) — 모바일 랜딩 2↔3페이지 연동용. min/max=슬라이더 범위, median=중앙값, base=기본 표시값
-const MOBILE_TRADE_ESTIMATES: Record<string, { min: number; max: number; median: number; base: number }> = {
-  '배관공사': { min: 8_000_000, max: 40_000_000, median: 22_000_000, base: 21_000_000 },
-  '장비설치': { min: 15_000_000, max: 80_000_000, median: 42_000_000, base: 38_000_000 },
-  'Utility 배관': { min: 10_000_000, max: 55_000_000, median: 30_000_000, base: 28_000_000 },
-  '공장증설': { min: 12_000_000, max: 45_000_000, median: 28_000_000, base: 26_850_000 },
-  '노후배관교체': { min: 6_000_000, max: 35_000_000, median: 18_000_000, base: 17_000_000 },
-  '기계실개선': { min: 9_000_000, max: 50_000_000, median: 26_000_000, base: 24_000_000 },
-  '생산설비 배관 연결': { min: 20_000_000, max: 120_000_000, median: 60_000_000, base: 55_000_000 },
-  'CAPEX 개·증설 검토': { min: 50_000_000, max: 480_000_000, median: 220_000_000, base: 180_000_000 },
 };
 
 // 모바일 랜딩 히어로 — 핵심 3대 역량 칩. channel이 있으면 견적문의 해당 채널로 바로 진입한다.
@@ -242,7 +179,9 @@ export default function Home() {
   // 모바일 랜딩 — 2페이지 공종 캐러셀 선택 인덱스(3페이지 견적과 연동)
   const [mobileTradeIdx, setMobileTradeIdx] = useState(0);
   // 모바일 랜딩 실시간 견적 슬라이더 — 핸들을 끌면 예상 견적·수수료·중앙값 대비가 연동되어 변동
-  const [mobileEstimateAmount, setMobileEstimateAmount] = useState(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[0]].base);
+  // 명시 타입 — LANDING_TRADES 가 as const 라 base 가 리터럴 타입이고, 그대로 추론시키면
+  // 상태가 첫 공종의 금액 하나로 좁혀져 다른 공종·슬라이더 값을 넣을 수 없다.
+  const [mobileEstimateAmount, setMobileEstimateAmount] = useState<number>(LANDING_TRADES[0].estimate.base);
   const mobileCarouselRef = useRef<HTMLDivElement>(null);
   const mobileChipsRef = useRef<HTMLDivElement>(null);
 
@@ -259,13 +198,13 @@ export default function Home() {
     if (!el) return;
     const i = Math.min(LANDING_TRADES.length - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth)));
     setMobileTradeIdx(i);
-    setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[i]].base);
+    setMobileEstimateAmount(LANDING_TRADES[i].estimate.base);
   };
 
   // 공종 칩 탭 → 캐러셀을 해당 카드로 이동
   const selectMobileTrade = (i: number) => {
     setMobileTradeIdx(i);
-    setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[i]].base);
+    setMobileEstimateAmount(LANDING_TRADES[i].estimate.base);
     const el = mobileCarouselRef.current;
     if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
   };
@@ -328,7 +267,7 @@ export default function Home() {
     setWasMobileLanding(isMobileLanding);
     if (isMobileLanding) {
       setMobileTradeIdx(0);
-      setMobileEstimateAmount(MOBILE_TRADE_ESTIMATES[LANDING_TRADES[0]].base);
+      setMobileEstimateAmount(LANDING_TRADES[0].estimate.base);
     }
   }
 
@@ -1127,8 +1066,8 @@ export default function Home() {
 
   // 모바일 랜딩(3페이지 스냅) — 홈/견적검토 공통으로 재사용. 현행 그대로 유지.
   const renderMobileLanding = () => {
-    const mobileTradeName = LANDING_TRADES[mobileTradeIdx];
-    const mobileBand = MOBILE_TRADE_ESTIMATES[mobileTradeName];
+    const mobileTrade = LANDING_TRADES[mobileTradeIdx];
+    const mobileBand = mobileTrade.estimate;
     const MOBILE_MIN = mobileBand.min;
     const MOBILE_MAX = mobileBand.max;
     const MOBILE_MEDIAN = mobileBand.median;
@@ -1211,13 +1150,13 @@ export default function Home() {
             <div ref={mobileChipsRef} className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5">
               {LANDING_TRADES.map((t, i) => (
                 <button
-                  key={t}
+                  key={t.key}
                   type="button"
                   data-active={i === mobileTradeIdx}
                   onClick={() => selectMobileTrade(i)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-bold border transition-colors ${i === mobileTradeIdx ? LANDING_CHIP_CLASS[t] : 'bg-[#F5F8FC] border-[#E4EAF2] text-[#5B6573]'}`}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-bold border transition-colors ${i === mobileTradeIdx ? t.chipClass : 'bg-[#F5F8FC] border-[#E4EAF2] text-[#5B6573]'}`}
                 >
-                  {t}
+                  {t.key}
                 </button>
               ))}
             </div>
@@ -1230,10 +1169,10 @@ export default function Home() {
             className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
           >
             {LANDING_TRADES.map((t) => {
-              const m = getDynamicMetrics(t);
-              const v = getCategoryVisuals(t);
+              const m = getDynamicMetrics(t.key);
+              const v = getCategoryVisuals(t.key);
               return (
-                <div key={t} className="shrink-0 basis-full snap-start">
+                <div key={t.key} className="shrink-0 basis-full snap-start">
                   <div className="rounded-2xl bg-[#F5F8FC] border border-[#E4EAF2] p-5 flex flex-col gap-4 overflow-hidden h-full">
                     <div className="rounded-xl bg-white text-[#081425] p-5 shadow-xl flex flex-col gap-4">
                       {/* 공종명 + 분석 상태 배지 */}
@@ -1242,7 +1181,7 @@ export default function Home() {
                           <BookOpen className="w-6 h-6" />
                         </div>
                         <div className="flex flex-col gap-1.5 min-w-0">
-                          <h2 className="text-[19px] leading-snug font-black break-keep">{t}</h2>
+                          <h2 className="text-[19px] leading-snug font-black break-keep">{t.key}</h2>
                           <span className="inline-flex items-center gap-1.5 self-start text-[11px] font-black text-[#1E7A46] bg-[#E7F6EE] px-2 py-0.5 rounded-full">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#28A76F]" />
                             AI 분석 완료
@@ -1313,7 +1252,7 @@ export default function Home() {
             <div className="rounded-2xl bg-[#F5F8FC] border border-[#E4EAF2] p-5 flex flex-col gap-5">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-[19px] font-black text-navy">총 공사 견적금액</h3>
-                <span className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black border ${LANDING_CHIP_CLASS[mobileTradeName]}`}>{mobileTradeName}</span>
+                <span className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-black border ${mobileTrade.chipClass}`}>{mobileTrade.key}</span>
               </div>
 
                 <div className="flex flex-col gap-2">
@@ -1388,12 +1327,12 @@ export default function Home() {
 
   // 견적 검토(데스크톱) — 기존 첫 화면 랜딩. '견적 검토' 탭에서 노출.
   const renderReviewDesktop = () => {
-    const activeTradeName = LANDING_TRADES[activeTradeIdx];
-    const activeManual = manualData[activeTradeName];
-    const activeMetrics = getDynamicMetrics(activeTradeName);
-    const photos = TRADE_PHOTOS[activeTradeName];
+    const activeTrade = LANDING_TRADES[activeTradeIdx];
+    const activeManual = manualData[activeTrade.key];
+    const activeMetrics = getDynamicMetrics(activeTrade.key);
+    const photos = activeTrade.photos;
     // 공종별 시그니처 색 — 회전하는 공종마다 히어로 테마를 바꿔 상단 칩바와 시선 연결·차별화
-    const sigHex = LANDING_SIGNATURE_HEX[activeTradeName] || '#D2691E';
+    const sigHex = activeTrade.signatureHex;
     // ZEROS 최적합 지수 = 검토 전 견적(100) 대비 (단가 부풀림 없이 적정화한 비율)
     const optimizedIndex = +(100 - activeMetrics.bubbleRate).toFixed(1);
 
@@ -1416,7 +1355,7 @@ export default function Home() {
             <div className="flex flex-col min-w-0">
               <h1 className="text-[26px] leading-[1.15] font-black text-navy tracking-tight break-keep">{activeManual.title}</h1>
 
-              {/* 실사 사진 — 상·하 2분할(현장 전경/작업 상세). TRADE_PHOTOS 연결, 없으면 플레이스홀더 폴백 */}
+              {/* 실사 사진 — 상·하 2분할(현장 전경/작업 상세). LANDING_TRADES.photos 연결, 없으면 플레이스홀더 폴백 */}
               <div className="pt-4 flex-1 flex flex-col gap-3 min-h-0">
                 {(['현장 전경', '작업 상세'] as const).map((slot, slotIdx) => {
                   const photoSrc = photos?.[slotIdx];
@@ -1551,7 +1490,7 @@ export default function Home() {
   // 상세 작업공간(견적 검토)·진단·실적·의뢰로 진입하는 관문 역할을 한다.
   // 평균 절감 효과 — 화면에 실제 렌더되는 공종별 절감률(bubbleRate)의 산술평균.
   // 요약값을 따로 적어두면 개별 공종 수치와 어긋난다(구 -31.5% = 공장증설 단일값 복사).
-  const HOME_SAVING_RATE = averageSavingRate(LANDING_TRADES.map((t) => getDynamicMetrics(t).bubbleRate));
+  const HOME_SAVING_RATE = averageSavingRate(LANDING_TRADES.map((t) => getDynamicMetrics(t.key).bubbleRate));
 
   // 신뢰 지표는 lib/constants/trust.ts 단일 소스 참조 — 여기에 숫자를 직접 적지 않는다.
   const HOME_STATS = [

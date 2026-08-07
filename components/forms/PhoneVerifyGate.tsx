@@ -1,78 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { User, Phone, ShieldCheck, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { useOtpVerify, OtpVerified } from '@/lib/otp/useOtpVerify';
 
 interface PhoneVerifyGateProps {
-  onVerified: (data: { name: string; phone: string; verifiedToken: string; sessionToken: string }) => void;
+  onVerified: (data: OtpVerified) => void;
   // 앞 단계에서 이미 받은 성함·연락처. 같은 값을 두 번 입력하지 않도록 초기값으로 채운다.
   initialName?: string;
   initialPhone?: string;
 }
 
-// 휴대폰 번호를 010-0000-0000 형태로 표시 포맷팅
-function formatPhone(v: string): string {
-  const d = v.replace(/[^0-9]/g, '').slice(0, 11);
-  if (d.length < 4) return d;
-  if (d.length < 8) return `${d.slice(0, 3)}-${d.slice(3)}`;
-  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
-}
-
 export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, initialName = '', initialPhone = '' }) => {
-  const [name, setName] = useState(() => initialName.trim());
-  const [phone, setPhone] = useState(() => formatPhone(initialPhone));
-  const [phase, setPhase] = useState<'input' | 'code'>('input');
-  const [token, setToken] = useState('');
-  const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const digits = phone.replace(/[^0-9]/g, '');
-  const phoneValid = /^01[0-9]{8,9}$/.test(digits);
-
-  const requestCode = async () => {
-    setError(null);
-    if (!name.trim()) { setError('성함을 입력해 주세요.'); return; }
-    if (!phoneValid) { setError('휴대폰 번호를 010-0000-0000 형식으로 입력해 주세요.'); return; }
-
-    setLoading(true);
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: digits }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || '인증번호 발송에 실패했습니다.');
-      setToken(data.token);
-      setPhase('code');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '인증번호 발송 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyCode = async () => {
-    setError(null);
-    if (code.replace(/[^0-9]/g, '').length < 6) { setError('인증번호 6자리를 입력해 주세요.'); return; }
-
-    setLoading(true);
-    try {
-      const res = await fetch('/api/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: digits, code, token }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || '인증에 실패했습니다.');
-      onVerified({ name: name.trim(), phone: formatPhone(digits), verifiedToken: data.verifiedToken, sessionToken: data.sessionToken });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '인증 처리 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 접수 게이트만 성함을 함께 받는다. 인증 왕복 자체는 로그인 두 화면과 같은 기계를 쓴다.
+  const otp = useOtpVerify({ onVerified, requireName: true, initialName, initialPhone });
 
   return (
     <div className="flex flex-col gap-4 max-w-md mx-auto py-2">
@@ -93,9 +34,9 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, in
           <User className="w-3.5 h-3.5 text-gray" /> 성함
         </span>
         <input
-          value={name}
-          onChange={(e) => { setName(e.target.value); setError(null); }}
-          disabled={phase === 'code'}
+          value={otp.name}
+          onChange={(e) => otp.changeName(e.target.value)}
+          disabled={otp.phase === 'code'}
           placeholder="성함을 입력하세요"
           className="w-full bg-bg border border-border rounded-custom px-3.5 py-2.5 text-[14px] font-medium text-navy outline-none focus:ring-2 focus:ring-steel/40 disabled:bg-bg-subtle disabled:text-gray"
         />
@@ -108,28 +49,28 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, in
         </span>
         <div className="flex gap-2">
           <input
-            value={phone}
-            onChange={(e) => { setPhone(formatPhone(e.target.value)); setError(null); }}
-            disabled={phase === 'code'}
+            value={otp.phone}
+            onChange={(e) => otp.changePhone(e.target.value)}
+            disabled={otp.phase === 'code'}
             inputMode="numeric"
             placeholder="010-0000-0000"
             className="flex-1 bg-bg border border-border rounded-custom px-3.5 py-2.5 text-[14px] font-medium text-navy outline-none focus:ring-2 focus:ring-steel/40 disabled:bg-bg-subtle disabled:text-gray"
           />
-          {phase === 'input' && (
+          {otp.phase === 'input' && (
             <button
               type="button"
-              onClick={requestCode}
-              disabled={loading}
+              onClick={otp.requestCode}
+              disabled={otp.loading}
               className="shrink-0 bg-steel hover:bg-navy text-bg px-4 py-2.5 rounded-custom text-[12px] font-black transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
             >
-              {loading ? '발송 중...' : '인증번호 전송'}
+              {otp.loading ? '발송 중...' : '인증번호 전송'}
             </button>
           )}
         </div>
       </label>
 
       {/* 인증번호 입력 단계 */}
-      {phase === 'code' && (
+      {otp.phase === 'code' && (
         <div className="flex flex-col gap-3 border-t border-border/70 pt-3">
           <label className="flex flex-col gap-1.5">
             <span className="text-[12px] font-bold text-navy flex items-center gap-1.5">
@@ -137,8 +78,8 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, in
             </span>
             <div className="flex gap-2">
               <input
-                value={code}
-                onChange={(e) => { setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6)); setError(null); }}
+                value={otp.code}
+                onChange={(e) => otp.changeCode(e.target.value)}
                 inputMode="numeric"
                 autoFocus
                 placeholder="문자로 받은 6자리"
@@ -146,17 +87,17 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, in
               />
               <button
                 type="button"
-                onClick={verifyCode}
-                disabled={loading}
+                onClick={otp.verifyCode}
+                disabled={otp.loading}
                 className="shrink-0 bg-accent hover:bg-navy text-bg px-5 py-2.5 rounded-custom text-[12px] font-black transition-all active:scale-95 disabled:opacity-50"
               >
-                {loading ? '확인 중...' : '확인'}
+                {otp.loading ? '확인 중...' : '확인'}
               </button>
             </div>
           </label>
           <button
             type="button"
-            onClick={() => { setPhase('input'); setCode(''); setError(null); }}
+            onClick={otp.backToInput}
             className="text-[12px] font-bold text-gray-light hover:text-navy transition-colors self-start"
           >
             번호 다시 입력하기
@@ -164,9 +105,9 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, in
         </div>
       )}
 
-      {error && (
+      {otp.error && (
         <div role="alert" aria-live="assertive" className="bg-danger/5 border border-danger/20 rounded-custom px-3 py-2 text-[12px] font-bold text-danger flex items-center gap-1.5">
-          {error}
+          {otp.error}
         </div>
       )}
 

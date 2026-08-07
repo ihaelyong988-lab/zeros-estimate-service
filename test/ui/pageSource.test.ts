@@ -1,39 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { REQUEST_CTA_LABEL } from '@/lib/constants/cta';
+import { readSource } from '../support/sourceScan';
 
 // 접근성 결함(C4 focus 대체스타일 · C5 reduced-motion · C6 본문 대비)은 컴포넌트 상태 분기가 아니라
 // 클래스 문자열 자체가 원인이라 소스 스캔으로 고정한다. DOM 렌더 없이 재발을 잡는 게 목적.
-const SOURCE_PATH = fileURLToPath(new URL('../../app/page.tsx', import.meta.url));
-const source = readFileSync(SOURCE_PATH, 'utf8');
-const lines = source.split(/\r?\n/);
-
-/** 위반 줄을 "번호: 내용" 으로 만들어 실패 메시지에서 바로 위치를 알 수 있게 한다. */
-function locate(predicate: (line: string) => boolean): string[] {
-  return lines
-    .map((line, index) => ({ line, no: index + 1 }))
-    .filter(({ line }) => predicate(line))
-    .map(({ line, no }) => `${no}: ${line.trim()}`);
-}
+// C4·C5 는 게이트 룰(R4·R5)과 같은 판정이라 test/ui/a11ySourceRules.test.ts 가 게이트 정의를 빌려 채점한다.
+const { source, lines, locate } = readSource('app/page.tsx');
 
 describe('app/page.tsx 접근성 소스 규칙', () => {
-  it('focus:outline-none 은 focus-visible 대체 스타일 없이 쓰지 않는다', () => {
-    const violations = locate(
-      (line) => line.includes('focus:outline-none') && !line.includes('focus-visible:')
-    );
-    expect(violations).toEqual([]);
-  });
-
-  it('animate-* 유틸리티에는 motion-reduce:animate-none 가드가 붙는다', () => {
-    // animate-none 자체는 가드이므로 매칭 대상에서 빠진다. animate-[...] 임의값·animate-in 도 포함한다.
-    const animated = /\banimate-(bounce|pulse|spin|ping|in)\b|\banimate-\[/;
-    const violations = locate(
-      (line) => animated.test(line) && !line.includes('motion-reduce:animate-none')
-    );
-    expect(violations).toEqual([]);
-  });
-
   it('주입 CSS 의 animation 에는 prefers-reduced-motion 가드가 붙는다', () => {
     // <style> 로 넣는 규칙은 Tailwind 유틸리티가 아니라 게이트가 못 본다. 두 주입 형태를 모두 본다.
     const blocks = [

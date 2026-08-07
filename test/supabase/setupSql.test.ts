@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { MAX_FILE_BYTES } from '@/lib/constants/uploadLimits';
+import { readSource } from '../support/sourceScan';
 
 // ==========================================
 // D7 — estimate-files 버킷 익명 업로드 한도
@@ -17,14 +16,10 @@ import { MAX_FILE_BYTES } from '@/lib/constants/uploadLimits';
 // application/x-dwg 등)을 거부해 실제 고객 첨부만 막는다. 형식 검증은 확장자 기준
 // validateFileFormat 이 담당한다. 아래 테스트가 그 결정을 고정한다.
 
-const SQL_PATH = fileURLToPath(new URL('../../supabase/supabase-setup.sql', import.meta.url));
-const sql = readFileSync(SQL_PATH, 'utf8');
+const { lines } = readSource('supabase/supabase-setup.sql');
 
 // 주석에 적힌 값이 통과시키지 않도록 실행 구문만 남긴다.
-const code = sql
-  .split(/\r?\n/)
-  .filter((line) => !/^\s*--/.test(line))
-  .join('\n');
+const code = lines.filter((line) => !/^\s*--/.test(line)).join('\n');
 
 const bucketStatement =
   (code.match(/update\s+storage\.buckets[\s\S]*?;/gi) || []).find((s) => /file_size_limit/i.test(s)) || '';
