@@ -142,6 +142,38 @@ update storage.buckets set public = false where id = 'estimate-files';
 create unique index if not exists zeros_estimates_no_uniq
   on zeros_estimates ((data->>'estimate_no'));
 
+-- ------------------------------------------------------------
+-- 7. 익명 업로드 한도 (2026-08-07)
+--    §5-2 로 익명 insert 를 열어 두었는데 버킷에 용량·형식 한도가 없다. 공개 anon 키만
+--    있으면 누구나 임의 용량을 무제한 적재해 저장 용량·요금을 소진시킬 수 있다.
+--
+--    개당 용량 52428800 = lib/constants/uploadLimits.ts 의 MAX_FILE_BYTES(50MB)와 같은 값,
+--    형식 목록 = 같은 파일 ALLOWED_EXTENSIONS 와 1:1. 두 값의 동기는 test/supabase/setupSql.test.ts
+--    가 기계로 채점한다(한쪽만 바꾸면 테스트가 막는다).
+--
+--    ※ dwg·dxf·hwp·hwpx 는 브라우저가 형식을 몰라 lib/supabase/storage.ts 가
+--      application/octet-stream 으로 올린다 — 목록에서 빼면 도면·한글 첨부가 통째로 막힌다.
+--    ※ MIME 은 클라이언트 신고값이라 우회가 가능하다. 실질 방어는 용량 한도다.
+--    ※ 라이브 DB 반영은 사람이 이 SQL 을 실행하는 시점이다. 실행 전에도 앱은 그대로
+--      동작하고(코드는 한도를 읽지 않는다), 실행 후에는 한도를 넘는 업로드만 거부된다.
+--      멱등 — 버킷을 새로 만들지 않고 기존 행만 갱신하므로 여러 번 실행해도 결과가 같다.
+-- ------------------------------------------------------------
+update storage.buckets
+   set file_size_limit = 52428800,
+       allowed_mime_types = array[
+         'image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp',
+         'application/pdf',
+         'image/vnd.dwg', 'image/x-dwg', 'application/acad',
+         'image/vnd.dxf', 'application/dxf',
+         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+         'application/vnd.ms-excel',
+         'application/x-hwp', 'application/haansofthwp',
+         'application/vnd.hancom.hwp', 'application/vnd.hancom.hwpx',
+         'application/zip', 'application/x-zip-compressed',
+         'application/octet-stream'
+       ]
+ where id = 'estimate-files';
+
 -- ============================================================
 -- 완료. 파일은 비공개로 저장되며, 관리자 로그인 또는 고객 본인
 -- 인증을 거친 경우에만 서명 URL(10분)로 열람·다운로드됩니다.

@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NextRequest } from 'next/server';
-import type { Estimate, FileMeta } from '@/types/estimate';
-import { makeEstimate } from '../fixtures';
+import type { Estimate, FileMeta, Payment } from '@/types/estimate';
+import { makeEstimate, makePayment } from '../fixtures';
 
 // ==========================================
 // /api/data 게이트웨이 회귀 테스트
@@ -51,9 +51,20 @@ vi.mock('@/lib/supabase/supabaseServer', () => {
           }
           return { error: null };
         },
+        // 삭제도 실제로 행을 지운다 — 지운 척만 하면 "삭제됐는가"를 검증할 수 없다.
         delete: () => ({
-          eq: async () => ({ error: null }),
-          in: async () => ({ error: null }),
+          eq: async (column: string, value: unknown) => {
+            db.tables[table] = (db.tables[table] || []).filter(
+              (r) => (r as Record<string, unknown>)[column] !== value
+            );
+            return { error: null };
+          },
+          in: async (column: string, values: unknown[]) => {
+            db.tables[table] = (db.tables[table] || []).filter(
+              (r) => !values.includes((r as Record<string, unknown>)[column])
+            );
+            return { error: null };
+          },
         }),
       };
     },
@@ -62,6 +73,17 @@ vi.mock('@/lib/supabase/supabaseServer', () => {
 });
 
 import { POST } from '@/app/api/data/route';
+import { createAdminSession, createSession } from '@/lib/otp/token';
+
+// 관리자 토큰 검증(checkAdminSession)은 호출 시점의 ZEROS_ADMIN_PASSWORD 로 태그를 만든다.
+// 미설정이면 fail-closed 로 항상 false 라, 권한 분기를 검사하려면 이 파일 동안 값을 고정한다.
+const ORIGINAL_ADMIN_PW = process.env.ZEROS_ADMIN_PASSWORD;
+process.env.ZEROS_ADMIN_PASSWORD = 'test-admin-password';
+
+afterAll(() => {
+  if (ORIGINAL_ADMIN_PW === undefined) delete process.env.ZEROS_ADMIN_PASSWORD;
+  else process.env.ZEROS_ADMIN_PASSWORD = ORIGINAL_ADMIN_PW;
+});
 
 // 레이트리밋은 프로세스 메모리를 공유한다 — 테스트끼리 서로의 한도를 갉아먹지 않도록
 // 번호·IP 를 매번 새로 발급한다(실사용에서도 번호·IP 가 축이다).
@@ -476,6 +498,125 @@ describe('createEstimate — 번호 레이트리밋 소모 시점(A3 봉합)', (
     const blocked = await submit({ phone, customer_name: '홍길동' }, 'ip-rate-last');
     expect(blocked.status).toBe(429);
     expect(Number(blocked.headers.get('Retry-After'))).toBeGreaterThan(0);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// N6 — 결제 행 삭제 경로(deletePayment)
+// ──────────────────────────────────────────────────────────────────────────
+// 잘못 만든 청구 행을 지울 서버 경로가 없어, 오입력 결제가 미수금·결제상태에 영구히 남았다.
+// deleteEstimate 와 같은 관리자 전용 delete op 로 뚫되, 견적의 결제상태는 저장하지 않고
+// 남은 결제 행 집합에서 파생한 값을 돌려준다(§14-4 — 파생값은 저장하지 않는다).
+
+const payments = () => (db.tables.zeros_payments || []) as unknown as Payment[];
+
+const seedPayments = (rows: Payment[]) => {
+  db.tables.zeros_payments = rows as unknown as Record<string, unknown>[];
+};
+
+describe('deletePayment — 권한(N6)', () => {
+  it('관리자는 결제 행을 삭제한다', async () => {
+    const target = makePayment({ id: 'pay-del-1', estimate_id: 'est-1', payment_status: '결제대기' });
+    seedPayments([target, makePayment({ id: 'pay-keep-1', estimate_id: 'est-2' })]);
+
+    const res = await call({ op: 'deletePayment', id: 'pay-del-1', adminToken: createAdminSession() });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(payments().map((p) => p.id)).toEqual(['pay-keep-1']);
+  });
+
+  it('익명 요청은 403 이고 행이 남는다', async () => {
+    seedPayments([makePayment({ id: 'pay-del-2', estimate_id: 'est-1' })]);
+
+    const res = await call({ op: 'deletePayment', id: 'pay-del-2' });
+
+    expect(res.status).toBe(403);
+    expect(payments()).toHaveLength(1);
+  });
+
+  it('고객 세션 토큰도 403 이다 — 본인 건이라도 결제 행을 지울 수 없다', async () => {
+    const phone = '01055556666';
+    seedPayments([makePayment({ id: 'pay-del-3', estimate_id: 'est-1' })]);
+
+    const res = await call({
+      op: 'deletePayment',
+      id: 'pay-del-3',
+      sessionToken: createSession(phone),
+      phone,
+    });
+
+    expect(res.status).toBe(403);
+    expect(payments()).toHaveLength(1);
+  });
+
+  it('만료·위조 관리자 토큰도 403 이다', async () => {
+    seedPayments([makePayment({ id: 'pay-del-4', estimate_id: 'est-1' })]);
+
+    const res = await call({ op: 'deletePayment', id: 'pay-del-4', adminToken: '위조.토큰' });
+
+    expect(res.status).toBe(403);
+    expect(payments()).toHaveLength(1);
+  });
+
+  it('id 가 없으면 400 이다', async () => {
+    const res = await call({ op: 'deletePayment', adminToken: createAdminSession() });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('없는 id 는 404 로 구분한다 — 조용히 성공시키지 않는다', async () => {
+    seedPayments([makePayment({ id: 'pay-keep-2', estimate_id: 'est-1' })]);
+
+    const res = await call({ op: 'deletePayment', id: 'pay-없음', adminToken: createAdminSession() });
+
+    expect(res.status).toBe(404);
+    expect(payments()).toHaveLength(1);
+  });
+});
+
+describe('deletePayment — 삭제 후 결제상태 파생(N6)', () => {
+  it('남은 행 집합에서 파생한 상태를 돌려준다', async () => {
+    seedPayments([
+      makePayment({ id: 'pay-paid', estimate_id: 'est-1', payment_status: '결제완료' }),
+      makePayment({ id: 'pay-wait', estimate_id: 'est-1', payment_status: '결제대기' }),
+    ]);
+
+    const res = await call({ op: 'deletePayment', id: 'pay-paid', adminToken: createAdminSession() });
+
+    expect(res.status).toBe(200);
+    expect(res.body.payment_status).toBe('결제대기');
+  });
+
+  it('마지막 행을 지우면 미결제로 돌아간다', async () => {
+    seedPayments([makePayment({ id: 'pay-only', estimate_id: 'est-1', payment_status: '결제완료' })]);
+
+    const res = await call({ op: 'deletePayment', id: 'pay-only', adminToken: createAdminSession() });
+
+    expect(res.body.payment_status).toBe('미결제');
+  });
+
+  it('다른 견적의 결제 행은 파생에 섞이지 않는다', async () => {
+    seedPayments([
+      makePayment({ id: 'pay-mine', estimate_id: 'est-1', payment_status: '결제완료' }),
+      makePayment({ id: 'pay-others', estimate_id: 'est-2', payment_status: '결제완료' }),
+    ]);
+
+    const res = await call({ op: 'deletePayment', id: 'pay-mine', adminToken: createAdminSession() });
+
+    expect(res.body.payment_status).toBe('미결제');
+  });
+
+  it('견적 행에 결제상태를 저장하지 않는다 — 파생값은 저장하지 않는다(§14-4)', async () => {
+    db.tables.zeros_estimates = [
+      makeEstimate({ id: 'est-1', payment_status: '결제완료' }),
+    ] as unknown as Record<string, unknown>[];
+    seedPayments([makePayment({ id: 'pay-derive', estimate_id: 'est-1', payment_status: '결제완료' })]);
+
+    const res = await call({ op: 'deletePayment', id: 'pay-derive', adminToken: createAdminSession() });
+
+    expect(res.status).toBe(200);
+    expect(db.upsertCalls.zeros_estimates).toBeUndefined();
   });
 });
 

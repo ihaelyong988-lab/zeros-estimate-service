@@ -3,15 +3,15 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { clearAdminToken } from '@/lib/files/secureFile';
 import { clearDataCache } from '@/lib/supabase/client';
+import { SHELL_TABS, type ShellTab } from '@/lib/shell/urlState';
 
-export type ActiveTab = 'business' | 'performance' | 'request' | 'home' | 'sop' | 'review' | 'process';
-
-const TAB_VALUES: ActiveTab[] = ['business', 'performance', 'request', 'home', 'sop', 'review', 'process'];
+// 탭 목록의 단일 소스는 lib/shell/urlState — URL 해석부와 어긋나지 않게 여기서 다시 세지 않는다.
+export type ActiveTab = ShellTab;
 
 // 현재 URL의 ?tab= 값을 탭으로 해석 (없거나 모르는 값이면 home)
 const parseTabFromUrl = (): ActiveTab => {
   const t = new URLSearchParams(window.location.search).get('tab');
-  return TAB_VALUES.includes(t as ActiveTab) ? (t as ActiveTab) : 'home';
+  return SHELL_TABS.includes(t as ActiveTab) ? (t as ActiveTab) : 'home';
 };
 
 const getMainPanel = () =>
@@ -29,12 +29,6 @@ export interface ShellContextType {
   setSelectedMenu: (menu: string) => void;
   selectedBudget: string;
   setSelectedBudget: (budget: string) => void;
-  // 랜딩 쇼케이스가 자동 순회 중인 공종명 — 최상단 칩바 하이라이트/자동스크롤 연동용
-  landingTradeName: string;
-  setLandingTradeName: (name: string) => void;
-  // 순회 중인 공종의 시그니처 색(활성 칩 className) — 칩 바탕색을 쇼케이스 색과 일치시킴
-  landingTradeChipClass: string;
-  setLandingTradeChipClass: (cls: string) => void;
   adminView: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications';
   setAdminView: (view: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications') => void;
   adminSubView: 'table' | 'kanban';
@@ -137,8 +131,6 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
   const [selectedMenu, setSelectedMenu] = useState<string>('');
   const [selectedBudget, setSelectedBudget] = useState<string>('');
-  const [landingTradeName, setLandingTradeName] = useState<string>('');
-  const [landingTradeChipClass, setLandingTradeChipClass] = useState<string>('bg-steel border-steel text-bg');
   const [adminView, setAdminView] = useState<'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications'>('dashboard');
   const [adminSubView, setAdminSubView] = useState<'table' | 'kanban'>('table');
   const [selectedEstimateId, setSelectedEstimateId] = useState<string | null>(null);
@@ -196,10 +188,6 @@ export const ShellProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setSelectedMenu,
         selectedBudget,
         setSelectedBudget,
-        landingTradeName,
-        setLandingTradeName,
-        landingTradeChipClass,
-        setLandingTradeChipClass,
         adminView,
         setAdminView,
         adminSubView,

@@ -1,10 +1,9 @@
 'use client';
 
 import { Estimate, EstimateStatus, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
-import { mockAdminUsers, mockCustomers, mockEstimates, mockPayments, mockSiteVisits } from './mock-data';
 import { isSupabaseEnabled } from './supabaseBrowser';
 import { supplyAmountOf } from '@/lib/quote/amounts';
-import { derivePaymentStatus } from '@/lib/payments/status';
+import { derivePaymentStatus, type PaymentStatus } from '@/lib/payments/status';
 
 // ==========================================
 // 0. 접수 인증 토큰 — 전송 판정 (순수 함수)
@@ -133,6 +132,8 @@ export interface ZerosDataService {
   getPayments: () => Promise<Payment[]>;
   createPayment: (payment: Partial<Payment>) => Promise<Payment>;
   updatePayment: (id: string, updates: Partial<Payment>) => Promise<Payment>;
+  // 반환값 = 삭제 후 남은 행 집합에서 파생한 그 견적의 결제상태(저장값이 아니다).
+  deletePayment: (id: string) => Promise<PaymentStatus>;
 
   // 현장방문 관련
   getSiteVisits: () => Promise<SiteVisit[]>;
@@ -623,6 +624,21 @@ abstract class BaseZerosService implements ZerosDataService {
     return updated;
   }
 
+  // ---------- 결제 삭제 ----------
+  // 오입력된 청구 행을 지울 경로가 없어 미수금·결제상태가 틀린 채로 남았다.
+  // 견적에 결제상태를 다시 저장하지는 않는다 — 남은 행 집합에서 파생한 값을 돌려주고,
+  // 화면·집계는 그 값을 근거로 쓴다(§14-4 파생값은 저장하지 않는다).
+  // Mock(localStorage)은 배열을 통째로 다시 저장하므로 필터링만으로 삭제가 반영된다.
+  async deletePayment(id: string): Promise<PaymentStatus> {
+    const list = await this.fresh<Payment>(TABLES.payments);
+    const target = list.find(p => p.id === id);
+    if (!target) throw new Error('Payment not found');
+
+    const rest = list.filter(p => p.id !== id);
+    await this.persistTable(TABLES.payments, rest);
+    return derivePaymentStatus(rest.filter(p => p.estimate_id === target.estimate_id));
+  }
+
   // ---------- 현장방문 ----------
   async getSiteVisits(): Promise<SiteVisit[]> {
     return this.loadTable<SiteVisit>(TABLES.siteVisits);
@@ -716,43 +732,55 @@ abstract class BaseZerosService implements ZerosDataService {
 // 3. LocalStorage 기반 영속 Mock 서비스 (폴백 어댑터)
 // ==========================================
 class MockZerosService extends BaseZerosService {
-  private isInitialized = false;
+  // 시드 진행 상태. 조회가 동시에 들어와도 모의 데이터는 한 번만 적재한다.
+  private seeding: Promise<void> | null = null;
 
-  private init() {
-    if (this.isInitialized) return;
-    if (typeof window === 'undefined') return;
+  private init(): Promise<void> {
+    if (typeof window === 'undefined') return Promise.resolve();
+    if (!this.seeding) {
+      this.seeding = this.seed().catch((e) => {
+        this.seeding = null; // 청크 적재 실패는 다음 조회에서 다시 시도한다
+        throw e;
+      });
+    }
+    return this.seeding;
+  }
+
+  // 모의 데이터(1,393줄)는 Supabase 미설정 폴백에서만 쓰인다. 정적으로 묶으면 실행되지 않는 코드가
+  // 고객 첫 로드 번들에 그대로 실리므로, 이 경로에 들어왔을 때만 별도 청크로 내려받는다.
+  private async seed(): Promise<void> {
+    const m = await import('./mock-data');
 
     // 시드 버전이 바뀌면 견적 표본을 새로 적재(실적 시각화용 테스트 데이터 갱신).
     // 사용자가 직접 입력한 건은 다음 버전 변경 전까지 유지된다.
     if (localStorage.getItem(SEED_VERSION_KEY) !== SEED_VERSION) {
-      localStorage.setItem(TABLES.estimates, JSON.stringify(mockEstimates));
+      localStorage.setItem(TABLES.estimates, JSON.stringify(m.mockEstimates));
       localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION);
     }
 
     if (!localStorage.getItem(TABLES.estimates)) {
-      localStorage.setItem(TABLES.estimates, JSON.stringify(mockEstimates));
+      localStorage.setItem(TABLES.estimates, JSON.stringify(m.mockEstimates));
     }
     if (!localStorage.getItem(TABLES.customers)) {
-      localStorage.setItem(TABLES.customers, JSON.stringify(mockCustomers));
+      localStorage.setItem(TABLES.customers, JSON.stringify(m.mockCustomers));
     }
     if (!localStorage.getItem(TABLES.payments)) {
-      localStorage.setItem(TABLES.payments, JSON.stringify(mockPayments));
+      localStorage.setItem(TABLES.payments, JSON.stringify(m.mockPayments));
     }
     if (!localStorage.getItem(TABLES.siteVisits)) {
-      localStorage.setItem(TABLES.siteVisits, JSON.stringify(mockSiteVisits));
+      localStorage.setItem(TABLES.siteVisits, JSON.stringify(m.mockSiteVisits));
     }
     if (!localStorage.getItem(TABLES.adminUsers)) {
-      localStorage.setItem(TABLES.adminUsers, JSON.stringify(mockAdminUsers));
+      localStorage.setItem(TABLES.adminUsers, JSON.stringify(m.mockAdminUsers));
     }
     if (!localStorage.getItem(TABLES.notificationLogs)) {
       localStorage.setItem(TABLES.notificationLogs, JSON.stringify([]));
     }
-    this.isInitialized = true;
   }
 
   protected async loadTable<T>(key: string): Promise<T[]> {
-    this.init();
     if (typeof window === 'undefined') return [];
+    await this.init();
     const item = localStorage.getItem(key);
     return item ? (JSON.parse(item) as T[]) : [];
   }
@@ -858,6 +886,14 @@ class SupabaseZerosService extends BaseZerosService {
     await this.postData<{ ok: boolean }>({ op: 'deleteEstimate', id });
     // 서버가 연관 결제·방문·알림 행까지 지운다 — 함께 무효화한다.
     dataCache.invalidate(TABLES.estimates, TABLES.payments, TABLES.siteVisits, TABLES.notificationLogs);
+  }
+
+  // 결제 행 삭제도 같은 이유로 서버 delete op(관리자 전용)를 쓴다.
+  // 견적 행은 서버도 건드리지 않으므로 결제 테이블만 무효화한다.
+  async deletePayment(id: string): Promise<PaymentStatus> {
+    const { payment_status } = await this.postData<{ payment_status: PaymentStatus }>({ op: 'deletePayment', id });
+    dataCache.invalidate(TABLES.payments);
+    return payment_status;
   }
 }
 

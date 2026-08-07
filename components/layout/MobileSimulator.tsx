@@ -10,12 +10,12 @@ export const MobileSimulator: React.FC = () => {
   if (!showSimulator) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none">
       {/* 닫기 배경 클릭 */}
       <div className="absolute inset-0" onClick={() => setShowSimulator(false)} />
 
       {/* 시뮬레이터 카드 */}
-      <div className="relative bg-bg border border-border shadow-custom-xl rounded-[32px] w-full max-w-[480px] p-6 flex flex-col items-center gap-4 z-10 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-bg border border-border shadow-custom-xl rounded-[32px] w-full max-w-[480px] p-6 flex flex-col items-center gap-4 z-10 animate-in zoom-in-95 duration-200 motion-reduce:animate-none">
         
         {/* 헤더 컨트롤 바 */}
         <div className="w-full flex items-center justify-between pb-2 border-b border-border select-none">
@@ -25,7 +25,7 @@ export const MobileSimulator: React.FC = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-[12px] font-black text-navy leading-none">ZEROS Mobile Simulator</span>
-              <span className="text-[12px] text-gray-light font-bold uppercase tracking-wide mt-0.5">
+              <span className="text-[12px] text-gray font-bold uppercase tracking-wide mt-0.5">
                 모바일 앱 라이브 테스트
               </span>
             </div>

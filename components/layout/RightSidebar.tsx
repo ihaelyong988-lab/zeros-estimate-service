@@ -314,10 +314,11 @@ export const RightSidebar: React.FC = () => {
                 max="100"
                 value={sliderVal}
                 onChange={(e) => setSliderVal(Number(e.target.value))}
-                className="relative touch-none w-full h-1.5 bg-bg-subtle rounded-lg appearance-none cursor-pointer accent-steel border border-border focus:outline-none"
+                aria-label="예상 견적 조절 슬라이더"
+                className="relative touch-none w-full h-1.5 bg-bg-subtle rounded-lg appearance-none cursor-pointer accent-steel border border-border focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-steel"
               />
             </div>
-            <div className="flex items-center justify-between text-[11px] text-gray-light font-bold tabular-nums">
+            <div className="flex items-center justify-between text-[11px] text-gray font-bold tabular-nums">
               <span>최소 {metrics.minAmount}</span>
               <span>중앙값 {metrics.medianAmount}</span>
               <span>최대 {metrics.maxAmount}</span>
@@ -328,7 +329,7 @@ export const RightSidebar: React.FC = () => {
             <span className="font-black text-accent">견적 수수료 (2%)</span>
             <span className="font-black text-accent text-[13.5px] tabular-nums">₩{feeAmount.toLocaleString()}</span>
           </div>
-          <p className="text-[12px] text-gray-light font-medium leading-normal">
+          <p className="text-[12px] text-gray font-medium leading-normal">
             * 수수료는 현장 실측·1차 검토 포함, 전국 출장비 <strong className="text-navy font-black">0원</strong>.
           </p>
         </div>
@@ -354,7 +355,7 @@ export const RightSidebar: React.FC = () => {
         >
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-gray">ZEROS 검증 실적</span>
-            <span className="text-[12px] text-gray-light font-medium mt-0.5 tabular-nums">
+            <span className="text-[12px] text-gray font-medium mt-0.5 tabular-nums">
               {TRUST_LABEL.cumulative} {TRUST_VALUE.cumulative} · {TRUST_LABEL.confidence} {TRUST_VALUE.confidence}
             </span>
           </div>
@@ -397,7 +398,7 @@ const toneDot: Record<Tone, string> = {
 
 const StatTile: React.FC<{ label: string; value: string; tone?: Tone }> = ({ label, value, tone = 'navy' }) => (
   <div className="bg-bg border border-border rounded-custom px-3 py-2.5 flex flex-col gap-1 shadow-custom-sm">
-    <span className="text-[11px] text-gray-light font-bold uppercase tracking-wider leading-none">{label}</span>
+    <span className="text-[11px] text-gray font-bold uppercase tracking-wider leading-none">{label}</span>
     <span className={`text-[19px] font-black tabular-nums tracking-tight leading-none ${toneText[tone]}`}>{value}</span>
   </div>
 );
@@ -592,9 +593,9 @@ const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
         {/* 헤더 — 좌측에서 선택한 관리 주제를 그대로 반향 */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] text-gray-light font-bold uppercase tracking-wider">확인 패널</span>
+            <span className="text-[11px] text-gray font-bold uppercase tracking-wider">확인 패널</span>
             <span className="inline-flex items-center gap-1 text-[11px] font-black text-success">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> 실시간
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none" /> 실시간
             </span>
           </div>
           <div className="flex items-center gap-2.5">
@@ -603,7 +604,7 @@ const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
             </span>
             <div className="flex flex-col leading-tight">
               <h3 className="text-[15px] font-black text-navy tracking-tight">{cfg.title}</h3>
-              <span className="text-[11.5px] font-semibold text-gray-light">{cfg.sub}</span>
+              <span className="text-[11.5px] font-semibold text-gray">{cfg.sub}</span>
             </div>
           </div>
         </div>
@@ -651,7 +652,7 @@ const AdminContextPanel: React.FC<AdminContextPanelProps> = ({
         </div>
 
         {/* 운영 원칙 한 줄 */}
-        <p className="text-[11px] text-gray-light font-medium leading-normal border-t border-border/60 pt-3 flex items-start gap-1.5">
+        <p className="text-[11px] text-gray font-medium leading-normal border-t border-border/60 pt-3 flex items-start gap-1.5">
           <Clock className="w-3.5 h-3.5 text-steel shrink-0 mt-px" />
           <span>신규 사전진단 요청은 <strong className="text-navy font-black">{TRUST_VALUE.firstReply}</strong> 1차 엔지니어링 검토를 완료합니다.</span>
         </p>

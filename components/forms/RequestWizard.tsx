@@ -15,6 +15,7 @@ import { validateUpload, ACCEPT_ATTR, ALLOWED_LABEL, MAX_PER_CATEGORY, MAX_TOTAL
 import { useShell, PHONE_VERIFIED_KEY } from '@/lib/context/ShellContext';
 import { PhoneVerifyGate } from './PhoneVerifyGate';
 import { menuDisplayName } from '@/lib/constants/menu';
+import { nextRovingIndex, rovingTabStop } from '@/lib/a11y/rovingTabindex';
 import {
   SITE_TYPE_OPTIONS,
   SMS_PENDING_NOTICE,
@@ -130,6 +131,69 @@ const MethodologyList = ({ channel }: { channel: RequestChannel }) => {
   );
 };
 
+// 예약방문 시간대 — 값이 곧 화면 표기다.
+const VISIT_TIME_OPTIONS = ['오전', '오후'] as const;
+type VisitTime = (typeof VISIT_TIME_OPTIONS)[number];
+
+// 칩 공통 계약 — 터치 44px(§10) · focus-visible 가시 · motion-reduce 가드. 크기만 그룹별로 덧댄다.
+const CHIP_CLS = 'min-h-[44px] rounded-custom font-bold border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40';
+const CHIP_ON_CLS = 'border-steel bg-steel/10 text-navy';
+const CHIP_OFF_CLS = 'border-border bg-bg text-gray hover:border-steel/60';
+
+interface RadioChipGroupProps<T extends string> {
+  options: readonly T[];
+  value: T | '';
+  onSelect: (value: T) => void;
+  /** 화면에 보이는 그룹 제목의 id — 그룹 이름을 따로 만들지 않는다. */
+  labelledBy: string;
+  /** 그리드 배치 */
+  className: string;
+  /** 칩 크기·자간(그룹마다 다른 부분만) */
+  sizeClassName: string;
+  renderLabel?: (value: T) => string;
+}
+
+// 선택형 칩 그룹 — ARIA APG radiogroup(tab stop 1개 + 방향키 이동 · 이동이 곧 선택).
+// 칩마다 tab stop 을 두면 키보드로 다음 입력칸까지 18번을 눌러야 했다(N4).
+function RadioChipGroup<T extends string>({
+  options, value, onSelect, labelledBy, className, sizeClassName, renderLabel,
+}: RadioChipGroupProps<T>) {
+  const groupRef = useRef<HTMLDivElement | null>(null);
+  const tabStop = rovingTabStop(options, value);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const next = nextRovingIndex(options.length, index, e.key);
+    if (next === null) return;
+    // 방향키가 폼을 스크롤시키지 않게 막고 이동 대상으로 포커스를 옮긴다.
+    e.preventDefault();
+    onSelect(options[next]);
+    groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next]?.focus();
+  };
+
+  return (
+    <div ref={groupRef} role="radiogroup" aria-labelledby={labelledBy} className={className}>
+      {options.map((option, index) => {
+        const on = value === option;
+        return (
+          <button
+            key={option}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            tabIndex={index === tabStop ? 0 : -1}
+            onClick={() => onSelect(option)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+            style={{ touchAction: 'manipulation' }}
+            className={`${sizeClassName} ${CHIP_CLS} ${on ? CHIP_ON_CLS : CHIP_OFF_CLS}`}
+          >
+            {renderLabel ? renderLabel(option) : option}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 const defaultFormData = {
   customer_name: '',
   company_name: '',
@@ -150,7 +214,7 @@ const defaultFormData = {
   request_detail: '',
   // 예약방문(채널 visit 전용) — 희망 방문일/시간대
   visit_date: '',
-  visit_time: '오전' as '오전' | '오후',
+  visit_time: '오전' as VisitTime,
   files: [] as FileMeta[],
   agreePrivacy: false
 };
@@ -780,26 +844,15 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                   <Wrench className="w-4.5 h-4.5 text-steel" />
                   공사 종류 · 필수
                 </span>
-                <div role="radiogroup" aria-labelledby="work_type_label" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {WORK_TYPE_OPTIONS.map((w) => {
-                    const on = formData.work_type === w;
-                    return (
-                      <button
-                        key={w}
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        onClick={() => selectScope({ work_type: w })}
-                        style={{ touchAction: 'manipulation' }}
-                        className={`px-2.5 py-2 min-h-[44px] rounded-custom text-[14.5px] font-bold leading-snug border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40 ${
-                          on ? 'border-steel bg-steel/10 text-navy' : 'border-border bg-bg text-gray hover:border-steel/60'
-                        }`}
-                      >
-                        {menuDisplayName(w)}
-                      </button>
-                    );
-                  })}
-                </div>
+                <RadioChipGroup
+                  options={WORK_TYPE_OPTIONS}
+                  value={formData.work_type}
+                  onSelect={(w) => selectScope({ work_type: w })}
+                  labelledBy="work_type_label"
+                  className="grid grid-cols-2 sm:grid-cols-3 gap-2"
+                  sizeClassName="px-2.5 py-2 text-[14.5px] leading-snug"
+                  renderLabel={menuDisplayName}
+                />
               </div>
 
               {/* 현장 유형 — 공사 종류와 같은 칩 패턴. */}
@@ -808,26 +861,14 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                   <Factory className="w-4.5 h-4.5 text-steel" />
                   현장 유형 · 필수
                 </span>
-                <div role="radiogroup" aria-labelledby="site_type_label" className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  {SITE_TYPE_OPTIONS.map((s) => {
-                    const on = formData.site_type === s;
-                    return (
-                      <button
-                        key={s}
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        onClick={() => selectScope({ site_type: s })}
-                        style={{ touchAction: 'manipulation' }}
-                        className={`px-2.5 py-2 min-h-[44px] rounded-custom text-[14.5px] font-bold leading-snug border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40 ${
-                          on ? 'border-steel bg-steel/10 text-navy' : 'border-border bg-bg text-gray hover:border-steel/60'
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    );
-                  })}
-                </div>
+                <RadioChipGroup
+                  options={SITE_TYPE_OPTIONS}
+                  value={formData.site_type}
+                  onSelect={(s) => selectScope({ site_type: s })}
+                  labelledBy="site_type_label"
+                  className="grid grid-cols-3 sm:grid-cols-4 gap-2"
+                  sizeClassName="px-2.5 py-2 text-[14.5px] leading-snug"
+                />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -881,7 +922,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
             <div className="flex flex-col gap-5">
               {channel === 'visit' && (
                 <div className="flex flex-col gap-2.5">
-                  <label htmlFor="visit_date" className={labelCls}>
+                  {/* 시간대 그룹도 이 라벨을 이름으로 쓴다 — 같은 안내를 두 번 적지 않는다. */}
+                  <label htmlFor="visit_date" id="visit_time_label" className={labelCls}>
                     <CalendarClock className="w-4.5 h-4.5 text-steel" />
                     방문 가능 날짜 · 시간 (필수)
                   </label>
@@ -896,23 +938,15 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                     style={{ touchAction: 'manipulation' }}
                     className={`${inputCls} text-navy`}
                   />
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {(['오전', '오후'] as const).map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setFormData((f) => patchRequestForm(f, { visit_time: t }, saveDraft))}
-                        style={{ touchAction: 'manipulation' }}
-                        className={`p-3 min-h-[44px] rounded-custom text-[15px] font-bold border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40 ${
-                          formData.visit_time === t
-                            ? 'border-steel bg-steel/10 text-navy'
-                            : 'border-border bg-bg text-gray hover:border-steel/60'
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
+                  {/* 오전·오후도 같은 단일 선택 그룹이다 — 마크업이 없어 radio 로 안내되지 않던 것을 함께 맞춘다. */}
+                  <RadioChipGroup
+                    options={VISIT_TIME_OPTIONS}
+                    value={formData.visit_time}
+                    onSelect={(t) => setFormData((f) => patchRequestForm(f, { visit_time: t }, saveDraft))}
+                    labelledBy="visit_time_label"
+                    className="grid grid-cols-2 gap-2.5"
+                    sizeClassName="p-3 text-[15px]"
+                  />
                 </div>
               )}
 

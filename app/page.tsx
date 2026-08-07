@@ -225,8 +225,6 @@ export default function Home() {
     selectedBudget,
     setSelectedMenu,
     setSelectedBudget,
-    setLandingTradeName,
-    setLandingTradeChipClass,
     adminView,
     setAdminView,
     adminSubView,
@@ -276,20 +274,15 @@ export default function Home() {
     prefetchOtpEnabled();
   }, []);
 
-  // 실시간 공종 쇼케이스 애니메이션 로테이션 타이머
+  // 공종 순회 타이머 — 데스크톱 견적검토 히어로(renderReviewDesktop)가 activeTradeIdx 를 소비한다.
+  // 과거에는 이 값을 셸 컨텍스트로도 끌어올려 모바일 칩바 하이라이트와 연동했으나,
+  // 칩바 렌더 조건(!isMobileLanding)과 하이라이트 조건이 배타라 그 경로는 한 번도 발동하지 않았다(D6).
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveTradeIdx(prev => (prev + 1) % LANDING_TRADES.length);
     }, 3000);
     return () => clearInterval(timer);
   }, []);
-
-  // 현재 순회 중인 공종명·시그니처 색을 셸 컨텍스트로 끌어올려 최상단 칩바와 연동(하이라이트·색·자동스크롤)
-  useEffect(() => {
-    const name = LANDING_TRADES[activeTradeIdx];
-    setLandingTradeName(name);
-    setLandingTradeChipClass(LANDING_CHIP_CLASS[name] || 'bg-steel border-steel text-bg');
-  }, [activeTradeIdx, setLandingTradeName, setLandingTradeChipClass]);
 
   // 실시간 데이터 로딩 — 견적 전체 목록은 관리자 뷰(EstimateList·KanbanBoard)에서만 소비한다.
   // 고객 모드에서는 호출하지 않는다(익명 응답 실측 약 59KB, 화면에 쓰이지 않음).

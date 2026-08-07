@@ -177,16 +177,6 @@ export const LeftSidebar: React.FC = () => {
               })}
             </div>
           </div>
-
-          {/* 빠른 메뉴 */}
-          <div>
-            <div className="px-2 mb-3">
-              <h3 className="inline-block text-[11.5px] font-bold text-white tracking-[0.04em] pb-1.5 border-b-2 border-[#6B8CB8]">빠른 메뉴</h3>
-            </div>
-            <div className="flex flex-col gap-1 px-2 text-[12px] text-[#8AA0C2] font-medium">
-              * 바로가기 기능 준비 중입니다.
-            </div>
-          </div>
         </>
       ) : (
         // ==================== 관리자 모드 메뉴 ====================
