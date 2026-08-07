@@ -1,12 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   DRAFT_VERSION,
   SITE_TYPE_OPTIONS,
   UNSPECIFIED,
+  VISIT_DATE_MAX_DAYS,
   WORK_TYPE_OPTIONS,
   buildRequestScopeFields,
+  deriveCustomerType,
+  isValidEmail,
   parseRequestDraft,
+  patchRequestForm,
+  resetRequestFormData,
+  validateRequestEmail,
   validateRequestStep1,
+  validateVisitDate,
+  visitDateRange,
   type RequestScopeSubmitInput,
 } from '@/lib/forms/requestForm';
 
@@ -164,5 +172,185 @@ describe('parseRequestDraft', () => {
     expect(parseRequestDraft('{')).toEqual({});
     expect(parseRequestDraft('[1,2]')).toEqual({});
     expect(parseRequestDraft('"문자열"')).toEqual({});
+  });
+});
+
+// ==========================================
+// B9-a 이메일 형식 검증
+// ==========================================
+// 구 검사는 공백 여부뿐이라 'name' 한 글자로도 접수됐고, 회신처가 닿지 않는 건이 남았다.
+
+describe('isValidEmail · validateRequestEmail', () => {
+  it('형식이 아닌 값을 거부한다', () => {
+    for (const bad of ['name', 'name@', '@example.com', 'name@example', 'name@example.', 'name @example.com', '홍길동@example.com', 'name@exa mple.com', 'name@.com']) {
+      expect(isValidEmail(bad), bad).toBe(false);
+    }
+  });
+
+  it('정상 주소를 통과시킨다', () => {
+    for (const ok of ['name@example.com', 'first.last+tag@sub.example.co.kr', 'a_b-c%d@example-corp.com', '  name@example.com  ']) {
+      expect(isValidEmail(ok), ok).toBe(true);
+    }
+  });
+
+  it('빈 값과 형식 오류를 다른 문구로 알린다', () => {
+    expect(validateRequestEmail('')).toBe('이메일 회신처를 입력해 주세요.');
+    expect(validateRequestEmail('   ')).toBe('이메일 회신처를 입력해 주세요.');
+    expect(validateRequestEmail('name@example')).toBe('이메일 주소 형식을 확인해 주세요. 예) name@example.com');
+    expect(validateRequestEmail('name@example.com')).toBeNull();
+  });
+});
+
+// ==========================================
+// B9-b 희망 방문일 범위
+// ==========================================
+// 피커의 min·max 는 키보드 입력으로 우회되므로 판정은 이 순수 함수가 한다.
+
+describe('visitDateRange · validateVisitDate', () => {
+  const TODAY = '2026-08-07';
+  const RANGE_NOTICE = `희망 방문일은 오늘부터 ${VISIT_DATE_MAX_DAYS}일 이내로 선택해 주세요.`;
+
+  it('오늘부터 상한일까지를 범위로 준다', () => {
+    expect(visitDateRange(TODAY)).toEqual({ min: '2026-08-07', max: '2026-11-05' });
+  });
+
+  it('고르지 않으면 선택을 요구한다', () => {
+    expect(validateVisitDate('', TODAY)).toBe('희망 방문일을 선택해 주세요.');
+  });
+
+  it('지난 날짜를 거부한다', () => {
+    expect(validateVisitDate('2026-08-06', TODAY)).toBe(RANGE_NOTICE);
+    expect(validateVisitDate('2025-01-01', TODAY)).toBe(RANGE_NOTICE);
+  });
+
+  it('상한을 넘는 미래를 거부한다', () => {
+    expect(validateVisitDate('2026-11-06', TODAY)).toBe(RANGE_NOTICE);
+    expect(validateVisitDate('2031-03-02', TODAY)).toBe(RANGE_NOTICE);
+  });
+
+  it('날짜가 아닌 입력을 거부한다', () => {
+    expect(validateVisitDate('2026-13-40', TODAY)).toBe(RANGE_NOTICE);
+    expect(validateVisitDate('내일', TODAY)).toBe(RANGE_NOTICE);
+  });
+
+  it('오늘과 상한일은 통과시킨다', () => {
+    expect(validateVisitDate(TODAY, TODAY)).toBeNull();
+    expect(validateVisitDate('2026-11-05', TODAY)).toBeNull();
+    expect(validateVisitDate('2026-09-01', TODAY)).toBeNull();
+  });
+
+  it('기준일을 넘기지 않으면 KST 오늘을 쓴다', () => {
+    const kstToday = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    expect(visitDateRange().min).toBe(kstToday);
+    expect(validateVisitDate(kstToday)).toBeNull();
+  });
+});
+
+// ==========================================
+// B9-c '새 등록하기' 초기화
+// ==========================================
+// 구 resetWizard 는 화면 상태만 되돌려 직전 첨부파일·개인정보 동의가 다음 접수에 그대로 실렸다.
+
+describe('resetRequestFormData', () => {
+  const defaults = {
+    customer_name: '',
+    company_name: '',
+    phone: '',
+    email: '',
+    site_address: '',
+    industry: '',
+    work_type: '',
+    description: '',
+    files: [] as { id: string }[],
+    agreePrivacy: false,
+    visit_date: '',
+  };
+
+  const submitted = {
+    ...defaults,
+    customer_name: '홍길동',
+    company_name: 'ABC식품 (주)',
+    phone: '010-1234-5678',
+    email: 'name@example.com',
+    site_address: '경기도 화성시 향남읍 식품공단로 42',
+    industry: '식품 제조',
+    work_type: '노후배관교체',
+    description: '80A 배관 신규 설치',
+    files: [{ id: 'file-1' }],
+    agreePrivacy: true,
+    visit_date: '2026-08-20',
+  };
+
+  it('직전 첨부파일과 개인정보 동의를 물려주지 않는다', () => {
+    const next = resetRequestFormData(defaults, submitted);
+    expect(next.files).toEqual([]);
+    expect(next.agreePrivacy).toBe(false);
+  });
+
+  it('직전 접수 내용(업종·공사 종류·참조 사항·방문일)을 물려주지 않는다', () => {
+    const next = resetRequestFormData(defaults, submitted);
+    expect(next.industry).toBe('');
+    expect(next.work_type).toBe('');
+    expect(next.description).toBe('');
+    expect(next.visit_date).toBe('');
+  });
+
+  it('로그인 고객의 신원은 보존한다', () => {
+    const next = resetRequestFormData(defaults, submitted);
+    expect(next.customer_name).toBe('홍길동');
+    expect(next.company_name).toBe('ABC식품 (주)');
+    expect(next.phone).toBe('010-1234-5678');
+    expect(next.email).toBe('name@example.com');
+    expect(next.site_address).toBe('경기도 화성시 향남읍 식품공단로 42');
+  });
+
+  it('직전 값을 손대지 않는다', () => {
+    resetRequestFormData(defaults, submitted);
+    expect(submitted.files).toHaveLength(1);
+    expect(defaults.files).toHaveLength(0);
+  });
+});
+
+// ==========================================
+// B9-d 폼 값 변경 시 임시저장 동반
+// ==========================================
+// 방문 시간대 버튼만 저장 경로에서 빠져 있었다 — 갱신과 저장을 한 함수로 묶어 누락을 구조적으로 막는다.
+
+describe('patchRequestForm', () => {
+  it('갱신값을 그대로 임시저장에 넘긴다', () => {
+    const persist = vi.fn();
+    const next = patchRequestForm({ visit_time: '오전', email: 'name@example.com' }, { visit_time: '오후' }, persist);
+    expect(next).toEqual({ visit_time: '오후', email: 'name@example.com' });
+    expect(persist).toHaveBeenCalledTimes(1);
+    expect(persist).toHaveBeenCalledWith({ visit_time: '오후', email: 'name@example.com' });
+  });
+
+  it('직전 값을 손대지 않는다', () => {
+    const prev = { visit_time: '오전' };
+    patchRequestForm(prev, { visit_time: '오후' }, () => {});
+    expect(prev.visit_time).toBe('오전');
+  });
+});
+
+// ==========================================
+// N3 customer_type 파생
+// ==========================================
+// 구 폼은 고객에게 묻지 않고 '일반'을 저장해, 접수가 전부 같은 업종으로 남았다(B1과 같은 유형).
+
+describe('deriveCustomerType', () => {
+  it('고객이 고른 업종을 그대로 쓴다', () => {
+    expect(deriveCustomerType('식품 제조')).toBe('식품 제조');
+    expect(deriveCustomerType('제약·바이오')).toBe('제약·바이오');
+  });
+
+  it('고르지 않으면 임의 기본값 대신 미정으로 남긴다', () => {
+    expect(deriveCustomerType('')).toBe(UNSPECIFIED);
+    expect(deriveCustomerType('   ')).toBe(UNSPECIFIED);
+    expect(deriveCustomerType('')).not.toBe('일반');
+  });
+
+  it("고객이 고른 '기타'와 미선택을 구분한다", () => {
+    expect(deriveCustomerType('기타')).toBe('기타');
+    expect(deriveCustomerType('기타')).not.toBe(UNSPECIFIED);
   });
 });

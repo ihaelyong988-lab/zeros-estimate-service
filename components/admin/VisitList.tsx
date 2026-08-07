@@ -6,11 +6,15 @@ import { SiteVisit, Estimate } from '@/types/estimate';
 import { resolveAdminLoadError, type AdminLoadError } from '@/lib/admin/loadState';
 import { Calendar, User, ClipboardList, CheckCircle2, ShieldAlert, FileWarning, RefreshCw, AlertCircle } from 'lucide-react';
 
+// 완료 처리 실패 안내 문구. 조회 실패 배너는 loadData 에서만 켜지므로 저장 경로는 별도로 알린다.
+export const VISIT_COMPLETE_ERROR_HEADLINE = '현장방문 완료 처리를 저장하지 못했습니다.';
+
 export const VisitList: React.FC = () => {
   const [visits, setVisits] = useState<SiteVisit[]>([]);
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<AdminLoadError | null>(null);
+  const [actionError, setActionError] = useState<AdminLoadError | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | SiteVisit['visit_status']>('all');
 
   const loadData = async (showPending = true): Promise<{ visits: SiteVisit[]; estimates: Estimate[] }> => {
@@ -60,6 +64,9 @@ export const VisitList: React.FC = () => {
     );
     if (entered === null) return; // 취소 = 완료 처리 중단
 
+    // 지난 실패 문구가 남으면 이번 시도까지 실패한 것으로 읽힌다.
+    setActionError(null);
+
     try {
       // 1. 방문 상태 '완료' 로 변경
       await ZerosService.updateSiteVisit(id, {
@@ -78,8 +85,10 @@ export const VisitList: React.FC = () => {
           : '방문 이력을 저장했습니다. 견적 상태는 현재 단계를 유지합니다.'
       );
     } catch (e) {
-      console.error(e);
-      alert('상태 변경 실패');
+      console.error('Failed to complete site visit', e);
+      // 사유(세션 만료·네트워크·대상 없음)를 버리면 운영자는 무엇을 다시 해야 할지 알 수 없다.
+      // 관리자 화면의 다른 실패와 같은 배너로 알린다.
+      setActionError(resolveAdminLoadError(VISIT_COMPLETE_ERROR_HEADLINE, e));
     }
   };
 
@@ -136,6 +145,17 @@ export const VisitList: React.FC = () => {
         >
           <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
           <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
+        </div>
+      )}
+
+      {actionError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
+          <span className="text-[13.5px] font-bold text-danger leading-snug">{actionError.message}</span>
         </div>
       )}
 

@@ -11,10 +11,14 @@ import { Users2, Search, Edit2, Check, X, Award, FileText, TrendingUp, AlertCirc
 // 편집창을 열고 그대로 저장해도 자동 등급이 수동 등급으로 고착되지 않게 하는 장치다.
 const AUTO_GRADE = '';
 
+// 저장 실패 안내 문구. 조회 실패 배너는 loadCustomers 에서만 켜지므로 저장 경로는 별도로 알린다.
+export const CUSTOMER_SAVE_ERROR_HEADLINE = '고객 등급·메모를 저장하지 못했습니다.';
+
 export const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<AdminLoadError | null>(null);
+  const [saveError, setSaveError] = useState<AdminLoadError | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
 
@@ -57,6 +61,8 @@ export const CustomerList: React.FC = () => {
     setEditingCustomerId(cust.id);
     setEditGrade(cust.customer_grade_manual || AUTO_GRADE);
     setEditMemo(cust.memo || '');
+    // 지난 실패 문구가 새 편집까지 남으면 방금 저장이 실패한 것으로 읽힌다.
+    setSaveError(null);
   };
 
   const handleSaveClick = async (id: string) => {
@@ -72,6 +78,7 @@ export const CustomerList: React.FC = () => {
         }),
         memo: editMemo
       });
+      setSaveError(null);
       setEditingCustomerId(null);
       const list = await loadCustomers();
       if (selectedCustomer && selectedCustomer.id === id) {
@@ -80,6 +87,9 @@ export const CustomerList: React.FC = () => {
       }
     } catch (e) {
       console.error('Failed to update customer', e);
+      // 저장 실패를 화면에 남기지 않으면 운영자는 등급·메모가 반영된 줄 안다.
+      // 편집창은 닫지 않는다 — 입력값을 보존해 그 자리에서 다시 저장한다.
+      setSaveError(resolveAdminLoadError(CUSTOMER_SAVE_ERROR_HEADLINE, e));
     }
   };
 
@@ -143,6 +153,17 @@ export const CustomerList: React.FC = () => {
         >
           <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
           <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
+        </div>
+      )}
+
+      {saveError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
+          <span className="text-[13.5px] font-bold text-danger leading-snug">{saveError.message}</span>
         </div>
       )}
 

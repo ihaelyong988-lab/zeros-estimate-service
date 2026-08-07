@@ -18,7 +18,9 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    // 모바일 메인화면이 화이트 셸이라(§10-A 공통 1항) black-translucent 의 흰 상태바 글자가 보이지 않는다.
+    // default 는 상태바 글자를 검정으로 두고 뷰포트를 상태바 아래에서 시작시킨다 — 헤더가 가려지지도 않는다.
+    statusBarStyle: "default",
     title: "ZEROS",
   },
   // 카카오톡·검색엔진 링크 미리보기용(2026-08-01 P3-2). 이미지는 홈 히어로에 이미 쓰는 파일을 재사용한다.
@@ -41,7 +43,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0F1E35",
+  // 주소창·작업전환기 색은 모바일 메인화면(홈 랜딩)과 맞춘다 — 랜딩이 화이트가 되면서 네이비는 어긋난다.
+  themeColor: "#FFFFFF",
   width: "device-width",
   initialScale: 1,
 };
@@ -54,9 +57,9 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased">
       <head>
-        {/* manifest는 metadata.manifest 한 곳에서만 선언한다(HTML 중복 출력 방지). */}
+        {/* manifest·상태바 스타일은 metadata 한 곳에서만 선언한다(HTML 중복 출력 방지).
+            아래 capable 은 Next 가 내보내는 mobile-web-app-capable 의 구형 iOS 대체 이름이라 중복이 아니다. */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

@@ -20,9 +20,15 @@ import {
   SMS_PENDING_NOTICE,
   WORK_TYPE_OPTIONS,
   buildRequestScopeFields,
+  deriveCustomerType,
   parseRequestDraft,
+  patchRequestForm,
+  resetRequestFormData,
   serializeRequestDraft,
+  validateRequestEmail,
   validateRequestStep1,
+  validateVisitDate,
+  visitDateRange,
   type RequestChannel,
   type SelectedSiteType,
   type SelectedWorkType,
@@ -130,8 +136,8 @@ const defaultFormData = {
   phone: '',
   email: '',
   site_address: '',
+  // 업종 구분(customer_type)은 이 값에서 파생한다 — 묻지 않은 업종을 저장하지 않는다(N3).
   industry: '',
-  customer_type: '일반',
   // 공사 종류·현장 유형은 기본 선택이 없다 — 고객이 고른 값만 저장한다(B1).
   work_type: '' as SelectedWorkType,
   site_type: '' as SelectedSiteType,
@@ -156,6 +162,10 @@ const DRAFT_KEY = 'zeros_draft_request';
 const saveDraft = (values: RequestFormData) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(DRAFT_KEY, serializeRequestDraft(values));
+};
+const clearDraft = () => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(DRAFT_KEY);
 };
 
 // /api/otp/status 결과 모듈 캐시 — 랜딩 진입 시 미리 받아두면(prefetch)
@@ -312,6 +322,9 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
   const auth = pickEstimateAuth(formData.phone, verifyRecord, customerAuth);
   const verified = isEstimateAuthed(auth);
 
+  // 희망 방문일 선택 범위(오늘 ~ 상한). 피커에서 벗어난 날짜를 고를 수 없게 한다.
+  const visitRange = visitDateRange();
+
   // 폼 입력값 변경 시 자동 임시저장
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -331,11 +344,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
   // 칩 선택(공사 종류·현장 유형)도 입력과 같게 임시저장에 남긴다.
   const selectScope = (patch: Partial<Pick<RequestFormData, 'work_type' | 'site_type'>>) => {
     setErrorMsg(null);
-    setFormData(prev => {
-      const updated = { ...prev, ...patch };
-      saveDraft(updated);
-      return updated;
-    });
+    setFormData(prev => patchRequestForm(prev, patch, saveDraft));
   };
 
   // 파일 선택 input 참조 및 업로드 상태
@@ -418,8 +427,12 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     if (s === 2) {
       if (!formData.phone.trim()) return failValidation('담당자 연락처를 입력해 주세요.');
       if (!isPhoneValid()) return failValidation('연락처는 휴대폰 번호로 입력해 주세요. (하이픈 없이 숫자만 입력해도 됩니다)');
-      if (!formData.email.trim()) return failValidation('이메일 회신처를 입력해 주세요.');
-      if (channel === 'visit' && !formData.visit_date) return failValidation('희망 방문일을 선택해 주세요.');
+      const emailError = validateRequestEmail(formData.email);
+      if (emailError) return failValidation(emailError);
+      if (channel === 'visit') {
+        const visitError = validateVisitDate(formData.visit_date);
+        if (visitError) return failValidation(visitError);
+      }
     }
     return true;
   };
@@ -448,13 +461,17 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
   const validateAll = (): boolean => {
     setErrorMsg(null);
     if (!formData.phone.trim() || !isPhoneValid()) return failValidation('담당자 연락처를 휴대폰 번호로 입력해 주세요.');
-    if (!formData.email.trim()) return failValidation('이메일 회신처를 입력해 주세요.');
+    const emailError = validateRequestEmail(formData.email);
+    if (emailError) return failValidation(emailError);
     if (!formData.site_address.trim()) return failValidation('현장(지역) 주소를 입력해 주세요.');
     // 공사 종류·현장 유형 미선택 접수를 막는다(B1). 주소는 위에서 이미 봤으므로 남는 건 이 둘뿐 —
     // 고칠 수 있는 STEP1 로 되돌려 준다.
     const scopeError = validateRequestStep1(formData, channel);
     if (scopeError) { setStep(1); return failValidation(scopeError); }
-    if (channel === 'visit' && !formData.visit_date) return failValidation('희망 방문일을 선택해 주세요.');
+    if (channel === 'visit') {
+      const visitError = validateVisitDate(formData.visit_date);
+      if (visitError) return failValidation(visitError);
+    }
     if (!formData.agreePrivacy) return failValidation('개인정보 수집 및 이용에 동의해 주세요.');
     return true;
   };
@@ -470,11 +487,11 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
 
     setLoading(true);
     try {
-      const industryTag = formData.industry ? ` · 업종: ${formData.industry}` : '';
-      // 예상 공사금액은 expected_budget_range 필드에 그대로 저장되므로 태그에 다시 적지 않는다(중복 표기 금지).
+      // 예상 공사금액은 expected_budget_range 에, 업종은 customer_type 에 그대로 저장되므로
+      // 태그에 다시 적지 않는다 — 견적 검토서 한 장에 같은 값이 두 번 찍힌다(중복 표기 금지).
       const channelTag = channel === 'quick'
-        ? `[무료견적] AI Native 자동 등록${industryTag}`
-        : `[출장요청·예약방문] 희망 방문: ${formData.visit_date || '미지정'} ${formData.visit_time}${industryTag}`;
+        ? '[무료견적] AI Native 자동 등록'
+        : `[출장요청·예약방문] 희망 방문: ${formData.visit_date || '미지정'} ${formData.visit_time}`;
 
       // 출장요청 채널이면 예약방문 정보를 함께 넘겨, 서버가 접수와 방문 이력을 한 번에 기록한다.
       const visitPayload = channel === 'visit' && formData.visit_date
@@ -491,7 +508,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         phone: formData.phone,
         email: formData.email,
         site_address: formData.site_address,
-        customer_type: formData.customer_type,
+        customer_type: deriveCustomerType(formData.industry),
         work_type: scope.work_type,
         site_type: scope.site_type,
         work_purpose: scope.work_purpose,
@@ -505,7 +522,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
         submitted_files: formData.files
       }, { visit: visitPayload, verifiedToken: auth.verifiedToken });
 
-      localStorage.removeItem(DRAFT_KEY);
+      clearDraft();
       onComplete?.(newEst);
       // 등록완료 탭으로 전환 — 관리 페이지로 이동해 확인한다.
       // 직전 시도의 오류 문구가 남아 있으면 완료 화면에 그대로 보이므로 함께 비운다.
@@ -536,12 +553,15 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
   };
 
   // 새 등록 — 완료 후 다시 채널 선택부터.
+  // 입력값도 함께 비운다. 화면만 되돌리면 직전 접수의 첨부파일·개인정보 동의가 그대로 실린다(B9-c).
   const resetWizard = () => {
     setSubmitted(null);
     setChannel(null);
     setStep(1);
     setErrorMsg(null);
     setVerifyOpen(false);
+    setFormData(prev => resetRequestFormData(defaultFormData, prev));
+    clearDraft();
   };
 
   // 화면 분기 — 채널 선택과 STEP1·STEP2 는 인증 여부와 무관하게 바로 보여준다.
@@ -871,6 +891,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                     type="date"
                     value={formData.visit_date}
                     onChange={handleChange}
+                    min={visitRange.min}
+                    max={visitRange.max}
                     style={{ touchAction: 'manipulation' }}
                     className={`${inputCls} text-navy`}
                   />
@@ -879,7 +901,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                       <button
                         key={t}
                         type="button"
-                        onClick={() => setFormData((f) => ({ ...f, visit_time: t }))}
+                        onClick={() => setFormData((f) => patchRequestForm(f, { visit_time: t }, saveDraft))}
                         style={{ touchAction: 'manipulation' }}
                         className={`p-3 min-h-[44px] rounded-custom text-[15px] font-bold border transition-all active:scale-[0.99] motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-steel/40 ${
                           formData.visit_time === t
