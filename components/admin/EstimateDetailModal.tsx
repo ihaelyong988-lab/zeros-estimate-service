@@ -276,6 +276,27 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     setPaymentError(null);
   };
 
+  // 잘못 등록한 청구 행은 지울 수 있어야 한다 — '환불' 전환으로 미수금에서는 빠지지만
+  // 존재하지 않았던 청구가 이력에 남아 운영자가 매번 그 행을 해석해야 한다.
+  // 삭제는 되돌릴 수 없으므로 확인 단계를 둔다.
+  const handleDeletePayment = async (p: Payment) => {
+    if (!window.confirm(`${p.payment_type} ₩${p.amount.toLocaleString()} 청구 행을 삭제합니다. 되돌릴 수 없습니다.`)) return;
+    setPaymentSaving(true);
+    try {
+      // 견적의 결제 상태·미수금은 남은 행 집합에서 파생되므로 행만 지우면 지표가 따라온다.
+      await ZerosService.deletePayment(p.id);
+      setEditingPaymentId(null);
+      setPaymentError(null);
+      await refreshDetailData();
+      onSaved();
+    } catch (e) {
+      console.error(e);
+      setPaymentError(e instanceof Error ? e.message : '결제 정보 삭제 도중 오류가 발생했습니다.');
+    } finally {
+      setPaymentSaving(false);
+    }
+  };
+
   const handleUpdatePayment = async (id: string) => {
     const amount = Number(editPayAmount);
     if (!(amount > 0)) {
@@ -1205,6 +1226,15 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                               className="flex items-center min-h-[44px] px-2.5 rounded-custom text-steel hover:text-navy hover:bg-border/35 text-[11px] font-black transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-steel"
                             >
                               수정
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePayment(p)}
+                              disabled={paymentSaving}
+                              style={{ touchAction: 'manipulation' }}
+                              className="flex items-center min-h-[44px] px-2.5 rounded-custom text-gray hover:text-danger hover:bg-danger/10 text-[11px] font-black transition-colors cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-danger"
+                            >
+                              삭제
                             </button>
                           </div>
                         </div>

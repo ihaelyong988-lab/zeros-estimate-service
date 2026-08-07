@@ -147,31 +147,26 @@ create unique index if not exists zeros_estimates_no_uniq
 --    §5-2 로 익명 insert 를 열어 두었는데 버킷에 용량·형식 한도가 없다. 공개 anon 키만
 --    있으면 누구나 임의 용량을 무제한 적재해 저장 용량·요금을 소진시킬 수 있다.
 --
---    개당 용량 52428800 = lib/constants/uploadLimits.ts 의 MAX_FILE_BYTES(50MB)와 같은 값,
---    형식 목록 = 같은 파일 ALLOWED_EXTENSIONS 와 1:1. 두 값의 동기는 test/supabase/setupSql.test.ts
---    가 기계로 채점한다(한쪽만 바꾸면 테스트가 막는다).
+--    개당 용량 52428800 = lib/constants/uploadLimits.ts 의 MAX_FILE_BYTES(50MB)와 같은 값이며,
+--    두 값의 동기는 test/supabase/setupSql.test.ts 가 기계로 채점한다(한쪽만 바꾸면 테스트가 막는다).
 --
---    ※ dwg·dxf·hwp·hwpx 는 브라우저가 형식을 몰라 lib/supabase/storage.ts 가
---      application/octet-stream 으로 올린다 — 목록에서 빼면 도면·한글 첨부가 통째로 막힌다.
---    ※ MIME 은 클라이언트 신고값이라 우회가 가능하다. 실질 방어는 용량 한도다.
+--    ※ allowed_mime_types 는 **넣지 않는다**(2026-08-07 적대 검증 결과).
+--      ① 방어값이 0이다 — MIME 은 lib/supabase/storage.ts 가 file.type 을 그대로 신고하는
+--         클라이언트 값이고, dwg·hwp 처럼 브라우저가 모르는 형식 때문에
+--         application/octet-stream 을 허용해야 한다. 그 순간 무엇이든 통과한다.
+--      ② 정상 업로드만 막는다 — AutoCAD·한컴이 설치된 Windows(= 이 서비스의 주 고객 환경)는
+--         레지스트리에서 application/x-dwg·drawing/dwg·application/haansofthwpx 등
+--         목록에 없는 값을 보내고, 거부되면 고객 화면에 Supabase 영문 원문이 그대로 뜬다.
+--      형식 검증은 확장자 기준(lib/constants/uploadLimits.ts 의 validateFileFormat)이 담당한다.
+--      서버 신뢰 검증이 필요하면 /api/data 의 validateSubmittedFiles 에 확장자 검사를 더하는 것이 옳은 자리다.
+--    ※ 용량 한도는 개당 상한일 뿐 객체 수·총량·요청 빈도를 제한하지 않는다.
+--      50MB × N 회 반복 적재는 여전히 가능하다 — 익명 storage insert 레이트리밋은 별도 과제다.
 --    ※ 라이브 DB 반영은 사람이 이 SQL 을 실행하는 시점이다. 실행 전에도 앱은 그대로
 --      동작하고(코드는 한도를 읽지 않는다), 실행 후에는 한도를 넘는 업로드만 거부된다.
 --      멱등 — 버킷을 새로 만들지 않고 기존 행만 갱신하므로 여러 번 실행해도 결과가 같다.
 -- ------------------------------------------------------------
 update storage.buckets
-   set file_size_limit = 52428800,
-       allowed_mime_types = array[
-         'image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp',
-         'application/pdf',
-         'image/vnd.dwg', 'image/x-dwg', 'application/acad',
-         'image/vnd.dxf', 'application/dxf',
-         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-         'application/vnd.ms-excel',
-         'application/x-hwp', 'application/haansofthwp',
-         'application/vnd.hancom.hwp', 'application/vnd.hancom.hwpx',
-         'application/zip', 'application/x-zip-compressed',
-         'application/octet-stream'
-       ]
+   set file_size_limit = 52428800
  where id = 'estimate-files';
 
 -- ============================================================
