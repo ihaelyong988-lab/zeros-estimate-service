@@ -5,6 +5,7 @@ import { useShell } from '@/lib/context/ShellContext';
 import { useModalDialog } from '@/lib/a11y/modalDialog';
 import { ZerosService } from '@/lib/supabase/client';
 import { resolveRequestsLoad, RequestsLoadError } from '@/lib/requests/loadOutcome';
+import { menuDisplayName } from '@/lib/constants/menu';
 import { Estimate, NotificationLog } from '@/types/estimate';
 import { X, LogOut, History, ListChecks, FileText, Clock, Inbox, ArrowRight, AlertCircle } from 'lucide-react';
 
@@ -160,7 +161,7 @@ export const MyRequestsModal: React.FC = () => {
       for (const e of estimates) {
         out.push({
           id: `${e.id}-reg`, ts: e.created_at, estimateNo: e.estimate_no,
-          label: '접수완료', desc: `${e.work_type} · ${e.site_type} 사전진단 접수`, tone: 'steel',
+          label: '접수완료', desc: `${menuDisplayName(e.work_type)} · ${e.site_type} 사전진단 접수`, tone: 'steel',
         });
         if (e.estimate_sent_at) {
           out.push({
@@ -342,7 +343,7 @@ export const MyRequestsModal: React.FC = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col gap-0.5 min-w-0">
                         <span className="text-[10.5px] font-mono font-bold text-steel">{e.estimate_no}</span>
-                        <span className="text-[14px] font-black text-navy truncate">{e.work_type}</span>
+                        <span className="text-[14px] font-black text-navy truncate">{menuDisplayName(e.work_type)}</span>
                         <span className="text-[11.5px] text-gray font-semibold">
                           {e.site_type} · 접수 {fmtDate(e.created_at)}
                         </span>

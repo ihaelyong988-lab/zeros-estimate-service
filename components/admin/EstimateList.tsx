@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Estimate, EstimateStatus, EstimateCategory } from '@/types/estimate';
 import { supplyAmountOf } from '@/lib/quote/amounts';
+import { menuDisplayName } from '@/lib/constants/menu';
 import { Search, ArrowUpDown, KanbanSquare, Table, RefreshCw, AlertCircle } from 'lucide-react';
 
 // ==========================================
@@ -295,15 +296,16 @@ export const EstimateList: React.FC<EstimateListProps> = ({
             onChange={(e) => { setWorkTypeFilter(e.target.value); toFirstPage(); }}
             className="border border-border rounded-custom bg-bg px-2.5 py-1.5 text-xs text-navy focus:outline-none"
           >
+            {/* value = DB 저장 키(불변) · 라벨만 표시명. 고객 화면과 같은 이름으로 읽히게 한다. */}
             <option value="all">전체 공사종류</option>
-            <option value="배관공사">배관공사</option>
-            <option value="장비설치">장비설치</option>
-            <option value="Utility 배관">Utility 배관</option>
-            <option value="공장증설">공장증설</option>
-            <option value="노후배관교체">노후배관교체</option>
-            <option value="기계실개선">기계실개선</option>
-            <option value="생산설비 배관 연결">생산설비 훅업</option>
-            <option value="CAPEX 개·증설 검토">CAPEX 검토</option>
+            <option value="배관공사">{menuDisplayName('배관공사')}</option>
+            <option value="장비설치">{menuDisplayName('장비설치')}</option>
+            <option value="Utility 배관">{menuDisplayName('Utility 배관')}</option>
+            <option value="공장증설">{menuDisplayName('공장증설')}</option>
+            <option value="노후배관교체">{menuDisplayName('노후배관교체')}</option>
+            <option value="기계실개선">{menuDisplayName('기계실개선')}</option>
+            <option value="생산설비 배관 연결">{menuDisplayName('생산설비 배관 연결')}</option>
+            <option value="CAPEX 개·증설 검토">{menuDisplayName('CAPEX 개·증설 검토')}</option>
           </select>
 
           {/* 규모 분류 필터 */}
@@ -449,7 +451,7 @@ export const EstimateList: React.FC<EstimateListProps> = ({
                       case 'work_type':
                         return (
                           <td key={col.key} className="w-[110px] px-4 py-1 font-semibold text-gray align-middle">
-                            {est.work_type}
+                            {menuDisplayName(est.work_type)}
                           </td>
                         );
                       case 'category':

@@ -5,6 +5,7 @@ import { Estimate, EstimateStatus, EstimateCategory } from '@/types/estimate';
 import { Calendar } from 'lucide-react';
 import { kstMonthDay } from '@/lib/utils/date';
 import { supplyAmountOf } from '@/lib/quote/amounts';
+import { menuDisplayName } from '@/lib/constants/menu';
 import { ZerosService } from '@/lib/supabase/client';
 
 interface KanbanBoardProps {
@@ -251,7 +252,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         {/* 기술 스펙 요약 칩 */}
                         <div className="flex flex-wrap items-center gap-1.5 pt-0.5 border-t border-border/40 my-1">
                           <span className="bg-bg-subtle text-gray border border-border/80 px-1.5 py-0.5 rounded-custom text-[8.5px] font-bold">
-                            {est.work_type}
+                            {menuDisplayName(est.work_type)}
                           </span>
                           <span className={`px-1.5 py-0.5 rounded-custom text-[8.5px] font-bold border ${getCategoryChip(est.estimate_category)}`}>
                             {(est.estimate_category || '').toUpperCase()}

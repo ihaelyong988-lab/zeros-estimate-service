@@ -5,6 +5,7 @@ import { ZerosService } from '@/lib/supabase/client';
 import { Estimate, Payment } from '@/types/estimate';
 import { calculatePerformanceMetrics } from '@/lib/calculations';
 import { kstMonthStr } from '@/lib/utils/date';
+import { menuDisplayName } from '@/lib/constants/menu';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -104,8 +105,9 @@ export const PerformanceDashboard: React.FC = () => {
       workMap[e.work_type] = (workMap[e.work_type] || 0) + 1;
     });
 
+    // 집계 축은 DB 키 그대로 두고, 범례에 나가는 이름만 표시명으로 바꾼다.
     return Object.entries(workMap).map(([name, value]) => ({
-      name,
+      name: menuDisplayName(name),
       value
     }));
   };

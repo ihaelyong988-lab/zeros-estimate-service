@@ -11,6 +11,7 @@ import { buildQuoteXlsxBlob, quoteFileName, downloadBlob } from '@/lib/quote/quo
 import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { openSecureFile } from '@/lib/files/secureFile';
 import { validateFileFormat, ACCEPT_ATTR } from '@/lib/constants/uploadLimits';
+import { menuDisplayName } from '@/lib/constants/menu';
 import { TossPaymentModal } from './TossPaymentModal';
 import { PrintableScopeSheet } from './PrintableScopeSheet';
 import {
@@ -582,7 +583,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
                 <div className="flex flex-col gap-2 text-xs leading-relaxed text-gray">
                   <div>
                     <span className="font-semibold block text-[10.5px] text-gray-light">공사 종류 (용도 / 목적)</span>
-                    <span className="font-bold text-navy">{estimate.work_type} ({estimate.site_type} / {estimate.work_purpose})</span>
+                    <span className="font-bold text-navy">{menuDisplayName(estimate.work_type)} ({estimate.site_type} / {estimate.work_purpose})</span>
                   </div>
                   <div>
                     <span className="font-semibold block text-[10.5px] text-gray-light">현재 발생 문제점 및 요구 내용</span>
@@ -831,7 +832,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
 
             {quoteItems.length === 0 ? (
               <div className="border border-border border-dashed p-4 text-center rounded-custom text-[11.5px] text-gray font-bold bg-bg-subtle/10">
-                &quot;AI 초안 생성&quot;을 누르면 {estimate.work_type} 표준 품목 구성과 예산 규모를 근거로 품목표 초안이 채워집니다. 초안은 편집 후 승인해야 발송됩니다.
+                &quot;AI 초안 생성&quot;을 누르면 {menuDisplayName(estimate.work_type)} 표준 품목 구성과 예산 규모를 근거로 품목표 초안이 채워집니다. 초안은 편집 후 승인해야 발송됩니다.
               </div>
             ) : (
               <>

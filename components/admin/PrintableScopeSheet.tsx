@@ -3,6 +3,7 @@
 import React from 'react';
 import { Estimate } from '@/types/estimate';
 import { supplyAmountOf } from '@/lib/quote/amounts';
+import { menuDisplayName } from '@/lib/constants/menu';
 import { ShieldCheck, Printer } from 'lucide-react';
 
 interface PrintableScopeSheetProps {
@@ -80,7 +81,7 @@ export const PrintableScopeSheet: React.FC<PrintableScopeSheetProps> = ({ estima
             </div>
             <div className="flex justify-between">
               <span className="text-gray font-bold">공종 구분</span>
-              <span className="font-extrabold text-navy text-steel">{estimate.work_type}</span>
+              <span className="font-extrabold text-navy text-steel">{menuDisplayName(estimate.work_type)}</span>
             </div>
             <div className="flex justify-between col-span-2 border-t border-border/60 pt-3">
               <span className="text-gray font-bold shrink-0">현장 설치 주소</span>

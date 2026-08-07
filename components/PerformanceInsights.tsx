@@ -5,6 +5,9 @@ import { ZerosService } from '@/lib/supabase/client';
 import { Estimate } from '@/types/estimate';
 import { aggregatePerformance, BUDGET_COLS, WORK_TYPES } from '@/lib/performance/insights';
 import { PERFORMANCE_LABEL } from '@/lib/constants/trust';
+// 공종 표시명은 menu.ts 단일 소스를 쓴다(§10-A O-33 이 이 파일을 동기 대상으로 명시).
+// 집계·색 매핑은 DB 저장 키(WORK_TYPES)로 그대로 두고, 화면 문자열만 표시명으로 바꾼다.
+import { menuDisplayName } from '@/lib/constants/menu';
 import { LayoutGrid, Grid3x3, BarChart3, Activity } from 'lucide-react';
 
 // 공종별 색 = '작업 특성'에 맞춘 의미 기반 팔레트(색상심리) —
@@ -130,13 +133,13 @@ export const PerformanceInsights: React.FC = () => {
             const widthPct = maxCount > 0 ? Math.max((d.value / maxCount) * 100, d.value > 0 ? 3 : 0) : 0;
             const share = grandTotal > 0 ? Math.round((d.value / grandTotal) * 1000) / 10 : 0;
             return (
-              <div key={d.name} className="grid grid-cols-[176px_1fr_104px] items-center flex-1 min-h-0" title={`${d.name} · ${d.value}건 (${share}%)`}>
+              <div key={d.name} className="grid grid-cols-[176px_1fr_104px] items-center flex-1 min-h-0" title={`${menuDisplayName(d.name)} · ${d.value}건 (${share}%)`}>
                 {/* 라벨 셀 — 히트맵 행 라벨(td) 미러: 3px 공종색 보더 + pl-3 좌측 정렬로 하나의 수직 일직선 */}
                 <span
                   className="self-stretch flex items-center pl-3 pr-2 text-[13px] font-bold text-navy text-left leading-tight whitespace-nowrap truncate"
                   style={{ borderLeft: `3px solid ${hex}` }}
                 >
-                  {d.name}
+                  {menuDisplayName(d.name)}
                 </span>
                 <div className="relative h-[18px] rounded-[3px] bg-[#EFF3F8] overflow-hidden">
                   <div
@@ -196,7 +199,7 @@ export const PerformanceInsights: React.FC = () => {
                     className="sticky left-0 bg-bg py-1.5 px-2 pl-3 font-bold text-navy whitespace-nowrap border-t border-border/50"
                     style={{ borderLeft: `3px solid ${rowHex}` }}
                   >
-                    {w}
+                    {menuDisplayName(w)}
                   </td>
                   {BUDGET_COLS.map((c) => {
                     const v = matrix[w][c.key];
@@ -205,7 +208,7 @@ export const PerformanceInsights: React.FC = () => {
                         key={c.key}
                         className="p-0 text-center border border-bg-subtle"
                         style={heatCellStyle(v, matrixMax, rowHex)}
-                        title={`${w} · ${c.label}: ${v}건`}
+                        title={`${menuDisplayName(w)} · ${c.label}: ${v}건`}
                       >
                         <div className="py-1.5 font-black tabular-nums">{v > 0 ? v : '·'}</div>
                       </td>
@@ -247,7 +250,7 @@ export const PerformanceInsights: React.FC = () => {
               <div className="flex items-start justify-between gap-2">
                 <span className="text-[13px] font-black text-navy leading-tight flex items-start gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: cardHex }} />
-                  {card.name}
+                  {menuDisplayName(card.name)}
                 </span>
                 <span className="shrink-0 text-[12px] font-black text-navy tabular-nums px-1.5 py-0.5 rounded-full border" style={{ backgroundColor: `${cardHex}1A`, borderColor: `${cardHex}45` }}>{card.share}%</span>
               </div>
