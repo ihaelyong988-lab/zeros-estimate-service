@@ -10,8 +10,6 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xtljznrfmythnnpeorgz.supabase.co';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
 
-export const hasServiceKey = !!SERVICE_KEY;
-
 // service_role 클라이언트를 반환한다. 키가 없으면 null(호출부에서 503 처리).
 export function getServiceClient(): SupabaseClient | null {
   if (!SERVICE_KEY) return null;

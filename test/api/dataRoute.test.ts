@@ -69,7 +69,7 @@ vi.mock('@/lib/supabase/supabaseServer', () => {
       };
     },
   };
-  return { getServiceClient: () => (db.noClient ? null : client), hasServiceKey: true };
+  return { getServiceClient: () => (db.noClient ? null : client) };
 });
 
 import { POST } from '@/app/api/data/route';

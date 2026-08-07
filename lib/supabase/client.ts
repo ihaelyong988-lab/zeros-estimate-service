@@ -1,7 +1,6 @@
 'use client';
 
-import { Estimate, EstimateStatus, Customer, SiteVisit, Payment, AdminUser, NotificationLog } from '@/types/estimate';
-import { isSupabaseEnabled } from './supabaseBrowser';
+import { Estimate, EstimateStatus, Customer, SiteVisit, Payment, NotificationLog } from '@/types/estimate';
 import { supplyAmountOf } from '@/lib/quote/amounts';
 import { derivePaymentStatus, type PaymentStatus } from '@/lib/payments/status';
 
@@ -144,28 +143,19 @@ export interface ZerosDataService {
   getCustomers: () => Promise<Customer[]>;
   updateCustomer: (id: string, updates: Partial<Customer>) => Promise<Customer>;
 
-  // 관리자 관련
-  getAdminUsers: () => Promise<AdminUser[]>;
-
   // 알림 로그 관련
   getNotificationLogs: () => Promise<NotificationLog[]>;
   createNotificationLog: (log: Partial<NotificationLog>) => Promise<NotificationLog>;
 }
 
-// 테이블 키 (localStorage 키 = Supabase 테이블명 으로 공통 사용)
+// 테이블 키 (= Supabase 테이블명)
 const TABLES = {
   estimates: 'zeros_estimates',
   customers: 'zeros_customers',
   payments: 'zeros_payments',
   siteVisits: 'zeros_site_visits',
-  adminUsers: 'zeros_admin_users',
   notificationLogs: 'zeros_notification_logs',
 } as const;
-
-// 시드 버전 — 모의 데이터(특히 실적 시각화용 테스트 표본)를 갱신할 때 올린다.
-// 저장된 버전과 다르면 견적 테이블을 새 시드로 1회 재적재해, 기존 localStorage가 옛 표본을 들고 있어도 반영된다.
-const SEED_VERSION = '2026-06-27-perf-testdata';
-const SEED_VERSION_KEY = 'zeros_seed_version';
 
 // ==========================================
 // 1-B. 테이블 조회 캐시 — 권한 등급별 분리(순수 로직)
@@ -315,8 +305,7 @@ const VISIT_SYNCABLE_STATUSES: readonly EstimateStatus[] = [
 // 2. 공통 비즈니스 로직 베이스 (저장소 비의존)
 // ==========================================
 // 모든 견적/고객/결제/방문/알림 처리 로직을 이곳에 둔다.
-// 실제 데이터 입출력은 loadTable / persistTable 추상 메서드로 위임하여
-// localStorage(Mock) 또는 Supabase 백엔드가 갈아끼워질 수 있게 한다.
+// 실제 데이터 입출력은 loadTable / persistTable 추상 메서드로 위임한다.
 abstract class BaseZerosService implements ZerosDataService {
   protected abstract loadTable<T>(key: string, opts?: LoadTableOptions): Promise<T[]>;
   protected abstract persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void>;
@@ -337,7 +326,7 @@ abstract class BaseZerosService implements ZerosDataService {
     return list.find(e => e.id === id) || null;
   }
 
-  // 로컬(Mock) 경로는 서버 검증이 없으므로 opts.verifiedToken 을 쓰지 않는다.
+  // 이 베이스 구현은 서버 검증이 없으므로 opts.verifiedToken 을 쓰지 않는다(SupabaseZerosService 가 덮어쓴다).
   async createEstimate(estimate: Partial<Estimate>, opts?: CreateEstimateOptions): Promise<Estimate> {
     // 연락처 검증: 폼에서 필수·인증되지만, 누락/형식오류 시 가짜번호(010-0000-0000) 저장을 방지한다.
     const phone = (estimate.phone || '').trim();
@@ -396,34 +385,28 @@ abstract class BaseZerosService implements ZerosDataService {
     return newEstimate;
   }
 
-  // 고객 행 자체(신원·최근 접촉일)만 유지한다.
+  // 고객 행 자체(신원)만 유지한다. 이미 있는 번호면 저장할 것이 없어 쓰기를 생략한다 —
   // 누적 카운터·등급은 저장값이 아니라 /api/data 가 견적에서 파생 계산한 값을 화면이 쓴다.
   // 특히 customer_grade 는 여기서 건드리지 않는다 — 접수 한 건이 운영자가 지정한 등급을 덮어썼다.
   private async syncCustomerForEstimate(est: Estimate) {
     const customers = await this.fresh<Customer>(TABLES.customers);
-    const existing = customers.find(c => c.phone === est.phone);
+    if (customers.some(c => c.phone === est.phone)) return;
 
-    if (existing) {
-      existing.total_requests += 1; // 레거시 컬럼 유지용(표시 근거 아님)
-      existing.last_contact_at = new Date().toISOString();
-    } else {
-      const newCustomer: Customer = {
-        id: `cust-generated-uuid-${Math.random().toString(36).substr(2, 9)}`,
-        customer_name: est.customer_name,
-        company_name: est.company_name || '',
-        phone: est.phone,
-        email: est.email,
-        site_address: est.site_address,
-        customer_type: est.customer_type,
-        customer_grade: '신규',
-        total_requests: 1,
-        total_won: 0,
-        total_revenue: 0,
-        last_contact_at: new Date().toISOString(),
-        created_at: new Date().toISOString()
-      };
-      customers.unshift(newCustomer);
-    }
+    const newCustomer: Customer = {
+      id: `cust-generated-uuid-${Math.random().toString(36).substr(2, 9)}`,
+      customer_name: est.customer_name,
+      company_name: est.company_name || '',
+      phone: est.phone,
+      email: est.email,
+      site_address: est.site_address,
+      customer_type: est.customer_type,
+      customer_grade: '신규',
+      total_requests: 1,
+      total_won: 0,
+      total_revenue: 0,
+      created_at: new Date().toISOString()
+    };
+    customers.unshift(newCustomer);
     await this.persistTable(TABLES.customers, customers);
   }
 
@@ -467,7 +450,7 @@ abstract class BaseZerosService implements ZerosDataService {
   }
 
   // ---------- 견적 삭제 ----------
-  // Mock(localStorage)에서는 전체 배열을 다시 저장하므로 필터링만으로 삭제가 반영된다.
+  // 베이스 구현은 전체 배열을 다시 저장하므로 필터링만으로 삭제가 반영된다.
   // Supabase 서비스는 이 메서드를 오버라이드해 서버 delete op 를 호출한다.
   async deleteEstimate(id: string): Promise<void> {
     const [ests, pays, visits, logs] = await Promise.all([
@@ -628,7 +611,7 @@ abstract class BaseZerosService implements ZerosDataService {
   // 오입력된 청구 행을 지울 경로가 없어 미수금·결제상태가 틀린 채로 남았다.
   // 견적에 결제상태를 다시 저장하지는 않는다 — 남은 행 집합에서 파생한 값을 돌려주고,
   // 화면·집계는 그 값을 근거로 쓴다(§14-4 파생값은 저장하지 않는다).
-  // Mock(localStorage)은 배열을 통째로 다시 저장하므로 필터링만으로 삭제가 반영된다.
+  // 베이스 구현은 배열을 통째로 다시 저장하므로 필터링만으로 삭제가 반영된다.
   async deletePayment(id: string): Promise<PaymentStatus> {
     const list = await this.fresh<Payment>(TABLES.payments);
     const target = list.find(p => p.id === id);
@@ -677,7 +660,6 @@ abstract class BaseZerosService implements ZerosDataService {
       visit_result: visit.visit_result || '',
       site_memo: visit.site_memo || '',
       risk_memo: visit.risk_memo || '',
-      next_action: visit.next_action || '',
       created_at: new Date().toISOString()
     };
 
@@ -722,77 +704,10 @@ abstract class BaseZerosService implements ZerosDataService {
     return updated;
   }
 
-  // ---------- 관리자 ----------
-  async getAdminUsers(): Promise<AdminUser[]> {
-    return this.loadTable<AdminUser>(TABLES.adminUsers);
-  }
 }
 
 // ==========================================
-// 3. LocalStorage 기반 영속 Mock 서비스 (폴백 어댑터)
-// ==========================================
-class MockZerosService extends BaseZerosService {
-  // 시드 진행 상태. 조회가 동시에 들어와도 모의 데이터는 한 번만 적재한다.
-  private seeding: Promise<void> | null = null;
-
-  private init(): Promise<void> {
-    if (typeof window === 'undefined') return Promise.resolve();
-    if (!this.seeding) {
-      this.seeding = this.seed().catch((e) => {
-        this.seeding = null; // 청크 적재 실패는 다음 조회에서 다시 시도한다
-        throw e;
-      });
-    }
-    return this.seeding;
-  }
-
-  // 모의 데이터(1,393줄)는 Supabase 미설정 폴백에서만 쓰인다. 정적으로 묶으면 실행되지 않는 코드가
-  // 고객 첫 로드 번들에 그대로 실리므로, 이 경로에 들어왔을 때만 별도 청크로 내려받는다.
-  private async seed(): Promise<void> {
-    const m = await import('./mock-data');
-
-    // 시드 버전이 바뀌면 견적 표본을 새로 적재(실적 시각화용 테스트 데이터 갱신).
-    // 사용자가 직접 입력한 건은 다음 버전 변경 전까지 유지된다.
-    if (localStorage.getItem(SEED_VERSION_KEY) !== SEED_VERSION) {
-      localStorage.setItem(TABLES.estimates, JSON.stringify(m.mockEstimates));
-      localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION);
-    }
-
-    if (!localStorage.getItem(TABLES.estimates)) {
-      localStorage.setItem(TABLES.estimates, JSON.stringify(m.mockEstimates));
-    }
-    if (!localStorage.getItem(TABLES.customers)) {
-      localStorage.setItem(TABLES.customers, JSON.stringify(m.mockCustomers));
-    }
-    if (!localStorage.getItem(TABLES.payments)) {
-      localStorage.setItem(TABLES.payments, JSON.stringify(m.mockPayments));
-    }
-    if (!localStorage.getItem(TABLES.siteVisits)) {
-      localStorage.setItem(TABLES.siteVisits, JSON.stringify(m.mockSiteVisits));
-    }
-    if (!localStorage.getItem(TABLES.adminUsers)) {
-      localStorage.setItem(TABLES.adminUsers, JSON.stringify(m.mockAdminUsers));
-    }
-    if (!localStorage.getItem(TABLES.notificationLogs)) {
-      localStorage.setItem(TABLES.notificationLogs, JSON.stringify([]));
-    }
-  }
-
-  protected async loadTable<T>(key: string): Promise<T[]> {
-    if (typeof window === 'undefined') return [];
-    await this.init();
-    const item = localStorage.getItem(key);
-    return item ? (JSON.parse(item) as T[]) : [];
-  }
-
-  protected async persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void> {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(key, JSON.stringify(rows));
-  }
-}
-
-// ==========================================
-// 4. Supabase 기반 영속 서비스 (서버 게이트웨이 경유)
+// 3. Supabase 기반 영속 서비스 (서버 게이트웨이 경유)
 // ==========================================
 // 브라우저에서 anon 키로 테이블을 직접 읽고 쓰던 구조(전 고객 PII 공개 노출)를 폐기하고,
 // 모든 데이터 입출력을 /api/data(service_role + 신원 검증)로 우회한다.
@@ -898,9 +813,8 @@ class SupabaseZerosService extends BaseZerosService {
 }
 
 // ==========================================
-// 5. 환경에 따라 서비스 자동 선택
+// 4. 앱 전역 데이터 서비스
 // ==========================================
-// Supabase 키가 설정되어 있으면 클라우드 서비스, 아니면 localStorage Mock 으로 폴백한다.
-export const ZerosService: ZerosDataService = isSupabaseEnabled
-  ? new SupabaseZerosService()
-  : new MockZerosService();
+// 데이터 경로는 Supabase 게이트웨이(/api/data) 하나뿐이다.
+// 오프라인 개발용 localStorage Mock 폴백은 2026-08-08 폐기됐다 — 실 키가 없으면 앱은 동작하지 않는다.
+export const ZerosService: ZerosDataService = new SupabaseZerosService();

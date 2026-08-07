@@ -5,7 +5,6 @@ import { useShell } from '@/lib/context/ShellContext';
 import { TopHeader } from './TopHeader';
 import { LeftSidebar } from './LeftSidebar';
 import { RightSidebar } from './RightSidebar';
-import { MobileSimulator } from './MobileSimulator';
 import { AdminLogin } from '../admin/AdminLogin';
 import {
   BookOpen,
@@ -841,9 +840,6 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
           </main>
         </div>
       )}
-
-      {/* 데스크탑 탑재 모바일 시뮬레이터 포탈 렌더링 */}
-      <MobileSimulator />
     </div>
   );
 };

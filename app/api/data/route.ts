@@ -36,7 +36,6 @@ const TABLES = {
   customers: 'zeros_customers',
   payments: 'zeros_payments',
   siteVisits: 'zeros_site_visits',
-  adminUsers: 'zeros_admin_users',
   notificationLogs: 'zeros_notification_logs',
 } as const;
 
@@ -217,7 +216,7 @@ const MAX_NO_ATTEMPTS = 5;
 
 // 익명(공개 실적)에게 노출해도 되는 분석용 필드 — 허용목록(allowlist).
 // 차단목록(스프레드 후 삭제)은 Estimate에 필드가 추가될 때마다 조용히 누출되므로 쓰지 않는다.
-// 목록에 없는 것(견적금액·확정계약금액·품목 단가 line_items·실주사유·담당자·접수번호·
+// 목록에 없는 것(견적금액·확정계약금액·품목 단가 line_items·접수번호·
 // 결제상태·공사목적·희망일정·정확도등급 및 모든 PII)은 익명 응답에 포함되지 않는다.
 // 실사용처 = components/PerformanceInsights.tsx(+ lib/calculations.ts의 totalCount·averageProcessDays):
 //   created_at · estimate_sent_at · work_type · site_type · estimate_category · status.
@@ -369,7 +368,7 @@ export async function POST(req: NextRequest) {
         return Response.json({ rows: all.filter((l) => digitsOf(l.phone) === reqDigits) });
       }
 
-      // 고객/결제/방문/관리자 테이블 = 관리자 전용(위에서 반환).
+      // 고객/결제/방문 테이블 = 관리자 전용(위에서 반환).
       // 미인증은 401, 고객 세션은 인증됐으나 권한이 없으므로 403.
       if (isCustomer) {
         return Response.json({ error: '권한이 없습니다.' }, { status: 403 });
@@ -505,21 +504,13 @@ export async function POST(req: NextRequest) {
       if (!created) return serverFailure('createEstimate 접수번호 채번 실패', lastInsErr);
       const newEstimate = created;
 
-      // 고객 CRM 행 갱신(신규 생성 또는 최근 접촉일 기록) — 단건 upsert.
-      // 누적 카운터는 표시 시점에 견적에서 파생 계산하므로(withDerivedRollup) 저장값은 레거시 호환용이다.
-      // customer_grade 는 건드리지 않는다 — 접수 한 건이 운영자가 지정한 등급('중요고객'·'보류고객')을
+      // 고객 CRM 행은 처음 보는 번호일 때만 만든다 — 기존 고객은 저장할 것이 없다.
+      // 누적치는 표시 시점에 견적에서 파생 계산하므로(withDerivedRollup) 저장 카운터를 갱신하지 않는다.
+      // customer_grade 도 건드리지 않는다 — 접수 한 건이 운영자가 지정한 등급('중요고객'·'보류고객')을
       // '재문의'로 덮어쓰던 문제의 원인이었다. 자동 등급은 읽는 시점에 gradeOf 가 산출한다.
       const customers = await loadRows<Customer>(supabase, TABLES.customers);
-      const existingCustomer = customers.find((c) => digitsOf(c.phone) === phoneDigits);
-      let customerRow: Customer;
-      if (existingCustomer) {
-        customerRow = {
-          ...existingCustomer,
-          total_requests: (existingCustomer.total_requests || 0) + 1,
-          last_contact_at: nowIso,
-        };
-      } else {
-        customerRow = {
+      if (!customers.some((c) => digitsOf(c.phone) === phoneDigits)) {
+        const customerRow: Customer = {
           id: `cust-generated-uuid-${Math.random().toString(36).substr(2, 9)}`,
           customer_name: newEstimate.customer_name,
           company_name: newEstimate.company_name || '',
@@ -531,11 +522,10 @@ export async function POST(req: NextRequest) {
           total_requests: 1,
           total_won: 0,
           total_revenue: 0,
-          last_contact_at: nowIso,
           created_at: nowIso,
         };
+        await supabase.from(TABLES.customers).upsert([{ id: customerRow.id, data: customerRow }], { onConflict: 'id' });
       }
-      await supabase.from(TABLES.customers).upsert([{ id: customerRow.id, data: customerRow }], { onConflict: 'id' });
 
       // 접수완료 알림 이력(단건). 이 경로는 알림톡·문자를 실제로 호출하지 않으므로
       // 상태를 '미발송'으로 기록한다(과거엔 발송 없이 '발송완료'로 고정돼 이력이 거짓이었다).
@@ -567,7 +557,6 @@ export async function POST(req: NextRequest) {
           visit_result: '',
           site_memo: v.site_memo || '',
           risk_memo: '',
-          next_action: '',
           created_at: nowIso,
         };
         await supabase.from(TABLES.siteVisits).upsert([{ id: visitRow.id, data: visitRow }], { onConflict: 'id' });

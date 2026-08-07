@@ -90,14 +90,12 @@ export interface Estimate {
   accuracy_grade?: AccuracyGrade;
   status: EstimateStatus;
   admin_memo?: string;
-  assigned_admin?: string;
   payment_required: boolean;
   payment_status: '미결제' | '결제대기' | '결제완료' | '환불';
   estimated_amount?: number;
   confirmed_contract_amount?: number;
   estimate_sent_at?: string;
   contract_won_at?: string;
-  contract_lost_reason?: string;
   estimate_pdf_url?: string;
   submitted_files?: FileMeta[];
   line_items?: EstimateLineItem[];
@@ -126,7 +124,6 @@ export interface SiteVisit {
   visit_result?: string;
   site_memo?: string;
   risk_memo?: string;
-  next_action?: string;
   created_at: string;
 }
 
@@ -149,16 +146,7 @@ export interface Customer {
   total_requests: number;
   total_won: number;
   total_revenue: number;
-  last_contact_at: string;
   memo?: string;
-  created_at: string;
-}
-
-export interface AdminUser {
-  id: string;
-  email: string;
-  name: string;
-  role: 'owner' | 'admin' | 'viewer';
   created_at: string;
 }
 

@@ -34,7 +34,7 @@
 ## 🛠 기술 스택 (Tech Stack)
 
 *   **프론트엔드:** Next.js (App Router, Tailwind CSS, TypeScript)
-*   **백엔드/어댑터:** LocalStorage 기반 영속 Mock Database 및 API Client (Supabase 키 확보 시 즉시 SDK 스위칭 가능)
+*   **백엔드/어댑터:** Supabase(Postgres + Storage). 브라우저는 테이블에 직접 접근하지 않고 서버 게이트웨이 `POST /api/data`(service_role + 신원 검증)만 경유합니다.
 *   **시각화 라이브러리:** Recharts
 *   **디자인 시스템:** 1px 테두리 및 딥 네이비(`--color-navy: #0F1E35`), 스틸 블루(`--color-steel: #1E4D8C`), 포인트 오랜지(`--color-accent: #E0701A`)를 융합한 McKinsey & Monday.com B2B 톤.
 
@@ -66,7 +66,7 @@ zeros-estimate-service/
 ├── lib/                      # 로직 유틸리티
 │   ├── calculations.ts       # 0나눗셈 예외처리 완비된 13종 영업계산식
 │   ├── constants/            # 영역 매뉴얼 데이터
-│   └── supabase/             # localStorage 영속 래퍼 client 및 30건 시드 데이터
+│   └── supabase/             # 데이터 서비스 래퍼(client) · 브라우저/서버 Supabase 클라이언트 · Storage 업로드
 └── types/                    # TypeScript 타입 인터페이스 정의
 ```
 
@@ -93,7 +93,7 @@ zeros-estimate-service/
 
 ## 🚀 로컬 실행 방법 (Local Run)
 
-별도의 외부 키나 백엔드 서버 없이도, **로컬 Mock 영속 시스템**이 자동으로 구동되어 30건 이상의 데이터로 채워진 대시보드를 바로 탐색하실 수 있습니다.
+**Supabase 키가 필요합니다.** localStorage Mock 폴백은 2026-08-08 폐기되어, 실제 키 없이는 데이터 조회·접수가 동작하지 않습니다.
 
 ### 1. 패키지 설치
 ```bash
@@ -101,10 +101,12 @@ npm install
 ```
 
 ### 2. 환경 변수 구성
-`.env.example` 파일을 복사하여 `.env.local`을 생성합니다. (키가 비어있어도 mock이 즉시 실행됨)
+`.env.example` 파일을 복사하여 `.env.local`을 생성하고 실제 키를 채웁니다.
 ```bash
 cp .env.example .env.local
 ```
+서버 전용 키 `SUPABASE_SERVICE_ROLE_KEY`·`ZEROS_ADMIN_PASSWORD`·`OTP_SERVER_SECRET`가 없으면
+`/api/data`는 503, 관리자 로그인은 거부됩니다(fail-closed — AGENTS §13).
 
 ### 3. 개발 서버 구동
 ```bash
