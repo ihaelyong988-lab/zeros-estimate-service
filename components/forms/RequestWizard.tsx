@@ -10,7 +10,6 @@ import {
   type VerifiedRecord,
 } from '@/lib/supabase/client';
 import { uploadEstimateFiles } from '@/lib/supabase/storage';
-import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { validateUpload, ACCEPT_ATTR, ALLOWED_LABEL, MAX_PER_CATEGORY, MAX_TOTAL_FILES } from '@/lib/constants/uploadLimits';
 import { useShell, PHONE_VERIFIED_KEY } from '@/lib/context/ShellContext';
 import { PhoneVerifyGate } from './PhoneVerifyGate';
@@ -436,21 +435,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
     setUploading(true);
     setErrorMsg(null);
     try {
-      let uploaded: FileMeta[];
-      if (isSupabaseEnabled) {
-        uploaded = await uploadEstimateFiles(selected, uploadCategory);
-      } else {
-        uploaded = selected.map((f, i) => ({
-          id: `file-local-${Date.now()}-${i}`,
-          estimate_id: '',
-          file_name: f.name,
-          file_type: f.type || 'application/octet-stream',
-          file_url: '',
-          file_category: uploadCategory,
-          file_size: f.size,
-          uploaded_at: new Date().toISOString(),
-        }));
-      }
+      const uploaded = await uploadEstimateFiles(selected, uploadCategory);
 
       setFormData(prev => {
         const updated = { ...prev, files: [...prev.files, ...uploaded] };

@@ -825,361 +825,68 @@ export default function Home() {
     </div>
   );
 
-  // 카테고리별 초정밀 엔지니어링 3D/2D 벡터 그래픽 시뮬레이터 구성 - §3.2
+  // 카테고리별 공종 설명 문구(specText) — 모바일 공종 카드가 소비한다.
   const getCategoryVisuals = (menuKey: string) => {
       const matchKey = menuKey || '배관공사';
       
       if (matchKey === '배관공사') {
         return {
-          bgGradient: 'from-[#0A162B] via-[#0E2343] to-[#173B6C]',
-          badgeText: 'Industrial Piping & Fluidic Dynamics',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-cyan-400/70 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes pipeFlow {
-                  0% { stroke-dashoffset: 20; }
-                  100% { stroke-dashoffset: 0; }
-                }
-                .flow-line { stroke-dasharray: 4 6; animation: pipeFlow 1s linear infinite; }
-                @media (prefers-reduced-motion: reduce) { .flow-line { animation: none; } }
-              ` }} />
-              <defs>
-                <pattern id="grid-piping" width="10" height="10" patternUnits="userSpaceOnUse">
-                  <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.1"/>
-                </pattern>
-              </defs>
-              <rect width="100" height="100" fill="url(#grid-piping)" className="opacity-10" />
-              <path d="M10,30 L60,30 Q70,30 70,40 L70,80" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M10,30 L60,30 Q70,30 70,40 L70,80" stroke="#06b6d4" strokeWidth="1" className="flow-line" />
-              <path d="M30,50 L80,50 Q90,50 90,60 L90,90" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M30,50 L80,50 Q90,50 90,60 L90,90" stroke="#f97316" strokeWidth="1" className="flow-line" />
-              <circle cx="70" cy="30" r="3" fill="#06b6d4" className="animate-ping motion-reduce:animate-none" />
-              <circle cx="70" cy="30" r="2" fill="#06b6d4" />
-              <circle cx="90" cy="50" r="2" fill="#f97316" />
-              {/* 압력계 계기판 */}
-              <circle cx="45" cy="30" r="6" fill="#0c162b" stroke="currentColor" strokeWidth="0.75" />
-              <line x1="45" y1="30" x2="48" y2="26" stroke="#06b6d4" strokeWidth="1" />
-              <text x="43" y="38" fill="currentColor" fontSize="2.5" className="font-mono">P</text>
-            </svg>
-          ),
           specText: 'Darcy-Weisbach 관마찰·Reynolds 유동 검증으로 관경 적정성 자동 진단'
         };
       } else if (matchKey === '장비설치') {
         return {
-          bgGradient: 'from-[#081222] via-[#0E213D] to-[#1B3A64]',
-          badgeText: 'Heavy Equipment Structural Load Dynamics',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-amber-500/70 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes pulseGrid {
-                  0%, 100% { opacity: 0.2; }
-                  50% { opacity: 0.6; }
-                }
-                .stress-node { animation: pulseGrid 2s infinite ease-in-out; }
-                @media (prefers-reduced-motion: reduce) { .stress-node { animation: none; } }
-              ` }} />
-              {/* 3D 아이소메트릭 장비 프레임 */}
-              <rect x="25" y="35" width="40" height="25" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-              <line x1="25" y1="35" x2="10" y2="20" stroke="currentColor" strokeDasharray="2 2" />
-              <line x1="65" y1="35" x2="50" y2="20" stroke="currentColor" strokeDasharray="2 2" />
-              {/* 응력 및 진동 분포선 */}
-              <circle cx="45" cy="47" r="8" stroke="#f59e0b" strokeWidth="0.75" strokeDasharray="2 1" className="stress-node" />
-              <circle cx="45" cy="47" r="14" stroke="#ef4444" strokeWidth="0.5" strokeDasharray="3 2" className="stress-node" />
-              {/* 하중 분산 표시 벡터 화살표 */}
-              <path d="M45,25 L45,34 M45,34 L42,31 M45,34 L48,31" stroke="#f59e0b" strokeWidth="1.5" />
-              <text x="40" y="22" fill="#f59e0b" fontSize="3" className="font-mono font-black">5.2 ton</text>
-              <text x="27" y="58" fill="currentColor" fontSize="2.2" className="font-mono">FOUNDATION MESH OK</text>
-            </svg>
-          ),
           specText: '기초 패드 하중분산 응력(Stress Tensor)·펌프 진동 방진 가이드 자동 검토'
         };
       } else if (matchKey === 'Utility 배관') {
         return {
-          bgGradient: 'from-[#071326] via-[#0E2442] to-[#1E4475]',
-          badgeText: 'Steam & Clean Air Utility Thermodynamic Loop',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-cyan-300/70 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes steamVent {
-                  0% { transform: translateY(0px) scale(0.8); opacity: 0; }
-                  50% { opacity: 0.8; }
-                  100% { transform: translateY(-8px) scale(1.2); opacity: 0; }
-                }
-                .steam-puff { animation: steamVent 1.5s infinite ease-out; }
-                @media (prefers-reduced-motion: reduce) { .steam-puff { animation: none; } }
-              ` }} />
-              {/* 스팀 루프 구조 */}
-              <path d="M15,60 C25,25 75,25 85,60" stroke="currentColor" strokeWidth="1.5" />
-              {/* 트랩 스테이션 */}
-              <rect x="42" y="30" width="16" height="8" rx="1" fill="#071326" stroke="#06b6d4" strokeWidth="1" />
-              <circle cx="50" cy="34" r="2.5" fill="#f43f5e" />
-              {/* 스팀 응축수 배출 애니메이션 */}
-              <path d="M50,37 L50,45" stroke="#38bdf8" strokeWidth="1" strokeDasharray="2 1" />
-              <g className="steam-puff" style={{ transformOrigin: '50px 42px' }}>
-                <circle cx="50" cy="48" r="2.5" fill="currentColor" opacity="0.5" />
-                <circle cx="53" cy="50" r="1.5" fill="currentColor" opacity="0.4" />
-              </g>
-              <text x="36" y="26" fill="currentColor" fontSize="2.5" className="font-mono">STEAM TRAP ST.</text>
-            </svg>
-          ),
           specText: '보온 두께 대비 열손실·드립포켓 간격·압축공기 응축수 트랩 적정성 수치 검증'
         };
       } else if (matchKey === '공장증설') {
         return {
-          bgGradient: 'from-[#0A182F] via-[#10274A] to-[#E0701A]/30',
-          badgeText: 'Factory Capacity Expansion & Branch Tie-in',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-accent/80 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              {/* 기존 관로 (Dimmed) */}
-              <line x1="10" y1="25" x2="90" y2="25" stroke="#94a3b8" strokeWidth="2" strokeOpacity="0.4" />
-              {/* 분기 신설 관로 (Active Orange) */}
-              <path d="M50,25 L50,75 L85,75" stroke="#E0701A" strokeWidth="2" />
-              {/* 티인 조인트 결합부 */}
-              <circle cx="50" cy="25" r="4.5" fill="#0A182F" stroke="#E0701A" strokeWidth="1.5" className="animate-pulse motion-reduce:animate-none" />
-              <circle cx="50" cy="25" r="2" fill="#E0701A" />
-              {/* 크로스헤어 정밀 조준 스케일 */}
-              <circle cx="50" cy="25" r="12" stroke="#E0701A" strokeWidth="0.5" strokeDasharray="3 3" strokeOpacity="0.7" />
-              <line x1="50" y1="8" x2="50" y2="42" stroke="#E0701A" strokeWidth="0.25" strokeOpacity="0.5" />
-              <line x1="33" y1="25" x2="67" y2="25" stroke="#E0701A" strokeWidth="0.25" strokeOpacity="0.5" />
-              <text x="56" y="21" fill="#E0701A" fontSize="3.2" className="font-mono font-black">HOT-TAP 80A</text>
-            </svg>
-          ),
           specText: '무중단 Hot-Tapping 공법 적합성·증설부 유량 손실 압력 구배 매핑'
         };
       } else if (matchKey === '노후배관교체') {
         return {
-          bgGradient: 'from-[#0C1B33] via-[#122A4E] to-[#204984]',
-          badgeText: 'Corrosion Inspection & Piping Lifecycle Audit',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-emerald-400/80 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes erosionScan {
-                  0%, 100% { stroke-dashoffset: 0; }
-                  50% { stroke-dashoffset: 16; }
-                }
-                .scan-dash { stroke-dasharray: 4 4; animation: erosionScan 4s infinite linear; }
-                @media (prefers-reduced-motion: reduce) { .scan-dash { animation: none; } }
-              ` }} />
-              {/* 배관 단면도 */}
-              <rect x="15" y="30" width="70" height="40" rx="2" stroke="currentColor" strokeWidth="1.5" />
-              {/* 부식 한도 스캔 레이저 */}
-              <line x1="30" y1="30" x2="30" y2="70" stroke="#f43f5e" strokeWidth="1" className="scan-dash" />
-              <line x1="70" y1="30" x2="70" y2="70" stroke="#10b981" strokeWidth="1" className="scan-dash" />
-              {/* 부식 노드와 정상 자재 경계면 */}
-              <path d="M16,50 Q23,45 30,50 T44,50 Q51,55 58,50 T72,50 T84,50" stroke="#f43f5e" strokeWidth="0.75" strokeDasharray="2 2" />
-              <text x="18" y="25" fill="#f43f5e" fontSize="2.8" className="font-mono">OLD: CARBON CORROSION</text>
-              <text x="56" y="78" fill="#10b981" fontSize="2.8" className="font-mono">NEW: SUS316L 100%</text>
-            </svg>
-          ),
           specText: '스케일 잔존 두께 비파괴 데이터·유체 화학식 기반 최적 내식재(SUS316L) 치환 판단'
         };
       } else if (matchKey === '기계실개선') {
         return {
-          bgGradient: 'from-[#061224] via-[#0D213E] to-[#193B6B]',
-          badgeText: 'Mechanical Room Cavitation & Flow Optimization',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-teal-400/80 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes vortexSpin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-                .vortex-group { animation: vortexSpin 8s infinite linear; transform-origin: 50px 50px; }
-                @media (prefers-reduced-motion: reduce) { .vortex-group { animation: none; } }
-              ` }} />
-              {/* 펌프 하우징 하이테크 그래픽 */}
-              <circle cx="50" cy="50" r="24" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="50" cy="50" r="10" stroke="currentColor" strokeWidth="0.75" />
-              <g className="vortex-group">
-                <line x1="50" y1="50" x2="50" y2="28" stroke="#0d9488" strokeWidth="1" />
-                <line x1="50" y1="50" x2="72" y2="50" stroke="#0d9488" strokeWidth="1" />
-                <line x1="50" y1="50" x2="28" y2="50" stroke="#0d9488" strokeWidth="1" />
-                <line x1="50" y1="50" x2="50" y2="72" stroke="#0d9488" strokeWidth="1" />
-                <path d="M38,38 A16,16 0 0,1 62,38" stroke="#0d9488" strokeWidth="1" fill="none" />
-                <path d="M62,62 A16,16 0 0,1 38,62" stroke="#0d9488" strokeWidth="1" fill="none" />
-              </g>
-              <text x="32" y="21" fill="currentColor" fontSize="2.8" className="font-mono">ECCENTRIC REDUCER OK</text>
-            </svg>
-          ),
           specText: '흡입측 캐비테이션 차단 편심이경관·복합 매니폴드 균등 압력 유체 검토'
         };
       } else if (matchKey === '생산설비 배관 연결') {
         return {
-          bgGradient: 'from-[#091529] via-[#0F2241] to-[#1E4473]',
-          badgeText: 'Ultra-High Purity (UHP) Cleanroom Hook-Up',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-sky-400/80 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              {/* 반도체 가스 판넬 / 오비탈 용접 시각화 */}
-              <rect x="20" y="20" width="60" height="60" rx="2" stroke="currentColor" strokeWidth="1" />
-              <line x1="20" y1="40" x2="80" y2="40" stroke="currentColor" strokeWidth="0.75" />
-              <line x1="20" y1="60" x2="80" y2="60" stroke="currentColor" strokeWidth="0.75" />
-              <circle cx="35" cy="40" r="4" fill="#091529" stroke="#38bdf8" strokeWidth="1.5" />
-              <circle cx="65" cy="60" r="4" fill="#091529" stroke="#38bdf8" strokeWidth="1.5" />
-              {/* 초미세 여과 필터 유닛 */}
-              <path d="M50,15 L50,85" stroke="#38bdf8" strokeWidth="1.5" />
-              <rect x="44" y="44" width="12" height="12" rx="0.5" fill="#091529" stroke="#10b981" strokeWidth="1" />
-              <text x="47" y="52" fill="#10b981" fontSize="2.8" className="font-mono font-black">0.01㎛</text>
-              <text x="25" y="15" fill="currentColor" fontSize="2.8" className="font-mono">UHP GAS MANIFOLD</text>
-            </svg>
-          ),
           specText: '초순수(DIW)·반도체 특수가스 크린룸 오비탈 용접 EP등급 자재 타당성 심사'
         };
       } else if (matchKey === 'CAPEX 개·증설 검토') {
         return {
-          bgGradient: 'from-[#0B1E35] via-[#152E51] to-[#E0701A]/20',
-          badgeText: 'CAPEX Engineering Cost Valuation & Risk Audit',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-accent/80 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes chartMove {
-                  0%, 100% { stroke-dashoffset: 0; }
-                  50% { stroke-dashoffset: 5; }
-                }
-                .trend-line { stroke-dasharray: 100; stroke-dashoffset: 0; animation: chartMove 5s infinite ease-in-out; }
-                @media (prefers-reduced-motion: reduce) { .trend-line { animation: none; } }
-              ` }} />
-              {/* 축 선 */}
-              <line x1="15" y1="85" x2="85" y2="85" stroke="currentColor" strokeWidth="1.2" />
-              <line x1="15" y1="15" x2="15" y2="85" stroke="currentColor" strokeWidth="1.2" />
-              {/* 시공사 견적 버블 추이선 */}
-              <path d="M15,55 L35,20 L55,48 L75,15 L85,25" stroke="#f43f5e" strokeWidth="1" strokeDasharray="3 3" strokeOpacity="0.7" />
-              {/* ZEROS 정직 AI 단가 보정선 */}
-              <path d="M15,75 L35,60 L55,65 L75,50 L85,52" stroke="#E0701A" strokeWidth="2.2" className="trend-line" />
-              <circle cx="75" cy="50" r="3.5" fill="#0B1E35" stroke="#E0701A" strokeWidth="1.5" />
-              <text x="18" y="48" fill="#f43f5e" fontSize="2.8" className="font-mono">INFLATED PROPOSALS (BUBBLE)</text>
-              <text x="32" y="74" fill="#E0701A" fontSize="3" className="font-mono font-black">ZEROS AI AUDIT REFERENCE</text>
-            </svg>
-          ),
           specText: '유사 1군 실거래 n건 DB 기반 정량적 CAPEX 버블 억제 분석'
         };
       } else if (matchKey === 'spool') {
         return {
-          bgGradient: 'from-[#0A162B] via-[#0E2343] to-[#173B6C]',
-          badgeText: 'Pipe Spool Prefabrication & Shop Welding',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-cyan-400/70 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes spoolFlow { 0% { stroke-dashoffset: 20; } 100% { stroke-dashoffset: 0; } }
-                .spool-flow { stroke-dasharray: 4 6; animation: spoolFlow 1.2s linear infinite; }
-                @media (prefers-reduced-motion: reduce) { .spool-flow { animation: none; } }
-              ` }} />
-              {/* 플랜지가 달린 사전제작 스풀 */}
-              <path d="M20,40 L55,40 Q65,40 65,50 L65,78" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M20,40 L55,40 Q65,40 65,50 L65,78" stroke="#06b6d4" strokeWidth="1" className="spool-flow" />
-              {/* 플랜지 단부 */}
-              <line x1="18" y1="34" x2="18" y2="46" stroke="currentColor" strokeWidth="2" />
-              <line x1="59" y1="72" x2="71" y2="72" stroke="currentColor" strokeWidth="2" transform="rotate(90 65 78)" />
-              <line x1="59" y1="78" x2="71" y2="78" stroke="currentColor" strokeWidth="2" />
-              {/* 용접 비드 노드 */}
-              <circle cx="55" cy="40" r="2" fill="#f97316" className="animate-pulse motion-reduce:animate-none" />
-              <circle cx="65" cy="50" r="2" fill="#f97316" className="animate-pulse motion-reduce:animate-none" />
-              <text x="20" y="30" fill="currentColor" fontSize="2.8" className="font-mono">ISO SPOOL · RT PASS</text>
-            </svg>
-          ),
           specText: 'ISO 도면 기반 스풀 분할 및 팹샵 사전 용접·비파괴(RT/PMI) 검사 통제 환경 모듈 제작 검증'
         };
       } else if (matchKey === 'skid') {
         return {
-          bgGradient: 'from-[#081222] via-[#0E213D] to-[#1B3A64]',
-          badgeText: 'Skid-Mounted Package Module & FAT',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-amber-500/70 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              {/* 스키드 프레임 */}
-              <rect x="22" y="55" width="56" height="22" rx="1" stroke="currentColor" strokeWidth="1.5" />
-              <line x1="22" y1="71" x2="78" y2="71" stroke="currentColor" strokeWidth="0.6" />
-              {/* 탑재 장비: 펌프/탱크/계장 */}
-              <circle cx="36" cy="46" r="7" stroke="#f59e0b" strokeWidth="1.2" />
-              <line x1="36" y1="46" x2="36" y2="40" stroke="#f59e0b" strokeWidth="1" className="animate-[spin_4s_linear_infinite] motion-reduce:animate-none" style={{ transformOrigin: '36px 46px' }} />
-              <rect x="52" y="38" width="14" height="17" rx="1" stroke="currentColor" strokeWidth="1" />
-              <path d="M43,50 L52,50" stroke="#06b6d4" strokeWidth="1" strokeDasharray="2 1.5" />
-              <text x="24" y="34" fill="#f59e0b" fontSize="2.8" className="font-mono font-bold">FAT TESTED</text>
-            </svg>
-          ),
           specText: '단일 프레임 패키지 모듈 공장 조립 및 계장·제어 사전 시운전(FAT) 검증 후 현장 반입 표준화'
         };
       } else if (matchKey === 'structure') {
         return {
-          bgGradient: 'from-[#0A182F] via-[#10274A] to-[#E0701A]/25',
-          badgeText: 'Steel Structure Shop Fabrication',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-accent/80 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              {/* 철구조 가대/트러스 프레임 */}
-              <rect x="20" y="25" width="60" height="55" stroke="currentColor" strokeWidth="1.5" />
-              <line x1="20" y1="25" x2="80" y2="80" stroke="#E0701A" strokeWidth="1" />
-              <line x1="80" y1="25" x2="20" y2="80" stroke="#E0701A" strokeWidth="1" />
-              <line x1="20" y1="52" x2="80" y2="52" stroke="currentColor" strokeWidth="0.8" />
-              {/* 볼트 접합 노드 */}
-              <circle cx="20" cy="25" r="2.2" fill="#0A182F" stroke="#E0701A" strokeWidth="1" />
-              <circle cx="80" cy="25" r="2.2" fill="#0A182F" stroke="#E0701A" strokeWidth="1" />
-              <circle cx="20" cy="80" r="2.2" fill="#0A182F" stroke="#E0701A" strokeWidth="1" />
-              <circle cx="80" cy="80" r="2.2" fill="#0A182F" stroke="#E0701A" strokeWidth="1" />
-              <text x="22" y="20" fill="#E0701A" fontSize="2.8" className="font-mono font-black">SHOP DRAWING ±1mm</text>
-            </svg>
-          ),
           specText: '구조 도면 기반 강재 절단·천공·용접 공장 가공 및 도장·아연도금 후 현장 볼팅 조립 표준화'
         };
       } else if (matchKey === 'small') {
         return {
-          bgGradient: 'from-[#071328] via-[#0D2140] to-[#1B3E6E]',
-          badgeText: 'Instant Online Review Algorithm',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-cyan-400 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <rect x="20" y="20" width="60" height="60" stroke="currentColor" strokeWidth="1" strokeDasharray="5 5" />
-              <circle cx="50" cy="50" r="16" stroke="currentColor" strokeWidth="1.5" />
-              <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" strokeWidth="0.5" />
-              <line x1="10" y1="50" x2="90" y2="50" stroke="currentColor" strokeWidth="0.5" />
-              <text x="25" y="15" fill="currentColor" fontSize="3" className="font-mono">FAST AUDIT LAYOUT</text>
-            </svg>
-          ),
           specText: `제출된 현장 사진 및 치수 정보 기준의 간이 관내 마찰 손실값 연산 및 ${TRUST.firstReplyHours}시간 내 초고속 권장 사양 도출`
         };
       } else if (matchKey === 'medium') {
         return {
-          bgGradient: 'from-[#08152D] via-[#10274C] to-[#1E4A83]',
-          badgeText: 'Laser Real-Measurement & Calibration',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-amber-500 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              {/* 3차원 좌표계 및 레이저 스캔 */}
-              <path d="M20,70 L50,45 L80,70 M50,45 L50,15" stroke="currentColor" strokeWidth="1" />
-              <circle cx="50" cy="45" r="4.5" fill="#08152D" stroke="#f59e0b" strokeWidth="1.5" className="animate-ping motion-reduce:animate-none" />
-              <circle cx="50" cy="45" r="2" fill="#f59e0b" />
-              <line x1="50" y1="45" x2="25" y2="65" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2 1" />
-              <line x1="50" y1="45" x2="75" y2="65" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2 1" />
-              <text x="22" y="15" fill="currentColor" fontSize="3" className="font-mono">3D SPACE MEASURE</text>
-            </svg>
-          ),
           specText: '배테랑 실측 엔지니어 현장 파견을 통한 주요 간섭 반입로 레이저 정밀 계측 및 시공 장애 원천 봉쇄 검토'
         };
       } else if (matchKey === 'large') {
         return {
-          bgGradient: 'from-[#0A162B] via-[#112543] to-[#E0701A]/20',
-          badgeText: 'Total Enterprise CAPEX Architecture PM',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-accent/80 stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              {/* 복잡 프로젝트 상관 매트릭스 그리드 */}
-              <circle cx="30" cy="30" r="5" fill="#0A162B" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="70" cy="30" r="5" fill="#0A162B" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="50" cy="70" r="5" fill="#0A162B" stroke="currentColor" strokeWidth="1.5" />
-              <line x1="35" y1="30" x2="65" y2="30" stroke="currentColor" strokeWidth="1" />
-              <line x1="30" y1="35" x2="45" y2="65" stroke="#E0701A" strokeWidth="1.5" className="animate-pulse motion-reduce:animate-none" />
-              <line x1="70" y1="35" x2="55" y2="65" stroke="currentColor" strokeWidth="1" />
-              <text x="25" y="15" fill="currentColor" fontSize="3" className="font-mono">PM COST RELATION MATRIX</text>
-            </svg>
-          ),
           specText: '대단위 설비 투자를 조망하는 기획 VE(Value Engineering) 분석 및 공종별 실행 예산 가이드 라인 종합 통제'
         };
       } else {
         return {
-          bgGradient: 'from-[#0B1E35] via-[#0F2036] to-[#1A385E]',
-          badgeText: 'ZEROS Engineering Standard Standard Review',
-          svgBackdrop: (
-            <svg className="absolute right-2 -bottom-2 w-72 h-72 opacity-[0.25] text-white stroke-2 pointer-events-none select-none" fill="none" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="32" stroke="currentColor" />
-              <circle cx="50" cy="50" r="12" stroke="currentColor" />
-              <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" />
-              <line x1="10" y1="50" x2="90" y2="50" stroke="currentColor" />
-            </svg>
-          ),
           specText: 'ZEROS 엔지니어 매니저 직접 분석을 통한 최적의 예상견적 및 검토 방향 수립 배정'
         };
       }
@@ -1195,165 +902,90 @@ export default function Home() {
           return {
             sampleCount: 74,
             bubbleRate: 28.4,
-            accentBg: 'bg-cyan-500/5',
-            accentText: 'text-cyan-600',
-            accentBorder: 'border-cyan-200/80',
-            badgeBg: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-700',
-            bubbleWidth: 'w-[28.4%]',
             checklist: ['ASME/KS 자재 마진 필터링', '관경·압력손실 수치 검증', '1군 표준 품셈 공기 산출']
           };
         case '장비설치':
           return {
             sampleCount: 48,
             bubbleRate: 22.1,
-            accentBg: 'bg-amber-500/5',
-            accentText: 'text-amber-600',
-            accentBorder: 'border-amber-200/80',
-            badgeBg: 'bg-amber-500/10 border-amber-500/20 text-amber-700',
-            bubbleWidth: 'w-[22.1%]',
             checklist: ['양중 경로·크레인 간섭 검토', '방진 패드 하중분산 적합성', '고소 안전비계·방진 스펙 필터링']
           };
         case 'Utility 배관':
           return {
             sampleCount: 62,
             bubbleRate: 24.6,
-            accentBg: 'bg-sky-500/5',
-            accentText: 'text-sky-600',
-            accentBorder: 'border-sky-200/80',
-            badgeBg: 'bg-sky-500/10 border-sky-500/20 text-sky-700',
-            bubbleWidth: 'w-[24.6%]',
             checklist: ['보온 열손실율 열역학 계산', '응축수 트랩 위치 검토', '차단밸브 조작 동선 매핑']
           };
         case '공장증설':
           return {
             sampleCount: 35,
             bubbleRate: 31.5,
-            accentBg: 'bg-accent/5',
-            accentText: 'text-accent',
-            accentBorder: 'border-accent/20',
-            badgeBg: 'bg-accent/10 border-accent/20 text-accent-700',
-            bubbleWidth: 'w-[31.5%]',
             checklist: ['무중단 Hot-tapping 리스크 필터링', '증설 전후 유량 차압 시뮬레이션', '분기 조인트 화학 안정성 검증']
           };
         case '노후배관교체':
           return {
             sampleCount: 51,
             bubbleRate: 26.8,
-            accentBg: 'bg-emerald-500/5',
-            accentText: 'text-emerald-600',
-            accentBorder: 'border-emerald-200/80',
-            badgeBg: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700',
-            bubbleWidth: 'w-[26.8%]',
             checklist: ['스케일 비파괴 잔존수명 검증', '최적 내식재(SUS) 규격 치환', '안전 세정·배출 노무 필터링']
           };
         case '기계실개선':
           return {
             sampleCount: 42,
             bubbleRate: 29.3,
-            accentBg: 'bg-teal-500/5',
-            accentText: 'text-teal-600',
-            accentBorder: 'border-teal-200/80',
-            badgeBg: 'bg-teal-500/10 border-teal-500/20 text-teal-700',
-            bubbleWidth: 'w-[29.3%]',
             checklist: ['편심 이경관 캐비테이션 차단', '매니폴드 균등 압력 분배 분석', '루프 반입구·간섭 유효성 검토']
           };
         case '생산설비 배관 연결':
           return {
             sampleCount: 45,
             bubbleRate: 34.2,
-            accentBg: 'bg-indigo-500/5',
-            accentText: 'text-indigo-600',
-            accentBorder: 'border-indigo-200/80',
-            badgeBg: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-700',
-            bubbleWidth: 'w-[34.2%]',
             checklist: ['초순수/UHP EP 자재 등급 검증', '오비탈 용접 노무 과다 필터링', '0.01㎛ 필터·감압밸브 배치']
           };
         case 'CAPEX 개·증설 검토':
           return {
             sampleCount: 88,
             bubbleRate: 37.6,
-            accentBg: 'bg-[#0f1e35]/5',
-            accentText: 'text-navy',
-            accentBorder: 'border-[#0f1e35]/15',
-            badgeBg: 'bg-[#0f1e35]/10 border-[#0f1e35]/20 text-navy',
-            bubbleWidth: 'w-[37.6%]',
             checklist: ['WBS 공종별 예산 상한 매핑', '유사 1군 실거래 정량 대조', 'CAPEX 초과 리스크 조기 감지']
           };
         case 'spool':
           return {
             sampleCount: 68,
             bubbleRate: 50.0,
-            accentBg: 'bg-cyan-500/5',
-            accentText: 'text-cyan-600',
-            accentBorder: 'border-cyan-200/80',
-            badgeBg: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-700',
-            bubbleWidth: 'w-[50%]',
             checklist: ['ISO 도면 운반·조립 단위 스풀 분할 최적화', '팹샵 통제 환경 용접 및 RT/PMI 비파괴 검사 기록', '스풀 식별 마킹 기반 현장 무오류 조립 시퀀스 매핑']
           };
         case 'skid':
           return {
             sampleCount: 54,
             bubbleRate: 40.0,
-            accentBg: 'bg-amber-500/5',
-            accentText: 'text-amber-600',
-            accentBorder: 'border-amber-200/80',
-            badgeBg: 'bg-amber-500/10 border-amber-500/20 text-amber-700',
-            bubbleWidth: 'w-[40%]',
             checklist: ['단일 프레임 장비·배관·계장 3D 통합 배치 설계', '공장 사전 시운전(FAT) 기밀·제어 로직 검증', '반입구 치수·하중·유틸리티 인터페이스 정합성 대조']
           };
         case 'structure':
           return {
             sampleCount: 47,
             bubbleRate: 35.0,
-            accentBg: 'bg-accent/5',
-            accentText: 'text-accent',
-            accentBorder: 'border-accent/20',
-            badgeBg: 'bg-accent/10 border-accent/20 text-accent',
-            bubbleWidth: 'w-[35%]',
             checklist: ['Shop Drawing 기반 강재 절단·천공 ±1mm 정밀 가공', '하중 기준 용접·치수 검사 구조 안전성 검증', '도장·아연도금 표면처리 후 현장 볼팅 조립 가이드']
           };
         case 'small':
           return {
             sampleCount: 124,
             bubbleRate: 18.2,
-            accentBg: 'bg-cyan-500/5',
-            accentText: 'text-cyan-600',
-            accentBorder: 'border-cyan-200/80',
-            badgeBg: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-700',
-            bubbleWidth: 'w-[18.2%]',
             checklist: ['현장 사진 매핑을 통한 기본 노무량 분석', '온라인 제출 치수 기준 관 마찰 유속 유동 검증', '자재 교체용 간이 스펙 비교 정합성 매핑']
           };
         case 'medium':
           return {
             sampleCount: 96,
             bubbleRate: 27.5,
-            accentBg: 'bg-amber-500/5',
-            accentText: 'text-amber-600',
-            accentBorder: 'border-amber-200/80',
-            badgeBg: 'bg-amber-500/10 border-amber-500/20 text-amber-700',
-            bubbleWidth: 'w-[27.5%]',
             checklist: ['레이저 3D ISO 실측 실 데이터 100% 매핑', '기계실 물리 간섭 및 구조 하중 설계 타당성 대조', '현장 가동중단(셧다운) 스케줄 리스크 완화 매핑']
           };
         case 'large':
           return {
             sampleCount: 26,
             bubbleRate: 35.4,
-            accentBg: 'bg-accent/5',
-            accentText: 'text-accent',
-            accentBorder: 'border-accent/20',
-            badgeBg: 'bg-accent/10 border-accent/20 text-accent-700',
-            bubbleWidth: 'w-[35.4%]',
             checklist: ['대단위 CAPEX 공종 실행 한도(WBS) 종합 설계', '기획 VE(Value Engineering) 유사 실거래 대조', '입찰 시공사 복수 견적서 1:1 동일 기준 심사']
           };
         default:
           return {
             sampleCount: 30,
             bubbleRate: 25.0,
-            accentBg: 'bg-[#1e4d8c]/5',
-            accentText: 'text-steel',
-            accentBorder: 'border-[#1e4d8c]/20',
-            badgeBg: 'bg-[#1e4d8c]/10 border-[#1e4d8c]/20 text-steel',
-            bubbleWidth: 'w-[25%]',
             checklist: ['ZEROS 표준 품셈 노무 분석 기준 적용', '실거래 가격 단가 오차 범위 대조 확인', '과도 인건비 거품 및 설계 위험 조기 제거']
           };
       }

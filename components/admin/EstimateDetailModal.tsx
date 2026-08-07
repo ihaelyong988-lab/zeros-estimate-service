@@ -8,7 +8,6 @@ import { draftLineItems } from '@/lib/quote/quoteDraft';
 import { lineAmount, sumSubtotal, vatOf, totalOf, supplyAmountOf } from '@/lib/quote/amounts';
 import { derivePaymentStatus } from '@/lib/payments/status';
 import { buildQuoteXlsxBlob, quoteFileName, downloadBlob } from '@/lib/quote/quoteXlsx';
-import { isSupabaseEnabled } from '@/lib/supabase/supabaseBrowser';
 import { openSecureFile } from '@/lib/files/secureFile';
 import { validateFileFormat, ACCEPT_ATTR } from '@/lib/constants/uploadLimits';
 import { menuDisplayName } from '@/lib/constants/menu';
@@ -357,21 +356,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
 
     setAdminUploading(true);
     try {
-      let uploaded;
-      if (isSupabaseEnabled) {
-        uploaded = await uploadEstimateFiles(selected, adminUploadCategory, estimate.id);
-      } else {
-        uploaded = selected.map((f, i) => ({
-          id: `file-admin-local-${Date.now()}-${i}`,
-          estimate_id: estimate.id,
-          file_name: f.name,
-          file_type: f.type || 'application/octet-stream',
-          file_url: '',
-          file_category: adminUploadCategory,
-          file_size: f.size,
-          uploaded_at: new Date().toISOString(),
-        }));
-      }
+      const uploaded = await uploadEstimateFiles(selected, adminUploadCategory, estimate.id);
 
       const updatedFiles = [...(estimate.submitted_files || []), ...uploaded];
       await ZerosService.updateEstimate(estimate.id, {
@@ -508,7 +493,6 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
     try {
       const blob = await buildQuoteXlsxBlob(estimate, quoteItems);
       const file = new File([blob], quoteFileName(estimate), { type: blob.type });
-      if (!isSupabaseEnabled) throw new Error('Supabase 연결이 없어 견적서를 업로드할 수 없습니다.');
       const meta = await uploadEstimateFile(file, '견적서', estimate.id);
       const sentAt = new Date().toISOString();
       await ZerosService.updateEstimate(estimate.id, {
@@ -1273,7 +1257,7 @@ export const EstimateDetailModal: React.FC<EstimateDetailModalProps> = ({
               의뢰 건 영구 삭제
             </button>
             <span className="text-[10px] text-gray font-bold">
-              * 수정한 속성은 저장 즉시 로컬 Mock DB 및 실적관리 탭에 실시간 리액티브 반영됩니다.
+              * 저장한 내용은 실적관리 탭에 바로 반영됩니다.
             </span>
           </div>
           <button

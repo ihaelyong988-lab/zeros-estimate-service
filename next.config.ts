@@ -10,7 +10,6 @@ const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   /* config options here */
   allowedDevOrigins: [
-    'mardi-von-framed-outdoors.trycloudflare.com',
     '*.trycloudflare.com',
     'localhost:3000'
   ],

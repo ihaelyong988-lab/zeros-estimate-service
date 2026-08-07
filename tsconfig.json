@@ -2,6 +2,8 @@
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
+    // test/hooks/uiQualityGate.test.ts 가 .claude/hooks/ui-quality-gate.mjs 를 직접 임포트한다.
+    // 끄면 TS7016 으로 막힌다 — 지우지 말 것.
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -9,6 +11,9 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    // Next.js 가 mandatory 로 강제한다 — 지우면 next build 가 매번 되돌려 넣으면서
+    // tsconfig.json 전체를 재직렬화해, 축소 효과 0에 빌드마다 추적 파일이 더러워진다.
+    // (2026-08-08 적대 검증: tsc 만으로는 잡히지 않는다. 강제 주체가 tsc 가 아니라 next build 다.)
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",

@@ -83,24 +83,6 @@ begin
 end $$;
 
 -- ------------------------------------------------------------
--- 4. Storage 업로드 정책 (estimate-files 버킷)
---    버킷은 Public 으로 만들었으므로 '읽기'는 이미 허용됨.
---    여기서는 anon 이 '업로드(insert)' 할 수 있도록 허용한다.
--- ------------------------------------------------------------
-drop policy if exists "anon_upload_estimate_files" on storage.objects;
-create policy "anon_upload_estimate_files"
-  on storage.objects
-  for insert to anon
-  with check (bucket_id = 'estimate-files');
-
--- (선택) anon 이 자신이 올린 파일을 갱신/삭제할 수 있게 하려면 아래도 실행
-drop policy if exists "anon_modify_estimate_files" on storage.objects;
-create policy "anon_modify_estimate_files"
-  on storage.objects
-  for update to anon
-  using (bucket_id = 'estimate-files');
-
--- ------------------------------------------------------------
 -- 5. 파일 보안 잠금 (2026-07-05 — 관리자·본인만 열람)
 --    버킷을 비공개로 전환한다. 이후 파일 열람은 서버 서명 URL
 --    (/api/files/sign, 관리자 토큰·고객 본인 인증 필수)로만 가능.
