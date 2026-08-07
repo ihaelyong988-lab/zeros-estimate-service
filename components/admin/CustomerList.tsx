@@ -5,7 +5,8 @@ import { Customer } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
 import { CUSTOMER_GRADES, gradeOf } from '@/lib/crm/customerRollup';
 import { resolveAdminLoadError, UNRESOLVED, type AdminLoadError } from '@/lib/admin/loadState';
-import { Users2, Search, Edit2, Check, X, Award, FileText, TrendingUp, AlertCircle } from 'lucide-react';
+import { AlertBanner } from '@/components/admin/AlertBanner';
+import { Users2, Search, Edit2, Check, X, Award, FileText, TrendingUp } from 'lucide-react';
 
 // 등급 편집값 '' = 수동 지정 없음(견적 이력에서 자동 산출).
 // 편집창을 열고 그대로 저장해도 자동 등급이 수동 등급으로 고착되지 않게 하는 장치다.
@@ -145,27 +146,9 @@ export const CustomerList: React.FC = () => {
         </p>
       </div>
 
-      {loadError && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
-        >
-          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
-          <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
-        </div>
-      )}
+      <AlertBanner message={loadError?.message} />
 
-      {saveError && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
-        >
-          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
-          <span className="text-[13.5px] font-bold text-danger leading-snug">{saveError.message}</span>
-        </div>
-      )}
+      <AlertBanner message={saveError?.message} />
 
       {/* 고객 CRM 핵심 KPI 요약 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

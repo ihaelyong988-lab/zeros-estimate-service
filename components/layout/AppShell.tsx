@@ -15,12 +15,21 @@ import {
   Menu,
   X,
   Building2,
-  ChevronLeft
+  ChevronLeft,
+  type LucideIcon
 } from 'lucide-react';
 import { MyRequestsView } from '../MyRequestsView';
 import { CustomerLoginModal } from '../forms/CustomerLoginModal';
 import { MyRequestsModal } from '../MyRequestsModal';
 import { HEADER_TOUCH_CLASS, ICON_TOUCH_CLASS, mobileHeaderClass } from '@/lib/ui/mobileShellTheme';
+import { scrollMainPanelToTop } from '@/lib/ui/scrollMainPanel';
+import {
+  MOBILE_BOTTOM_TABS,
+  MOBILE_TAB_ICON_CLASS,
+  MOBILE_TAB_LABEL_CLASS,
+  mobileBottomTabClass,
+  type MobileBottomTab,
+} from '@/lib/ui/mobileTabs';
 import {
   buildShellUrl,
   parseShellUrl,
@@ -44,9 +53,18 @@ interface MobileAdminMenuItem {
   value: 'dashboard' | 'estimates' | 'visits' | 'customers' | 'performance' | 'notifications';
 }
 
-type MobileActiveTab = 'home' | 'service' | 'request' | 'history' | 'account' | 'decision' | 'admin';
+type MobileActiveTab = MobileBottomTab | 'decision' | 'admin';
 // activeTab === 'home' 위에 겹쳐 뜨는 모바일 전용 화면(마이페이지·의사결정). 나머지 하단 탭은 activeTab에서 파생된다.
 type HomeSubView = ShellHomeSubView;
+
+// 아이콘은 lucide 컴포넌트라 데이터 파일에 두지 않는다. Record 라 탭이 늘면 컴파일이 막는다.
+const MOBILE_TAB_ICONS: Record<MobileBottomTab, LucideIcon> = {
+  home: Home,
+  service: BookOpen,
+  request: FileText,
+  history: TrendingUp,
+  account: User,
+};
 
 const mobileMenuItems: MobileMenuItem[] = [
   { type: 'menu', label: '일반 배관공사', value: '배관공사' },
@@ -396,23 +414,6 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
     }
   };
 
-  const scrollMainPanelToTop = () => {
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
-        if (mainScroll) {
-          const originalSnap = mainScroll.style.scrollSnapType;
-          mainScroll.style.scrollSnapType = 'none';
-          mainScroll.scrollTo({ top: 0, behavior: 'auto' });
-          window.requestAnimationFrame(() => {
-            mainScroll.style.scrollSnapType = originalSnap;
-          });
-        }
-        window.scrollTo({ top: 0, behavior: 'auto' });
-      });
-    });
-  };
-
   // 모바일 퀵 탭 스크롤 처리
   const handleMobileQuickMenuClick = (item: MobileMenuItem) => {
     setMobileMenuOpen(false);
@@ -633,13 +634,8 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
               )}
 
               <div className="grid grid-cols-1 gap-2">
-                {[
-                  { label: '홈', tab: 'home' as MobileActiveTab },
-                  { label: '서비스 소개', tab: 'service' as MobileActiveTab },
-                  { label: '견적 문의', tab: 'request' as MobileActiveTab },
-                  { label: '실적 집계표', tab: 'history' as MobileActiveTab },
-                  { label: '마이페이지', tab: 'account' as MobileActiveTab },
-                ].map((item) => (
+                {/* 하단 탭바와 같은 목록이다 — 순서·문구가 어긋나지 않도록 단일 소스를 읽는다. */}
+                {MOBILE_BOTTOM_TABS.map((item) => (
                   <button
                     key={item.label}
                     onClick={() => handleMobileTabChange(item.tab)}
@@ -719,55 +715,19 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
 
         {/* 모바일 고유의 네이티브형 하단 네비게이션 바 (iOS/Android 스타일) */}
         <div className={`${isMobileLanding ? 'bg-bg/95 border-[#E4EAF2] text-navy' : 'bg-bg/95 border-border'} shrink-0 backdrop-blur-md border-t shadow-custom-lg grid grid-cols-5 items-center justify-around py-2.5 pb-safe z-40 text-center select-none`}>
-          <button
-            onClick={() => handleMobileTabChange('home')}
-            className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'home' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
-            }`}
-          >
-            <Home className="w-5.5 h-5.5" />
-            <span className="text-[12px]">홈</span>
-          </button>
-
-          <button
-            onClick={() => handleMobileTabChange('service')}
-            className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'service' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
-            }`}
-          >
-            <BookOpen className="w-5.5 h-5.5" />
-            <span className="text-[12px]">서비스 소개</span>
-          </button>
-
-          <button
-            onClick={() => handleMobileTabChange('request')}
-            className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'request' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
-            }`}
-          >
-            <FileText className="w-5.5 h-5.5" />
-            <span className="text-[12px]">견적 문의</span>
-          </button>
-
-          <button
-            onClick={() => handleMobileTabChange('history')}
-            className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'history' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
-            }`}
-          >
-            <TrendingUp className="w-5.5 h-5.5" />
-            <span className="text-[12px]">실적 집계표</span>
-          </button>
-
-          <button
-            onClick={() => handleMobileTabChange('account')}
-            className={`flex flex-col items-center gap-1 transition-all ${
-              mobileActiveTab === 'account' ? 'text-accent font-black scale-105' : 'text-gray hover:text-navy'
-            }`}
-          >
-            <User className="w-5.5 h-5.5" />
-            <span className="text-[12px]">마이페이지</span>
-          </button>
+          {MOBILE_BOTTOM_TABS.map(({ tab, label }) => {
+            const Icon = MOBILE_TAB_ICONS[tab];
+            return (
+              <button
+                key={tab}
+                onClick={() => handleMobileTabChange(tab)}
+                className={mobileBottomTabClass(mobileActiveTab === tab)}
+              >
+                <Icon className={MOBILE_TAB_ICON_CLASS} />
+                <span className={MOBILE_TAB_LABEL_CLASS}>{label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     );

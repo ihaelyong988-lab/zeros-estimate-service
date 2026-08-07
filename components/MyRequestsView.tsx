@@ -5,6 +5,10 @@ import { useShell } from '@/lib/context/ShellContext';
 import { ZerosService } from '@/lib/supabase/client';
 import { openSecureFile } from '@/lib/files/secureFile';
 import { resolveRequestsLoad, RequestsLoadError } from '@/lib/requests/loadOutcome';
+import {
+  Tone, TLEvent, toneBg, toneSoft, toneText,
+  STAGES, STATUS_TONE, TPL, fmtDate, fmtDateTime, stageIndex,
+} from '@/lib/requests/timeline';
 import { menuDisplayName } from '@/lib/constants/menu';
 import { Estimate, NotificationLog } from '@/types/estimate';
 import {
@@ -12,87 +16,12 @@ import {
   ShieldCheck, Phone, MessageSquare, CheckCircle2, UserCheck, Download, AlertCircle
 } from 'lucide-react';
 
-type Tone = 'steel' | 'warning' | 'accent' | 'info' | 'success' | 'navy' | 'gray';
-
-const toneText: Record<Tone, string> = {
-  steel: 'text-steel', warning: 'text-warning', accent: 'text-accent', info: 'text-info',
-  success: 'text-success', navy: 'text-navy', gray: 'text-gray',
-};
-const toneBg: Record<Tone, string> = {
-  steel: 'bg-steel', warning: 'bg-warning', accent: 'bg-accent', info: 'bg-info',
-  success: 'bg-success', navy: 'bg-navy', gray: 'bg-gray-light',
-};
-const toneSoft: Record<Tone, string> = {
-  steel: 'bg-steel/10 text-steel border-steel/20',
-  warning: 'bg-warning/10 text-warning border-warning/20',
-  accent: 'bg-accent/10 text-accent border-accent/20',
-  info: 'bg-info/10 text-info border-info/20',
-  success: 'bg-success/10 text-success border-success/20',
-  navy: 'bg-navy/10 text-navy border-navy/20',
-  gray: 'bg-gray-light/10 text-gray border-gray-light/30',
-};
-
-const STATUS_TONE: Record<string, Tone> = {
-  '접수완료': 'steel', '검토중': 'warning', '추가자료요청': 'warning', '출장견적 결제대기': 'accent',
-  '방문일정 조율중': 'info', '현장방문 예정': 'info', '현장방문 완료': 'info', '견적서 작성중': 'navy',
-  '견적서 송부완료': 'success', '수주성공': 'success', '수주실패': 'gray', '보류': 'gray', '취소': 'gray',
-};
-
-const TPL: Record<string, { label: string; tone: Tone }> = {
-  ZR_REG_COMPLETE: { label: '접수완료', tone: 'steel' },
-  ZR_REVIEWING: { label: '검토중', tone: 'warning' },
-  ZR_REQ_DOCS: { label: '추가자료요청', tone: 'warning' },
-  ZR_PAY_WAIT: { label: '결제대기', tone: 'accent' },
-  ZR_VISIT_PLAN: { label: '현장방문 예정', tone: 'info' },
-  ZR_VISIT_COMPLETE: { label: '현장방문 완료', tone: 'info' },
-  ZR_QUOTE_SENT: { label: '견적서 송부완료', tone: 'success' },
-  ZR_WON_COMPLETE: { label: '수주성공', tone: 'success' },
-  ZR_STATUS_UPDATE: { label: '상태 업데이트', tone: 'gray' },
-  ZR_COMMON: { label: '알림', tone: 'gray' },
-};
-
-const STAGES = ['접수', '검토', '방문', '견적', '수주'];
-function stageIndex(status: string): number {
-  switch (status) {
-    case '접수완료': return 0;
-    case '검토중': case '추가자료요청': case '출장견적 결제대기': return 1;
-    case '방문일정 조율중': case '현장방문 예정': case '현장방문 완료': return 2;
-    case '견적서 작성중': case '견적서 송부완료': return 3;
-    case '수주성공': return 4;
-    default: return -1;
-  }
-}
-
-function fmtDateTime(iso?: string): string {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return '-';
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
-function fmtDate(iso?: string): string {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return '-';
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}`;
-}
-
+// 인라인 로그인 폼 전용 — 이 화면에만 있는 입력 마스킹이라 공용 모듈로 올리지 않는다.
 function formatPhone(v: string): string {
   const d = v.replace(/[^0-9]/g, '').slice(0, 11);
   if (d.length < 4) return d;
   if (d.length < 8) return `${d.slice(0, 3)}-${d.slice(3)}`;
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
-}
-
-interface TLEvent {
-  id: string;
-  ts: string;
-  estimateNo: string;
-  label: string;
-  desc: string;
-  tone: Tone;
 }
 
 export const MyRequestsView: React.FC = () => {

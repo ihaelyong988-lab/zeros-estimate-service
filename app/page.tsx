@@ -11,6 +11,7 @@ import { manualData } from "@/lib/constants/manuals";
 import { REQUEST_CTA_LABEL } from "@/lib/constants/cta";
 import { TRUST, TRUST_LABEL, TRUST_VALUE, averageSavingRate } from "@/lib/constants/trust";
 import { ZerosService, clearDataCache } from "@/lib/supabase/client";
+import { scrollMainPanelToTop } from "@/lib/ui/scrollMainPanel";
 import { Estimate, EstimateStatus } from "@/types/estimate";
 
 import { PerformanceInsights } from "@/components/PerformanceInsights";
@@ -317,23 +318,6 @@ export default function Home() {
       console.error(e);
       throw e;
     }
-  };
-
-  const scrollMainPanelToTop = () => {
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        const mainScroll = document.querySelector('[data-main-scroll="true"]') as HTMLElement | null;
-        if (mainScroll) {
-          const originalSnap = mainScroll.style.scrollSnapType;
-          mainScroll.style.scrollSnapType = 'none';
-          mainScroll.scrollTo({ top: 0, behavior: 'auto' });
-          window.requestAnimationFrame(() => {
-            mainScroll.style.scrollSnapType = originalSnap;
-          });
-        }
-        window.scrollTo({ top: 0, behavior: 'auto' });
-      });
-    });
   };
 
   // 모바일 홈/로고 탭 클릭 등으로 첫 랜딩 상태 복귀 시, 내부 서브 캐러셀과 슬라이더 상태도 첫 화면(0)으로 초기화.

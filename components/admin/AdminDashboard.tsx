@@ -5,14 +5,14 @@ import { ZerosService } from '@/lib/supabase/client';
 import { Estimate } from '@/types/estimate';
 import { sumExpectedRevenue } from '@/lib/calculations';
 import { resolveAdminLoadError, UNRESOLVED, type AdminLoadError } from '@/lib/admin/loadState';
+import { AlertBanner } from '@/components/admin/AlertBanner';
 import {
   FileText,
   Clock,
   CalendarCheck,
   TrendingUp,
   DollarSign,
-  Briefcase,
-  AlertCircle
+  Briefcase
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -74,16 +74,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateToView
         </p>
       </div>
 
-      {loadError && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
-        >
-          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
-          <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
-        </div>
-      )}
+      <AlertBanner message={loadError?.message} />
 
       {/* 실시간 KPI 카드 그리드 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

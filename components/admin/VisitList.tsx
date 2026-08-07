@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { ZerosService, clearDataCache } from '@/lib/supabase/client';
 import { SiteVisit, Estimate } from '@/types/estimate';
 import { resolveAdminLoadError, type AdminLoadError } from '@/lib/admin/loadState';
-import { Calendar, User, ClipboardList, CheckCircle2, ShieldAlert, FileWarning, RefreshCw, AlertCircle } from 'lucide-react';
+import { AlertBanner } from '@/components/admin/AlertBanner';
+import { Calendar, User, ClipboardList, CheckCircle2, ShieldAlert, FileWarning, RefreshCw } from 'lucide-react';
 
 // 완료 처리 실패 안내 문구. 조회 실패 배너는 loadData 에서만 켜지므로 저장 경로는 별도로 알린다.
 export const VISIT_COMPLETE_ERROR_HEADLINE = '현장방문 완료 처리를 저장하지 못했습니다.';
@@ -137,27 +138,9 @@ export const VisitList: React.FC = () => {
         </div>
       </div>
 
-      {loadError && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
-        >
-          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
-          <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
-        </div>
-      )}
+      <AlertBanner message={loadError?.message} />
 
-      {actionError && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
-        >
-          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
-          <span className="text-[13.5px] font-bold text-danger leading-snug">{actionError.message}</span>
-        </div>
-      )}
+      <AlertBanner message={actionError?.message} />
 
       {/* 실측 카드 목록 */}
       {displayVisits.length > 0 ? (

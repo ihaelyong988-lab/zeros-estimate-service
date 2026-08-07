@@ -302,17 +302,84 @@ const VISIT_SYNCABLE_STATUSES: readonly EstimateStatus[] = [
 ];
 
 // ==========================================
-// 2. 공통 비즈니스 로직 베이스 (저장소 비의존)
+// 2. ZEROS 데이터 서비스 (서버 게이트웨이 경유)
 // ==========================================
-// 모든 견적/고객/결제/방문/알림 처리 로직을 이곳에 둔다.
-// 실제 데이터 입출력은 loadTable / persistTable 추상 메서드로 위임한다.
-abstract class BaseZerosService implements ZerosDataService {
-  protected abstract loadTable<T>(key: string, opts?: LoadTableOptions): Promise<T[]>;
-  protected abstract persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void>;
+// 브라우저에서 anon 키로 테이블을 직접 읽고 쓰던 구조(전 고객 PII 공개 노출)를 폐기하고,
+// 모든 데이터 입출력을 /api/data(service_role + 신원 검증)로 우회한다.
+//  - 읽기: 관리자=전체 / 고객=본인 건 / 익명=개인정보 제거 분석 행
+//  - 쓰기: 관리자 전용 (upsert)
+//  - 공개 접수: OTP 토큰 검증 후 서버가 단건 생성(createEstimate)
+class SupabaseZerosService implements ZerosDataService {
+  // ---------- 서버 게이트웨이 입출력 ----------
+  // 브라우저에 저장된 신원 토큰을 요청 본문에 실어 서버가 권한을 판정하게 한다.
+  private authBody(): DataAuthIdentity {
+    if (typeof window === 'undefined') return {};
+    const adminToken = localStorage.getItem('zeros_admin_token') || undefined;
+    let sessionToken: string | undefined;
+    let phone: string | undefined;
+    try {
+      const raw = localStorage.getItem('zeros_customer_auth');
+      if (raw) {
+        const a = JSON.parse(raw) as { sessionToken?: string; phone?: string };
+        sessionToken = a.sessionToken || undefined;
+        phone = a.phone || undefined;
+      }
+    } catch {
+      // 저장값 파싱 실패는 비인증으로 간주
+    }
+    return { adminToken, sessionToken, phone };
+  }
+
+  private async postData<R>(payload: Record<string, unknown>, auth: DataAuthIdentity = this.authBody()): Promise<R> {
+    const res = await fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, ...auth }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      // 401 = 세션 만료·무효. 스테일 관리자 토큰을 그대로 두면 이후 모든 요청에 계속 실려
+      // 무효 상태가 고착되므로 여기서 폐기한다(수동 로그아웃 전까지 남던 문제).
+      if (res.status === 401 && typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('zeros_admin_token');
+          localStorage.removeItem('zeros_admin_authed');
+        } catch {
+          // 스토리지 접근 불가 환경은 무시
+        }
+        // 신원이 방금 바뀌었다 — 만료된 신원으로 받아 둔 행은 즉시 버린다.
+        dataCache.clear();
+      }
+      throw new DataRequestError((data as { error?: string }).error || '데이터 요청에 실패했습니다.', res.status);
+    }
+    return data as R;
+  }
+
+  // 실패를 빈 배열로 삼키면 서버 장애·세션 만료가 전 화면에서 "데이터 0건"으로 위장된다.
+  // 오류는 그대로 전파하고, 표시 방식은 호출한 화면이 결정한다(모든 호출부에 try/catch 있음).
+  private async loadTable<T>(key: string, opts?: LoadTableOptions): Promise<T[]> {
+    const auth = this.authBody();
+    const fetchRows = async (): Promise<T[]> => {
+      const { rows } = await this.postData<{ rows: T[] }>({ op: 'list', table: key }, auth);
+      return rows || [];
+    };
+
+    // 서버 렌더(SSR)에서는 캐시를 쓰지 않는다 — 모듈 전역 캐시가 프로세스에 남아
+    // 다른 요청자에게 넘어갈 수 있다. 브라우저에서만 신원별로 캐시한다.
+    if (typeof window === 'undefined') return fetchRows();
+
+    return dataCache.load<T>(cacheScopeOf(auth), key, fetchRows, opts?.fresh);
+  }
+
+  private async persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void> {
+    if (rows.length === 0) return;
+    await this.postData<{ ok: boolean }>({ op: 'upsert', table: key, rows });
+    dataCache.invalidate(key); // 쓰기 성공 직후 무효화 — 다음 조회는 방금 저장한 값을 본다
+  }
 
   // 읽고-고쳐-쓰는 경로 전용 조회. 이 경로는 받은 배열 전체를 다시 저장하므로 캐시를 쓰지 않는다 —
   // 30초 된 스냅샷을 통째로 upsert 하면 그 사이 다른 관리자가 바꾼 행이 되돌아간다(lost update).
-  protected fresh<T>(key: string): Promise<T[]> {
+  private fresh<T>(key: string): Promise<T[]> {
     return this.loadTable<T>(key, { fresh: true });
   }
 
@@ -326,88 +393,19 @@ abstract class BaseZerosService implements ZerosDataService {
     return list.find(e => e.id === id) || null;
   }
 
-  // 이 베이스 구현은 서버 검증이 없으므로 opts.verifiedToken 을 쓰지 않는다(SupabaseZerosService 가 덮어쓴다).
+  // 공개 접수는 서버가 인증 검증 + 접수번호 채번 + 단건 생성을 수행한다.
+  // verifiedToken(30분)은 로그인 세션이 아니라 이번 인증에서 막 받은 값이라 authBody() 가 아니라
+  // 호출부가 넘긴다 — 이 경로가 없으면 SMS 설정 환경에서 서버 okVerified 가 항상 false 가 된다.
   async createEstimate(estimate: Partial<Estimate>, opts?: CreateEstimateOptions): Promise<Estimate> {
-    // 연락처 검증: 폼에서 필수·인증되지만, 누락/형식오류 시 가짜번호(010-0000-0000) 저장을 방지한다.
-    const phone = (estimate.phone || '').trim();
-    if (!/^01[0-9]{8,9}$/.test(phone.replace(/[^0-9]/g, ''))) {
-      throw new Error('휴대폰 번호가 올바르지 않습니다. 접수를 진행할 수 없습니다.');
-    }
-
-    const list = await this.fresh<Estimate>(TABLES.estimates);
-
-    // 접수번호 생성 로직 (ZR-YYYYMMDD-XXX)
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const count = list.filter(e => e.estimate_no.startsWith(`ZR-${todayStr}`)).length + 1;
-    const estimateNo = `ZR-${todayStr}-${String(count).padStart(3, '0')}`;
-
-    const newEstimate: Estimate = {
-      id: `est-generated-uuid-${Math.random().toString(36).substr(2, 9)}`,
-      estimate_no: estimateNo,
-      created_at: new Date().toISOString(),
-      customer_name: estimate.customer_name || '이름 없음',
-      company_name: estimate.company_name || '',
-      phone,
-      email: estimate.email || '',
-      site_address: estimate.site_address || '',
-      customer_type: estimate.customer_type || '기타',
-      work_type: estimate.work_type || '기타',
-      site_type: estimate.site_type || '기타',
-      work_purpose: estimate.work_purpose || '',
-      expected_budget_range: estimate.expected_budget_range || '모름',
-      desired_schedule: estimate.desired_schedule || '',
-      urgency: estimate.urgency || false,
-      description: estimate.description || '',
-      request_detail: estimate.request_detail || '',
-      estimate_category: estimate.estimate_category || 'unknown',
-      accuracy_grade: estimate.accuracy_grade,
-      status: '접수완료',
-      admin_memo: '',
-      payment_required: estimate.payment_required || false,
-      payment_status: '미결제',
-      submitted_files: estimate.submitted_files || []
-    };
-
-    list.unshift(newEstimate);
-    await this.persistTable(TABLES.estimates, list);
-
-    // 고객 정보 연계 자동 누적 처리
-    await this.syncCustomerForEstimate(newEstimate);
-
-    // 가상 접수 알림 로그 발송 처리
-    await this.triggerNotification(newEstimate, '접수완료');
-
-    // 예약방문 신청(출장 채널)이 함께 오면 방문 이력을 기록한다.
-    if (opts?.visit && opts.visit.visit_date) {
-      await this.createSiteVisit({ ...opts.visit, estimate_id: newEstimate.id });
-    }
-
-    return newEstimate;
-  }
-
-  // 고객 행 자체(신원)만 유지한다. 이미 있는 번호면 저장할 것이 없어 쓰기를 생략한다 —
-  // 누적 카운터·등급은 저장값이 아니라 /api/data 가 견적에서 파생 계산한 값을 화면이 쓴다.
-  // 특히 customer_grade 는 여기서 건드리지 않는다 — 접수 한 건이 운영자가 지정한 등급을 덮어썼다.
-  private async syncCustomerForEstimate(est: Estimate) {
-    const customers = await this.fresh<Customer>(TABLES.customers);
-    if (customers.some(c => c.phone === est.phone)) return;
-
-    const newCustomer: Customer = {
-      id: `cust-generated-uuid-${Math.random().toString(36).substr(2, 9)}`,
-      customer_name: est.customer_name,
-      company_name: est.company_name || '',
-      phone: est.phone,
-      email: est.email,
-      site_address: est.site_address,
-      customer_type: est.customer_type,
-      customer_grade: '신규',
-      total_requests: 1,
-      total_won: 0,
-      total_revenue: 0,
-      created_at: new Date().toISOString()
-    };
-    customers.unshift(newCustomer);
-    await this.persistTable(TABLES.customers, customers);
+    const { estimate: created } = await this.postData<{ estimate: Estimate }>({
+      op: 'createEstimate',
+      estimate,
+      visit: opts?.visit,
+      verifiedToken: opts?.verifiedToken,
+    });
+    // 서버 한 번의 접수로 견적·고객·알림(+출장 채널은 방문)이 함께 바뀐다 — 네 테이블 모두 무효화한다.
+    dataCache.invalidate(TABLES.estimates, TABLES.customers, TABLES.notificationLogs, TABLES.siteVisits);
+    return created;
   }
 
   async updateEstimate(id: string, updates: Partial<Estimate>): Promise<Estimate> {
@@ -450,21 +448,11 @@ abstract class BaseZerosService implements ZerosDataService {
   }
 
   // ---------- 견적 삭제 ----------
-  // 베이스 구현은 전체 배열을 다시 저장하므로 필터링만으로 삭제가 반영된다.
-  // Supabase 서비스는 이 메서드를 오버라이드해 서버 delete op 를 호출한다.
+  // 삭제는 upsert 로 표현할 수 없으므로 서버 delete op(관리자 전용)로 위임한다.
   async deleteEstimate(id: string): Promise<void> {
-    const [ests, pays, visits, logs] = await Promise.all([
-      this.fresh<Estimate>(TABLES.estimates),
-      this.fresh<Payment>(TABLES.payments),
-      this.fresh<SiteVisit>(TABLES.siteVisits),
-      this.fresh<NotificationLog>(TABLES.notificationLogs),
-    ]);
-    await Promise.all([
-      this.persistTable(TABLES.estimates, ests.filter(e => e.id !== id)),
-      this.persistTable(TABLES.payments, pays.filter(p => p.estimate_id !== id)),
-      this.persistTable(TABLES.siteVisits, visits.filter(v => v.estimate_id !== id)),
-      this.persistTable(TABLES.notificationLogs, logs.filter(l => l.estimate_id !== id)),
-    ]);
+    await this.postData<{ ok: boolean }>({ op: 'deleteEstimate', id });
+    // 서버가 연관 결제·방문·알림 행까지 지운다 — 함께 무효화한다.
+    dataCache.invalidate(TABLES.estimates, TABLES.payments, TABLES.siteVisits, TABLES.notificationLogs);
   }
 
   private async triggerNotification(est: Estimate, status: string) {
@@ -611,15 +599,12 @@ abstract class BaseZerosService implements ZerosDataService {
   // 오입력된 청구 행을 지울 경로가 없어 미수금·결제상태가 틀린 채로 남았다.
   // 견적에 결제상태를 다시 저장하지는 않는다 — 남은 행 집합에서 파생한 값을 돌려주고,
   // 화면·집계는 그 값을 근거로 쓴다(§14-4 파생값은 저장하지 않는다).
-  // 베이스 구현은 배열을 통째로 다시 저장하므로 필터링만으로 삭제가 반영된다.
+  // 삭제는 upsert 로 표현할 수 없으므로 서버 delete op(관리자 전용)를 쓴다.
+  // 견적 행은 서버도 건드리지 않으므로 결제 테이블만 무효화한다.
   async deletePayment(id: string): Promise<PaymentStatus> {
-    const list = await this.fresh<Payment>(TABLES.payments);
-    const target = list.find(p => p.id === id);
-    if (!target) throw new Error('Payment not found');
-
-    const rest = list.filter(p => p.id !== id);
-    await this.persistTable(TABLES.payments, rest);
-    return derivePaymentStatus(rest.filter(p => p.estimate_id === target.estimate_id));
+    const { payment_status } = await this.postData<{ payment_status: PaymentStatus }>({ op: 'deletePayment', id });
+    dataCache.invalidate(TABLES.payments);
+    return payment_status;
   }
 
   // ---------- 현장방문 ----------
@@ -703,117 +688,10 @@ abstract class BaseZerosService implements ZerosDataService {
     await this.persistTable(TABLES.customers, list);
     return updated;
   }
-
 }
 
 // ==========================================
-// 3. Supabase 기반 영속 서비스 (서버 게이트웨이 경유)
-// ==========================================
-// 브라우저에서 anon 키로 테이블을 직접 읽고 쓰던 구조(전 고객 PII 공개 노출)를 폐기하고,
-// 모든 데이터 입출력을 /api/data(service_role + 신원 검증)로 우회한다.
-//  - 읽기: 관리자=전체 / 고객=본인 건 / 익명=개인정보 제거 분석 행
-//  - 쓰기: 관리자 전용 (upsert)
-//  - 공개 접수: OTP 토큰 검증 후 서버가 단건 생성(createEstimate)
-class SupabaseZerosService extends BaseZerosService {
-  // 브라우저에 저장된 신원 토큰을 요청 본문에 실어 서버가 권한을 판정하게 한다.
-  private authBody(): DataAuthIdentity {
-    if (typeof window === 'undefined') return {};
-    const adminToken = localStorage.getItem('zeros_admin_token') || undefined;
-    let sessionToken: string | undefined;
-    let phone: string | undefined;
-    try {
-      const raw = localStorage.getItem('zeros_customer_auth');
-      if (raw) {
-        const a = JSON.parse(raw) as { sessionToken?: string; phone?: string };
-        sessionToken = a.sessionToken || undefined;
-        phone = a.phone || undefined;
-      }
-    } catch {
-      // 저장값 파싱 실패는 비인증으로 간주
-    }
-    return { adminToken, sessionToken, phone };
-  }
-
-  private async postData<R>(payload: Record<string, unknown>, auth: DataAuthIdentity = this.authBody()): Promise<R> {
-    const res = await fetch('/api/data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, ...auth }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      // 401 = 세션 만료·무효. 스테일 관리자 토큰을 그대로 두면 이후 모든 요청에 계속 실려
-      // 무효 상태가 고착되므로 여기서 폐기한다(수동 로그아웃 전까지 남던 문제).
-      if (res.status === 401 && typeof window !== 'undefined') {
-        try {
-          localStorage.removeItem('zeros_admin_token');
-          localStorage.removeItem('zeros_admin_authed');
-        } catch {
-          // 스토리지 접근 불가 환경은 무시
-        }
-        // 신원이 방금 바뀌었다 — 만료된 신원으로 받아 둔 행은 즉시 버린다.
-        dataCache.clear();
-      }
-      throw new DataRequestError((data as { error?: string }).error || '데이터 요청에 실패했습니다.', res.status);
-    }
-    return data as R;
-  }
-
-  // 실패를 빈 배열로 삼키면 서버 장애·세션 만료가 전 화면에서 "데이터 0건"으로 위장된다.
-  // 오류는 그대로 전파하고, 표시 방식은 호출한 화면이 결정한다(모든 호출부에 try/catch 있음).
-  protected async loadTable<T>(key: string, opts?: LoadTableOptions): Promise<T[]> {
-    const auth = this.authBody();
-    const fetchRows = async (): Promise<T[]> => {
-      const { rows } = await this.postData<{ rows: T[] }>({ op: 'list', table: key }, auth);
-      return rows || [];
-    };
-
-    // 서버 렌더(SSR)에서는 캐시를 쓰지 않는다 — 모듈 전역 캐시가 프로세스에 남아
-    // 다른 요청자에게 넘어갈 수 있다. 브라우저에서만 신원별로 캐시한다.
-    if (typeof window === 'undefined') return fetchRows();
-
-    return dataCache.load<T>(cacheScopeOf(auth), key, fetchRows, opts?.fresh);
-  }
-
-  protected async persistTable<T extends { id: string }>(key: string, rows: T[]): Promise<void> {
-    if (rows.length === 0) return;
-    await this.postData<{ ok: boolean }>({ op: 'upsert', table: key, rows });
-    dataCache.invalidate(key); // 쓰기 성공 직후 무효화 — 다음 조회는 방금 저장한 값을 본다
-  }
-
-  // 공개 접수는 서버가 인증 검증 + 접수번호 채번 + 단건 생성을 수행한다.
-  // verifiedToken(30분)은 로그인 세션이 아니라 이번 인증에서 막 받은 값이라 authBody() 가 아니라
-  // 호출부가 넘긴다 — 이 경로가 없으면 SMS 설정 환경에서 서버 okVerified 가 항상 false 가 된다.
-  async createEstimate(estimate: Partial<Estimate>, opts?: CreateEstimateOptions): Promise<Estimate> {
-    const { estimate: created } = await this.postData<{ estimate: Estimate }>({
-      op: 'createEstimate',
-      estimate,
-      visit: opts?.visit,
-      verifiedToken: opts?.verifiedToken,
-    });
-    // 서버 한 번의 접수로 견적·고객·알림(+출장 채널은 방문)이 함께 바뀐다 — 네 테이블 모두 무효화한다.
-    dataCache.invalidate(TABLES.estimates, TABLES.customers, TABLES.notificationLogs, TABLES.siteVisits);
-    return created;
-  }
-
-  // 삭제는 upsert 로 표현할 수 없으므로 서버 delete op(관리자 전용)로 위임한다.
-  async deleteEstimate(id: string): Promise<void> {
-    await this.postData<{ ok: boolean }>({ op: 'deleteEstimate', id });
-    // 서버가 연관 결제·방문·알림 행까지 지운다 — 함께 무효화한다.
-    dataCache.invalidate(TABLES.estimates, TABLES.payments, TABLES.siteVisits, TABLES.notificationLogs);
-  }
-
-  // 결제 행 삭제도 같은 이유로 서버 delete op(관리자 전용)를 쓴다.
-  // 견적 행은 서버도 건드리지 않으므로 결제 테이블만 무효화한다.
-  async deletePayment(id: string): Promise<PaymentStatus> {
-    const { payment_status } = await this.postData<{ payment_status: PaymentStatus }>({ op: 'deletePayment', id });
-    dataCache.invalidate(TABLES.payments);
-    return payment_status;
-  }
-}
-
-// ==========================================
-// 4. 앱 전역 데이터 서비스
+// 3. 앱 전역 데이터 서비스
 // ==========================================
 // 데이터 경로는 Supabase 게이트웨이(/api/data) 하나뿐이다.
 // 오프라인 개발용 localStorage Mock 폴백은 2026-08-08 폐기됐다 — 실 키가 없으면 앱은 동작하지 않는다.
