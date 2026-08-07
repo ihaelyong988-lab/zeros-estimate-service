@@ -129,6 +129,19 @@ create policy "anon_upload_estimate_files"
 -- 5-3. 버킷 비공개 전환 — 기존 공개 URL 전부 무효화
 update storage.buckets set public = false where id = 'estimate-files';
 
+-- ------------------------------------------------------------
+-- 6. 접수번호 중복 방지 (2026-08-07)
+--    동시 접수 2건이 같은 번호(ZR-YYYYMMDD-NNN)를 받던 경쟁 상태를 DB 제약으로 막는다.
+--    서버(app/api/data/route.ts)는 23505 를 받으면 번호를 다시 매겨 최대 5회 재시도한다.
+--    멱등 — 이미 있으면 아무 일도 하지 않는다.
+--
+--    ※ 기존 데이터에 중복 번호가 있으면 인덱스 생성이 실패한다. 아래로 먼저 확인한다:
+--      select data->>'estimate_no' as no, count(*) from zeros_estimates
+--        group by 1 having count(*) > 1;
+-- ------------------------------------------------------------
+create unique index if not exists zeros_estimates_no_uniq
+  on zeros_estimates ((data->>'estimate_no'));
+
 -- ============================================================
 -- 완료. 파일은 비공개로 저장되며, 관리자 로그인 또는 고객 본인
 -- 인증을 거친 경우에만 서명 URL(10분)로 열람·다운로드됩니다.

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { X, Phone, ShieldCheck, MessageSquare, LogIn, CheckCircle2 } from 'lucide-react';
 import { useShell } from '@/lib/context/ShellContext';
+import { useModalDialog } from '@/lib/a11y/modalDialog';
 
 // 휴대폰 번호를 010-0000-0000 형태로 표시 포맷팅
 function formatPhone(v: string): string {
@@ -25,6 +26,9 @@ export const CustomerLoginModal: React.FC = () => {
   const [smsPending, setSmsPending] = useState(false); // SMS 발송 미설정(테스트 모드) 여부
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
 
   const digits = phone.replace(/[^0-9]/g, '');
   const phoneValid = /^01[0-9]{8,9}$/.test(digits);
@@ -86,13 +90,22 @@ export const CustomerLoginModal: React.FC = () => {
     }
   };
 
+  // 키보드·스크린리더 사용자가 마우스 없이 열고 닫을 수 있어야 한다(ESC·포커스 트랩·복귀).
+  useModalDialog({ open: showLogin, onClose: close, containerRef: dialogRef, initialFocusRef: phoneInputRef });
+
   if (!showLogin) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy/60 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="customer-login-title"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy/60 backdrop-blur-md animate-in fade-in duration-200 motion-reduce:animate-none"
+    >
       <div className="absolute inset-0" onClick={close} />
 
-      <div className="relative z-10 w-full max-w-[420px] bg-bg border border-border rounded-[20px] shadow-custom-xl flex flex-col animate-in zoom-in-95 duration-200 overflow-hidden">
+      <div className="relative z-10 w-full max-w-[420px] bg-bg border border-border rounded-[20px] shadow-custom-xl flex flex-col animate-in zoom-in-95 duration-200 motion-reduce:animate-none overflow-hidden">
         {/* 상단 헤더 — 브랜드 네이비 */}
         <div className="bg-[#04204C] text-white px-5 py-4 flex items-center justify-between select-none">
           <div className="flex items-center gap-2.5">
@@ -100,7 +113,7 @@ export const CustomerLoginModal: React.FC = () => {
               <LogIn className="w-4 h-4 text-white" />
             </span>
             <div className="flex flex-col leading-tight">
-              <span className="text-[15px] font-black tracking-tight">접수현황 로그인 / 등록</span>
+              <span id="customer-login-title" className="text-[15px] font-black tracking-tight">접수현황 로그인 / 등록</span>
               <span className="text-[11.5px] font-semibold text-white/60">전화번호만으로 3초만에 가입/로그인</span>
             </div>
           </div>
@@ -133,6 +146,7 @@ export const CustomerLoginModal: React.FC = () => {
             </span>
             <div className="flex gap-2">
               <input
+                ref={phoneInputRef}
                 value={phone}
                 onChange={(e) => { setPhone(formatPhone(e.target.value)); setError(null); }}
                 disabled={phase === 'code'}
@@ -189,7 +203,7 @@ export const CustomerLoginModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setPhase('input'); setCode(''); setSmsPending(false); setError(null); }}
-                className="text-[12px] font-bold text-gray-light hover:text-navy transition-colors self-start"
+                className="text-[12px] font-bold text-gray hover:text-navy transition-colors self-start"
               >
                 번호 다시 입력하기
               </button>
@@ -202,7 +216,7 @@ export const CustomerLoginModal: React.FC = () => {
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 text-[12px] text-gray-light font-medium">
+          <div className="flex items-center gap-1.5 text-[12px] text-gray font-medium">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
             입력하신 번호는 본인확인 용도로만 사용되며 안전하게 보호됩니다.
           </div>
