@@ -755,7 +755,9 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
           <div className="flex flex-col gap-1.5">
             <h4 className="text-[20px] font-black text-navy tracking-tight">등록이 접수되었습니다</h4>
             <p className="text-[14px] text-gray font-semibold leading-relaxed">
-              접수하신 자료{channel === 'visit' ? '·예약' : ''}은 이력관리에 저장되었습니다.<br />관리 페이지에서 진행 상황을 확인하세요.
+              {/* 조사를 조건문 밖에 두면 간편 견적에서 "자료은"이 된다 — 받침 유무가 채널마다 달라지므로
+                  조사까지 분기 안에 넣는다(자료→는 · 예약→은). 2026-08-08 라이브 접수 실측에서 발견. */}
+              접수하신 자료{channel === 'visit' ? '·예약은' : '는'} 이력관리에 저장되었습니다.<br />관리 페이지에서 진행 상황을 확인하세요.
             </p>
           </div>
           <div className="w-full max-w-xs bg-bg-subtle border border-border rounded-custom px-4 py-3 flex items-center justify-between">
