@@ -118,9 +118,10 @@
 > **Vercel 키 등록과 SQL 실행 5분. 지금 고객이 마이페이지에 못 들어가고, 관리자 로그인이 막혀 있다. 이건 코드 문제가 아니라 키가 없어서다.**
 
 절차 전문 = **`docs/03_qa_deploy/prod-env-setup.md`**.
- - **① `supabase-setup.sql` 실행 (5분 · 오늘 바로 가능) — ⚠ 1차 실행분이 조용히 롤백됐다(2026-08-08 11:10 실측). 재실행 필요.** Supabase → SQL Editor → `supabase/supabase-setup.sql` **전체 복사·Run** → **결과 표 5줄이 전부 `OK`** 인지 확인(§8 자기검증 절이 스스로 채점한다). 멱등이라 여러 번 실행해도 안전, 데이터 미삭제.
-   - **실측 근거**: 버킷 `file_size_limit = null`(52428800 이어야 함) · 버킷 `updated_at` 이 2026-06-05 생성 시각 그대로. 중복 접수번호는 **0건**(101행 전부 고유)이라 인덱스 실패 원인은 아니다. 익명 차단·버킷 비공개·익명 업로드는 **정상**(기존 적용분이 살아 있음).
-   - **원인**: SQL Editor 는 전체를 한 트랜잭션으로 돌려 중간 실패 시 통째로 롤백하는데, 파일 마지막이 `update` 라 성공과 롤백이 화면상 구분되지 않았다 → **§8 자기검증 절 추가**(마지막을 `select` 로) + `test/supabase/setupSql.test.ts` 가 그 형태를 기계 채점. AGENTS §15-9.
+ - **① ~~`supabase-setup.sql` 실행~~ → ✅ 완료 (2026-08-08 11:35 · 주인님 실행 + AI 독립 실측 확인).** 재실행 불필요.
+   - **독립 검증 10/11 PASS**: `file_size_limit = 52428800` ✅ · 접수번호 유니크 인덱스 존재 ✅ · 버킷 비공개 ✅ · 익명 업로드 200 ✅ · 익명 파일 읽기 400 ✅ · 익명 테이블 5종 전부 0행(service_role 대조군은 행 있음) ✅. 1건 FAIL 은 **점검 항목 자체의 결함** — AGENTS §15-11 참조.
+   - **1차 실행분은 조용히 롤백됐었다**(11:10 실측 `file_size_limit = null`). 원인 = SQL Editor 가 전체를 한 트랜잭션으로 돌리는데 파일 마지막이 `update` 라 성공과 롤백이 화면상 구분되지 않았다 → **§8 자기검증 절**(마지막을 `select` 로) + `test/supabase/setupSql.test.ts` 기계 채점으로 봉인. AGENTS §15-9.
+   - **Supabase 접속 계정 = GitHub `ihaelyong988-lab`**(비밀번호 로그인 불가 계정 — 소셜 버튼으로만). 프로젝트 `xtljznrfmythnnpeorgz`. SQL Editor 직링크: `https://supabase.com/dashboard/project/xtljznrfmythnnpeorgz/sql/new`
  - **② Vercel 키 등록 (심사 1~2일 + 등록 20분)** — solapi.com 가입 → **발신번호 사전등록(여기서 1~2일)** → API Key/Secret 발급 → `.env.local` 에 붙여넣고 `scripts\push-env-vercel.ps1` 실행(값이 채팅·화면을 거치지 않는다) → AI 에게 "재배포하고 검증해". `ZEROS_ADMIN_PASSWORD` 는 주인님이 정하시면 **지금 바로 가능**.
  - **✅ 보안 선행 조건은 전부 해소됐다** — 2026-08-07 A1(관리자 로그인 레이트리밋)·A2(파일 서명 소유권)·A3(접수 레이트리밋)로 "키 등록 순간 활성화되던 위험"이 닫혔다. **지금 등록해도 안전하다.**
  - ⚠ **키를 등록해도 상태 알림 문자는 나가지 않는다** — `sendSms` 호출부가 본인인증 1곳뿐이다. 화면 문구는 그 사실에 맞게 이미 교정됐고, 발송 경로 구축은 별도 작업.

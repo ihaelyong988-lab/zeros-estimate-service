@@ -1,15 +1,21 @@
-# 프로덕션 마무리 가이드 — 주인님이 직접 하실 2가지
+# 프로덕션 마무리 가이드 — 주인님이 직접 하실 일
 
-> ## ▶ 현행 상태 (2026-08-08 실측)
+> ## ▶ 현행 상태 (2026-08-08 11:35 실측)
 >
-> **코드는 전부 준비돼 있습니다. 아래 2가지만 하시면 됩니다.**
+> | # | 무엇 | 상태 |
+> |---|---|---|
+> | **①** | **`supabase-setup.sql` 실행** (§5) | ✅ **완료** — 주인님 실행 + AI 독립 실측 확인 |
+> | **②** | **Vercel 키 등록** (§1~§4) | ⬜ **남음** — 고객이 마이페이지에 못 들어감 · 관리자 로그인 불가 |
 >
-> | # | 무엇 | 지금 못 하고 있는 것 | 걸리는 시간 |
+> **남은 것은 ② 하나뿐입니다.** 문자 발신번호 심사(1~2일) 때문에 신청만 먼저 하시면 됩니다.
+>
+> ### 접속 계정 (2026-08-08 확정 — 다시 찾지 말 것)
+>
+> | 서비스 | 계정 | 로그인 방법 | 바로가기 |
 > |---|---|---|---|
-> | **①** | **Vercel 키 등록** (§1~§4) | 고객이 마이페이지에 못 들어감 · 관리자 로그인 불가 | 심사 1~2일 + 등록 20분 |
-> | **②** | **`supabase-setup.sql` 실행** (§5) | 접수번호 중복 가능 · 업로드 용량 무제한 | **5분** |
->
-> ②가 더 쉽고 오늘 바로 됩니다. ①은 문자 발신번호 심사 때문에 시작만 오늘 하고 며칠 걸립니다.
+> | Supabase | **GitHub `ihaelyong988-lab`** | **소셜 버튼만** — 비밀번호 로그인 불가 계정("does not support password sign-in") | [SQL Editor](https://supabase.com/dashboard/project/xtljznrfmythnnpeorgz/sql/new) |
+> | GitHub | `ihaelyong988-lab` | — | [저장소](https://github.com/ihaelyong988-lab/zeros-estimate-service) |
+> | 라이브 사이트 | — | — | [zerospipe.co.kr](https://zerospipe.co.kr) |
 >
 > ### 키 상태 (2026-08-08 실측 · 값은 확인하지 않음)
 >
@@ -94,7 +100,9 @@
 
 **1단계 — 중복 접수번호가 있는지 먼저 확인**
 
-[supabase.com](https://supabase.com) 로그인 → 프로젝트 `xtljznrfmythnnpeorgz` → 왼쪽 메뉴 **SQL Editor** → **New query** → 아래 붙여넣고 **Run**
+**▶ [SQL Editor 바로가기](https://supabase.com/dashboard/project/xtljznrfmythnnpeorgz/sql/new)** — 이 링크가 바로 새 쿼리 창입니다(로그인만 되어 있으면 됨). 아래 붙여넣고 **Run**.
+
+> 절차 안내에는 **항상 클릭 링크를 준다.** "대시보드 → 프로젝트 → 왼쪽 메뉴" 식 길안내는 쓰지 않는다(2026-08-08 주인님 지시).
 
 ```sql
 select data->>'estimate_no' as no, count(*)
