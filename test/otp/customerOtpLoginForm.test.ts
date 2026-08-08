@@ -21,10 +21,14 @@ describe('화면별 차이(OTP_FORM_VARIANT)', () => {
     expect(OTP_FORM_VARIANT.modal.note).toBe('flex items-center gap-1.5 text-[12px] text-gray font-medium');
   });
 
-  it('탭 화면은 통합 이전 MyRequestsView 의 클래스와 같다', () => {
+  it('탭 화면은 통합 이전 MyRequestsView 의 클래스와 같다 (+ reduced-motion 가드)', () => {
     // 코드 단계 슬라이드-인과 안내문 위 4px 이 탭 화면에만 있던 차이다.
+    // `motion-reduce:animate-none` 은 통합 이전에 없던 것을 2026-08-08 에 **의도적으로 추가**했다 —
+    // 적대 검증이 잡은 건: 이 줄이 components/ 에서 lib/ 로 옮겨가며 게이트 시야를 벗어나
+    // R5 위반이 8→7 로 "줄어든 것처럼" 보였다(해소가 아니라 은폐). 가드를 실제로 달아 해소했고,
+    // 게이트 SCAN_DIRS 에 lib 를 추가해 같은 은폐가 다시 못 생기게 했다.
     expect(OTP_FORM_VARIANT.page.codeStep)
-      .toBe('flex flex-col gap-3 border-t border-border/70 pt-3 animate-in slide-in-from-top-2 duration-200');
+      .toBe('flex flex-col gap-3 border-t border-border/70 pt-3 animate-in slide-in-from-top-2 duration-200 motion-reduce:animate-none');
     expect(OTP_FORM_VARIANT.page.note)
       .toBe('flex items-center gap-1.5 text-[12px] text-gray font-medium mt-1');
   });

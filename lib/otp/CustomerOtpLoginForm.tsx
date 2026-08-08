@@ -21,7 +21,7 @@ export const OTP_FORM_VARIANT = {
   modal: { codeStep: CODE_STEP_BASE, note: NOTE_BASE },
   // 탭 화면: 코드 단계가 위에서 밀려 들어오고, 안내문 앞에 4px 을 더 둔다.
   page: {
-    codeStep: `${CODE_STEP_BASE} animate-in slide-in-from-top-2 duration-200`,
+    codeStep: `${CODE_STEP_BASE} animate-in slide-in-from-top-2 duration-200 motion-reduce:animate-none`,
     note: `${NOTE_BASE} mt-1`,
   },
 } as const;
