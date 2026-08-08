@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aggregatePerformance, BUDGET_COLS, WORK_TYPES } from '@/lib/performance/insights';
+import { aggregatePerformance, BUDGET_COLS, PERFORMANCE_MIN_SAMPLE, WORK_TYPES } from '@/lib/performance/insights';
 import type { EstimateCategory } from '@/types/estimate';
 import { makeEstimate } from '../fixtures';
 
@@ -173,5 +173,44 @@ describe('축 정의', () => {
   it('공종 8종·견적규모 4등급 축이 화면 조문과 일치한다', () => {
     expect(WORK_TYPES).toHaveLength(8);
     expect(BUDGET_COLS.map((c) => c.key)).toEqual(['small', 'medium', 'large', 'unknown']);
+  });
+});
+
+// ==========================================
+// 표본 부족 시 지표 비공개 (2026-08-08)
+// ==========================================
+// 배경: 테스트행 99건이 모집단을 채우고 있어 공개 화면이 '온라인 접수 101건'을 표시했다.
+//       실접수는 2건이었다 — 방문자에게 사실과 다른 실적을 보여주던 상태다.
+//       테스트행을 지우자 표본이 2건이 되면서, 이번엔 한두 건이 분포·평균·비율을
+//       통째로 좌우하는 문제가 남았다(1건이 50%가 된다).
+// 처방: 표본이 최소 기준에 못 미치면 화면이 지표 대신 '준비 중'을 낸다.
+//       기준을 화면이 아니라 집계 단일 소스에 두고 여기서 채점한다.
+
+describe('표본 부족 판정(isPublishable)', () => {
+  const scoped = (n: number) =>
+    Array.from({ length: n }, () => makeEstimate({ work_type: '배관공사', estimate_category: 'small' }));
+
+  it('최소 표본에 못 미치면 공개하지 않는다', () => {
+    expect(aggregatePerformance(scoped(PERFORMANCE_MIN_SAMPLE - 1)).isPublishable).toBe(false);
+  });
+
+  it('접수가 없으면 공개하지 않는다 — 0건을 0%로 그리면 실적이 아니라 오해다', () => {
+    expect(aggregatePerformance([]).isPublishable).toBe(false);
+  });
+
+  it('최소 표본에 도달하면 공개한다', () => {
+    expect(aggregatePerformance(scoped(PERFORMANCE_MIN_SAMPLE)).isPublishable).toBe(true);
+  });
+
+  it('모집단 밖 접수는 표본으로 세지 않는다 — 8종 밖 100건이 있어도 공개되지 않는다', () => {
+    // 화면이 세는 것과 판정이 세는 것이 갈리면, 빈 히트맵 위에 큰 숫자만 뜬다.
+    const rows = Array.from({ length: 100 }, () => makeEstimate({ work_type: '기타' }));
+    const agg = aggregatePerformance(rows);
+    expect(agg.grandTotal).toBe(0);
+    expect(agg.isPublishable).toBe(false);
+  });
+
+  it('기준값은 한 자리 표본이 아니다 — 1~2건으로 분포를 그리지 않는다', () => {
+    expect(PERFORMANCE_MIN_SAMPLE).toBeGreaterThanOrEqual(10);
   });
 });

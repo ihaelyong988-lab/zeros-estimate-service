@@ -80,6 +80,23 @@ export const PerformanceInsights: React.FC = () => {
     return <div className="text-[12px] font-bold text-gray-light text-center py-16">실적 집계 데이터를 적재 중입니다…</div>;
   }
 
+  // 표본이 최소 기준에 못 미치면 지표 대신 '준비 중'을 낸다(2026-08-08).
+  // 한두 건으로 그린 분포·평균·비율은 실적이 아니라 오해다 — 기준값과 판정은
+  // lib/performance/insights.ts(PERFORMANCE_MIN_SAMPLE)에 있고 테스트가 채점한다.
+  if (!agg.isPublishable) {
+    return (
+      <div className="max-w-5xl mx-auto flex flex-col gap-3 py-16">
+        <h3 className="flex items-center gap-2 text-[23px] font-extrabold leading-none tracking-[-0.01em] text-navy">
+          <BarChart3 className="w-5 h-5 text-steel" />
+          실적 공개 준비 중
+        </h3>
+        <p className="max-w-[54ch] break-keep text-[16px] font-semibold leading-relaxed text-gray">
+          온라인 접수 표본이 쌓이는 대로 공종별 분포와 검토 실적을 공개합니다.
+        </p>
+      </div>
+    );
+  }
+
   const { metrics, matrix, rowTotal, colTotal, matrixMax, grandTotal, distribution, cards, reviewDoneRate } = agg;
 
   // 분리선 스트립 색 = 각 섹션에 실제 등장하는 순서 그대로(스트립이 곧 미니 범례가 되도록)
