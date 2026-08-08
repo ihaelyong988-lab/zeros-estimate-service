@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readSource } from '../support/sourceScan';
 
 // N4 는 "칩 18개가 전부 tab stop" 이라는 렌더 구조 결함이라 DOM 없이 재현할 수 없다.
 // 판정부(인덱스 산출)는 rovingTabindex.test.ts 가 덮고, 여기서는 렌더 계약을 소스로 채점한다
 // (test/ui/appShellSource.test.ts 와 같은 방식).
-const SOURCE_PATH = fileURLToPath(new URL('../../components/forms/RequestWizard.tsx', import.meta.url));
-const source = readFileSync(SOURCE_PATH, 'utf8');
-
-const occurrences = (needle: string): number => source.split(needle).length - 1;
+const { source, lines, occurrences } = readSource('components/forms/RequestWizard.tsx');
 
 describe('RequestWizard 칩 그룹 — radiogroup 렌더 계약', () => {
   it('칩 렌더는 공용 컴포넌트 한 곳뿐이다 — role 마크업이 여러 벌로 갈라지지 않는다', () => {
@@ -63,7 +59,7 @@ describe('RequestWizard 칩 그룹 — 기존 클래스 계약 보존', () => {
   ];
 
   const chipClassLine = (): string => {
-    const line = source.split(/\r?\n/).find((l) => l.includes('const CHIP_CLS'));
+    const line = lines.find((l) => l.includes('const CHIP_CLS'));
     if (!line) throw new Error('칩 공통 클래스 상수(CHIP_CLS)를 찾지 못했다');
     return line;
   };

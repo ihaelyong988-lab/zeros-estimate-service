@@ -1,20 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { PERFORMANCE_LABEL } from '@/lib/constants/trust';
+import { readSource } from '../support/sourceScan';
 
 // 실적 화면의 KPI 라벨은 컴포넌트 JSX 안 문자열이라 node 환경 테스트로 렌더할 수 없다.
 // 라벨이 어느 모집단을 가리키는지는 소스 스캔으로 고정한다 — 리터럴이 되살아나면 여기서 깨진다.
-const SOURCE_PATH = fileURLToPath(new URL('../../components/PerformanceInsights.tsx', import.meta.url));
-const source = readFileSync(SOURCE_PATH, 'utf8');
-const lines = source.split(/\r?\n/);
-
-function locate(predicate: (line: string) => boolean): string[] {
-  return lines
-    .map((line, index) => ({ line, no: index + 1 }))
-    .filter(({ line }) => predicate(line))
-    .map(({ line, no }) => `${no}: ${line.trim()}`);
-}
+const { source, locate } = readSource('components/PerformanceInsights.tsx');
 
 describe('실적 화면 KPI 라벨 = 온라인 접수 (확정②)', () => {
   it('KPI 라벨이 리터럴이 아니라 단일 소스 상수를 참조한다', () => {

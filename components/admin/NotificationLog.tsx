@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { NotificationLog as NotificationType } from '@/types/estimate';
 import { ZerosService } from '@/lib/supabase/client';
 import { resolveAdminLoadError, type AdminLoadError } from '@/lib/admin/loadState';
+import { AlertBanner } from '@/components/admin/AlertBanner';
 import { Search, Mail, MessageSquare, Check, AlertCircle, MinusCircle, RefreshCw } from 'lucide-react';
 
 // 전송 상태 배지 — 저장된 status 값을 그대로 표시한다.
@@ -80,16 +81,7 @@ export const NotificationLog: React.FC = () => {
         </div>
       </div>
 
-      {loadError && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="bg-danger/5 border border-danger/20 rounded-custom px-4 py-3 flex items-start gap-2"
-        >
-          <AlertCircle className="w-5 h-5 shrink-0 mt-px text-danger" />
-          <span className="text-[13.5px] font-bold text-danger leading-snug">{loadError.message}</span>
-        </div>
-      )}
+      <AlertBanner message={loadError?.message} />
 
       {/* 검색 바 */}
       <div className="bg-bg border border-border p-4 rounded-custom shadow-custom-sm">

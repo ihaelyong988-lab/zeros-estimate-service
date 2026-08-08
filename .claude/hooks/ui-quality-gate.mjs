@@ -23,7 +23,10 @@ import { fileURLToPath } from 'node:url';
 const root = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const stateDir = join(root, '.claude', 'hooks', '.state');
 const baselinePath = join(root, '.claude', '.gate-baseline.json');
-const SCAN_DIRS = ['app', 'components'];
+// lib 포함 필수 — 2026-08-08 ②단계에서 오류 UI 2개(CustomerOtpLoginForm·RequestsLoadBanner)가
+// components/ 에서 lib/ 로 옮겨가자 게이트 시야를 벗어나 R5 위반이 8→7로 "줄어든 것처럼" 보였다.
+// 해소가 아니라 은폐였다. 스캔 대상을 파일 위치가 아니라 코드 성격으로 정한다.
+const SCAN_DIRS = ['app', 'components', 'lib'];
 
 const sh = (cmd) => { try { return execSync(cmd, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return ''; } };
 

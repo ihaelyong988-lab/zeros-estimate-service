@@ -1,5 +1,32 @@
 # ZEROS 프로젝트 공유 상태 (Shared State)
 
+- **최신 반영(2026-08-08 ②):** **PHASE S-2 — 최적화 ②단계(중복 제거) 완료.** 주인님 지시 "②단계 진행". Agent 11개 · Batch 3개(수정 9 + 적대 검증 2). **소스 14,657 → 14,345줄(−312) · 파일 66 → 76**(중복을 공용 모듈로 뽑아 파일은 늘고 줄은 줄었다) · **테스트 471 → 564(+93)**. ①②합산 **16,635 → 14,345줄(−2,290, −13.8%)**. 통합: `BaseZerosService` 상속 계층 제거 · 마이페이지 상수·유틸 → `lib/requests/timeline.ts` · 관리자 오류 배너 7중 → `AlertBanner.tsx` · 모바일 탭 5개 → `lib/ui/mobileTabs.ts` · `scrollMainPanelToTop` 3중 → `lib/ui/scrollMainPanel.ts` · **OTP 인증 3중 → `lib/otp/`** · a11y 스캔 규칙 이중 구현 → `test/support/sourceScan.ts` · 데이터 적재 → `useMyRequests` · 의뢰폼 필드 8개 · 홈 공종 Record 5종 → `lib/constants/landingTrades.ts`. **⚠ Agent 가 스스로 멈춘 것**: B3(마이페이지 JSX 100줄)는 전수 대조 결과 **렌더 차이가 29개**(폰트·여백·문구·한쪽에만 있는 버튼)라 바이트 동일한 배너만 뽑고 나머지는 두었다 — **미회수가 정답.** B2도 계획서가 "중복 구현"이라 적었으나 실제로는 **도달 불가한 대체 구현**이었다. **⚠ 적대 검증 FAIL 2건 봉합 — R5 8→7 은 해소가 아니라 은폐였다**: 오류 UI 2개가 `components/`→`lib/` 로 옮겨가며 게이트 `SCAN_DIRS` 밖으로 나가 위반이 검출되지 않게 됐다. → ①가드 실제 추가로 R5 진짜 해소 ②`SCAN_DIRS` 에 **`lib` 추가**(베이스라인 12→**32파일** 재스냅샷) ③무변경 채점 테스트 기대값 갱신. 은폐 아님을 기계 증명(가드 제거 시 R5 7↔8). **검증**: tsc 0 · test 564/564 · build 성공 · lint 에러 0 · 게이트 R1 0·회귀 없음 · O-37(704=704·클리핑 0) · O-38(736=736·카드 0.00px). **오류 원장**: 완료시각 3회 지연의 근본 원인 = **동시 실행 상한이 2인 것을 오늘 아침에야 측정**(그전 계획은 4~5 병렬 가정) → **AGENTS §16 신설**(`회전 수 = ceil(Agent수/2)`). **③단계(분해)는 미착수** — 계획서 §5. 커밋 `<해시>` → master 배포. 상세: `docs/_worklog/2026-08-08_작업정리.md`.
+
+## ~~🔴 진행 중 인수인계~~ (2026-08-08 08:35 · **해소됨** — ②단계 마감 완료)
+
+> **②단계 중복 제거가 브랜치에서 진행 중이다. 아래를 그대로 이어받는다.**
+>
+> | | |
+> |---|---|
+> | 브랜치 | `refactor/stage2-dedupe` (master 미병합) |
+> | 마지막 커밋 | `8ac125d` — Batch 1 완료(−210줄 · test 501) |
+> | 워킹트리 | **미커밋 28개** — Batch 2가 쓰고 있는 중이므로 **되돌리지 말 것** |
+> | 실행 중 | Workflow `w2w339ftk` (Batch 2 · Agent 5개 중 3 완료 · 2 작동) |
+> | 근거 문서 | `docs/00_orchestration/최적화-계획서.md` §4 |
+>
+> **이어서 할 일 (순서 고정)**
+> 1. Batch 2 완료 대기 → `npx tsc --noEmit` · `npm test` · `npm run lint` · `ui-quality-gate --check` → 임시 커밋
+> 2. **Batch 3 = 적대 검증 Agent 2개**(읽기 전용) — 렌즈 = ①보안·회귀 ②조문·픽셀. FAIL 나오면 봉합
+> 3. Playwright 픽셀 게이트 — O-37(홈 1366×768 스크롤 0·클리핑 0) · O-38(사업소개 412×870 스크롤 0·2단 카드 차 0.00px)
+> 4. 마감처리 — worklog `docs/_worklog/2026-08-08_작업정리.md`에 ②단계 절 추가 · state 갱신 · 커밋 · master 병합 · 푸시 · `node scripts/prod-probe.mjs`
+>
+> **⚠ 이 세션에서 확정된 것 (다시 알아내지 말 것)**
+> - **동시 실행 상한 = 2** (i7-7500U 물리 2코어). 소요는 `ceil(Agent수/2)` 회전으로 계산 — AGENTS **§16**
+> - 용어는 **Batch · Agent** 영어 그대로. `파도`·`기수` 금지 — memory `use-english-batch-agent-terms`
+> - Batch 1에서 계획서 오류 1건 발견: B2는 "중복 구현"이 아니라 **도달 불가한 대체 구현**이었다(삭제 판정은 통과)
+>
+> **주인님 액션 대기 2건** — `docs/03_qa_deploy/prod-env-setup.md` (①Vercel 키 등록 ②`supabase-setup.sql` 실행)
+
 ## 📌 현재 단계
 - **진행 중인 PHASE:** PHASE J (최종 보고서 작성 및 프로젝트 이양 - 고도화 반영본)
 - **현재 담당 역할:** 00_오케스트레이터 (Orchestrator PM)
