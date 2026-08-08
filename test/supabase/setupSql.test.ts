@@ -44,3 +44,43 @@ describe('supabase-setup.sql — estimate-files 버킷 한도(D7)', () => {
     expect(bucketStatement).not.toMatch(/insert\s+into\s+storage\.buckets/i);
   });
 });
+
+// ==========================================
+// §8 자기검증 절 — 실행 결과를 사람 눈에 맡기지 않는다
+// ==========================================
+// 2026-08-08: 주인님이 이 파일을 실행했는데 §7 이 반영되지 않았다(라이브 실측
+// file_size_limit = null). SQL Editor 는 마지막 문장의 결과만 보여주는데 그 마지막이
+// update 여서 "Success. No rows returned" 만 떴다 — 전 구문 성공과 중간 롤백이
+// 화면상 구분되지 않았다. 판정을 사람 눈에 맡긴 것이 근본 원인이다.
+// 처방 = 마지막을 select 로 고정해 결과 그리드가 곧 판정이 되게 한다. 아래가 그 고정이다.
+
+const statements = code
+  .split(';')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+describe('supabase-setup.sql — §8 자기검증 절', () => {
+  it('마지막 실행 구문이 select 다 — 결과 그리드가 곧 합격 판정이다', () => {
+    // update 로 끝나면 롤백돼도 "Success" 로 보인다. 그 화면이 이번 사고를 만들었다.
+    expect(statements.at(-1)).toMatch(/^select\b/i);
+  });
+
+  it('실행이 바꾸는 것 전부를 채점한다 — 채점 안 되는 구문은 조용히 실패한다', () => {
+    const audit = statements.at(-1) ?? '';
+    expect(audit).toMatch(/zeros_estimates_no_uniq/); // §6 접수번호 중복방지
+    expect(audit).toMatch(/file_size_limit/); // §7 업로드 용량
+    expect(audit).toMatch(/anon_upload_estimate_files/); // §5-2 익명 업로드 허용
+    expect(audit).toMatch(/public/); // §5-3 버킷 비공개
+    expect(audit).toMatch(/pg_policies/); // §3 익명 테이블 차단
+  });
+
+  it('판정 문구가 OK/실패 두 가지뿐이다 — 해석 여지를 남기지 않는다', () => {
+    const audit = statements.at(-1) ?? '';
+    const verdicts = [...audit.matchAll(/then\s+'([^']+)'\s+else\s+'([^']+)'\s+end/gi)];
+    expect(verdicts.length).toBeGreaterThanOrEqual(5);
+    for (const [, pass, fail] of verdicts) {
+      expect(pass).toBe('OK');
+      expect(fail).toBe('실패');
+    }
+  });
+});

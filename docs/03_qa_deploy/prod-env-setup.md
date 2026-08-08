@@ -109,20 +109,23 @@ select data->>'estimate_no' as no, count(*)
 
 프로젝트 폴더의 **`supabase/supabase-setup.sql`** 파일을 열어 **전체 복사** → SQL Editor 에 붙여넣기 → **Run**
 
-- **"Success. No rows returned"** 이 뜨면 완료입니다
 - 이 파일은 **몇 번 실행해도 결과가 같습니다**(멱등). 이전에 실행한 적이 있어도 안전합니다
 
-**3단계 — 확인**
+**3단계 — 확인 (파일이 스스로 채점합니다)**
 
-```sql
-select indexname from pg_indexes
- where tablename = 'zeros_estimates' and indexname = 'zeros_estimates_no_uniq';
+Run 하면 마지막에 **결과 표 5줄**이 나옵니다. **전부 `OK` 여야 끝난 것입니다.**
 
-select id, file_size_limit from storage.buckets where id = 'estimate-files';
-```
+| 항목 | 결과 |
+|---|---|
+| 1. 접수번호 중복방지 | OK |
+| 2. 업로드 용량 50MB | OK |
+| 3. 버킷 비공개 | OK |
+| 4. 익명 업로드 허용 | OK |
+| 5. 익명 테이블 차단 | OK |
 
-- 첫 번째 → `zeros_estimates_no_uniq` 한 줄이 나오면 접수번호 중복 방지 적용됨
-- 두 번째 → `file_size_limit` 이 **52428800**(50MB)이면 업로드 한도 적용됨
+한 줄이라도 `실패` 면 **그 화면을 그대로** 알려주십시오.
+
+> **왜 표가 나오게 바꿨나 (2026-08-08).** 예전에는 마지막이 `update` 라 **"Success. No rows returned"** 만 떴습니다. 그런데 SQL Editor 는 전체를 **한 트랜잭션**으로 돌려서, 중간 한 줄이 실패하면 **앞뒤가 통째로 취소**됩니다 — 그때도 화면은 비슷해 보입니다. 실제로 2026-08-08 실행분이 이렇게 조용히 취소됐고(업로드 한도 미적용), 사람 눈으로는 구분할 수 없었습니다. 그래서 **결과 표 자체가 판정**이 되도록 파일 끝에 검증 절을 넣었습니다.
 
 ### 주의
 
