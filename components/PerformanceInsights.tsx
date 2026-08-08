@@ -77,7 +77,7 @@ export const PerformanceInsights: React.FC = () => {
   const agg = useMemo(() => aggregatePerformance(estimates), [estimates]);
 
   if (loading) {
-    return <div className="text-[12px] font-bold text-gray-light text-center py-16">실적 집계 데이터를 적재 중입니다…</div>;
+    return <div className="text-[12px] font-bold text-gray text-center py-16">실적 집계 데이터를 적재 중입니다…</div>;
   }
 
   // 표본이 최소 기준에 못 미치면 지표 대신 '준비 중'을 낸다(2026-08-08).
@@ -129,7 +129,7 @@ export const PerformanceInsights: React.FC = () => {
             >
               <span className="text-[12px] font-bold text-gray tracking-tight whitespace-nowrap">{k.label}</span>
               <span className="text-[23px] font-black text-navy tabular-nums leading-none tracking-[-0.02em]">
-                {k.value}<span className="text-[13px] font-extrabold text-gray-light ml-0.5">{k.unit}</span>
+                {k.value}<span className="text-[13px] font-extrabold text-gray ml-0.5">{k.unit}</span>
               </span>
             </div>
           ))}
@@ -273,15 +273,15 @@ export const PerformanceInsights: React.FC = () => {
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-black text-navy tabular-nums tracking-tight">{card.count}</span>
-                <span className="text-[12px] text-gray-light font-bold">건</span>
+                <span className="text-[12px] text-gray font-bold">건</span>
               </div>
               <div className="flex flex-col gap-1 border-t border-border/50 pt-2 text-[12px] font-semibold">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-light flex items-center gap-1"><Activity className="w-3 h-3" />평균 검토</span>
+                  <span className="text-gray flex items-center gap-1"><Activity className="w-3 h-3" />평균 검토</span>
                   <span className="text-navy font-bold tabular-nums">{card.avgDays !== null ? `${card.avgDays}일` : '—'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-light">대표 현장</span>
+                  <span className="text-gray">대표 현장</span>
                   <span className="text-navy font-bold">{card.topSite}</span>
                 </div>
               </div>

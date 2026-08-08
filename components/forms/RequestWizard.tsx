@@ -725,7 +725,9 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
             return (
               <div key={lbl} className="flex-1 flex flex-col gap-1.5">
                 <div className={`h-1 rounded-full ${active ? 'bg-accent' : done ? 'bg-steel' : 'bg-border'}`} />
-                <span className={`text-[11.5px] font-bold tabular-nums ${active ? 'text-navy' : done ? 'text-steel' : 'text-gray-light'}`}>
+                {/* 미도달 단계도 text-gray(5.9:1) 까지만 낮춘다 — 진행 상태는 위 막대 색이 이미 말하고 있고,
+                    단계 이름은 "어디로 가는지"라 읽혀야 한다(§10 본문 4.5:1). */}
+                <span className={`text-[11.5px] font-bold tabular-nums ${active ? 'text-navy' : done ? 'text-steel' : 'text-gray'}`}>
                   {i < 3 ? `${i + 1} · ` : ''}{lbl}
                 </span>
               </div>
@@ -757,7 +759,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
             </p>
           </div>
           <div className="w-full max-w-xs bg-bg-subtle border border-border rounded-custom px-4 py-3 flex items-center justify-between">
-            <span className="text-[12.5px] font-bold text-gray-light">접수 번호</span>
+            <span className="text-[12.5px] font-bold text-gray">접수 번호</span>
             <span className="text-[14px] font-black text-navy tracking-wide tabular-nums">{submitted?.estimate_no}</span>
           </div>
           <div className="w-full max-w-xs flex flex-col gap-2.5 pt-1">
@@ -902,6 +904,8 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                 placeholder="ABC식품 (주)"
               />
 
+              {/* 미선택 안내("업종을 선택하세요")도 읽혀야 하는 글자다 — 선택 여부는 색 농도가 아니라
+                  navy/gray 대비로 구분한다. 더 흐린 회색은 §10 본문 대비를 깬다. */}
               <FormField
                 id="industry"
                 icon={Briefcase}
@@ -909,7 +913,7 @@ export const RequestWizard: React.FC<RequestWizardProps> = ({ onComplete, initia
                 control="select"
                 value={formData.industry}
                 onChange={handleChange}
-                extraClassName={formData.industry ? 'text-navy' : 'text-gray-light'}
+                extraClassName={formData.industry ? 'text-navy' : 'text-gray'}
               >
                 <option value="">업종을 선택하세요</option>
                 {INDUSTRY_OPTIONS.map((o) => <option key={o} value={o} className="text-navy">{o}</option>)}

@@ -98,7 +98,7 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, in
           <button
             type="button"
             onClick={otp.backToInput}
-            className="text-[12px] font-bold text-gray-light hover:text-navy transition-colors self-start"
+            className="text-[12px] font-bold text-gray hover:text-navy transition-colors self-start"
           >
             번호 다시 입력하기
           </button>
@@ -111,7 +111,7 @@ export const PhoneVerifyGate: React.FC<PhoneVerifyGateProps> = ({ onVerified, in
         </div>
       )}
 
-      <div className="flex items-center gap-1.5 text-[12px] text-gray-light font-medium">
+      <div className="flex items-center gap-1.5 text-[12px] text-gray font-medium">
         <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
         입력하신 번호는 본인확인 용도로만 사용되며, 안전하게 보호됩니다.
       </div>
