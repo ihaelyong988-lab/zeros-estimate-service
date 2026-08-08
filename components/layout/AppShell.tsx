@@ -777,7 +777,7 @@ const AppShellLayout: React.FC<AppShellProps> = ({ children }) => {
 
             {/* Pane 3: 우측 의사결정 보조 & 데이터 매핑 위젯 — 항상 표시, 헤더 화살표로 접기 */}
             {showDecisionPanel ? (
-              <div className="w-72 h-full shrink-0 border-l border-border overflow-y-auto no-scrollbar bg-bg-subtle print:hidden animate-in slide-in-from-right duration-300">
+              <div className="w-72 h-full shrink-0 border-l border-border overflow-y-auto no-scrollbar bg-bg-subtle print:hidden animate-in slide-in-from-right duration-300 motion-reduce:animate-none">
                 <RightSidebar />
               </div>
             ) : (
