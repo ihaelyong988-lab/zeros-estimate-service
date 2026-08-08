@@ -151,7 +151,46 @@ update storage.buckets
    set file_size_limit = 52428800
  where id = 'estimate-files';
 
+-- ------------------------------------------------------------
+-- 8. 자기검증 (2026-08-08 — 반드시 마지막에 둔다)
+--    근거: 2026-08-08 주인님이 이 파일을 실행했는데 §7 이 반영되지 않았다.
+--    SQL Editor 는 **마지막 문장의 결과만** 보여주는데 그 마지막이 update 라
+--    "Success. No rows returned" 만 떴다 — 전부 성공했을 때와 중간에서
+--    롤백됐을 때가 **화면상 구분되지 않았다.** 사람 눈에 판정을 맡긴 것이 원인이다.
+--    처방 = 마지막을 select 로 만들어 **결과 그리드가 곧 판정**이 되게 한다.
+--    OK 가 아닌 줄이 하나라도 있으면 실행은 실패한 것이다(제10조 게이트화).
+-- ------------------------------------------------------------
+select '1. 접수번호 중복방지' as 항목,
+       case when exists (select 1 from pg_indexes
+                          where tablename = 'zeros_estimates'
+                            and indexname = 'zeros_estimates_no_uniq')
+            then 'OK' else '실패' end as 결과
+union all
+select '2. 업로드 용량 50MB',
+       case when (select file_size_limit from storage.buckets
+                   where id = 'estimate-files') = 52428800
+            then 'OK' else '실패' end
+union all
+select '3. 버킷 비공개',
+       case when (select public from storage.buckets
+                   where id = 'estimate-files') = false
+            then 'OK' else '실패' end
+union all
+select '4. 익명 업로드 허용',
+       case when exists (select 1 from pg_policies
+                          where schemaname = 'storage' and tablename = 'objects'
+                            and policyname = 'anon_upload_estimate_files')
+            then 'OK' else '실패' end
+union all
+select '5. 익명 테이블 차단',
+       case when not exists (select 1 from pg_policies
+                              where schemaname = 'public'
+                                and tablename like 'zeros_%'
+                                and 'anon' = any(roles))
+            then 'OK' else '실패' end;
+
 -- ============================================================
--- 완료. 파일은 비공개로 저장되며, 관리자 로그인 또는 고객 본인
+-- 완료. 위 결과 그리드 5줄이 **전부 OK** 여야 실행이 끝난 것이다.
+-- 파일은 비공개로 저장되며, 관리자 로그인 또는 고객 본인
 -- 인증을 거친 경우에만 서명 URL(10분)로 열람·다운로드됩니다.
 -- ============================================================
