@@ -27,6 +27,19 @@ export const BUDGET_COLS: { key: EstimateCategory; label: string; range: string 
   { key: 'unknown', label: '공사규모·금액', range: '온라인 컨설팅' },
 ];
 
+/**
+ * 공개 실적을 지표로 내보내기 위한 최소 표본 수.
+ *
+ * 2026-08-08: 테스트행(`est-test-*`) 99건이 모집단을 채우고 있어 공개 화면이
+ * '온라인 접수 101건'을 표시했다. 실접수는 2건이었다 — 방문자에게 사실과 다른
+ * 실적을 보여주던 상태다. 테스트행을 지우니 이번엔 표본 2건으로 분포·평균·비율을
+ * 그리게 되는데, 1건이 50%가 되는 그래프는 실적이 아니라 오해다.
+ *
+ * 그래서 "몇 건부터 지표로 말할 수 있는가"를 화면이 아니라 여기서 정하고
+ * test/performance/insights.test.ts 가 채점한다. 화면은 이 판정만 따른다.
+ */
+export const PERFORMANCE_MIN_SAMPLE = 10;
+
 // 검토가 끝난 것으로 보는 상태 — '검토 비율'의 분자다.
 const REVIEW_DONE_STATUSES: readonly EstimateStatus[] = [
   '견적서 송부완료',
@@ -60,6 +73,8 @@ export interface PerformanceAggregate {
   reviewDoneRate: number;
   /** 모집단 밖이라 지표에서 빠진 접수 건수 */
   excludedCount: number;
+  /** 표본이 PERFORMANCE_MIN_SAMPLE 에 도달해 지표를 공개해도 되는가 */
+  isPublishable: boolean;
 }
 
 const WORK_TYPE_SET: ReadonlySet<string> = new Set<string>(WORK_TYPES);
@@ -137,5 +152,8 @@ export function aggregatePerformance(estimates: Estimate[]): PerformanceAggregat
     metrics, matrix, rowTotal, colTotal, matrixMax, grandTotal,
     distribution, cards, reviewDoneCount, reviewDoneRate,
     excludedCount: estimates.length - scoped.length,
+    // 모집단(scoped) 기준이다. 화면이 그리는 것과 판정이 세는 것이 갈리면
+    // 빈 히트맵 위에 큰 숫자만 뜬다.
+    isPublishable: grandTotal >= PERFORMANCE_MIN_SAMPLE,
   };
 }
