@@ -42,7 +42,7 @@ export const MyRequestsView: React.FC = () => {
   // Case 1: Unauthenticated -> Render Inline Login Form
   if (!customerAuth) {
     return (
-      <div className="max-w-md mx-auto bg-bg border border-border rounded-custom p-5 flex flex-col gap-4 shadow-sm animate-in fade-in duration-200">
+      <div className="max-w-md mx-auto bg-bg border border-border rounded-custom p-5 flex flex-col gap-4 shadow-sm animate-in fade-in duration-200 motion-reduce:animate-none">
         <div className="flex flex-col gap-1">
           <span className="text-[12px] font-black text-steel uppercase tracking-wider">MY PAGE</span>
           <h2 className="text-[20px] font-black text-navy">마이페이지 로그인</h2>
@@ -72,7 +72,7 @@ export const MyRequestsView: React.FC = () => {
   const maskedPhone = customerAuth.phone;
 
   return (
-    <div className="max-w-md mx-auto bg-bg border border-border rounded-custom flex flex-col overflow-hidden shadow-sm animate-in fade-in duration-200">
+    <div className="max-w-md mx-auto bg-bg border border-border rounded-custom flex flex-col overflow-hidden shadow-sm animate-in fade-in duration-200 motion-reduce:animate-none">
 
       {/* 회원 프로필 헤더 */}
       <div className="bg-[#04204C] text-white px-4 py-4 flex items-center justify-between select-none">
